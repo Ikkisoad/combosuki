@@ -17,11 +17,35 @@
 			body{
 				background-color: #35340a;
 				background: url("img/yellow-honeycomb.png");
+				color: white;
 			}
 			.jumbotron{
 				max-height: 190px;
 				background-color: #000000;
 			}
+			table {
+				border-spacing: 0;
+				width: 100%;
+				border: 1px solid #ddd;
+				
+			}
+
+			th, td {
+				text-align: left;
+				padding: 16px;
+			}
+
+			tr:nth-child(even) {
+				background-color: #212121
+			}
+			
+			tr:nth-child(odd) {
+				background-color: #000000
+			}
+			textare{
+				color: #000000;	
+			}
+			.img-responsive{width:100%;}
 		</style> <!-- BACKGROUND COLOR-->
 		<?php
 			if(isset($_POST['action'])){
@@ -79,6 +103,44 @@
 						<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 					</form>
 				</div>
+					<p><h2>Latest submissions</h2></p>
+					<?php
+						require "server/conexao.php";
+						$query = "SELECT idcombo,Name,combo,damage,type FROM `combo` INNER JOIN `character` ON `combo`.`character_idcharacter` = `character`.`idcharacter` WHERE `character`.`game_idgame` = ? ORDER BY submited DESC";
+						$result = $conn -> prepare($query);
+						$result -> bind_param("i",$_GET['gameid']);
+						$result -> execute();
+						echo '<table>';
+							echo '<tr>';
+								echo '<th>Character</th><th>Inputs</th><th>Damage</th><th>Type</th>';
+							echo '</tr>';
+						
+							foreach($result -> get_result() as $data){
+								echo '<tr><td>';
+								echo $data['Name'];
+								echo '</td><td>';
+								echo		'<a href="combo.php?gameid='.$_GET['gameid'].'&idcombo='.$data['idcombo'].'">'.$data['combo'].'</a>';
+								echo '</td><td>';
+								echo $data['damage'];
+								echo '</td><td>';
+								switch($data['type']){
+									case 0:
+										echo 'Combo';
+										break;
+									case 1:
+										echo 'Blockstring';
+										break;
+									case 2:
+										echo 'Mix Up';
+										break;
+									case 3:
+										echo 'Archive';
+										break;
+								}
+								echo '</td></tr>';
+							}
+							echo '</table>';
+					?>
 			</div>
 		</main>
 	</body>
