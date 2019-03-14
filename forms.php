@@ -52,6 +52,8 @@
 					<!-- <button id="Mybtn" class="btn btn-primary" onclick="changeMethod(this)">Submit a Combo</button> -->
 					<form method="<?php
 						//print_r($_POST);
+						$_POST = array_map("strip_tags", $_POST);
+						$_GET = array_map("strip_tags", $_GET);
 						if(isset($_POST['type'])){
 							echo 'post';
 							
