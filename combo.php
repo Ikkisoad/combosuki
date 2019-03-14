@@ -189,8 +189,8 @@ WHERE `idcombo` = ? ";
 												}
 												if(isset($letter)){
 													echo '<img class="img-fluid" alt="Responsive image" src=img/buttons/';
-													echo $_GET['gameid'];
-													echo '/';
+													/*echo $_GET['gameid'];
+													echo '/';*/
 													foreach($letter as $lul){
 														echo $lul;
 													}
