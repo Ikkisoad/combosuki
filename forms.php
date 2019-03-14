@@ -105,8 +105,8 @@
 								echo $button['name'];
 								if($button['game_idgame']){
 									echo '"onclick="moveNumbers(this.value)"><img src="img/buttons/';
-									echo $button['game_idgame'];
-									echo '/';
+									/*echo $button['game_idgame'];
+									echo '/';*/
 									echo $button['png'];
 								}else{
 									echo '"onclick="moveNumbers(this.value)"><img src="img/buttons/';
