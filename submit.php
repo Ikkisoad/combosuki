@@ -181,8 +181,9 @@ idcombo IN (SELECT resources.combo_idcombo FROM resources WHERE resources.Resour
 					$query = "SELECT `Main`.`Name` AS `Main`,`game_resources`.`text_name`,`combo`.`character_idcharacter`,`idcombo`,`combo`,`damage`,`value`,`idResources_values`,`number_value`,`resources`.`character_idcharacter`,`character`.`Name` FROM `combo` INNER JOIN `resources` ON `combo`.`idcombo` = `resources`.`combo_idcombo` LEFT JOIN `resources_values` ON `resources_values`.`idResources_values` = `resources`.`Resources_values_idResources_values` LEFT JOIN `character` 
 					ON `character`.`idcharacter` = `resources`.`character_idcharacter` LEFT JOIN `character` AS `Main` ON `Main`.`idcharacter` = `combo`.`character_idcharacter`
 					LEFT JOIN `game_resources` ON `game_resources`.`idgame_resources` = `resources_values`.`game_resources_idgame_resources` ";
-					$query = $query . "WHERE  `game_resources`.`primaryORsecundary` = 1 ";
-					$parameter_type = "";
+					$query = $query . "WHERE  `game_resources`.`primaryORsecundary` = 1 AND `Main`.`game_idgame` = ? ";
+					$parameter_type = "i";
+					$binded_parameters[$parameters_counter++] = $_GET['gameid'];
 					
 					if(isset($_GET['combo'])){
 							if($_GET['combolike'] == 1 || $_GET['combolike'] == 2){
