@@ -47,7 +47,6 @@
 				color: #000000;	
 			}
 			.img-responsive{width:100%;}
-			
 				
 		</style> <!-- BACKGROUND COLOR-->
 	</head>
@@ -74,16 +73,18 @@
 				</div>
 			</div>
 			<div class="container"><p>
-				<form method="post" onsubmit="return confirm('Do you really want to delete this combo?');" action="game.php?gameid=<?php echo $_GET['gameid']; ?>">
-					<input type="hidden" id="action" name="action" value="0">
-					<input type="hidden" id="idcombo" name="idcombo" value="<?php echo $_GET['idcombo'] ?>">
-					<button type="submit" class="btn btn-danger">Delete</button>
-				</form>
-				<form method="post" onsubmit="return confirm('Are you sure you want to archive this combo?');" action="game.php?gameid=<?php echo $_GET['gameid']; ?>">
-					<input type="hidden" id="action" name="action" value="1">
-					<input type="hidden" id="idcombo" name="idcombo" value="<?php echo $_GET['idcombo'] ?>">
-					<button type="submit" class="btn btn-warning">Archive</button>
-				</form></p>
+				<div class="btn-group" role="group">
+					<form method="post" onsubmit="return confirm('Do you really want to delete this combo?');" action="game.php?gameid=<?php echo $_GET['gameid']; ?>">
+						<input type="hidden" id="action" name="action" value="0">
+						<input type="hidden" id="idcombo" name="idcombo" value="<?php echo $_GET['idcombo'] ?>">
+						<button type="submit" class="btn btn-danger">Delete</button>
+					</form>
+					<form method="post" onsubmit="return confirm('Are you sure you want to archive this combo?');" action="game.php?gameid=<?php echo $_GET['gameid']; ?>">
+						<input type="hidden" id="action" name="action" value="1">
+						<input type="hidden" id="idcombo" name="idcombo" value="<?php echo $_GET['idcombo'] ?>">
+						<button type="submit" class="btn btn-warning">Archive</button>
+					</form></p>
+				</div>
 				<?php
 					require "server/conexao.php";
 					$_GET = array_map("strip_tags", $_GET);
