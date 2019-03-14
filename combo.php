@@ -79,7 +79,7 @@
 					<input type="hidden" id="idcombo" name="idcombo" value="<?php echo $_GET['idcombo'] ?>">
 					<button type="submit" class="btn btn-danger">Delete</button>
 				</form>
-				<form method="post" action="game.php?gameid=<?php echo $_GET['gameid']; ?>">
+				<form method="post" onsubmit="return confirm('Are you sure you want to archive this combo?');" action="game.php?gameid=<?php echo $_GET['gameid']; ?>">
 					<input type="hidden" id="action" name="action" value="1">
 					<input type="hidden" id="idcombo" name="idcombo" value="<?php echo $_GET['idcombo'] ?>">
 					<button type="submit" class="btn btn-warning">Archive</button>
