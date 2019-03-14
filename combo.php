@@ -327,6 +327,11 @@ WHERE `idcombo` = ? ";
 				
 				if (strpos($video, 'youtu') !== false) {
 					//echo $video;
+					echo '<p><table>';
+						echo '<tr><td>';
+							echo 'Video:';
+						echo '</td></tr>';
+						echo '<tr><td>';
 					preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $video, $match);
 					$youtube_id = $match[1];
 					//print_r($match);
@@ -340,10 +345,16 @@ WHERE `idcombo` = ? ";
 					echo $youtube_id;
 					echo '?start=';echo $whatIWant; echo '" allowfullscreen></iframe>
 				</div>';
+				echo '</td></tr>';
+					echo '</table></p>';
 				}
 				
 				if(strpos($video, 'streamable') !== false){
-					
+					echo '<p><table>';
+						echo '<tr><td>';
+							echo 'Video:';
+						echo '</td></tr>';
+						echo '<tr><td>';
 										/*echo '<div class="embed-responsive embed-responsive-16by9">
 										<iframe class="embed-responsive-item" src="';
 										echo $video;
@@ -362,7 +373,8 @@ WHERE `idcombo` = ? ";
 										echo $streamable;
 										
 										echo '" frameborder="0" width="100%" height="100%" allowfullscreen style="width: 100%; height: 100%; position: absolute;"></iframe></div>';*/
-										
+										echo '</td></tr>';
+					echo '</table></p>';
 				}
 			?>
 			</div>
