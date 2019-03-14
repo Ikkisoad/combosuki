@@ -88,11 +88,13 @@
 					require "server/conexao.php";
 					$_GET = array_map("strip_tags", $_GET);
 					$i = 0;
+					$secondaryTitle = array();
+					$secondaryValue = array();
 					echo '<table>';
 					echo '<tr>';
 					//$query = 
 					
-					$query = "SELECT `idcombo`,`combo`,`value`,`idResources_values`,`number_value`,`resources`.`character_idcharacter`,`character`.`Name`, `video`, `game_resources`.`text_name`,`game_resources`.`type`, `combo`.`type` as listingtype, `combo`.`comments`
+					$query = "SELECT `idcombo`,`combo`,`value`,`idResources_values`,`number_value`,`resources`.`character_idcharacter`,`character`.`Name`, `video`, `game_resources`.`text_name`,`game_resources`.`type`, `combo`.`type` as listingtype, `combo`.`comments`,`game_resources`.`primaryORsecundary`
 FROM `combo` 
 INNER JOIN `resources` ON `combo`.`idcombo` = `resources`.`combo_idcombo` 
 LEFT JOIN `resources_values` ON `resources_values`.`idResources_values` = `resources`.`Resources_values_idResources_values` 
@@ -252,14 +254,14 @@ WHERE `idcombo` = ? ";
 							//echo		'<td><a href="combo.php?idcombo='.$data['idcombo'].'">'.$data['combo'].'</a></td>';
 					//	$test_row = $data['character_idcharacter'];
 					
-						if($k == $primaryORsecundary){
+						/*if($k == $primaryORsecundary){
 							echo		'</td></table>';
 							echo		'<br><p><table><tr>';
 							for($i = 0; sizeof($secondaryNames) > $i; $i++){
 								echo '<th>'; echo $secondaryNames[$i]; echo '</th>';
 							}
 							echo		'</tr>';
-						}
+						}*/
 					
 						/*if($data['type'] == ''){
 							//echo $j[$k];
@@ -274,12 +276,12 @@ WHERE `idcombo` = ? ";
 								}
 								
 						}*/
-						if($data['type'] == 'list'){
+						if($data['type'] == 'list' && $data['primaryORsecundary']){
 							echo		'<td>'.$data['value'].'</td>';
 							//$k++;
 						}
 						
-						if($data['type'] == 'number'){
+						if($data['type'] == 'number' && $data['primaryORsecundary']){
 							echo		'<td>'.$data['number_value'].'</td>';
 							
 						}
@@ -288,16 +290,35 @@ WHERE `idcombo` = ? ";
 						
 						$comment = $data['comments'];
 						$video = $data['video'];
+						if($data['primaryORsecundary'] == 0){
+							array_push($secondaryTitle,$data['text_name']);
+							array_push($secondaryValue, $data['value']);
+						}
 						//echo '/<tr>';
 					}
-					for($k; $k<sizeof($j); $k++){
+					/*for($k; $k<sizeof($j); $k++){
 						echo '<td></td>';
-					}
+					}*/
 					
 				//echo $query;
+					echo '</td></table><p><table>';
+							echo '<tr>';
+							for($i = 0; $i<sizeof($secondaryTitle); $i++){
+								echo '<th>';
+								echo $secondaryTitle[$i];
+								echo '</th>';
+							}
+							echo '</tr><tr>';
+							for($i = 0; $i<sizeof($secondaryTitle); $i++){
+								echo '<td>';
+								echo $secondaryValue[$i];
+								echo '</td>';
+							}
+							echo '</tr>';
+					echo '</table></p>';
 				?>
 			
-			</tr></table></p>
+			<!-- </tr></table></p> -->
 			<?php
 				if($comment != ''){
 					echo '<p><table>';
