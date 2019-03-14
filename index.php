@@ -39,9 +39,20 @@
 				background: url("img/yellow-honeycomb.png");
 			}
 			.jumbotron{
+				background: url("img/black-honeycomb.png");
 				max-height: 190px;
 				background-color: #000000;
 			}		
+			.footer {
+			  position: fixed;
+			  left: 0;
+			  bottom: 0;
+			  width: 100%;
+			  background-color: black;
+			  color: white;
+			  text-align: right;
+			  background: url("img/black-honeycomb.png");
+			}
 		</style> <!-- BACKGROUND COLOR-->
 	</head>
 	
@@ -51,7 +62,7 @@
 				<div class="container">
 					<h1 class="display-3"></h1>
 						<p>
-							<a href="index.php"><img src="img/combosuki.png" align="middle" height="100" ></a>
+							<a href="index.php"><img src="img/combosukibeta.png" align="middle" height="100" ></a>
 						</p>
 				</div>
 			</div>
@@ -73,6 +84,10 @@
 			?>
 			</div>
 		</main>
+		<div class="footer">
+		  <p>Created by: <a href="https://twitter.com/Ikkisoad">@Ikkisoad</a></p>
+		  <p>Buttons designed by: <a href="https://twitter.com/Makaaaaai">@Makaaaaai</a></p>
+		</div>
 	</body>
 	    <!-- Bootstrap core JavaScript
 		================================================== -->
