@@ -74,7 +74,7 @@
 				</div>
 			</div>
 			<div class="container"><p>
-				<form method="post" action="game.php?gameid=<?php echo $_GET['gameid']; ?>">
+				<form method="post" onsubmit="return confirm('Do you really want to delete this combo?');" action="game.php?gameid=<?php echo $_GET['gameid']; ?>">
 					<input type="hidden" id="action" name="action" value="0">
 					<input type="hidden" id="idcombo" name="idcombo" value="<?php echo $_GET['idcombo'] ?>">
 					<button type="submit" class="btn btn-danger">Delete</button>

@@ -115,7 +115,7 @@
 								echo '.png"> </button> ';
 							}
 						?>
-						<button type="button" style="border:#ffffff;background:none;" value="backspace"  name="no" onclick="backspace()"><img src="img/buttons/UjlgFNr.png"> </button> 
+						<button type="button" style="border:#ffffff;background:none;" value="backspace"  name="no" onclick="backspace()"><img src="img/buttons/backspace.png"> </button> 
 
 						<textarea style="background-color: #474747; color:#999999;" name="combo" class="form-control" id="comboarea" rows="4" maxlength="255" title="combo" required readonly></textarea>
 					<p>	<div class="input-group mb-3">
