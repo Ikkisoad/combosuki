@@ -12,8 +12,8 @@
     <!-- Bootstrap core CSS -->
 		<link href="css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Custom styles for this template -->
-		<link href="jumbotron.css" rel="stylesheet">
+    <!-- Custom styles for this template 
+		<link href="jumbotron.css" rel="stylesheet"> -->
 		<style>
 			body{
 				background-color: #190000;
@@ -115,12 +115,12 @@
 								echo '.png"> </button> ';
 							}
 						?>
-						<button type="button" style="border:#ffffff;background:none;" value="backspace"  name="no" onclick="backspace()"><img src="img/buttons/.png"> </button> 
-						
+						<button type="button" style="border:#ffffff;background:none;" value="backspace"  name="no" onclick="backspace()"><img src="img/buttons/UjlgFNr.png"> </button> 
+
 						<textarea style="background-color: #474747; color:#999999;" name="combo" class="form-control" id="comboarea" rows="4" maxlength="255" title="combo" required readonly></textarea>
 					<p>	<div class="input-group mb-3">
 							<div class="input-group-prepend">
-								<span class="input-group-text">Damage:  
+								<span class="input-group-text">Damage:
 							</div>
 							<input type="number" name="damage" min="0" class="input-sm">
 						</div> </p>
@@ -147,7 +147,7 @@
 									echo $resource['text_name'];
 									echo '"class="custom-select input-small">';
 									$query = "SELECT idResources_values,value FROM `resources_values` WHERE `game_resources_idgame_resources` = ".$resource['idgame_resources']." ORDER BY resources_values.order, value;";
-									
+									echo $query;
 									$result = $conn -> prepare($query);
 									$result -> execute();
 									if(!isset($_POST['type'])){echo '<option value="-">-</option>';}

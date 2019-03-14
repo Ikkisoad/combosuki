@@ -21,19 +21,19 @@
 			.jumbotron{
 				max-height: 190px;
 				background-color: #000000;
-			}		
+			}
 		</style> <!-- BACKGROUND COLOR-->
 		<?php
-			if(isset($_POST)){
+			if(isset($_POST['action'])){
 				require "server/conexao.php";
-				
+
 				if($_POST['action'] == 0){
-				
+
 					$query = "DELETE FROM `resources` WHERE `combo_idcombo` = ?";
 					$result = $conn -> prepare($query);
 					$result -> bind_param("i", $_POST['idcombo']);
 					$result -> execute();
-					
+
 					$query = "DELETE FROM `combo` WHERE `idcombo` = ?";
 					$result = $conn -> prepare($query);
 					$result -> bind_param("i", $_POST['idcombo']);
@@ -41,18 +41,18 @@
 				}
 				//UPDATE `combo` SET `type` = '3' WHERE `combo`.`idcombo` = 18;
 				if($_POST['action'] == 1){
-				
+
 					$query = "UPDATE `combo` SET `type` = '3' WHERE `combo`.`idcombo` = ?";
 					$result = $conn -> prepare($query);
 					$result -> bind_param("i", $_POST['idcombo']);
 					$result -> execute();
 				}
-				
+
 			}
 		?>
-		
+
 	</head>
-	
+
 	<body>
 		<main role="main">
 			<div class="jumbotron">
@@ -69,7 +69,7 @@
 						<button class="btn btn-secondary">Submit</button>
 						<input type="hidden" id="type" name="type" value="1">
 					</form>
-				
+
 					<form id="MyForm" method="get" action="forms.php">
 						<button class="btn btn-secondary">Search</button>
 						<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">

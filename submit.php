@@ -5,9 +5,9 @@ require "server/conexao.php";
 					if($_POST['combo'] == ''){
 						exit();
 					}
-					print_r($_POST); echo ' -> first<br>';
+					//print_r($_POST); echo ' -> first<br>';
 					$_POST = array_map("strip_tags", $_POST);
-					print_r($_POST); echo ' -> second<br>';
+					//print_r($_POST); echo ' -> second<br>';
 					$query = "INSERT INTO `combo`(`idcombo`, `combo`, `comments`, `video`, `patch`, `user_iduser`, `character_idcharacter`, `submited`, `damage`, `type`) 
 											VALUES (NULL,		?,		?,			?,			?,	NULL,			?,						?, ?, ?)";
 					$result = $conn -> prepare($query);
@@ -20,7 +20,7 @@ require "server/conexao.php";
 					$query = "SELECT text_name,type,idgame_resources FROM `game_resources` WHERE game_idgame = ".$_POST['gameid']." ORDER BY text_name;";
 					$result = $conn -> prepare($query);
 					$result -> execute();
-					print_r($_POST);
+					//print_r($_POST);
 					foreach($result -> get_result()	as $resource){
 						if($resource['type'] == 'list'){
 							$query = "INSERT INTO `resources`(`idResources`, `combo_idcombo`, `Resources_values_idResources_values`, `number_value`, `character_idcharacter`) 
@@ -54,7 +54,7 @@ require "server/conexao.php";
 							}
 						}
 					}
-					header("Location: http://localhost/fgcc/index.php");
+					//header("Location: http://localhost/fgcc/index.php");
 				}
 			
 
@@ -129,7 +129,7 @@ require "server/conexao.php";
 										echo $_GET['gameid'];
 										echo '.png ';
 									}else{
-										echo 'src="img/FGCcombos.png"';	
+										echo 'src="img/combosuki.png"';	
 									}
 								?>
 								align="middle" height="200" >

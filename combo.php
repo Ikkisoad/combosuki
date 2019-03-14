@@ -148,7 +148,7 @@ WHERE `idcombo` = ? ";
 								echo '<tr>';
 								//echo $data['combo'];
 								echo '<td>';
-								echo '<img class="img-fluid" alt="Responsive image" src=img/buttons/.png>';
+								echo '<img class="img-fluid" alt="Responsive image" src=img/buttons/UjlgFNr.png>';
 									$i = 0;
 									$l = 0;
 									//$m = 0;
