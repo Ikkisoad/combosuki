@@ -1,6 +1,6 @@
 <?php
 
-require "server/conexao.php";
+				require "server/conexao.php";
 				if(!empty($_POST)){
 					if($_POST['combo'] == ''){
 						exit();
@@ -54,11 +54,12 @@ require "server/conexao.php";
 							}
 						}
 					}
-					//header("Location: http://localhost/fgcc/index.php");
+					header("Location: combo.php?gameid=".$_POST['gameid']."&idcombo=".$comboid."");
+					//echo $comboid;
 				}
 			
 
-?>
+			?>
 
 
 <!doctype php>
@@ -138,6 +139,7 @@ require "server/conexao.php";
 				</div>
 			</div>
 			<div class="container">
+			
 			<?php
 				if(!empty($_GET)){
 					/*SELECT `idcombo`, `combo`, `comments`, `video`, `patch`, `user_iduser`, `character_idcharacter`, `submited`, `damage` FROM `combo` WHERE 1
