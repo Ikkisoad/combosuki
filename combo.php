@@ -331,71 +331,57 @@ WHERE `idcombo` = ? ";
 						echo '</td></tr>';
 					echo '</table></p>';
 				}
-				if (strpos($video, 'twitter') !== false) {
+				if($video != ''){
 					echo '<p><table>';
-						echo '<tr><td>';
-							echo 'Video:';
-						echo '</td></tr>';
-						echo '<tr><td>';
-					echo '<blockquote class="twitter-tweet" data-conversation="none" data-lang="en"><p lang="en" dir="ltr">
-					<a href="';
-					echo $video;
-					echo '"></a>
-				</blockquote>
-				<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>';
-				echo '</td></tr>';
-					echo '</table></p>';
-				}
-				
-				if (strpos($video, 'youtu') !== false) {
-					//echo $video;
-					echo '<p><table>';
-						echo '<tr><td>';
-							echo 'Video:';
-						echo '</td></tr>';
-						echo '<tr><td>';
-					preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $video, $match);
-					$youtube_id = $match[1];
-					//print_r($match);
-					//echo '<br> URL: ';
-					//echo $youtube_id;
-					$whatIWant = substr($video, strpos($video, "=") + 1);    
-					//echo '<br>what I want:';
-					//echo $whatIWant;
-					echo '<div class="embed-responsive embed-responsive-16by9">
-					<iframe class="embed-responsive-item" src="https://www.youtube.com/embed/';
-					echo $youtube_id;
-					echo '?start=';echo $whatIWant; echo '" allowfullscreen></iframe>
-				</div>';
-				echo '</td></tr>';
-					echo '</table></p>';
-				}
-				
-				if(strpos($video, 'streamable') !== false){
-					echo '<p><table>';
-						echo '<tr><td>';
-							echo 'Video:';
-						echo '</td></tr>';
-						echo '<tr><td>';
-										/*echo '<div class="embed-responsive embed-responsive-16by9">
-										<iframe class="embed-responsive-item" src="';
-										echo $video;
-										echo '" allowfullscreen></iframe>
-									</div>';*/
-									
-									echo '<div style="width: 100%; height: 0px; position: relative; padding-bottom: 56.250%;">
-					<iframe src="';
-										echo $video;
-										echo '" frameborder="0" width="100%" height="100%" allowfullscreen style="width: 100%; height: 100%; position: absolute;">
-					</iframe>
-					</div>';
+							echo '<tr><td>';
+								echo 'Video:';
+							echo '</td></tr>';
+							echo '<tr><td>';
+					if (strpos($video, 'twitter') !== false) {
+						echo '<blockquote class="twitter-tweet" data-conversation="none" data-lang="en"><p lang="en" dir="ltr">
+						<a href="';
+						echo $video;
+						echo '"></a>
+					</blockquote>
+					<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>';
+					}else if (strpos($video, 'youtu') !== false) {
+						preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $video, $match);
+						$youtube_id = $match[1];
+						//print_r($match);
+						//echo '<br> URL: ';
+						//echo $youtube_id;
+						$whatIWant = substr($video, strpos($video, "=") + 1);    
+						//echo '<br>what I want:';
+						//echo $whatIWant;
+						echo '<div class="embed-responsive embed-responsive-16by9">
+						<iframe class="embed-responsive-item" src="https://www.youtube.com/embed/';
+						echo $youtube_id;
+						echo '?start=';echo $whatIWant; echo '" allowfullscreen></iframe></div>';
+					}else if(strpos($video, 'streamable') !== false){
+											/*echo '<div class="embed-responsive embed-responsive-16by9">
+											<iframe class="embed-responsive-item" src="';
+											echo $video;
+											echo '" allowfullscreen></iframe>
+										</div>';*/
 										
-										
-										/*echo '<div style="width: 100%; height: 0px; position: relative; padding-bottom: 56.250%;"><iframe src="';
-										echo $streamable;
-										
-										echo '" frameborder="0" width="100%" height="100%" allowfullscreen style="width: 100%; height: 100%; position: absolute;"></iframe></div>';*/
-										echo '</td></tr>';
+										echo '<div style="width: 100%; height: 0px; position: relative; padding-bottom: 56.250%;">
+						<iframe src="';
+											echo $video;
+											echo '" frameborder="0" width="100%" height="100%" allowfullscreen style="width: 100%; height: 100%; position: absolute;">
+						</iframe>
+						</div>';
+											
+											
+											/*echo '<div style="width: 100%; height: 0px; position: relative; padding-bottom: 56.250%;"><iframe src="';
+											echo $streamable;
+											
+											echo '" frameborder="0" width="100%" height="100%" allowfullscreen style="width: 100%; height: 100%; position: absolute;"></iframe></div>';*/
+											
+					}else{
+						echo $video;	
+					}					
+					
+					echo '</td></tr>';
 					echo '</table></p>';
 				}
 			?>
