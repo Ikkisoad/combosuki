@@ -73,18 +73,7 @@
 				</div>
 			</div>
 			<div class="container"><p>
-				<div class="btn-group" role="group">
-					<form method="post" onsubmit="return confirm('Do you really want to delete this combo?');" action="game.php?gameid=<?php echo $_GET['gameid']; ?>">
-						<input type="hidden" id="action" name="action" value="0">
-						<input type="hidden" id="idcombo" name="idcombo" value="<?php echo $_GET['idcombo'] ?>">
-						<button type="submit" class="btn btn-danger">Delete</button>
-					</form>
-					<form method="post" onsubmit="return confirm('Are you sure you want to archive this combo?');" action="game.php?gameid=<?php echo $_GET['gameid']; ?>">
-						<input type="hidden" id="action" name="action" value="1">
-						<input type="hidden" id="idcombo" name="idcombo" value="<?php echo $_GET['idcombo'] ?>">
-						<button type="submit" class="btn btn-warning">Archive</button>
-					</form></p>
-				</div>
+				
 				<?php
 					require "server/conexao.php";
 					$_GET = array_map("strip_tags", $_GET);
@@ -140,6 +129,7 @@ WHERE `idcombo` = ? ";
 					foreach($result -> get_result() as $data){
 						//print_r($data);
 						if($id_combo != $data['idcombo']){
+							$listing_type = $data['listingtype'];
 							switch($data['listingtype']){
 								case 0:
 									echo 'Combo:<br>';
@@ -310,14 +300,56 @@ WHERE `idcombo` = ? ";
 					echo '</table></p>';
 				}
 			?>
-			<form method="post" action="forms.php?gameid=<?php echo $_GET['gameid']; ?>">
-				<input type="hidden" id="type" name="type" value="2">
-				<input type="hidden" id="idcombo" name="idcombo" value="<?php echo $id_combo ?>">
-				<input type="hidden" id="combo" name="combo" value="<?php echo $combo ?>">
-				<input type="hidden" id="comment" name="comment" value="<?php echo $comment ?>">
-				<input type="hidden" id="video" name="video" value="<?php echo $video ?>">
-				<button class="btn btn-primary">Edit</button>
-			</form>
+			<div class="btn-group" role="group">
+				<form method="post" onsubmit="return confirm('Do you really want to delete this <?php
+							switch($listing_type){
+								case 0:
+									echo 'combo';
+									break;
+								case 1:
+									echo 'blockstring';
+									break;
+								case 2:
+									echo 'mix up';
+									break;
+								case 3:
+									echo 'archive';
+									break;
+							} ?>?');" action="game.php?gameid=<?php echo $_GET['gameid']; ?>">
+					<input type="hidden" id="action" name="action" value="0">
+					<input type="hidden" id="idcombo" name="idcombo" value="<?php echo $_GET['idcombo'] ?>">
+					<button type="submit" class="btn btn-danger">Delete</button>
+				</form>
+				<form method="post" onsubmit="return confirm('Are you sure you want to archive this <?php
+							switch($listing_type){
+								case 0:
+									echo 'combo';
+									break;
+								case 1:
+									echo 'blockstring';
+									break;
+								case 2:
+									echo 'mix up';
+									break;
+								case 3:
+									echo 'archive';
+									break;
+							} ?>?');" action="game.php?gameid=<?php echo $_GET['gameid']; ?>">
+					<input type="hidden" id="action" name="action" value="1">
+					<input type="hidden" id="idcombo" name="idcombo" value="<?php echo $_GET['idcombo'] ?>">
+					<button type="submit" class="btn btn-warning">Archive</button>
+				</form></p>
+				
+				<form method="post" action="forms.php?gameid=<?php echo $_GET['gameid']; ?>">
+					<!-- <input type="hidden" name="<?php //echo $secondaryTitle; ?>" value="<?php //echo $secondaryValue; ?>"> -->
+					<input type="hidden" id="type" name="type" value="2">
+					<input type="hidden" id="idcombo" name="idcombo" value="<?php echo $id_combo ?>">
+					<input type="hidden" id="combo" name="combo" value="<?php echo $combo ?>">
+					<input type="hidden" id="comment" name="comment" value="<?php echo $comment ?>">
+					<input type="hidden" id="video" name="video" value="<?php echo $video ?>">
+					<button class="btn btn-primary">Edit</button>
+				</form>
+			</div>
 			</div>
 		</main>
 	</body>
