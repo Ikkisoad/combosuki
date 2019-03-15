@@ -84,7 +84,11 @@
 							echo '<p><select name="characterid" class="custom-select">';
 							if(!isset($_POST['type'])){echo '<option value="-">-</option>';}
 							foreach($result -> get_result() as $character){
-								echo '<option value="'.$character['idcharacter'].'">'.$character['Name'].'</option>';
+								echo '<option value="'.$character['idcharacter'].'" ';
+								if($character['idcharacter'] == $_POST['characterid']){
+									echo 'selected';
+								}
+								echo '>'.$character['Name'].'</option>';
 							}
 							echo '</select></p>';
 							
@@ -132,7 +136,14 @@
 							<div class="input-group-prepend">
 								<span class="input-group-text">Damage:
 							</div>
-							<input type="number" name="damage" min="0" class="input-sm">
+							<input type="number" name="damage" min="0" class="input-sm"<?php 
+							if(isset($_POST['type'])){
+								if($_POST['type'] == 2){
+									echo ' value="'.$_POST['damage'].'"';
+								}
+							}
+						
+						?>>
 						</div> </p>
 						
 						<?php

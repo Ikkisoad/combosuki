@@ -106,18 +106,18 @@
 					
 					
 					
-					$query = "SELECT `idcombo`,`combo`,`damage`,`value`,`idResources_values`,`number_value`,`resources`.`character_idcharacter`,`character`.`Name`, `video`, `game_resources`.`text_name`,`game_resources`.`type`, `combo`.`type` as listingtype, `combo`.`comments`,`game_resources`.`primaryORsecundary`
+					$query = "SELECT `idcombo`,`combo`,`damage`,`value`,`idResources_values`,`number_value`,`character`.`idcharacter`,`character`.`Name`, `video`, `game_resources`.`text_name`,`game_resources`.`type`, `combo`.`type` as listingtype, `combo`.`comments`,`game_resources`.`primaryORsecundary`
 FROM `combo` 
 INNER JOIN `resources` ON `combo`.`idcombo` = `resources`.`combo_idcombo` 
 LEFT JOIN `resources_values` ON `resources_values`.`idResources_values` = `resources`.`Resources_values_idResources_values` 
-LEFT JOIN `character` ON `character`.`idcharacter` = `resources`.`character_idcharacter` 
+LEFT JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` 
 LEFT JOIN `game_resources` ON `game_resources`.`idgame_resources` = `resources_values`.`game_resources_idgame_resources` 
 WHERE `idcombo` = ? ";
 					
 					$j = array();
 					$query = $query . "ORDER BY  `game_resources`.`primaryORsecundary` DESC, `idcombo`, `text_name`;"; //`character_idcharacter` DESC,
 					
-					//echo $query;
+					echo $query;
 					$result = $conn -> prepare($query);
 					$result -> bind_param("i",$_GET['idcombo']);
 					$result -> execute();
@@ -130,21 +130,24 @@ WHERE `idcombo` = ? ";
 					$secondaryNames = array();
 					
 					foreach($result -> get_result() as $data){
+						
 						//print_r($data);
 						if($id_combo != $data['idcombo']){
 							$listing_type = $data['listingtype'];
+							$character = $data['idcharacter'];
+							echo $data['Name'];
 							switch($data['listingtype']){
 								case 0:
-									echo 'Combo:<br>';
+									echo ' Combo:<br>';
 									break;
 								case 1:
-									echo 'Blockstring:<br>';
+									echo ' Blockstring:<br>';
 									break;
 								case 2:
-									echo 'Mix Up:<br>';
+									echo ' Mix Up:<br>';
 									break;
 								case 3:
-									echo 'Archive:<br>';
+									echo ' Archive:<br>';
 									break;
 							}
 							echo '</th>';
@@ -358,10 +361,12 @@ WHERE `idcombo` = ? ";
 					<?php print_r($secondaryTitle);?>
 					<!-- <input type="hidden" name="<?php //echo $secondaryTitle; ?>" value="<?php //echo $secondaryValue; ?>"> -->
 					<input type="hidden" id="type" name="type" value="2">
-					<input type="hidden" id="idcombo" name="idcombo" value="<?php echo $id_combo ?>">
-					<input type="hidden" id="combo" name="combo" value="<?php echo $combo ?>">
-					<input type="hidden" id="comment" name="comment" value="<?php echo $comment ?>">
-					<input type="hidden" id="video" name="video" value="<?php echo $video ?>">
+					<input type="hidden" id="characterid" name="characterid" value="<?php echo $character; ?>">
+					<input type="hidden" id="damage" name="damage" value="<?php echo $damage; ?>">
+					<input type="hidden" id="idcombo" name="idcombo" value="<?php echo $id_combo; ?>">
+					<input type="hidden" id="combo" name="combo" value="<?php echo $combo; ?>">
+					<input type="hidden" id="comment" name="comment" value="<?php echo $comment; ?>">
+					<input type="hidden" id="video" name="video" value="<?php echo $video; ?>">
 					<button class="btn btn-primary">Edit</button>
 				</form>
 			</div>
