@@ -37,6 +37,7 @@
 			body{
 				background-color: #00190f;
 				background: url("img/yellow-honeycomb.png");
+				color: white;
 			}
 			.jumbotron{
 				background: url("img/black-honeycomb.png");
@@ -68,18 +69,24 @@
 			</div>
 			<div class="container">
 			<?php
-				require "server/conexao.php";
-				$query = "SELECT idgame FROM game ORDER BY name;";
-				$result = $conn -> prepare($query);
-				$result -> execute();
-				
-				foreach($result -> get_result()	as $gameid){
-					echo '<a style="margin-left:5em" href=game.php?gameid=';
-					echo $gameid['idgame'];
-					echo '><img src=img/games/';
-					echo $gameid['idgame'];
-					echo '.png height=100 ';
-					echo '></a>';
+				if(!isset($_GET['about'])){
+						require "server/conexao.php";
+						$query = "SELECT idgame FROM game ORDER BY name;";
+						$result = $conn -> prepare($query);
+						$result -> execute();
+						
+						foreach($result -> get_result()	as $gameid){
+							echo '<a style="margin-left:5em" href=game.php?gameid=';
+							echo $gameid['idgame'];
+							echo '><img src=img/games/';
+							echo $gameid['idgame'];
+							echo '.png height=100 ';
+							echo '></a>';
+						}
+				}else if($_GET['about'] == 1){
+					echo 'About:<br><br><p>This application started as a fun project in the end of 2018, and the main motivation to keep at it is to help out the FGC assemble their findings and sort out the best options with a determined ser of resources.</p>';
+				}else if($_GET['about'] == 2){
+					
 				}
 			?>
 			</div>
@@ -88,6 +95,7 @@
 		  <p style="text-align: right;">Created by: <a href="https://twitter.com/Ikkisoad">@Ikkisoad</a></p>
 		  <p style="text-align: right;">Buttons designed by: <a href="https://twitter.com/Makaaaaai">@Makaaaaai</a></p>
 		  <p style="text-align: right;"><a href="https://goo.gl/forms/xzjGo1dQEGOTzZGT2">Request a new game. </a></p>
+		  <p style="text-align: middle;"><a href="index.php?about=1">About. </a></p>
 		</div>
 	</body>
 	    <!-- Bootstrap core JavaScript
