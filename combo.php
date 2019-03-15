@@ -114,7 +114,7 @@
 					
 					
 					
-					$query = "SELECT `idcombo`,`combo`,`value`,`idResources_values`,`number_value`,`resources`.`character_idcharacter`,`character`.`Name`, `video`, `game_resources`.`text_name`,`game_resources`.`type`, `combo`.`type` as listingtype, `combo`.`comments`,`game_resources`.`primaryORsecundary`
+					$query = "SELECT `idcombo`,`combo`,`damage`,`value`,`idResources_values`,`number_value`,`resources`.`character_idcharacter`,`character`.`Name`, `video`, `game_resources`.`text_name`,`game_resources`.`type`, `combo`.`type` as listingtype, `combo`.`comments`,`game_resources`.`primaryORsecundary`
 FROM `combo` 
 INNER JOIN `resources` ON `combo`.`idcombo` = `resources`.`combo_idcombo` 
 LEFT JOIN `resources_values` ON `resources_values`.`idResources_values` = `resources`.`Resources_values_idResources_values` 
@@ -192,6 +192,7 @@ WHERE `idcombo` = ? ";
 							$resource_result -> execute();
 							$i = 0;
 							echo		'<br><p><table><tr>';
+							echo '<th>Damage</th>';
 							foreach($resource_result -> get_result() as $resource){
 								if($resource['type'] == 'character'){
 									
@@ -206,7 +207,7 @@ WHERE `idcombo` = ? ";
 								}
 							}
 							echo		'</tr>';
-							echo '<br>';
+							echo '<td>'.$data['damage'].'</td>';
 							$k_res++;
 						}
 						if($data['type'] == 'list' && $data['primaryORsecundary']){
