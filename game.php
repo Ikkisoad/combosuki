@@ -16,7 +16,7 @@
 		<style>
 			body{
 				background-color: #35340a;
-				background: url("img/yellow-honeycomb.png");
+				background: url("img/red-honeycomb.png");
 				color: white;
 			}
 			.jumbotron{
