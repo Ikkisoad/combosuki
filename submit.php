@@ -159,20 +159,20 @@ idcombo IN (SELECT resources.combo_idcombo FROM resources WHERE resources.Resour
 					if(isset($_GET['listingtype'])){
 						switch($_GET['listingtype']){
 							case 0:
-								echo '<br>Combos:';
+								echo '<h2>Combos:</h2>';
 								break;
 							case 1:
-								echo '<br>Blockstrings:';
+								echo '<h2>Blockstrings:</h2>';
 								break;
 							case 2:
-								echo '<br>Mix Ups:';
+								echo '<h2>Mix Ups:</h2>';
 								break;
 							case 3:
-								echo '<br>Archives:';
+								echo '<h2>Archives:</h2>';
 								break;
 						}
 					}else{
-						echo 'Show All:<br>';
+						echo '<h2>Show All:</h2>';
 					}
 					echo '<table id="myTable">';
 					echo '<tr>';
