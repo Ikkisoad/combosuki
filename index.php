@@ -35,9 +35,16 @@
 		<link href="jumbotron.css" rel="stylesheet">
 		<style>
 			body{
+				padding: 0;
+				margin: 0;
 				background-color: #00190f;
 				background: url("img/yellow-honeycomb.png");
 				color: white;
+			}
+			.container{
+			  
+			 
+			  height: 100vh;
 			}
 			.jumbotron{
 				background: url("img/black-honeycomb.png");
@@ -45,12 +52,14 @@
 				background-color: #000000;
 			}		
 			.footer {
+				flex: 0 0 50px;
 			  position: fixed;
 			  left: 0;
 			  bottom: 0;
 			  width: 100%;
 			  background-color: black;
 			  color: white;
+			   opacity: 0.9;
 			  
 			  background: url("img/black-honeycomb.png");
 			}
@@ -67,7 +76,7 @@
 						</p>
 				</div>
 			</div>
-			<div class="container">
+			<div class="container"><div class="body">
 			<?php
 				if(!isset($_GET['about'])){
 						require "server/conexao.php";
@@ -88,15 +97,16 @@
 				}else if($_GET['about'] == 2){
 					echo '<img src="img/numpadNotationBlack.jpg">';
 				}
+				echo '<br><br><br><br><br><br>';
 			?>
-			</div>
+			</div></div>
 		</main>
 		<div class="footer">
 		  <p style="text-align: right;">Created by: <a href="https://twitter.com/Ikkisoad">@Ikkisoad</a></p>
 		  <p style="text-align: right;">Buttons designed by: <a href="https://twitter.com/Makaaaaai">@Makaaaaai</a></p>
-		  <p style="text-align: right;"><a href="https://goo.gl/forms/xzjGo1dQEGOTzZGT2">Request a new game. </a></p>
-		  <p style="text-align: middle;"><a href="index.php?about=1">About. </a></p>
-		  <p style="text-align: middle;"><a href="index.php?about=2">Combo Guidelines. </a></p>
+		  <p style="text-align: center;"><a href="https://goo.gl/forms/xzjGo1dQEGOTzZGT2">Request a new game   </a> / 
+		  <a href="index.php?about=1" style="padding-right: 5px;">About </a> / 
+		  <a href="index.php?about=2">Combo Guidelines </a></p>
 		</div>
 	</body>
 	    <!-- Bootstrap core JavaScript
