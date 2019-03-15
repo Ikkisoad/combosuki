@@ -320,25 +320,35 @@ WHERE `idcombo` = ? ";
 					<input type="hidden" id="idcombo" name="idcombo" value="<?php echo $_GET['idcombo'] ?>">
 					<button type="submit" class="btn btn-danger">Delete</button>
 				</form>
-				<form method="post" onsubmit="return confirm('Are you sure you want to archive this <?php
-							switch($listing_type){
-								case 0:
-									echo 'combo';
-									break;
-								case 1:
-									echo 'blockstring';
-									break;
-								case 2:
-									echo 'mix up';
-									break;
-								case 3:
-									echo 'archive';
-									break;
-							} ?>?');" action="game.php?gameid=<?php echo $_GET['gameid']; ?>">
-					<input type="hidden" id="action" name="action" value="1">
-					<input type="hidden" id="idcombo" name="idcombo" value="<?php echo $_GET['idcombo'] ?>">
-					<button type="submit" class="btn btn-warning">Archive</button>
-				</form></p>
+				
+				<?php
+					if($listing_type != 3){
+						echo '<form method="post" onsubmit="return confirm("Are you sure you want to archive this';
+						switch($listing_type){
+							case 0:
+								echo 'combo';
+								break;
+							case 1:
+								echo 'blockstring';
+								break;
+							case 2:
+								echo 'mix up';
+								break;
+							case 3:
+								echo 'archive';
+								break;
+						}
+						echo '?");" action="game.php?gameid=';
+						echo $_GET['gameid'];
+						echo '">
+						<input type="hidden" id="action" name="action" value="1">
+						<input type="hidden" id="idcombo" name="idcombo" value="';
+						echo $_GET['idcombo'];
+						echo '">
+						<button type="submit" class="btn btn-warning">Archive</button>
+						</form></p>';
+					}
+				?>
 				
 				<form method="post" action="forms.php?gameid=<?php echo $_GET['gameid']; ?>">
 					<!-- <input type="hidden" name="<?php //echo $secondaryTitle; ?>" value="<?php //echo $secondaryValue; ?>"> -->
