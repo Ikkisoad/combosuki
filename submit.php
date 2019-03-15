@@ -91,7 +91,7 @@
 		<meta name="Ikkisoad" content="">
 		<link rel="icon" href="img/favicon.ico">
 
-		<title>FGCC</title>
+		<title>ComboSuki</title>
     <!-- Bootstrap core CSS -->
 		<link href="css/bootstrap.min.css" rel="stylesheet">
 
