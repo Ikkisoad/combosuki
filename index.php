@@ -86,7 +86,7 @@
 				}else if($_GET['about'] == 1){
 					echo 'About:<br><br><p>This application started as a fun project in the end of 2018, and the main motivation to keep at it is to help out the FGC assemble their findings and sort out the best options with a determined set of resources.</p>';
 				}else if($_GET['about'] == 2){
-					
+					echo '<img src="img/numpadNotationBlack.jpg">';
 				}
 			?>
 			</div>
