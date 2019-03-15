@@ -101,8 +101,8 @@
 						array_push($buttonsPNG,$each['png']);
 					}
 					
-					print_r($buttonsName);
-					print_r($buttonsPNG);
+					//print_r($buttonsName);
+					//print_r($buttonsPNG);
 					$i = 0;
 					$secondaryTitle = array();
 					$secondaryValue = array();
@@ -168,7 +168,7 @@ WHERE `idcombo` = ? ";
 							echo		'<td><a href="combo.php?idcombo='.$data['idcombo'].'">'.$data['combo'].'</a></td>';*/
 							// ##################################################################################
 								echo '<tr>';
-								echo '<br>'.$data['combo'];
+								//echo '<br>'.$data['combo'];
 								echo '<td>';
 								echo '<img class="img-fluid" alt="Responsive image" src=img/buttons/UjlgFNr.png>';
 									$i = 0;
