@@ -162,17 +162,9 @@
 			
 			<?php
 				if(!empty($_GET)){
-					/*SELECT `idcombo`, `combo`, `comments`, `video`, `patch`, `user_iduser`, `character_idcharacter`, `submited`, `damage` FROM `combo` WHERE 1
-					SELECT combo,damage,value  FROM `combo` INNER JOIN resources ON combo.idcombo = resources.combo_idcombo INNER JOIN 
-					resources_values ON resources_values.idResources_values = resources.Resources_values_idResources_values 
-					WHERE `character_idcharacter` = 1 AND combo LIKE 'L%'*/
-					/*SELECT idcombo,combo,value,idResources_values,number_value, resources.character_idcharacter FROM `combo` INNER JOIN resources ON combo.idcombo = resources.combo_idcombo LEFT JOIN resources_values ON resources_values.idResources_values = resources.Resources_values_idResources_values WHERE combo LIKE 'L %' AND resources.character_idcharacter = 1 AND resources.Resources_values_idResources_values = 6*/
-					/* SELECT idcombo,combo,value,idResources_values,number_value FROM `combo` INNER JOIN resources ON combo.idcombo = resources.combo_idcombo INNER JOIN resources_values ON resources_values.idResources_values = resources.Resources_values_idResources_values WHERE idcombo IN (SELECT resources.combo_idcombo FROM resources WHERE resources.number_value >= 1) AND
-idcombo IN (SELECT resources.combo_idcombo FROM resources WHERE resources.Resources_values_idResources_values = 6)*/
-/*SELECT idcombo,combo,value,idResources_values,number_value,resources.character_idcharacter, character.Name FROM `combo` INNER JOIN resources ON combo.idcombo = resources.combo_idcombo LEFT JOIN resources_values ON resources_values.idResources_values = resources.Resources_values_idResources_values RIGHT JOIN `character` ON character.idcharacter = resources.character_idcharacter WHERE combo LIKE '%' AND idcombo IN (SELECT resources.combo_idcombo FROM resources WHERE resources.number_value >= 1) AND idcombo IN (SELECT resources.combo_idcombo FROM resources WHERE resources.Resources_values_idResources_values = 6) ORDER BY idcombo*/
 					$_GET = array_map("strip_tags", $_GET);
 					$i = 0;
-					$combo = '';
+					$parameterValue = '';
 					$parameters_counter = 0;
 					
 					$binded_parameters = array();
@@ -212,18 +204,17 @@ idcombo IN (SELECT resources.combo_idcombo FROM resources WHERE resources.Resour
 					
 					if(isset($_GET['combo'])){
 							if($_GET['combolike'] == 1 || $_GET['combolike'] == 2){
-								$combo .= '%';
+								$parameterValue .= '%';
 							}
-							$combo .= $_GET['combo'];
+							$parameterValue .= $_GET['combo'];
 							if($_GET['combolike'] == 0 || $_GET['combolike'] == 2){
-								$combo .= '%';
+								$parameterValue .= '%';
 							}
 							$query .= "AND `combo` LIKE ? ";
 							$parameter_type .= "s";
-							$binded_parameters[$parameters_counter++] = $combo;
+							$binded_parameters[$parameters_counter++] = $parameterValue;
 						
 					}
-					//$binded_parameters[$parameters_counter++] = $combo;
 					if(isset($_GET['damage'])){
 						if($_GET['damage'] != '-'){
 							$query .= "AND `damage` >= ? ";
@@ -232,28 +223,29 @@ idcombo IN (SELECT resources.combo_idcombo FROM resources WHERE resources.Resour
 						}
 					}
 					if(isset($_GET['comments'])){
-							$comment = '';
-							$comment .= '%';
-							$comment .= $_GET['comments'];
-							$comment .= '%';
-							$query .= "AND `comments` LIKE ? ";
-							$parameter_type .= "s";
-							$binded_parameters[$parameters_counter++] = $comment;
+						
+							$pieces = explode("#", $_GET['comments']);
+							for($i = 0; $i < sizeof($pieces); $i++){
+								$parameterValue = '';
+								$parameterValue .= $pieces[$i];
+								$query .= "AND `comments` LIKE ? ";
+								$parameter_type .= "s";
+								$binded_parameters[$parameters_counter++] = '%'.$parameterValue.'%';
+							}
+							
 						
 					}
 					
 					if(isset($_GET['video'])){
-							$video = '';
-							$video .= '%';
-							$video .= $_GET['video'];
-							$video .= '%';
+							$parameterValue = '';
+							$parameterValue .= '%';
+							$parameterValue .= $_GET['video'];
+							$parameterValue .= '%';
 							$query .= "AND `video` LIKE ? ";
 							$parameter_type .= "s";
-							$binded_parameters[$parameters_counter++] = $video;
+							$binded_parameters[$parameters_counter++] = $parameterValue;
 						
 					}
-					
-					//$binded_parameters[$parameters_counter++] = $_GET['damage'];
 					if(isset($_GET['listingtype'])){
 						if($_GET['listingtype'] != '-'){
 							$query .= "AND `combo`.`type` = ? ";
@@ -261,7 +253,6 @@ idcombo IN (SELECT resources.combo_idcombo FROM resources WHERE resources.Resour
 							$binded_parameters[$parameters_counter++] = $_GET['listingtype'];
 						}
 					}
-					//$binded_parameters[$parameters_counter++] = $_GET['listingtype'];
 					if(isset($_GET['characterid'])){
 						if($_GET['characterid'] != '-'){
 							$query .= "AND `combo`.`character_idcharacter` = ? ";
@@ -269,6 +260,7 @@ idcombo IN (SELECT resources.combo_idcombo FROM resources WHERE resources.Resour
 							$binded_parameters[$parameters_counter++] = $_GET['characterid'];
 						}
 					}
+					$i = 0;
 					echo '<th onclick="sortTable('; echo $i++; echo ')">'; echo 'Character</th>';
 					echo '<th onclick="sortTable('; echo $i++; echo ')">'; echo 'Combo</th>';
 					echo '<th onclick="sortTable('; echo $i++; echo ',1)">'; echo 'Damage</th>';
@@ -284,64 +276,52 @@ idcombo IN (SELECT resources.combo_idcombo FROM resources WHERE resources.Resour
 								}
 							echo ')">'; echo $resource['text_name']; echo '</th>';
 						}
-						$name = str_replace(' ', '_', $resource['text_name']);
+						$parameterValue = str_replace(' ', '_', $resource['text_name']);
 						if($resource['type'] == 'list'){
-							if(isset($_GET[$name])){
-								if($_GET[$name] != '-'){
+							if(isset($_GET[$parameterValue])){
+								if($_GET[$parameterValue] != '-'){
 									$query = $query . "AND
 	idcombo IN (SELECT resources.combo_idcombo FROM resources WHERE resources.Resources_values_idResources_values = ? ) ";
 									$parameter_type .= "i";
-									$binded_parameters[$parameters_counter++] = $_GET[$name];
+									$binded_parameters[$parameters_counter++] = $_GET[$parameterValue];
 								}
 							}
 						}else if($resource['type'] == 'character'){
-							if($_GET[$name] != '-'){
+							if($_GET[$parameterValue] != '-'){
 								$query = $query . "AND
 idcombo IN (SELECT resources.combo_idcombo FROM resources WHERE resources.character_idcharacter =  ? ) ";
 								$parameter_type .= "i";
-								$binded_parameters[$parameters_counter++] = $_GET[$name];
+								$binded_parameters[$parameters_counter++] = $_GET[$parameterValue];
 							}
 						}else if($resource['type'] == 'number'){
-							if(isset($_GET[$name])){
-								if($_GET[$name] != '-' && $_GET[$name] != ''){
+							if(isset($_GET[$parameterValue])){
+								if($_GET[$parameterValue] != '-' && $_GET[$parameterValue] != ''){
 									$query = $query . "AND idcombo IN (SELECT resources.combo_idcombo FROM resources WHERE resources.number_value >= ? ) ";
 									$parameter_type .= "d";
-									$binded_parameters[$parameters_counter++] = $_GET[$name];
+									$binded_parameters[$parameters_counter++] = $_GET[$parameterValue];
 								}
 							}
 						}
 					}
 					$query = $query . "ORDER BY damage DESC, idcombo;";
-					//echo $query;
 					echo '</tr>';
-					//echo $query; echo '<br>';
-					$a_params = array();
-					$a_params[] = & $parameter_type;
+					$parameterValue = array();
+					$parameterValue[] = & $parameter_type;
 					
 					for($i = 0; $i < $parameters_counter; $i++) {
-						/* with call_user_func_array, array params must be passed by reference */
-						$a_params[] = & $binded_parameters[$i];
+						$parameterValue[] = & $binded_parameters[$i];
 					}
-					//print_r($a_params);
 					$result = $conn -> prepare($query);
-					//print_r($a_params);echo 'HELOOOOOOOOOOOOOOOOOOOOOOOOOO<br>';
-					if($a_params[0] != ''){
+					if($parameterValue[0] != ''){
 							
-							call_user_func_array(array($result, 'bind_param'), $a_params);
+							call_user_func_array(array($result, 'bind_param'), $parameterValue);
 					}
-					
-					//$result -> bind_param($parameter_type, $binded_parameters);
 					$result -> execute();
 					echo '<br>';
-					//print_r($resource_result);
-					//print_r($result -> get_result());
 					$id_combo = -1;
 					echo '<br>';
-					//print_r($j);
 					foreach($result -> get_result() as $data){
 						if($id_combo != $data['idcombo']){
-							/*echo '<br>Array: ';
-							echo sizeof($j); echo '<br>';*/
 							if($id_combo == -1){
 									echo '<tr>';
 							}else{
@@ -354,19 +334,10 @@ idcombo IN (SELECT resources.combo_idcombo FROM resources WHERE resources.charac
 							}
 							$k = 0;
 							$id_combo = $data['idcombo'];
-							//echo '<tr>';
 							echo		'<td>'.$data['Main'].'</td>';
 							echo		'<td><a href="combo.php?gameid='.$_GET['gameid'].'&idcombo='.$data['idcombo'].'">'.$data['combo'].'</a></td>';
 							echo		'<td>'.$data['damage'].'</td>';
 						}
-							//echo		'<td><a href="combo.php?idcombo='.$data['idcombo'].'">'.$data['combo'].'</a></td>';
-						/*if($j[$k] == 'list'){
-							echo		'<td>'.$data['value'].'</td>';
-						}else if($j[$k] == 'character'){
-							echo		'<td>'.$data['Name'].'</td>';
-						}else if($j[$k] == 'number'){
-							echo		'<td>'.$data['number_value'].'</td>';
-						}*/
 						
 						while($j[$k] == 'character'){
 							if($j[$k] == 'character'){
@@ -384,12 +355,6 @@ idcombo IN (SELECT resources.combo_idcombo FROM resources WHERE resources.charac
 						
 						if($j[$k] == 'number'){
 							echo		'<td>'.$data['number_value'].'</td>';
-							/*if(!empty($data['number_value'])){
-								echo		'<td>'.$data['number_value'].'</td>';
-							}else{
-								echo		'<td>0</td>';
-								
-							}*/
 						}
 						$k++;
 					}
@@ -397,7 +362,6 @@ idcombo IN (SELECT resources.combo_idcombo FROM resources WHERE resources.charac
 					
 				
 				}
-				//echo $query;
 			?>
 			</div>
 		</main>

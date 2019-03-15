@@ -96,6 +96,7 @@
 		  <p style="text-align: right;">Buttons designed by: <a href="https://twitter.com/Makaaaaai">@Makaaaaai</a></p>
 		  <p style="text-align: right;"><a href="https://goo.gl/forms/xzjGo1dQEGOTzZGT2">Request a new game. </a></p>
 		  <p style="text-align: middle;"><a href="index.php?about=1">About. </a></p>
+		  <p style="text-align: middle;"><a href="index.php?about=2">Combo Guidelines. </a></p>
 		</div>
 	</body>
 	    <!-- Bootstrap core JavaScript
