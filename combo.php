@@ -88,12 +88,31 @@
 				<?php
 					require "server/conexao.php";
 					$_GET = array_map("strip_tags", $_GET);
+					$query = "SELECT name,png FROM `button` WHERE `game_idgame` = ? OR `game_idgame` IS NULL";
+					$result = $conn -> prepare($query);
+					$result -> bind_param("i",$_GET['gameid']);
+					$result -> execute();
+					
+					$buttonsName = array();
+					$buttonsPNG = array();
+					
+					foreach($result -> get_result() as $each){
+						array_push($buttonsName,$each['name']);
+						array_push($buttonsPNG,$each['png']);
+					}
+					
+					print_r($buttonsName);
+					print_r($buttonsPNG);
 					$i = 0;
 					$secondaryTitle = array();
 					$secondaryValue = array();
+					
+					echo array_search('5555',$buttonsName);
 					echo '<table>';
 					echo '<tr>';
 					//$query = 
+					
+					
 					
 					$query = "SELECT `idcombo`,`combo`,`value`,`idResources_values`,`number_value`,`resources`.`character_idcharacter`,`character`.`Name`, `video`, `game_resources`.`text_name`,`game_resources`.`type`, `combo`.`type` as listingtype, `combo`.`comments`,`game_resources`.`primaryORsecundary`
 FROM `combo` 
@@ -149,56 +168,57 @@ WHERE `idcombo` = ? ";
 							echo		'<td><a href="combo.php?idcombo='.$data['idcombo'].'">'.$data['combo'].'</a></td>';*/
 							// ##################################################################################
 								echo '<tr>';
-								//echo $data['combo'];
+								echo '<br>'.$data['combo'];
 								echo '<td>';
 								echo '<img class="img-fluid" alt="Responsive image" src=img/buttons/UjlgFNr.png>';
 									$i = 0;
 									$l = 0;
+									$buttonID;
 									//$m = 0;
 									$combo = $data['combo'];
-									$image = array();
+									$image = '';
 									$array = str_split($combo);
-									$letter = array();
-									unset($image);
-									unset($letter);
+									$letter = '';
 									foreach($array as $char){
+										
 											if($char != '>' && isset($char) && $char != ' '){
 												switch($char){
 													case 1:case 2:case 3:case 4:case 5:case 6:case 7:case 8:case 9:
 														if(!isset($letter)){
-															$image[$i] = $char;
+															$image .= $char; 
 															$i++;
 														}else{
-															$letter[$l] = $char;
+															$letter .= $char;
 															$l++;
 														}
 														break;
 												default:
-														$letter[$l] = $char;
+														$letter .= $char;
 														$l++;
 													break;
 												}				
-											}else if(isset($image) || isset($letter)){
+											}else if($image != '' || $letter != ''){
 												$l = $i = 0;
-												if(isset($image)){
+												if($image != ''){
 													echo '<img class="img-fluid" alt="Responsive image" src=img/buttons/';
 													/*echo $_GET['gameid'];
 													echo '/';*/
-													foreach($image as $lul){
-														echo $lul;
-													}
-													echo '.png>';
-													unset($image);
+													//echo $image;
+													$buttonID = array_search($image,$buttonsName);
+													echo $buttonsPNG[$buttonID];
+													echo '.png>'; //echo '->im here image<br>';
+													$image = '';
 												}
-												if(isset($letter)){
+												if($letter != ''){
 													echo '<img class="img-fluid" alt="Responsive image" src=img/buttons/';
 													/*echo $_GET['gameid'];
 													echo '/';*/
-													foreach($letter as $lul){
-														echo $lul;
-													}
-													echo '.png>';
-													unset($letter);
+														//echo $letter;
+														$buttonID = array_search($letter,$buttonsName);
+														echo $buttonsPNG[$buttonID];
+													
+													echo '.png>'; //echo '->im here<br>';
+													$letter = '';
 												}
 												/*$m++;
 												if($m%10 == 0){echo '<br>';}*/
@@ -206,23 +226,23 @@ WHERE `idcombo` = ? ";
 											}
 											if($char == '>'){echo '<img class="img-fluid" alt="Responsive image" src=img/buttons/gap.png>';}
 									}
-									if(isset($image)){
+									/*if($image != ''){
 										echo '<img src=img/';
-										foreach($image as $lul){
-											echo $lul;
-										}
+										
+										$buttonID = array_search($image,$buttonsName);
+										echo $buttonsPNG[$buttonID];
 										echo '.png>';
-										unset($image);
+										$image = '';
 									}
-									if(isset($letter)){
+									if($letter != ''){
 										echo '<img src=img/buttons/';
-										echo $_GET['gameid'];
-										foreach($letter as $lul){
-											echo $lul;
-										}
+										
+										$buttonID = array_search($letter,$buttonsName);
+										echo $buttonsPNG[$buttonID];
+										
 										echo '.png>';
-										unset($letter);
-									}
+										$letter = '';
+									}*/
 							//###################################################################################
 							echo		'</td></table>';
 						}
