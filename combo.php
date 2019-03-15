@@ -327,7 +327,7 @@ WHERE `idcombo` = ? ";
 							echo 'Comment:';
 						echo '</td></tr>';
 						echo '<tr><td>';
-							echo $comment;
+							echo nl2br($comment);
 						echo '</td></tr>';
 					echo '</table></p>';
 				}
