@@ -194,11 +194,6 @@ WHERE `idcombo` = ? ";
 							echo		'<br><p><table><tr>';
 							echo '<th>Damage</th>';
 							foreach($resource_result -> get_result() as $resource){
-								if($resource['type'] == 'character'){
-									
-									$j[$k_res++] = $resource['text_name'];
-									
-								}
 								if($resource['primaryORsecundary']){
 									$primaryORsecundary++;
 									echo '<th>'; echo $resource['text_name']; echo '</th>';
@@ -223,7 +218,11 @@ WHERE `idcombo` = ? ";
 						$video = $data['video'];
 						if($data['primaryORsecundary'] == 0){
 							array_push($secondaryTitle,$data['text_name']);
-							array_push($secondaryValue, $data['value']);
+							if($data['type'] == 'list'){
+								array_push($secondaryValue, $data['value']);
+							}else{
+								array_push($secondaryValue, $data['number_value']);
+							}
 						}
 					}
 					
