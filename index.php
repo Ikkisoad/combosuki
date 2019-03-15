@@ -88,7 +88,7 @@
 							echo '<a style="margin-left:5em" href=game.php?gameid=';
 							echo $gameid['idgame'];
 							echo '><img src=img/games/';
-							echo $gameid['png'];
+							echo $gameid['idgame'];
 							echo '.png height=100 ';
 							echo '></a>';
 						}
