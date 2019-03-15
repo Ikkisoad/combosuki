@@ -71,7 +71,7 @@
 			<?php
 				if(!isset($_GET['about'])){
 						require "server/conexao.php";
-						$query = "SELECT idgame FROM game ORDER BY name;";
+						$query = "SELECT idgame,png FROM game ORDER BY name;";
 						$result = $conn -> prepare($query);
 						$result -> execute();
 						
@@ -79,7 +79,7 @@
 							echo '<a style="margin-left:5em" href=game.php?gameid=';
 							echo $gameid['idgame'];
 							echo '><img src=img/games/';
-							echo $gameid['idgame'];
+							echo $gameid['png'];
 							echo '.png height=100 ';
 							echo '></a>';
 						}
