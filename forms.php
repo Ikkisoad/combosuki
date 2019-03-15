@@ -85,8 +85,12 @@
 							if(!isset($_POST['type'])){echo '<option value="-">-</option>';}
 							foreach($result -> get_result() as $character){
 								echo '<option value="'.$character['idcharacter'].'" ';
-								if($character['idcharacter'] == $_POST['characterid']){
-									echo 'selected';
+								if(isset($_POST['type'])){
+									if($_POST['type'] == 2){
+										if($character['idcharacter'] == $_POST['characterid']){
+											echo 'selected';
+										}
+									}
 								}
 								echo '>'.$character['Name'].'</option>';
 							}
@@ -161,21 +165,33 @@
 									$lap++;
 								}
 								if($resource['type'] == 'list'){
+										//print_r($_POST);
 									echo '<div class="input-group mb-3">
   <div class="input-group-prepend">
     <label class="input-group-text">'; 
+
 									echo $resource['text_name'];echo'</label></div>  <select name="';
 									echo $resource['text_name'];
+									
 									echo '"class="custom-select input-small">';
 									$query = "SELECT idResources_values,value FROM `resources_values` WHERE `game_resources_idgame_resources` = ".$resource['idgame_resources']." ORDER BY resources_values.order, value;";
-									echo $query;
+									
 									$result = $conn -> prepare($query);
 									$result -> execute();
 									if(!isset($_POST['type'])){echo '<option value="-">-</option>';}
 									foreach($result -> get_result() as $resource_value){
 										echo '<option value="';
-										echo $resource_value['idResources_values'];
-										echo '">';
+										echo $resource_value['idResources_values'].'" ';
+										if(isset($_POST['type'])){
+											if($_POST['type'] == 2){
+												$name = str_replace(' ', '_', $resource['text_name']);
+												if($_POST[$name] == $resource_value['value']){
+													echo 'selected';
+													
+												}
+											}
+										}
+										echo '>';
 										echo $resource_value['value'];
 										echo '</option>';
 									}
@@ -215,7 +231,17 @@
 											echo $resource['text_name'];
 											echo '" max="';
 											echo $resource_value['value'];
-											echo '"step=".01" > </div> </p>';
+											echo '"step=".01"' ;
+											if(isset($_POST['type'])){
+												if($_POST['type'] == 2){
+													//print_r($_POST);
+													$name = str_replace(' ', '_', $resource['text_name']);
+													//echo '<br>this is it'.$_POST[$name];
+														echo ' value="';
+														echo $_POST[$name].'"';
+												}
+											}
+											echo '> </div> </p>';
 										}
 									}
 								}

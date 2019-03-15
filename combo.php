@@ -360,13 +360,28 @@ WHERE `idcombo` = ? ";
 				<form method="post" action="forms.php?gameid=<?php echo $_GET['gameid']; ?>">
 					<?php //print_r($secondaryTitle);?>
 					<!-- <input type="hidden" name="<?php //echo $secondaryTitle; ?>" value="<?php //echo $secondaryValue; ?>"> -->
+					<?php
+						
+						for($i = 0; $i<sizeof($primaryTitle); $i++){
+								echo '<input type="hidden" name="';
+								echo $primaryTitle[$i];
+								echo '" value="';
+								echo $primaryValue[$i].'">';
+						}
+						for($i = 0; $i<sizeof($secondaryTitle); $i++){
+								echo '<input type="hidden" name="';
+								echo $secondaryTitle[$i];
+								echo '" value="';
+								echo $secondaryValue[$i].'">';
+						}
+					?>
 					<input type="hidden" id="type" name="type" value="2">
-					<input type="hidden" id="characterid" name="characterid" value="<?php echo $character; ?>">
-					<input type="hidden" id="damage" name="damage" value="<?php echo $damage; ?>">
-					<input type="hidden" id="idcombo" name="idcombo" value="<?php echo $id_combo; ?>">
-					<input type="hidden" id="combo" name="combo" value="<?php echo $combo; ?>">
-					<input type="hidden" id="comment" name="comment" value="<?php echo $comment; ?>">
-					<input type="hidden" id="video" name="video" value="<?php echo $video; ?>">
+					<input type="hidden" name="characterid" value="<?php echo $character; ?>">
+					<input type="hidden" name="damage" value="<?php echo $damage; ?>">
+					<input type="hidden" name="idcombo" value="<?php echo $id_combo; ?>">
+					<input type="hidden" name="combo" value="<?php echo $combo; ?>">
+					<input type="hidden" name="comment" value="<?php echo $comment; ?>">
+					<input type="hidden" name="video" value="<?php echo $video; ?>">
 					<button class="btn btn-primary">Edit</button>
 				</form>
 			</div>
