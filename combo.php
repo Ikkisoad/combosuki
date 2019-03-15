@@ -130,11 +130,7 @@ WHERE `idcombo` = ? ";
 					$result -> bind_param("i",$_GET['idcombo']);
 					$result -> execute();
 					echo '<th>'; 
-					//echo '<br>';
-					//print_r($result -> get_result());
 					$id_combo = -1;
-					//echo '<br>';
-					//print_r($j);
 					
 					$k_res = 0;
 					$primaryORsecundary = 0;
@@ -158,92 +154,36 @@ WHERE `idcombo` = ? ";
 									echo 'Archive:<br>';
 									break;
 							}
-							
-							//echo $data['listingtype'];
 							echo '</th>';
 							echo '</tr>';
-							$k = 0;
 							$id_combo = $data['idcombo'];
-							/*echo '<tr>';
-							echo		'<td><a href="combo.php?idcombo='.$data['idcombo'].'">'.$data['combo'].'</a></td>';*/
-							// ##################################################################################
+							// ###################################BUTTON PRINTING###############################################
 								echo '<tr>';
-								//echo '<br>'.$data['combo'];
 								echo '<td>';
-								echo '<img class="img-fluid" alt="Responsive image" src=img/buttons/UjlgFNr.png>';
-									$i = 0;
-									$l = 0;
+								echo '<img class="img-fluid" alt="Responsive image" src=img/buttons/start.png>';
 									$buttonID;
-									//$m = 0;
 									$combo = $data['combo'];
-									$image = '';
+									
 									$array = str_split($combo);
-									$letter = '';
+									$image = '';
 									foreach($array as $char){
 										
-											if($char != '>' && isset($char) && $char != ' '){
-												switch($char){
-													case 1:case 2:case 3:case 4:case 5:case 6:case 7:case 8:case 9:
-														if(!isset($letter)){
-															$image .= $char; 
-															$i++;
-														}else{
-															$letter .= $char;
-															$l++;
-														}
-														break;
-												default:
-														$letter .= $char;
-														$l++;
-													break;
-												}				
-											}else if($image != '' || $letter != ''){
-												$l = $i = 0;
-												if($image != ''){
-													echo '<img class="img-fluid" alt="Responsive image" src=img/buttons/';
-													/*echo $_GET['gameid'];
-													echo '/';*/
-													//echo $image;
-													$buttonID = array_search($image,$buttonsName);
-													echo $buttonsPNG[$buttonID];
-													echo '.png>'; //echo '->im here image<br>';
-													$image = '';
-												}
-												if($letter != ''){
-													echo '<img class="img-fluid" alt="Responsive image" src=img/buttons/';
-													/*echo $_GET['gameid'];
-													echo '/';*/
-														//echo $letter;
-														$buttonID = array_search($letter,$buttonsName);
-														echo $buttonsPNG[$buttonID];
+											if(isset($char) && $char != ' '){
+												
+												$image .= $char;
+															
+											}else if($image != ''){
+												echo '<img class="img-fluid" alt="Responsive image" src=img/buttons/';
+												
+												$buttonID = array_search($image,$buttonsName);
+												echo $buttonsPNG[$buttonID];
 													
-													echo '.png>'; //echo '->im here<br>';
-													$letter = '';
-												}
-												/*$m++;
-												if($m%10 == 0){echo '<br>';}*/
+												echo '.png>';
+												$image = '';
 												
 											}
-											if($char == '>'){echo '<img class="img-fluid" alt="Responsive image" src=img/buttons/gap.png>';}
 									}
-									/*if($image != ''){
-										echo '<img src=img/';
-										
-										$buttonID = array_search($image,$buttonsName);
-										echo $buttonsPNG[$buttonID];
-										echo '.png>';
-										$image = '';
-									}
-									if($letter != ''){
-										echo '<img src=img/buttons/';
-										
-										$buttonID = array_search($letter,$buttonsName);
-										echo $buttonsPNG[$buttonID];
-										
-										echo '.png>';
-										$letter = '';
-									}*/
-							//###################################################################################
+							//#####################################BUTTON PRINTING##############################################
 							echo		'</td></table>';
 						}
 						if($k_res == 0){
@@ -253,7 +193,6 @@ WHERE `idcombo` = ? ";
 							$i = 0;
 							echo		'<br><p><table><tr>';
 							foreach($resource_result -> get_result() as $resource){
-							//	print_r($resource); echo '<br>';
 								if($resource['type'] == 'character'){
 									
 									$j[$k_res++] = $resource['text_name'];
@@ -267,47 +206,17 @@ WHERE `idcombo` = ? ";
 								}
 							}
 							echo		'</tr>';
-							//print_r($j);
 							echo '<br>';
-							//print_r($data);
 							$k_res++;
 						}
-							//echo		'<td><a href="combo.php?idcombo='.$data['idcombo'].'">'.$data['combo'].'</a></td>';
-					//	$test_row = $data['character_idcharacter'];
-					
-						/*if($k == $primaryORsecundary){
-							echo		'</td></table>';
-							echo		'<br><p><table><tr>';
-							for($i = 0; sizeof($secondaryNames) > $i; $i++){
-								echo '<th>'; echo $secondaryNames[$i]; echo '</th>';
-							}
-							echo		'</tr>';
-						}*/
-					
-						/*if($data['type'] == ''){
-							//echo $j[$k];
-								if(!empty($data['character_idcharacter'])){
-									echo		'<td>'.$data['Name'].'</td>';
-									$k++;
-									
-								}else{
-									echo		'<td>No Assist</td>';
-									$k++;
-									
-								}
-								
-						}*/
 						if($data['type'] == 'list' && $data['primaryORsecundary']){
 							echo		'<td>'.$data['value'].'</td>';
-							//$k++;
 						}
 						
 						if($data['type'] == 'number' && $data['primaryORsecundary']){
 							echo		'<td>'.$data['number_value'].'</td>';
 							
 						}
-						$k++;
-						//echo '<tr>';
 						
 						$comment = $data['comments'];
 						$video = $data['video'];
@@ -315,11 +224,7 @@ WHERE `idcombo` = ? ";
 							array_push($secondaryTitle,$data['text_name']);
 							array_push($secondaryValue, $data['value']);
 						}
-						//echo '/<tr>';
 					}
-					/*for($k; $k<sizeof($j); $k++){
-						echo '<td></td>';
-					}*/
 					
 				//echo $query;
 					echo '</td></table><p><table>';
