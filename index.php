@@ -87,7 +87,7 @@
 		<div class="footer">
 		  <p style="text-align: right;">Created by: <a href="https://twitter.com/Ikkisoad">@Ikkisoad</a></p>
 		  <p style="text-align: right;">Buttons designed by: <a href="https://twitter.com/Makaaaaai">@Makaaaaai</a></p>
-		  <p style="text-align: right;"><a href="https://goo.gl/forms/sDs0bFBzxCajSyTC2">Request a new game. </a></p>
+		  <p style="text-align: right;"><a href="https://goo.gl/forms/xzjGo1dQEGOTzZGT2">Request a new game. </a></p>
 		</div>
 	</body>
 	    <!-- Bootstrap core JavaScript

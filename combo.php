@@ -117,7 +117,7 @@ WHERE `idcombo` = ? ";
 					$j = array();
 					$query = $query . "ORDER BY  `game_resources`.`primaryORsecundary` DESC, `idcombo`, `text_name`;"; //`character_idcharacter` DESC,
 					
-					echo $query;
+					//echo $query;
 					$result = $conn -> prepare($query);
 					$result -> bind_param("i",$_GET['idcombo']);
 					$result -> execute();
@@ -358,7 +358,7 @@ WHERE `idcombo` = ? ";
 				?>
 				
 				<form method="post" action="forms.php?gameid=<?php echo $_GET['gameid']; ?>">
-					<?php print_r($secondaryTitle);?>
+					<?php //print_r($secondaryTitle);?>
 					<!-- <input type="hidden" name="<?php //echo $secondaryTitle; ?>" value="<?php //echo $secondaryValue; ?>"> -->
 					<input type="hidden" id="type" name="type" value="2">
 					<input type="hidden" id="characterid" name="characterid" value="<?php echo $character; ?>">
