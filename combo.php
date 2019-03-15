@@ -310,6 +310,14 @@ WHERE `idcombo` = ? ";
 					echo '</table></p>';
 				}
 			?>
+			<form method="post" action="forms.php?gameid=<?php echo $_GET['gameid']; ?>">
+				<input type="hidden" id="type" name="type" value="2">
+				<input type="hidden" id="idcombo" name="idcombo" value="<?php echo $id_combo ?>">
+				<input type="hidden" id="combo" name="combo" value="<?php echo $combo ?>">
+				<input type="hidden" id="comment" name="comment" value="<?php echo $comment ?>">
+				<input type="hidden" id="video" name="video" value="<?php echo $video ?>">
+				<button class="btn btn-primary">Edit</button>
+			</form>
 			</div>
 		</main>
 	</body>

@@ -8,53 +8,73 @@
 					//print_r($_POST); echo ' -> first<br>';
 					$_POST = array_map("strip_tags", $_POST);
 					//print_r($_POST); echo ' -> second<br>';
-					$query = "INSERT INTO `combo`(`idcombo`, `combo`, `comments`, `video`, `patch`, `user_iduser`, `character_idcharacter`, `submited`, `damage`, `type`) 
-											VALUES (NULL,		?,		?,			?,			?,	NULL,			?,						?, ?, ?)";
-					$result = $conn -> prepare($query);
-					$date = date("Y-m-d H:i:s");
-					$result -> bind_param("ssssisii", $_POST['combo'], $_POST['comments'],$_POST['video'],$dbfz,$_POST['characterid'],$date, $_POST['damage'], $_POST['listingtype']);
-					$result -> execute();
-					
-					$comboid = mysqli_insert_id($conn);
-					
+					if(!isset($_POST['idcombo'])){
+						$query = "INSERT INTO `combo`(`idcombo`, `combo`, `comments`, `video`, `patch`, `user_iduser`, `character_idcharacter`, `submited`, `damage`, `type`) 
+												VALUES (NULL,		?,		?,			?,			?,	NULL,			?,						?, ?, ?)";
+						$result = $conn -> prepare($query);
+						$date = date("Y-m-d H:i:s");
+						$result -> bind_param("ssssisdi", $_POST['combo'], $_POST['comments'],$_POST['video'],$dbfz,$_POST['characterid'],$date, $_POST['damage'], $_POST['listingtype']);
+						$result -> execute();
+						
+						$comboid = mysqli_insert_id($conn);
+						
+						
+						//print_r($_POST);
+						
+						
+					}else{
+						$query = "UPDATE `combo` SET 
+						`combo`= ?,`comments`= ?,`video`= ?,`character_idcharacter`= ?, `damage`= ?,`type`= ?
+						WHERE `idcombo` = ?";
+						$result = $conn -> prepare($query);
+						//print_r($_POST);
+						$result -> bind_param("sssidii", $_POST['combo'], $_POST['comments'],$_POST['video'],$_POST['characterid'], $_POST['damage'], $_POST['listingtype'], $_POST['idcombo']);
+						$result -> execute();
+						
+						$comboid = $_POST['idcombo'];
+						
+						$query = "DELETE FROM `resources` WHERE `combo_idcombo` = ?";
+						$result = $conn -> prepare($query);
+						$result -> bind_param("i", $_POST['idcombo']);
+						$result -> execute();
+					}
 					$query = "SELECT text_name,type,idgame_resources FROM `game_resources` WHERE game_idgame = ".$_POST['gameid']." ORDER BY text_name;";
 					$result = $conn -> prepare($query);
 					$result -> execute();
-					//print_r($_POST);
 					foreach($result -> get_result()	as $resource){
-						if($resource['type'] == 'list'){
-							$query = "INSERT INTO `resources`(`idResources`, `combo_idcombo`, `Resources_values_idResources_values`, `number_value`, `character_idcharacter`) 
-										VALUES (				NULL,					?		,							?			,		NULL	, NULL)";
-							$result = $conn -> prepare($query);
-							$name = str_replace(' ', '_', $resource['text_name']);
-							$result -> bind_param("ii", $comboid, $_POST[$name]);
-							$result -> execute();
-						}else if($resource['type'] == 'character'){
-							$query = "INSERT INTO `resources`(`idResources`, `combo_idcombo`, `Resources_values_idResources_values`, `number_value`, `character_idcharacter`) 
-										VALUES (				NULL,					?		,							NULL,		NULL			, ?)";
-							$result = $conn -> prepare($query);
-							$name = str_replace(' ', '_', $resource['text_name']);
-							$result -> bind_param("ii", $comboid, $_POST[$name] );
-							$result -> execute();
-						}else if($resource['type'] == 'number'){
-							$query = "SELECT idResources_values FROM resources_values WHERE game_resources_idgame_resources = ".$resource['idgame_resources']."";
-							$result = $conn -> prepare($query);
-							$result -> execute();
-							
-							foreach($result -> get_result()	as $id){
-								
-								$query = "INSERT INTO `resources`(`idResources`, `combo_idcombo`, `Resources_values_idResources_values`, `number_value`) 
-											VALUES (				NULL,					?		,							?,		?)";
+							if($resource['type'] == 'list'){
+								$query = "INSERT INTO `resources`(`idResources`, `combo_idcombo`, `Resources_values_idResources_values`, `number_value`, `character_idcharacter`) 
+											VALUES (				NULL,					?		,							?			,		NULL	, NULL)";
 								$result = $conn -> prepare($query);
 								$name = str_replace(' ', '_', $resource['text_name']);
-								//print_r($_POST);
-								$result -> bind_param("iid", $comboid, $id['idResources_values'], $_POST[$name]);
+								$result -> bind_param("ii", $comboid, $_POST[$name]);
+								$result -> execute();
+							}else if($resource['type'] == 'character'){
+								$query = "INSERT INTO `resources`(`idResources`, `combo_idcombo`, `Resources_values_idResources_values`, `number_value`, `character_idcharacter`) 
+											VALUES (				NULL,					?		,							NULL,		NULL			, ?)";
+								$result = $conn -> prepare($query);
+								$name = str_replace(' ', '_', $resource['text_name']);
+								$result -> bind_param("ii", $comboid, $_POST[$name] );
+								$result -> execute();
+							}else if($resource['type'] == 'number'){
+								$query = "SELECT idResources_values FROM resources_values WHERE game_resources_idgame_resources = ".$resource['idgame_resources']."";
+								$result = $conn -> prepare($query);
 								$result -> execute();
 								
+								foreach($result -> get_result()	as $id){
+									
+									$query = "INSERT INTO `resources`(`idResources`, `combo_idcombo`, `Resources_values_idResources_values`, `number_value`) 
+												VALUES (				NULL,					?		,							?,		?)";
+									$result = $conn -> prepare($query);
+									$name = str_replace(' ', '_', $resource['text_name']);
+									//print_r($_POST);
+									$result -> bind_param("iid", $comboid, $id['idResources_values'], $_POST[$name]);
+									$result -> execute();
+									
+								}
 							}
 						}
-					}
-					header("Location: combo.php?gameid=".$_POST['gameid']."&idcombo=".$comboid."");
+						header("Location: combo.php?gameid=".$_POST['gameid']."&idcombo=".$comboid."");
 					//echo $comboid;
 				}
 			

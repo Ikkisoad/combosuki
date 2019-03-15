@@ -119,7 +119,14 @@
 						?>
 						<button type="button" style="border:#ffffff;background:none;" value="backspace"  name="no" onclick="backspace()"><img src="img/buttons/backspace.png"> </button> 
 
-						<textarea style="background-color: #474747; color:#999999;" name="combo" class="form-control" id="comboarea" rows="4" maxlength="255" title="combo" required readonly></textarea>
+						<textarea style="background-color: #474747; color:#999999;" name="combo" class="form-control" id="comboarea" rows="4" maxlength="255" title="combo" required readonly><?php 
+							if(isset($_POST)){
+								if($_POST['type'] == 2){
+									echo $_POST['combo'];
+								}
+							}
+						
+						?></textarea>
 					<p>	<div class="input-group mb-3">
 							<div class="input-group-prepend">
 								<span class="input-group-text">Damage:
@@ -204,9 +211,31 @@
 							echo '</p><br>';
 						?>
 						<label>Comments:</label>
-						<textarea name="comments" style="background-color: #474747; color:#999999;" class="form-control" id="exampleFormControlTextarea1" title="trabalho"></textarea></p>
+						<textarea name="comments" style="background-color: #474747; color:#999999;" class="form-control" id="exampleFormControlTextarea1" title="trabalho"><?php 
+							if(isset($_POST)){
+								if($_POST['type'] == 2){
+									echo $_POST['comment'];
+								}
+							}
+						
+						?></textarea></p>
 						<label for="exampleFormControlTextarea1">Video:</label>
-						<textarea name="video" style="background-color: #474747; color:#999999;" class="form-control" id="exampleFormControlTextarea1" rows="1" maxlength="255" title="trabalho"></textarea></p>
+						<textarea name="video" style="background-color: #474747; color:#999999;" class="form-control" id="exampleFormControlTextarea1" rows="1" maxlength="255" title="trabalho"><?php 
+							if(isset($_POST)){
+								if($_POST['type'] == 2){
+									echo $_POST['video'];
+								}
+							}
+						
+						?></textarea></p>
+						<?php 
+							if(isset($_POST)){
+								if($_POST['type'] == 2){
+									echo '<input type="hidden" id="idcombo" name="idcombo" value="'.$_POST['idcombo'].'">';
+								}
+							}
+						
+						?>
 						
 						
 						<p><button type="submit" class="btn btn-primary btn-block">Submit</button></p>
