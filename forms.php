@@ -69,6 +69,7 @@
 						<option value="1">blockstring</option>
 						<option value="2">mixup</option>
 						<option value="3">archive</option>
+						<?php if(!isset($_POST['type'])){echo '<option value="-">-</option>';} ?>
 						</select></p>
 						<?php
 							require "server/conexao.php";
@@ -120,7 +121,7 @@
 						<button type="button" style="border:#ffffff;background:none;" value="backspace"  name="no" onclick="backspace()"><img src="img/buttons/backspace.png"> </button> 
 
 						<textarea style="background-color: #474747; color:#999999;" name="combo" class="form-control" id="comboarea" rows="4" maxlength="255" title="combo" required readonly><?php 
-							if(isset($_POST)){
+							if(isset($_POST['type'])){
 								if($_POST['type'] == 2){
 									echo $_POST['combo'];
 								}
@@ -212,7 +213,7 @@
 						?>
 						<label>Comments:</label>
 						<textarea name="comments" style="background-color: #474747; color:#999999;" class="form-control" id="exampleFormControlTextarea1" title="trabalho"><?php 
-							if(isset($_POST)){
+							if(isset($_POST['type'])){
 								if($_POST['type'] == 2){
 									echo $_POST['comment'];
 								}
@@ -221,7 +222,7 @@
 						?></textarea></p>
 						<label for="exampleFormControlTextarea1">Video:</label>
 						<textarea name="video" style="background-color: #474747; color:#999999;" class="form-control" id="exampleFormControlTextarea1" rows="1" maxlength="255" title="trabalho"><?php 
-							if(isset($_POST)){
+							if(isset($_POST['type'])){
 								if($_POST['type'] == 2){
 									echo $_POST['video'];
 								}
@@ -229,7 +230,7 @@
 						
 						?></textarea></p>
 						<?php 
-							if(isset($_POST)){
+							if(isset($_POST['type'])){
 								if($_POST['type'] == 2){
 									echo '<input type="hidden" id="idcombo" name="idcombo" value="'.$_POST['idcombo'].'">';
 								}

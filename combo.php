@@ -93,6 +93,9 @@
 					//print_r($buttonsName);
 					//print_r($buttonsPNG);
 					$i = 0;
+					
+					$primaryTitle = array();
+					$primaryValue = array();
 					$secondaryTitle = array();
 					$secondaryValue = array();
 					
@@ -176,36 +179,11 @@ WHERE `idcombo` = ? ";
 							//#####################################BUTTON PRINTING##############################################
 							echo		'</td></table>';
 						}
-						if($k_res == 0){
-							$resource_result = $conn -> prepare("SELECT text_name,type,idgame_resources, primaryORsecundary FROM `game_resources` WHERE game_idgame = ? ORDER BY primaryORsecundary DESC, text_name;");
-							$resource_result -> bind_param("i",$_GET['gameid']);
-							$resource_result -> execute();
-							$i = 0;
-							echo		'<br><p><table><tr>';
-							echo '<th>Damage</th>';
-							foreach($resource_result -> get_result() as $resource){
-								if($resource['primaryORsecundary']){
-									$primaryORsecundary++;
-									echo '<th>'; echo $resource['text_name']; echo '</th>';
-								}else{
-									$secondaryNames[$i++] = $resource['text_name'];
-								}
-							}
-							echo		'</tr>';
-							echo '<td>'.$data['damage'].'</td>';
-							$k_res++;
-						}
-						if($data['type'] == 'list' && $data['primaryORsecundary']){
-							echo		'<td>'.$data['value'].'</td>';
-						}
 						
-						if($data['type'] == 'number' && $data['primaryORsecundary']){
-							echo		'<td>'.$data['number_value'].'</td>';
-							
-						}
 						
 						$comment = $data['comments'];
 						$video = $data['video'];
+						$damage = $data['damage'];
 						if($data['primaryORsecundary'] == 0){
 							array_push($secondaryTitle,$data['text_name']);
 							if($data['type'] == 'list'){
@@ -213,10 +191,36 @@ WHERE `idcombo` = ? ";
 							}else{
 								array_push($secondaryValue, $data['number_value']);
 							}
+						}else{
+							array_push($primaryTitle,$data['text_name']);
+							if($data['type'] == 'list'){
+								array_push($primaryValue, $data['value']);
+							}else{
+								array_push($primaryValue, $data['number_value']);
+							}
 						}
 					}
 					
 				//echo $query;
+				
+					echo '</td></table><p><table>';
+							echo '<tr>';
+							echo '<th>Damage</th>';
+							for($i = 0; $i<sizeof($primaryTitle); $i++){
+								echo '<th>';
+								echo $primaryTitle[$i];
+								echo '</th>';
+							}
+							echo '</tr><tr>';
+							echo '<td>'.$damage.'</td>';
+							for($i = 0; $i<sizeof($primaryTitle); $i++){
+								echo '<td>';
+								echo $primaryValue[$i];
+								echo '</td>';
+							}
+							echo '</tr>';
+					echo '</table></p>';
+				
 					echo '</td></table><p><table>';
 							echo '<tr>';
 							for($i = 0; $i<sizeof($secondaryTitle); $i++){
@@ -351,6 +355,7 @@ WHERE `idcombo` = ? ";
 				?>
 				
 				<form method="post" action="forms.php?gameid=<?php echo $_GET['gameid']; ?>">
+					<?php print_r($secondaryTitle);?>
 					<!-- <input type="hidden" name="<?php //echo $secondaryTitle; ?>" value="<?php //echo $secondaryValue; ?>"> -->
 					<input type="hidden" id="type" name="type" value="2">
 					<input type="hidden" id="idcombo" name="idcombo" value="<?php echo $id_combo ?>">

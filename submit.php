@@ -178,6 +178,9 @@ idcombo IN (SELECT resources.combo_idcombo FROM resources WHERE resources.Resour
 					$binded_parameters = array();
 					if(isset($_GET['listingtype'])){
 						switch($_GET['listingtype']){
+							case '-':
+								echo '<h2>Show All:</h2>';
+								break;
 							case 0:
 								echo '<h2>Combos:</h2>';
 								break;
