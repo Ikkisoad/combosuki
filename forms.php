@@ -195,25 +195,7 @@
 										echo $resource_value['value'];
 										echo '</option>';
 									}
-									echo '</select></div> ';// echo $query;
-								}else if($resource['type'] == 'character'){
-									echo '<label>'; echo $resource['text_name'];echo'</label> <select name="';
-									echo $resource['text_name'];
-									echo '"class="custom-select">';
-									$query = "SELECT `Name`,`idcharacter` FROM `character` WHERE game_idgame = ? ORDER BY name;";
-									$result = $conn -> prepare($query);
-									$result -> bind_param("i", $_GET['gameid']);
-									$result -> execute();
-									echo '<option value="-">None</option>';
-									foreach($result -> get_result() as $resource_value){
-										echo '<option value="';
-										echo $resource_value['idcharacter'];
-										echo '">';
-										echo $resource_value['Name'];
-										echo '</option>';
-									}
-									echo '</select> ';
-									//echo '<input type="hidden" id="gameid" name="gameid" value="">';
+									echo '</select></div> ';
 								}else if($resource['type'] == 'number'){
 									
 									$query = "SELECT idResources_values,value FROM `resources_values` WHERE `game_resources_idgame_resources` = ?;";
@@ -234,9 +216,7 @@
 											echo '"step=".01"' ;
 											if(isset($_POST['type'])){
 												if($_POST['type'] == 2){
-													//print_r($_POST);
 													$name = str_replace(' ', '_', $resource['text_name']);
-													//echo '<br>this is it'.$_POST[$name];
 														echo ' value="';
 														echo $_POST[$name].'"';
 												}
@@ -249,7 +229,7 @@
 							echo '</p><br>';
 						?>
 						<label>Comments:</label>
-						<textarea name="comments" style="background-color: #474747; color:#999999;" class="form-control" id="exampleFormControlTextarea1" title="trabalho"><?php 
+						<textarea name="comments" style="background-color: #474747; color:#999999;" class="form-control" id="exampleFormControlTextarea1" title="trabalho" <?php if(!isset($_POST['type'])){echo 'placeholder="Use # to search for multiple variables in a comment - e.g. #universal #corner"';} ?>><?php 
 							if(isset($_POST['type'])){
 								if($_POST['type'] == 2){
 									echo $_POST['comment'];
