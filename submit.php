@@ -9,11 +9,11 @@
 					$_POST = array_map("strip_tags", $_POST);
 					//print_r($_POST); echo ' -> second<br>';
 					if(!isset($_POST['idcombo'])){
-						$query = "INSERT INTO `combo`(`idcombo`, `combo`, `comments`, `video`, `patch`, `user_iduser`, `character_idcharacter`, `submited`, `damage`, `type`) 
-												VALUES (NULL,		?,		?,			?,			?,	NULL,			?,						?, ?, ?)";
+						$query = "INSERT INTO `combo`(`idcombo`, `combo`, `comments`, `video`, `user_iduser`, `character_idcharacter`, `submited`, `damage`, `type`) 
+												VALUES (NULL,		?,		?,			?,	NULL,			?,						?, ?, ?)";
 						$result = $conn -> prepare($query);
 						$date = date("Y-m-d H:i:s");
-						$result -> bind_param("ssssisdi", $_POST['combo'], $_POST['comments'],$_POST['video'],$dbfz,$_POST['characterid'],$date, $_POST['damage'], $_POST['listingtype']);
+						$result -> bind_param("sssisdi", $_POST['combo'], $_POST['comments'],$_POST['video'],$_POST['characterid'],$date, $_POST['damage'], $_POST['listingtype']);
 						$result -> execute();
 						
 						$comboid = mysqli_insert_id($conn);
@@ -42,21 +42,14 @@
 					$result = $conn -> prepare($query);
 					$result -> execute();
 					foreach($result -> get_result()	as $resource){
-							if($resource['type'] == 'list'){
-								$query = "INSERT INTO `resources`(`idResources`, `combo_idcombo`, `Resources_values_idResources_values`, `number_value`, `character_idcharacter`) 
-											VALUES (				NULL,					?		,							?			,		NULL	, NULL)";
+							if($resource['type'] == 1){
+								$query = "INSERT INTO `resources`(`idResources`, `combo_idcombo`, `Resources_values_idResources_values`, `number_value`) 
+											VALUES (				NULL,					?		,							?			,		NULL)";
 								$result = $conn -> prepare($query);
 								$name = str_replace(' ', '_', $resource['text_name']);
 								$result -> bind_param("ii", $comboid, $_POST[$name]);
 								$result -> execute();
-							}else if($resource['type'] == 'character'){
-								$query = "INSERT INTO `resources`(`idResources`, `combo_idcombo`, `Resources_values_idResources_values`, `number_value`, `character_idcharacter`) 
-											VALUES (				NULL,					?		,							NULL,		NULL			, ?)";
-								$result = $conn -> prepare($query);
-								$name = str_replace(' ', '_', $resource['text_name']);
-								$result -> bind_param("ii", $comboid, $_POST[$name] );
-								$result -> execute();
-							}else if($resource['type'] == 'number'){
+							}else if($resource['type'] == 2){
 								$query = "SELECT idResources_values FROM resources_values WHERE game_resources_idgame_resources = ".$resource['idgame_resources']."";
 								$result = $conn -> prepare($query);
 								$result -> execute();
@@ -277,13 +270,13 @@
 						if($resource['primaryORsecundary'] == 1){
 							$j[$k++] = $resource['type'];
 							echo '<th onclick="sortTable('; echo $i++; 
-								if($resource['type'] == 'number'){
+								if($resource['type'] == 2){
 									echo ',1';
 								}
 							echo ')">'; echo $resource['text_name']; echo '</th>';
 						}
 						$parameterValue = str_replace(' ', '_', $resource['text_name']);
-						if($resource['type'] == 'list'){
+						if($resource['type'] == 1){
 							if(isset($_GET[$parameterValue])){
 								if($_GET[$parameterValue] != '-'){
 									$query = $query . "AND
@@ -292,14 +285,7 @@
 									$binded_parameters[$parameters_counter++] = $_GET[$parameterValue];
 								}
 							}
-						}else if($resource['type'] == 'character'){
-							if($_GET[$parameterValue] != '-'){
-								$query = $query . "AND
-idcombo IN (SELECT resources.combo_idcombo FROM resources WHERE resources.character_idcharacter =  ? ) ";
-								$parameter_type .= "i";
-								$binded_parameters[$parameters_counter++] = $_GET[$parameterValue];
-							}
-						}else if($resource['type'] == 'number'){
+						}else if($resource['type'] == 2){
 							if(isset($_GET[$parameterValue])){
 								if($_GET[$parameterValue] != '-' && $_GET[$parameterValue] != ''){
 									$query = $query . "AND idcombo IN (SELECT resources.combo_idcombo FROM resources WHERE resources.number_value >= ? ) ";

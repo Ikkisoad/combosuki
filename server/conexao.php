@@ -1,12 +1,12 @@
 <?php
        // $db_name="mydb";
-		$db_name="FGCC";
-        $mysql_user = "cliente_premium";
+		$db_name="combosuki";
+       /* $mysql_user = "cliente_premium";
         $mysql_pass = "cliente_premium";
-        $server_name = "artspon.ddns.net";
-		/*$mysql_user = "root";
+        $server_name = "artspon.ddns.net";*/
+		$mysql_user = "root";
         $mysql_pass = "";
-        $server_name = "localhost:3307";*/
+        $server_name = "localhost:3307";
 
         $conn = mysqli_connect($server_name, $mysql_user, $mysql_pass,$db_name);
 		

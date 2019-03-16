@@ -190,14 +190,14 @@ WHERE `idcombo` = ? ";
 						$damage = $data['damage'];
 						if($data['primaryORsecundary'] == 0){
 							array_push($secondaryTitle,$data['text_name']);
-							if($data['type'] == 'list'){
+							if($data['type'] == 1){
 								array_push($secondaryValue, $data['value']);
 							}else{
 								array_push($secondaryValue, $data['number_value']);
 							}
 						}else{
 							array_push($primaryTitle,$data['text_name']);
-							if($data['type'] == 'list'){
+							if($data['type'] == 1){
 								array_push($primaryValue, $data['value']);
 							}else{
 								array_push($primaryValue, $data['number_value']);

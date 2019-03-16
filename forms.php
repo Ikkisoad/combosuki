@@ -164,7 +164,7 @@
 									echo '<br><br>';
 									$lap++;
 								}
-								if($resource['type'] == 'list'){
+								if($resource['type'] == 1){
 										//print_r($_POST);
 									echo '<div class="input-group mb-3">
   <div class="input-group-prepend">
@@ -198,7 +198,7 @@
 										echo '</option>';
 									}
 									echo '</select></div> ';
-								}else if($resource['type'] == 'number'){
+								}else if($resource['type'] == 2){
 									
 									$query = "SELECT idResources_values,value FROM `resources_values` WHERE `game_resources_idgame_resources` = ?;";
 									$result = $conn -> prepare($query);
