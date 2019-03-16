@@ -163,6 +163,12 @@
 			<?php
 				if(!empty($_GET)){
 					$_GET = array_map("strip_tags", $_GET);
+					if (isset($_GET["page"])) { $page  = $_GET["page"]; } else { $page=0; };
+					$query = "SELECT COUNT(`idgame_resources`) as total FROM `game_resources` WHERE `game_idgame` = ".$_GET['gameid']." AND `primaryORsecundary` = 1";
+					$result = mysqli_query($conn, $query) or die ("Shit".mysqli_error($conn));
+					$i = mysqli_fetch_assoc($result);
+					$limit = $i['total'] * $page * 50;
+					$offset = $i['total'] * 50;
 					$i = 0;
 					$parameterValue = '';
 					$parameters_counter = 0;
@@ -303,7 +309,13 @@ idcombo IN (SELECT resources.combo_idcombo FROM resources WHERE resources.charac
 							}
 						}
 					}
-					$query = $query . "ORDER BY damage DESC, idcombo;";
+					$query = $query . "ORDER BY damage DESC, idcombo  LIMIT ?, ?;";
+					//echo $query;
+					$parameter_type .= "i";
+					$binded_parameters[$parameters_counter++] = $limit;
+					$parameter_type .= "i";
+					$binded_parameters[$parameters_counter++] = $offset;
+
 					echo '</tr>';
 					$parameterValue = array();
 					$parameterValue[] = & $parameter_type;
@@ -362,8 +374,34 @@ idcombo IN (SELECT resources.combo_idcombo FROM resources WHERE resources.charac
 					
 				
 				}
+				 // calculate total pages with results
 			?>
 			</div>
+			<a href="submit.php?page=<?php
+				if($page > 0){
+					echo $page - 1;
+				}
+				foreach ($_GET as $key => $entry){
+					if($entry != '-' && $entry != '' && $key != 'page'){
+						echo '&';
+						echo $key;
+						echo '=';
+						echo $entry;
+					}
+				}
+			 ?>" style="padding-right: 5px;">Previous </a>/
+			 <a href="submit.php?page=<?php
+				echo $page + 1;
+				foreach ($_GET as $key => $entry){
+					if($entry != '-' && $entry != '' && $key != 'page'){
+						echo '&';
+						echo $key;
+						echo '=';
+						echo $entry;
+					}
+					
+				}			 
+			 ?>" style="padding-right: 5px;">Next </a>
 		</main>
 	</body>
 	    <!-- Bootstrap core JavaScript

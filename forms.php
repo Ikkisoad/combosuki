@@ -185,9 +185,11 @@
 										if(isset($_POST['type'])){
 											if($_POST['type'] == 2){
 												$name = str_replace(' ', '_', $resource['text_name']);
-												if($_POST[$name] == $resource_value['value']){
-													echo 'selected';
-													
+												if(isset($_POST[$name])){
+													if($_POST[$name] == $resource_value['value']){
+														echo 'selected';
+														
+													}
 												}
 											}
 										}
@@ -217,8 +219,10 @@
 											if(isset($_POST['type'])){
 												if($_POST['type'] == 2){
 													$name = str_replace(' ', '_', $resource['text_name']);
-														echo ' value="';
-														echo $_POST[$name].'"';
+														if(isset($_POST[$name])){
+															echo ' value="';
+															echo $_POST[$name].'"';
+														}
 												}
 											}
 											echo '> </div> </p>';
