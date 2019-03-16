@@ -169,6 +169,7 @@ WHERE `idcombo` = ? ";
 												$image .= $char;
 															
 											}else if($image != ''){
+												if($image == '->'){echo '<br>';}
 												echo '<img class="img-fluid" alt="Responsive image" src=img/buttons/';
 												
 												$buttonID = array_search($image,$buttonsName);
