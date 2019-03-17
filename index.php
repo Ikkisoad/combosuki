@@ -93,8 +93,10 @@
 							echo '></a>';
 						}
 				}else if($_GET['about'] == 1){
-					echo 'About:<br><br><p>This application started as a fun project in the end of 2018, and the main motivation to keep at it is to help out the FGC assemble their findings and sort out the best options with a determined set of resources.</p>';
-					echo 'Hopefully with this database we will be able to keep the best combos know, without losing them to tweeter feeds and other social media.';
+					echo '<h2>About the application:</h2><p>This application started as a fun project in the end of 2018, and the main motivation to keep at it is to help out the FGC assemble their findings and sort out the best options with a determined set of resources.</p>';
+					echo 'Hopefully with this database we will be able to keep the best combos known, without losing them to tweeter feeds.';
+					echo '<p><h2>About me:</h2>Brazilian Computer Science stundent that spends most of his time playing games.<br>My first fighting game was SFV, one year after DBFZ came out and it became my main game. I play 21, Kid Buu and Frieza.';
+					echo '<br>';
 				}else if($_GET['about'] == 2){
 					echo '<img src="img/numpadNotationBlack.jpg">';
 				}
