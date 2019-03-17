@@ -96,7 +96,7 @@
 							}
 							echo '</select></p>';
 							
-							$query = "SELECT name,png,game_idgame FROM `button` WHERE game_idgame = ? OR game_idgame is NULL ORDER BY game_idgame, idbutton";
+							$query = "SELECT name,png,game_idgame FROM `button` WHERE game_idgame = ? OR game_idgame is NULL ORDER BY game_idgame, `order`, idbutton";
 							$result = $conn -> prepare($query);
 							$result -> bind_param("i", $_GET['gameid']);
 							$result -> execute();
