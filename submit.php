@@ -301,7 +301,7 @@ AND `character`.`game_idgame` = ? ";
 						}
 					}
 					$query = $query . "ORDER BY damage DESC, idcombo, text_name  LIMIT ?, ?;";
-					echo $query;
+					//echo $query;
 					$parameter_type .= "i";
 					$binded_parameters[$parameters_counter++] = $limit;
 					$parameter_type .= "i";
