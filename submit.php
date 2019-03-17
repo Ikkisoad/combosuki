@@ -191,7 +191,7 @@
 					}
 					echo '<table id="myTable">';
 					echo '<tr>';
-					$query = "SELECT text_name,type,idgame_resources,primaryORsecundary FROM `game_resources` WHERE game_idgame = ? AND `primaryORsecundary` = 1 ORDER BY text_name;";
+					$query = "SELECT text_name,type,idgame_resources,primaryORsecundary FROM `game_resources` WHERE game_idgame = ? ORDER BY text_name;";
 					$resource_result = $conn -> prepare($query);
 					$resource_result -> bind_param("i", $_GET['gameid']);
 					$resource_result -> execute();
@@ -293,15 +293,15 @@ AND `character`.`game_idgame` = ? ";
 						}else if($resource['type'] == 2){
 							if(isset($_GET[$parameterValue])){
 								if($_GET[$parameterValue] != '-' && $_GET[$parameterValue] != ''){
-									$query = $query . "AND idcombo IN (SELECT resources.combo_idcombo FROM resources WHERE resources.number_value >= ? ) ";
+									$query = $query . "AND idcombo IN (SELECT resources.combo_idcombo FROM resources WHERE resources.number_value <= ? ) ";
 									$parameter_type .= "d";
 									$binded_parameters[$parameters_counter++] = $_GET[$parameterValue];
 								}
 							}
 						}
 					}
-					$query = $query . "ORDER BY damage DESC, text_name, idcombo  LIMIT ?, ?;";
-					//echo $query;
+					$query = $query . "ORDER BY damage DESC, idcombo, text_name  LIMIT ?, ?;";
+					echo $query;
 					$parameter_type .= "i";
 					$binded_parameters[$parameters_counter++] = $limit;
 					$parameter_type .= "i";
