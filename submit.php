@@ -3,6 +3,7 @@
 				require "server/conexao.php";
 				if(!empty($_POST)){
 					if($_POST['combo'] == ''){
+						header("Location: index.php");
 						exit();
 					}
 					//print_r($_POST); echo ' -> first<br>';
@@ -190,14 +191,18 @@
 					}
 					echo '<table id="myTable">';
 					echo '<tr>';
-					$query = "SELECT text_name,type,idgame_resources,primaryORsecundary FROM `game_resources` WHERE game_idgame = ? ORDER BY text_name;";
+					$query = "SELECT text_name,type,idgame_resources,primaryORsecundary FROM `game_resources` WHERE game_idgame = ? AND `primaryORsecundary` = 1 ORDER BY text_name;";
 					$resource_result = $conn -> prepare($query);
 					$resource_result -> bind_param("i", $_GET['gameid']);
 					$resource_result -> execute();
-					$query = "SELECT `Main`.`Name` AS `Main`,`game_resources`.`text_name`,`combo`.`character_idcharacter`,`idcombo`,`combo`,`damage`,`value`,`idResources_values`,`number_value`,`resources`.`character_idcharacter`,`character`.`Name` FROM `combo` INNER JOIN `resources` ON `combo`.`idcombo` = `resources`.`combo_idcombo` LEFT JOIN `resources_values` ON `resources_values`.`idResources_values` = `resources`.`Resources_values_idResources_values` LEFT JOIN `character` 
-					ON `character`.`idcharacter` = `resources`.`character_idcharacter` LEFT JOIN `character` AS `Main` ON `Main`.`idcharacter` = `combo`.`character_idcharacter`
-					LEFT JOIN `game_resources` ON `game_resources`.`idgame_resources` = `resources_values`.`game_resources_idgame_resources` ";
-					$query = $query . "WHERE  `game_resources`.`primaryORsecundary` = 1 AND `Main`.`game_idgame` = ? ";
+					$query = "SELECT `character`.`Name`,`game_resources`.`text_name`,`combo`.`character_idcharacter`,`idcombo`,`combo`,`damage`,`value`,`idResources_values`,`number_value`
+FROM `combo` 
+INNER JOIN `resources` ON `combo`.`idcombo` = `resources`.`combo_idcombo` 
+LEFT JOIN `resources_values` ON `resources_values`.`idResources_values` = `resources`.`Resources_values_idResources_values`
+LEFT JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` 
+LEFT JOIN `game_resources` ON `game_resources`.`idgame_resources` = `resources_values`.`game_resources_idgame_resources` 
+WHERE `game_resources`.`primaryORsecundary` = 1 
+AND `character`.`game_idgame` = ? ";
 					$parameter_type = "i";
 					$binded_parameters[$parameters_counter++] = $_GET['gameid'];
 					
@@ -295,7 +300,7 @@
 							}
 						}
 					}
-					$query = $query . "ORDER BY damage DESC, idcombo  LIMIT ?, ?;";
+					$query = $query . "ORDER BY damage DESC, text_name, idcombo  LIMIT ?, ?;";
 					//echo $query;
 					$parameter_type .= "i";
 					$binded_parameters[$parameters_counter++] = $limit;
@@ -332,26 +337,15 @@
 							}
 							$k = 0;
 							$id_combo = $data['idcombo'];
-							echo		'<td>'.$data['Main'].'</td>';
+							echo		'<td>'.$data['Name'].'</td>';
 							echo		'<td><a href="combo.php?gameid='.$_GET['gameid'].'&idcombo='.$data['idcombo'].'">'.$data['combo'].'</a></td>';
 							echo		'<td>'.$data['damage'].'</td>';
 						}
-						
-						while($j[$k] == 'character'){
-							if($j[$k] == 'character'){
-								if(!empty($data['character_idcharacter'])){
-									echo		'<td>'.$data['Name'].'</td>';
-								}else{
-									echo		'<td>No Assist</td>';
-									$k++;
-								}
-							}
-						}
-						if($j[$k] == 'list'){
+						if($j[$k] == 1){
 							echo		'<td>'.$data['value'].'</td>';
 						}
 						
-						if($j[$k] == 'number'){
+						if($j[$k] == 2){
 							echo		'<td>'.$data['number_value'].'</td>';
 						}
 						$k++;

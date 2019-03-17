@@ -108,7 +108,7 @@
 					<p><h2>Latest submissions</h2></p>
 					<?php
 						require "server/conexao.php";
-						$query = "SELECT idcombo,Name,combo,damage,type FROM `combo` INNER JOIN `character` ON `combo`.`character_idcharacter` = `character`.`idcharacter` WHERE `character`.`game_idgame` = ? ORDER BY submited DESC";
+						$query = "SELECT idcombo,Name,combo,damage,type FROM `combo` INNER JOIN `character` ON `combo`.`character_idcharacter` = `character`.`idcharacter` WHERE `character`.`game_idgame` = ? ORDER BY submited DESC LIMIT 0,25";
 						$result = $conn -> prepare($query);
 						$result -> bind_param("i",$_GET['gameid']);
 						$result -> execute();

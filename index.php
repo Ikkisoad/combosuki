@@ -80,7 +80,7 @@
 			<?php
 				if(!isset($_GET['about'])){
 						require "server/conexao.php";
-						$query = "SELECT idgame FROM game ORDER BY name;";
+						$query = "SELECT idgame FROM game WHERE complete = 1 ORDER BY name;";
 						$result = $conn -> prepare($query);
 						$result -> execute();
 						

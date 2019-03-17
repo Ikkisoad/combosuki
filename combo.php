@@ -206,7 +206,7 @@ WHERE `idcombo` = ? ";
 					}
 					
 				//echo $query;
-				
+				if(!isset($damage)){ exit();}
 					echo '</td></table><p><table>';
 							echo '<tr>';
 							echo '<th>Damage</th>';
@@ -240,6 +240,8 @@ WHERE `idcombo` = ? ";
 							}
 							echo '</tr>';
 					echo '</table></p>';
+				
+				
 				?>
 			
 			<!-- </tr></table></p> -->
@@ -307,6 +309,7 @@ WHERE `idcombo` = ? ";
 					echo '</td></tr>';
 					echo '</table></p>';
 				}
+			
 			?>
 			<div class="btn-group" role="group">
 				<form method="post" onsubmit="return confirm('Do you really want to delete this <?php
@@ -323,7 +326,8 @@ WHERE `idcombo` = ? ";
 								case 3:
 									echo 'archive';
 									break;
-							} ?>?');" action="game.php?gameid=<?php echo $_GET['gameid']; ?>">
+							}
+						?>?');" action="game.php?gameid=<?php echo $_GET['gameid']; ?>">
 					<input type="hidden" id="action" name="action" value="0">
 					<input type="hidden" id="idcombo" name="idcombo" value="<?php echo $_GET['idcombo'] ?>">
 					<button type="submit" class="btn btn-danger">Delete</button>

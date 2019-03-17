@@ -4,7 +4,8 @@
         $mysql_user = "cliente_premium";
         $mysql_pass = "cliente_premium";
         $server_name = "artspon.ddns.net";
-		/*$mysql_user = "root";
+		/*
+		$mysql_user = "root";
         $mysql_pass = "";
         $server_name = "localhost:3307";*/
 
