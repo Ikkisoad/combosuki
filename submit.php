@@ -137,7 +137,14 @@
 				<div class="container">
 					<h1 class="display-3"></h1>
 						<p>
-							<a href="index.php"><img 
+							<a href="<?php
+									if(!empty($_GET)){
+										echo 'game.php?gameid=';
+										echo $_GET['gameid'];
+									}else{
+										echo 'index.php';	
+									}
+								?>"><img 
 								<?php
 									if(!empty($_GET)){
 										echo 'src=img/games/';
