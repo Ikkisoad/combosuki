@@ -239,8 +239,18 @@
 									echo $_POST['comment'];
 								}
 							}
+							
 						
 						?></textarea></p>
+						
+						<?php
+							if(!isset($_POST['type'])){
+								echo '<label>Comment does not have:</label>';
+								echo '<textarea name="notcomments" style="background-color: #474747; color:#999999;" class="form-control" id="exampleFormControlTextarea1" placeholder="Use # to add multiple variables - e.g. #universal #corner"></textarea>';
+							}
+						
+						?>
+						
 						<label for="exampleFormControlTextarea1">Video:</label>
 						<textarea name="video" style="background-color: #474747; color:#999999;" class="form-control" id="exampleFormControlTextarea1" rows="1" maxlength="255" title="trabalho"><?php 
 							if(isset($_POST['type'])){

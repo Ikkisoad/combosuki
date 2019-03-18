@@ -240,6 +240,20 @@ AND `character`.`game_idgame` = ? ";
 						
 					}
 					
+					if(isset($_GET['notcomments'])){
+						
+							$pieces = explode("#", $_GET['notcomments']);
+							for($i = 0; $i < sizeof($pieces); $i++){
+								$parameterValue = '';
+								$parameterValue .= $pieces[$i];
+								$query .= "AND `comments` NOT LIKE ? ";
+								$parameter_type .= "s";
+								$binded_parameters[$parameters_counter++] = '%'.$parameterValue.'%';
+							}
+							
+						
+					}
+					
 					if(isset($_GET['video'])){
 							$parameterValue = '';
 							$parameterValue .= '%';
