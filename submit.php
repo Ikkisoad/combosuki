@@ -165,11 +165,20 @@
 				if(!empty($_GET)){
 					$_GET = array_map("strip_tags", $_GET);
 					if (isset($_GET["page"])) { $page  = $_GET["page"]; } else { $page=0; };
-					$query = "SELECT COUNT(`idgame_resources`) as total FROM `game_resources` WHERE `game_idgame` = ".$_GET['gameid']." AND `primaryORsecundary` = 1";
-					$result = mysqli_query($conn, $query) or die ("Shit".mysqli_error($conn));
-					$i = mysqli_fetch_assoc($result);
-					$limit = $i['total'] * $page * 50;
-					$offset = $i['total'] * 50;
+					$query = "SELECT COUNT(`idgame_resources`) as total FROM `game_resources` WHERE `game_idgame` = ? AND `primaryORsecundary` = 1";
+					
+					$result = $conn -> prepare($query);
+					$result -> bind_param("i",$_GET['gameid']);
+					$result -> execute();
+					
+					/*$result = mysqli_query($conn, $query) or die ("Shit".mysqli_error($conn));
+					$i = mysqli_fetch_assoc($result);*/
+					
+					foreach($result -> get_result() as $each){
+						$num_rows = $each['total'];
+					}
+					$limit = $num_rows * $page * 50;
+					$offset = $num_rows * 50;
 					$i = 0;
 					$parameterValue = '';
 					$parameters_counter = 0;
@@ -342,15 +351,19 @@ AND `character`.`game_idgame` = ? ";
 						$parameterValue[] = & $binded_parameters[$i];
 					}
 					$result = $conn -> prepare($query);
+					
 					if($parameterValue[0] != ''){
 							
 							call_user_func_array(array($result, 'bind_param'), $parameterValue);
 					}
 					$result -> execute();
+					
 					echo '<br>';
 					$id_combo = -1;
 					echo '<br>';
+					$i = 0;
 					foreach($result -> get_result() as $data){
+						$i++;
 						if($id_combo != $data['idcombo']){
 							if($id_combo == -1){
 									echo '<tr>';
@@ -378,37 +391,46 @@ AND `character`.`game_idgame` = ? ";
 						$k++;
 					}
 					
-					
+					$i = $i / $num_rows;
 				
 				}
 				 // calculate total pages with results
 			?>
 			</div>
-			<a href="submit.php?page=<?php
+			<?php
 				if($page > 0){
-					echo $page - 1;
-				}
-				foreach ($_GET as $key => $entry){
-					if($entry != '-' && $entry != '' && $key != 'page'){
-						echo '&';
-						echo $key;
-						echo '=';
-						echo $entry;
-					}
-				}
-			 ?>" style="padding-right: 5px;">Previous </a>/
-			 <a href="submit.php?page=<?php
-				echo $page + 1;
-				foreach ($_GET as $key => $entry){
-					if($entry != '-' && $entry != '' && $key != 'page'){
-						echo '&';
-						echo $key;
-						echo '=';
-						echo $entry;
-					}
+					echo '<a href="submit.php?page=';
 					
-				}			 
-			 ?>" style="padding-right: 5px;">Next </a>
+						echo $page - 1;
+					
+					foreach ($_GET as $key => $entry){
+						if($entry != '-' && $entry != '' && $key != 'page'){
+							echo '&';
+							echo $key;
+							echo '=';
+							echo $entry;
+						}
+					}
+					echo '" style="padding-right: 5px;">Previous </a>';
+				}
+				if($i == 50 && $page > 0){echo '/';}
+			 ?>
+			 <?php
+				if($i == 50){
+					echo '<a href="submit.php?page=';
+					echo $page + 1;
+					foreach ($_GET as $key => $entry){
+						if($entry != '-' && $entry != '' && $key != 'page'){
+							echo '&';
+							echo $key;
+							echo '=';
+							echo $entry;
+						}
+						
+					}
+					echo '" style="padding-right: 5px;">Next </a>';
+				}
+			 ?>
 		</main>
 	</body>
 	    <!-- Bootstrap core JavaScript
