@@ -214,6 +214,7 @@ AND `character`.`game_idgame` = ? ";
 					$binded_parameters[$parameters_counter++] = $_GET['gameid'];
 					
 					if(isset($_GET['combo'])){
+						if($_GET['combo'] != ''){
 							if($_GET['combolike'] == 1 || $_GET['combolike'] == 2){
 								$parameterValue .= '%';
 							}
@@ -224,7 +225,7 @@ AND `character`.`game_idgame` = ? ";
 							$query .= "AND `combo` LIKE ? ";
 							$parameter_type .= "s";
 							$binded_parameters[$parameters_counter++] = $parameterValue;
-						
+						}
 					}
 					if(isset($_GET['damage'])){
 						if($_GET['damage'] != ''){
@@ -237,11 +238,13 @@ AND `character`.`game_idgame` = ? ";
 						if($_GET['comments'] != ''){
 							$pieces = explode("#", $_GET['comments']);
 							for($i = 0; $i < sizeof($pieces); $i++){
-								$parameterValue = '';
-								$parameterValue .= $pieces[$i];
-								$query .= "AND `comments` LIKE ? ";
-								$parameter_type .= "s";
-								$binded_parameters[$parameters_counter++] = '%'.$parameterValue.'%';
+								if($pieces[$i] != ''){
+									$parameterValue = '';
+									$parameterValue .= $pieces[$i];
+									$query .= "AND `comments` LIKE ? ";
+									$parameter_type .= "s";
+									$binded_parameters[$parameters_counter++] = '%'.$parameterValue.'%';
+								}
 							}
 						}
 						
@@ -251,17 +254,20 @@ AND `character`.`game_idgame` = ? ";
 						if($_GET['notcomments'] != ''){
 							$pieces = explode("#", $_GET['notcomments']);
 							for($i = 0; $i < sizeof($pieces); $i++){
-								$parameterValue = '';
-								$parameterValue .= $pieces[$i];
-								$query .= "AND `comments` NOT LIKE ? ";
-								$parameter_type .= "s";
-								$binded_parameters[$parameters_counter++] = '%'.$parameterValue.'%';
+								if($pieces[$i] != ''){
+									$parameterValue = '';
+									$parameterValue .= $pieces[$i];
+									$query .= "AND `comments` NOT LIKE ? ";
+									$parameter_type .= "s";
+									$binded_parameters[$parameters_counter++] = '%'.$parameterValue.'%';
+								}
 							}
 						}
 						
 					}
 					
 					if(isset($_GET['video'])){
+						if($_GET['video'] != ''){
 							$parameterValue = '';
 							$parameterValue .= '%';
 							$parameterValue .= $_GET['video'];
@@ -269,7 +275,7 @@ AND `character`.`game_idgame` = ? ";
 							$query .= "AND `video` LIKE ? ";
 							$parameter_type .= "s";
 							$binded_parameters[$parameters_counter++] = $parameterValue;
-						
+						}
 					}
 					if(isset($_GET['listingtype'])){
 						if($_GET['listingtype'] != '-'){
