@@ -227,14 +227,14 @@ AND `character`.`game_idgame` = ? ";
 						
 					}
 					if(isset($_GET['damage'])){
-						if($_GET['damage'] != '-'){
+						if($_GET['damage'] != ''){
 							$query .= "AND `damage` >= ? ";
 							$parameter_type .= "d";
 							$binded_parameters[$parameters_counter++] = $_GET['damage'];
 						}
 					}
 					if(isset($_GET['comments'])){
-						
+						if($_GET['comments'] != ''){
 							$pieces = explode("#", $_GET['comments']);
 							for($i = 0; $i < sizeof($pieces); $i++){
 								$parameterValue = '';
@@ -243,12 +243,12 @@ AND `character`.`game_idgame` = ? ";
 								$parameter_type .= "s";
 								$binded_parameters[$parameters_counter++] = '%'.$parameterValue.'%';
 							}
-							
+						}
 						
 					}
 					
 					if(isset($_GET['notcomments'])){
-						
+						if($_GET['notcomments'] != ''){
 							$pieces = explode("#", $_GET['notcomments']);
 							for($i = 0; $i < sizeof($pieces); $i++){
 								$parameterValue = '';
@@ -257,7 +257,7 @@ AND `character`.`game_idgame` = ? ";
 								$parameter_type .= "s";
 								$binded_parameters[$parameters_counter++] = '%'.$parameterValue.'%';
 							}
-							
+						}
 						
 					}
 					
@@ -322,7 +322,7 @@ AND `character`.`game_idgame` = ? ";
 						}
 					}
 					$query = $query . "ORDER BY damage DESC, idcombo, text_name  LIMIT ?, ?;";
-					//echo $query;
+					echo $query;
 					$parameter_type .= "i";
 					$binded_parameters[$parameters_counter++] = $limit;
 					$parameter_type .= "i";
