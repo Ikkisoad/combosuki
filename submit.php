@@ -238,7 +238,7 @@ AND `character`.`game_idgame` = ? ";
 					}
 					if(isset($_GET['damage'])){
 						if($_GET['damage'] != ''){
-							$query .= "AND `damage` >= ? ";
+							$query .= "AND `damage` <= ? ";
 							$parameter_type .= "d";
 							$binded_parameters[$parameters_counter++] = $_GET['damage'];
 						}
