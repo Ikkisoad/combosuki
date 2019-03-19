@@ -72,7 +72,7 @@
 				<div class="container">
 					<h1 class="display-3"></h1>
 						<p>
-							<a href="index.php"><img src="img/combosukibeta.png" align="middle" height="100" ></a>
+							<a href="index.php"><img src="img/combosuki.png" align="middle" height="100" ></a>
 						</p>
 				</div>
 			</div>
