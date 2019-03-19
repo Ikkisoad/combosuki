@@ -95,6 +95,9 @@
 			</div>
 			<div class="container">
 				<div class="btn-group" role="group" aria-label="Basic example">
+					<form id="MyForm" method="get" action="index.php">
+						<button class="btn btn-secondary">Home</button>
+					</form>
 					<form method="post" action="forms.php?gameid=<?php echo $_GET['gameid']; ?>">
 						<button class="btn btn-secondary">Submit</button>
 						<input type="hidden" id="type" name="type" value="1">

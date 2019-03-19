@@ -57,6 +57,20 @@
 			<div class="container">
 				<div class="form-group">
 					<!-- <button id="Mybtn" class="btn btn-primary" onclick="changeMethod(this)">Submit a Combo</button> -->
+					<form id="MyForm" method="get" action="<?php
+						if(isset($_POST['type'])){
+							if($_POST['type'] == 1){
+								echo 'game.php';
+							}else if($_POST['type'] == 2){
+								echo 'combo.php">';
+								echo '<input type="hidden" id="idcombo" name="idcombo" value="'.$_POST['idcombo'].'';
+							}
+						}
+					?>
+					">		
+							<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+							<button class="btn btn-secondary"><< back</button>
+					</form>
 					<form method="<?php
 						//print_r($_POST);
 						$_POST = array_map("strip_tags", $_POST);
@@ -70,6 +84,7 @@
 					
 					
 					?>" action="submit.php">
+						
 						<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 						<p><select name="listingtype" class="custom-select">
 						<option value="0">combo</option>
@@ -135,7 +150,7 @@
 						?>
 						<button type="button" style="border:#ffffff;background:none;" value="backspace"  name="no" onclick="backspace()"><img src="img/buttons/backspace.png"> </button> 
 
-						<textarea style="background-color: #474747; color:#999999;" name="combo" class="form-control" id="comboarea" rows="4" maxlength="255" title="combo" required readonly><?php 
+						<textarea style="background-color: #474747; color:#999999;" name="combo" class="form-control" id="comboarea" rows="4" maxlength="255" title="combo" placeholde="Make sure to have a space between every button."><?php 
 							if(isset($_POST['type'])){
 								if($_POST['type'] == 2){
 									echo $_POST['combo'];

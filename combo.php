@@ -80,7 +80,10 @@
 				</div>
 			</div>
 			<div class="container"><p>
-				
+				<form id="MyForm" method="get" action="game.php">
+						<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+						<button class="btn btn-secondary"><< back</button>
+				</form>
 				<?php
 					require "server/conexao.php";
 					$_GET = array_map("strip_tags", $_GET);
