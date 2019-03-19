@@ -166,11 +166,15 @@
 				if(!empty($_GET)){
 					$_GET = array_map("strip_tags", $_GET);
 					?>
-					
-					<form id="MyForm" method="get" action="game.php">
-						<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
-						<button class="btn btn-secondary"><< back</button>
-					</form>
+					<div class="btn-group" role="group" aria-label="Basic example">
+						<form id="MyForm" method="get" action="forms.php">
+							<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+							<button class="btn btn-secondary"><< back</button>
+						</form>
+						<form id="MyForm" method="get" action="index.php">
+							<button class="btn btn-secondary">Home</button>
+						</form>
+					</div>
 				
 					<?php
 					if (isset($_GET["page"])) { $page  = $_GET["page"]; } else { $page=0; };
