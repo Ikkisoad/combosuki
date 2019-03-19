@@ -84,18 +84,7 @@
 				<?php
 					require "server/conexao.php";
 					$_GET = array_map("strip_tags", $_GET);
-					$query = "SELECT name,png FROM `button` WHERE `game_idgame` = ? OR `game_idgame` IS NULL";
-					$result = $conn -> prepare($query);
-					$result -> bind_param("i",$_GET['gameid']);
-					$result -> execute();
 					
-					$buttonsName = array();
-					$buttonsPNG = array();
-					
-					foreach($result -> get_result() as $each){
-						array_push($buttonsName,$each['name']);
-						array_push($buttonsPNG,$each['png']);
-					}
 					
 					//print_r($buttonsName);
 					//print_r($buttonsPNG);
@@ -113,7 +102,7 @@
 					
 					
 					
-					$query = "SELECT `idcombo`,`combo`,`damage`,`value`,`idResources_values`,`number_value`,`character`.`idcharacter`,`character`.`Name`, `video`, `game_resources`.`text_name`,`game_resources`.`type`, `combo`.`type` as listingtype, `combo`.`comments`,`game_resources`.`primaryORsecundary`
+					$query = "SELECT `idcombo`,`combo`,`damage`,`value`,`idResources_values`,`number_value`,`character`.`idcharacter`,`character`.`Name`, `video`, `game_resources`.`text_name`,`game_resources`.`type`, `combo`.`type` as listingtype, `combo`.`comments`,`game_resources`.`primaryORsecundary`, `character`.`game_idgame`
 FROM `combo` 
 INNER JOIN `resources` ON `combo`.`idcombo` = `resources`.`combo_idcombo` 
 LEFT JOIN `resources_values` ON `resources_values`.`idResources_values` = `resources`.`Resources_values_idResources_values` 
@@ -140,6 +129,18 @@ WHERE `idcombo` = ? ";
 						
 						//print_r($data);
 						if($id_combo != $data['idcombo']){
+							$query = "SELECT name,png FROM `button` WHERE `game_idgame` = ? OR `game_idgame` IS NULL";
+							$result = $conn -> prepare($query);
+							$result -> bind_param("i",$data['game_idgame']);
+							$result -> execute();
+							
+							$buttonsName = array();
+							$buttonsPNG = array();
+							
+							foreach($result -> get_result() as $each){
+								array_push($buttonsName,$each['name']);
+								array_push($buttonsPNG,$each['png']);
+							}
 							$listing_type = $data['listingtype'];
 							$character = $data['idcharacter'];
 							echo $data['Name'];
@@ -176,15 +177,17 @@ WHERE `idcombo` = ? ";
 												$image .= $char;
 															
 											}else if($image != ''){
-												if($image == '->'){echo '<br>';}
-												echo '<img class="img-fluid" alt="Responsive image" src=img/buttons/';
-												
 												$buttonID = array_search($image,$buttonsName);
-												echo $buttonsPNG[$buttonID];
-													
-												echo '.png>';
+												//echo $buttonID;
+												if($buttonID > -1){
+													if($image == '->'){echo '<br>';}
+													echo '<img class="img-fluid" alt="Responsive image" src=img/buttons/';
+													echo $buttonsPNG[$buttonID];
+													echo '.png>';
+												}/*else{
+													echo ' '.$image.' ';
+												}*/
 												$image = '';
-												
 											}
 									}
 							//#####################################BUTTON PRINTING##############################################

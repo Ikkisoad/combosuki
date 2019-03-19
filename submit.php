@@ -2,12 +2,13 @@
 
 				require "server/conexao.php";
 				if(!empty($_POST)){
+					
+					//print_r($_POST); echo ' -> first<br>';
+					$_POST = array_map("strip_tags", $_POST);
 					if($_POST['combo'] == ''){
 						header("Location: index.php");
 						exit();
 					}
-					//print_r($_POST); echo ' -> first<br>';
-					$_POST = array_map("strip_tags", $_POST);
 					//print_r($_POST); echo ' -> second<br>';
 					if(!isset($_POST['idcombo'])){
 						$query = "INSERT INTO `combo`(`idcombo`, `combo`, `comments`, `video`, `user_iduser`, `character_idcharacter`, `submited`, `damage`, `type`) 
