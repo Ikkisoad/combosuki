@@ -1,9 +1,9 @@
 <?php
        // $db_name="mydb";
-		$db_name="u177687112_csuki";
-        $mysql_user = "u177687112_ikkis";
-        $mysql_pass = "d:cYzcUX>:ce8;*&@`";
-        $server_name = "combosuki.com";
+		$db_name="";
+        $mysql_user = "";
+        $mysql_pass = "";
+        $server_name = "";
 		/*
 		$mysql_user = "root";
         $mysql_pass = "";
