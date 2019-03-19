@@ -165,6 +165,14 @@
 			<?php
 				if(!empty($_GET)){
 					$_GET = array_map("strip_tags", $_GET);
+					?>
+					
+					<form id="MyForm" method="get" action="game.php">
+						<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+						<button class="btn btn-secondary"><< back</button>
+					</form>
+				
+					<?php
 					if (isset($_GET["page"])) { $page  = $_GET["page"]; } else { $page=0; };
 					$query = "SELECT COUNT(`idgame_resources`) as total FROM `game_resources` WHERE `game_idgame` = ? AND `primaryORsecundary` = 1";
 					
