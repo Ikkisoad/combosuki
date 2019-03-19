@@ -85,7 +85,7 @@
 						$result -> execute();
 						
 						foreach($result -> get_result()	as $gameid){
-							echo '<a style="margin-left:5em" href=game.php?gameid=';
+							echo '<a style="margin-left:5em;" href=game.php?gameid=';
 							echo $gameid['idgame'];
 							echo '><img src=img/games/';
 							echo $gameid['idgame'];

@@ -1,9 +1,9 @@
 <?php
        // $db_name="mydb";
-		$db_name="combosuki";
-        $mysql_user = "cliente_premium";
-        $mysql_pass = "cliente_premium";
-        $server_name = "artspon.ddns.net";
+		$db_name="u177687112_csuki";
+        $mysql_user = "u177687112_ikkis";
+        $mysql_pass = "d:cYzcUX>:ce8;*&@`";
+        $server_name = "combosuki.com";
 		/*
 		$mysql_user = "root";
         $mysql_pass = "";
