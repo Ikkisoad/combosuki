@@ -110,7 +110,7 @@
 					
 					
 					
-					$query = "SELECT `idcombo`,`combo`,`damage`,`value`,`idResources_values`,`number_value`,`character`.`idcharacter`,`character`.`Name`, `video`, `game_resources`.`text_name`,`game_resources`.`type`, `combo`.`type` as listingtype, `combo`.`comments`,`game_resources`.`primaryORsecundary`, `character`.`game_idgame`
+					$query = "SELECT `idcombo`,`combo`,`damage`,`value`,`idResources_values`,`number_value`,`character`.`idcharacter`,`character`.`Name`, `video`, `game_resources`.`text_name`,`game_resources`.`type`, `combo`.`type` as listingtype, `combo`.`comments`,`game_resources`.`primaryORsecundary`, `character`.`game_idgame`, `resources_values`.`order`
 FROM `combo` 
 INNER JOIN `resources` ON `combo`.`idcombo` = `resources`.`combo_idcombo` 
 LEFT JOIN `resources_values` ON `resources_values`.`idResources_values` = `resources`.`Resources_values_idResources_values` 
@@ -198,6 +198,16 @@ WHERE `idcombo` = ? ";
 												$image = '';
 											}
 									}
+									if($image != ''){
+												$buttonID = array_search($image,$buttonsName);
+												//echo $buttonID;
+												if($buttonID > -1){
+													if($image == '->'){echo '<br>';}
+													echo '<img class="img-fluid" alt="Responsive image" src=img/buttons/';
+													echo $buttonsPNG[$buttonID];
+													echo '.png>';
+												}
+									}
 							//#####################################BUTTON PRINTING##############################################
 							echo		'</td></table>';
 						}
@@ -207,12 +217,14 @@ WHERE `idcombo` = ? ";
 						$video = $data['video'];
 						$damage = $data['damage'];
 						if($data['primaryORsecundary'] == 0){
-							array_push($secondaryTitle,$data['text_name']);
-							if($data['type'] == 1){
-								array_push($secondaryValue, $data['value']);
-							}else{
-								array_push($secondaryValue, $data['number_value']);
-							}
+							if($data['order'] != 0){
+								array_push($secondaryTitle,$data['text_name']);
+								if($data['type'] == 1){
+									array_push($secondaryValue, $data['value']);
+								}else{
+									array_push($secondaryValue, $data['number_value']);
+								}
+							}	
 						}else{
 							array_push($primaryTitle,$data['text_name']);
 							if($data['type'] == 1){
@@ -242,23 +254,23 @@ WHERE `idcombo` = ? ";
 							}
 							echo '</tr>';
 					echo '</table></p>';
-				
-					echo '</td></table><p><table>';
-							echo '<tr>';
-							for($i = 0; $i<sizeof($secondaryTitle); $i++){
-								echo '<th>';
-								echo $secondaryTitle[$i];
-								echo '</th>';
-							}
-							echo '</tr><tr>';
-							for($i = 0; $i<sizeof($secondaryTitle); $i++){
-								echo '<td>';
-								echo $secondaryValue[$i];
-								echo '</td>';
-							}
-							echo '</tr>';
-					echo '</table></p>';
-				
+					if(sizeof($secondaryTitle)){
+						echo '</td></table><p><table>';
+								echo '<tr>';
+								for($i = 0; $i<sizeof($secondaryTitle); $i++){
+									echo '<th>';
+									echo $secondaryTitle[$i];
+									echo '</th>';
+								}
+								echo '</tr><tr>';
+								for($i = 0; $i<sizeof($secondaryTitle); $i++){
+									echo '<td>';
+									echo $secondaryValue[$i];
+									echo '</td>';
+								}
+								echo '</tr>';
+						echo '</table></p>';
+					}
 				
 				?>
 			
