@@ -157,7 +157,7 @@
 						?>
 						<button type="button" style="border:#ffffff;background:none;" value="backspace"  name="no" onclick="backspace()"><img src="img/buttons/backspace.png"> </button> 
 
-						<textarea style="background-color: #474747; color:#999999;" name="combo" class="form-control" id="comboarea" rows="4" maxlength="255" title="combo" placeholder="Make sure to leave a space between every button."><?php 
+						<textarea style="background-color: #474747; color:#999999;" name="combo" class="form-control" id="comboarea" rows="4" maxlength="255" title="combo" placeholder="Make sure to leave a space between every button. Text can be added if needed."><?php 
 							if(isset($_POST['type'])){
 								if($_POST['type'] == 2){
 									echo $_POST['combo'];
@@ -165,6 +165,12 @@
 							}
 						
 						?></textarea>
+						<?php
+						if(isset($_POST['type'])){
+									echo '<p><a href="https://goo.gl/forms/6Q8dVlNbdOyTMA4h2"> Something is missing?</a></p>';
+								
+							}
+						?>
 					<p>	<div class="input-group mb-3">
 							<div class="input-group-prepend">
 								<span class="input-group-text">Damage:
