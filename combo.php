@@ -88,7 +88,10 @@
 					<form id="MyForm" method="get" action="index.php">
 								<button class="btn btn-secondary">Home</button>
 					</form>
-				</div><p>
+				</div>
+				<p><button class="btn btn-secondary" onclick="change_display()">Display Method</button></p>
+				
+				<p>
 				<?php
 					require "server/conexao.php";
 					$_GET = array_map("strip_tags", $_GET);
@@ -166,12 +169,13 @@ WHERE `idcombo` = ? ";
 									echo ' Archive:<br>';
 									break;
 							}
+							
 							echo '</th>';
 							echo '</tr>';
 							$id_combo = $data['idcombo'];
 							// ###################################BUTTON PRINTING###############################################
 								echo '<tr>';
-								echo '<td>';
+								echo '<td id="combo_line">';
 								echo '<img class="img-fluid" alt="Responsive image" src=img/buttons/start.png>';
 									$buttonID;
 									$combo = $data['combo'];
@@ -275,6 +279,12 @@ WHERE `idcombo` = ? ";
 				?>
 			
 			<!-- </tr></table></p> -->
+			
+			<div id="combo_text" style="display: none;">
+				<?php 
+					echo $combo;
+				?>
+			</div>
 			<?php
 				if($comment != ''){
 					echo '<p><table>';
@@ -423,6 +433,13 @@ WHERE `idcombo` = ? ";
 			</div>
 		</main>
 	</body>
+		<script>
+			function change_display(){
+				var temp = document.getElementById("combo_line").innerHTML;
+				document.getElementById("combo_line").innerHTML = document.getElementById("combo_text").innerHTML;
+				document.getElementById("combo_text").innerHTML = temp;
+			}
+		</script>
 	    <!-- Bootstrap core JavaScript
 		================================================== -->
 		<!-- Placed at the end of the document so the pages load faster -->
