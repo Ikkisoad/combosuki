@@ -167,7 +167,7 @@
 						?></textarea>
 						<?php
 						if(isset($_POST['type'])){
-									echo '<p><a href="https://goo.gl/forms/6Q8dVlNbdOyTMA4h2"> Something is missing?</a></p>';
+									echo '<p><a href="https://goo.gl/forms/6Q8dVlNbdOyTMA4h2"> Is something missing?</a></p>';
 								
 							}
 						?>
