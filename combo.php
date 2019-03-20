@@ -196,9 +196,9 @@ WHERE `idcombo` = ? ";
 													echo '<img class="img-fluid" alt="Responsive image" src=img/buttons/';
 													echo $buttonsPNG[$buttonID];
 													echo '.png>';
-												}/*else{
+												}else{
 													echo ' '.$image.' ';
-												}*/
+												}
 												$image = '';
 											}
 									}
