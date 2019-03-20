@@ -105,7 +105,7 @@
 			</div></div>
 		</main>
 		<div class="footer">
-		  <p style="text-align: right;">Created by: <a href="https://twitter.com/Ikkisoad" target="_blank">@Ikkisoad</a></p>
+		  <p style="text-align: right;">Created by: <a href="https://twitter.com/Ikkisoad" target="_blank">@Ikkisoad</a>   E-Mail: <a href="mailto:ikkisoad@combosuki.com">ikkisoad@combosuki.com</a></p>
 		  <p style="text-align: right;">Buttons designed by: <a href="https://twitter.com/Makaaaaai" target="_blank">@Makaaaaai</a></p>
 		  <p style="text-align: center;"><a href="https://goo.gl/forms/xzjGo1dQEGOTzZGT2" target="_blank">Request a new game   </a> / 
 		  <a href="index.php?about=1" style="padding-right: 5px;">About </a> / 
