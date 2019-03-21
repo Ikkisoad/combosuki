@@ -342,9 +342,20 @@ WHERE `idcombo` = ? ";
 											
 											echo '" frameborder="0" width="100%" height="100%" allowfullscreen style="width: 100%; height: 100%; position: absolute;"></iframe></div>';*/
 											
+					}else if(strpos($video, 'twitch') !== false && strpos($video, 'clips') !== false){
+						$video = substr_replace($video, "embed?clip=", 24,0);
+						echo '<iframe
+							src="'.$video.'"
+							height="360"
+							width="640"
+							frameborder="0"
+							scrolling="no"
+							allowfullscreen="true">
+						</iframe>';
+						
 					}else{
 						echo $video;	
-					}					
+					}
 					
 					echo '</td></tr>';
 					echo '</table></p>';

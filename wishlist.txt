@@ -1,4 +1,4 @@
 > Log in system.
-> Get rid of useless information.
+> Get rid of useless information. DONE
 > Ready to go selections. (Corner, universal... etc).
-> Change between images and text button.
+> Change between images and text button. DONE
