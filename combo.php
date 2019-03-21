@@ -302,7 +302,7 @@ WHERE `idcombo` = ? ";
 								echo 'Video:';
 							echo '</td></tr>';
 							echo '<tr><td>';
-					if (strpos($video, 'twitter') !== false) {
+					if (strpos($video, 'twitter') !== false && strpos($video, 'https') !== false) {
 						echo '<blockquote class="twitter-tweet" data-conversation="none" data-lang="en"><p lang="en" dir="ltr">
 						<a href="';
 						echo $video;
@@ -322,13 +322,13 @@ WHERE `idcombo` = ? ";
 						<iframe class="embed-responsive-item" src="https://www.youtube.com/embed/';
 						echo $youtube_id;
 						echo '?start=';echo $whatIWant; echo '" allowfullscreen></iframe></div>';
-					}else if(strpos($video, 'streamable') !== false){
+					}else if(strpos($video, 'streamable') !== false && strpos($video, 'https') !== false){
 											/*echo '<div class="embed-responsive embed-responsive-16by9">
 											<iframe class="embed-responsive-item" src="';
 											echo $video;
 											echo '" allowfullscreen></iframe>
 										</div>';*/
-										
+										$video = substr_replace($video, "/s", 22,0);
 										echo '<div style="width: 100%; height: 0px; position: relative; padding-bottom: 56.250%;">
 						<iframe src="';
 											echo $video;
@@ -342,7 +342,7 @@ WHERE `idcombo` = ? ";
 											
 											echo '" frameborder="0" width="100%" height="100%" allowfullscreen style="width: 100%; height: 100%; position: absolute;"></iframe></div>';*/
 											
-					}else if(strpos($video, 'twitch') !== false && strpos($video, 'clips') !== false){
+					}else if(strpos($video, 'twitch') !== false && strpos($video, 'clips') !== false && strpos($video, 'https') !== false){
 						$video = substr_replace($video, "embed?clip=", 24,0);
 						echo '<iframe
 							src="'.$video.'"
@@ -363,8 +363,8 @@ WHERE `idcombo` = ? ";
 			
 			?>
 			<div class="btn-group" role="group">
-				<form method="post" onsubmit="return confirm('Do you really want to delete this <?php
-							switch($listing_type){
+				<!-- <form method="post" onsubmit="return confirm('Do you really want to delete this <?php
+							/*switch($listing_type){
 								case 0:
 									echo 'combo';
 									break;
@@ -377,12 +377,12 @@ WHERE `idcombo` = ? ";
 								case 3:
 									echo 'archive';
 									break;
-							}
-						?>?');" action="game.php?gameid=<?php echo $_GET['gameid']; ?>">
+							}*/
+						?>?');" action="game.php?gameid=<?php //echo $_GET['gameid']; ?>">
 					<input type="hidden" id="action" name="action" value="0">
-					<input type="hidden" id="idcombo" name="idcombo" value="<?php echo $_GET['idcombo'] ?>">
+					<input type="hidden" id="idcombo" name="idcombo" value="<?php //echo $_GET['idcombo'] ?>">
 					<button type="submit" class="btn btn-danger">Delete</button>
-				</form>
+				</form> -->
 				
 				<?php
 					if($listing_type != 3){
