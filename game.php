@@ -30,6 +30,10 @@
 				
 			}
 
+			th {
+				cursor: pointer;
+			}
+			
 			th, td {
 				text-align: left;
 				padding: 16px;
@@ -111,13 +115,13 @@
 					<p><h2>Latest submissions</h2></p>
 					<?php
 						require "server/conexao.php";
-						$query = "SELECT idcombo,Name,combo,damage,type FROM `combo` INNER JOIN `character` ON `combo`.`character_idcharacter` = `character`.`idcharacter` WHERE `character`.`game_idgame` = ? ORDER BY submited DESC LIMIT 0,25";
+						$query = "SELECT idcombo,Name,combo,damage,type, submited FROM `combo` INNER JOIN `character` ON `combo`.`character_idcharacter` = `character`.`idcharacter` WHERE `character`.`game_idgame` = ? ORDER BY submited DESC LIMIT 0,25";
 						$result = $conn -> prepare($query);
 						$result -> bind_param("i",$_GET['gameid']);
 						$result -> execute();
-						echo '<table>';
+						echo '<table id="myTable">';
 							echo '<tr>';
-								echo '<th>Character</th><th>Inputs</th><th>Damage</th><th>Type</th>';
+								echo '<th onclick="sortTable(0)">Character</th><th onclick="sortTable(1)">Inputs</th><th onclick="sortTable(2,1)">Damage</th><th onclick="sortTable(3)">Type</th><th onclick="sortTable(4)">Submited</th>';
 							echo '</tr>';
 						
 							foreach($result -> get_result() as $data){
@@ -142,6 +146,9 @@
 										echo 'Archive';
 										break;
 								}
+								echo '</td><td>';
+								$i = new DateTime($data['submited']);
+								echo $i->format('d-m-Y');
 								echo '</td></tr>';
 							}
 							echo '</table>';
@@ -156,4 +163,66 @@
 		<script>window.jQuery || document.write('<script src="../../../../assets/js/vendor/jquery.min.js"><\/script>')</script>
 		<script src="../../../../assets/js/vendor/popper.min.js"></script>
 		<script src="../../../../dist/js/bootstrap.min.js"></script>
+		<script>
+			function sortTable(n,isNumber) {
+			  var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+			  table = document.getElementById("myTable");
+			  switching = true;
+			  //Set the sorting direction to ascending:
+			  dir = "asc"; 
+			  /*Make a loop that will continue until
+			  no switching has been done:*/
+			  while (switching) {
+				//start by saying: no switching is done:
+				switching = false;
+				rows = table.rows;
+				/*Loop through all table rows (except the
+				first, which contains table headers):*/
+				for (i = 1; i < (rows.length - 1); i++) {
+				  //start by saying there should be no switching:
+				  shouldSwitch = false;
+				  /*Get the two elements you want to compare,
+				  one from current row and one from the next:*/
+				  x = rows[i].getElementsByTagName("TD")[n];
+				  y = rows[i + 1].getElementsByTagName("TD")[n];
+				  /*check if the two rows should switch place,
+				  based on the direction, asc or desc:*/
+				  if (dir == "asc") {
+					if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase() && !isNumber) {
+					  //if so, mark as a switch and break the loop:
+					  shouldSwitch= true;
+					  break;
+					}else if(Number(x.innerHTML.toLowerCase()) > Number(y.innerHTML.toLowerCase())){
+						shouldSwitch= true;
+						break;
+					}
+				  } else if (dir == "desc") {
+					if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase() && !isNumber) {
+					  //if so, mark as a switch and break the loop:
+					  shouldSwitch = true;
+					  break;
+					}else if(Number(x.innerHTML.toLowerCase()) < Number(y.innerHTML.toLowerCase())){
+						shouldSwitch= true;
+						break;
+					}
+				  }
+				}
+				if (shouldSwitch) {
+				  /*If a switch has been marked, make the switch
+				  and mark that a switch has been done:*/
+				  rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+				  switching = true;
+				  //Each time a switch is done, increase this count by 1:
+				  switchcount ++;      
+				} else {
+				  /*If no switching has been done AND the direction is "asc",
+				  set the direction to "desc" and run the while loop again.*/
+				  if (switchcount == 0 && dir == "asc") {
+					dir = "desc";
+					switching = true;
+				  }
+				}
+			  }
+			}
+		</script>
 </html>

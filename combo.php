@@ -113,7 +113,7 @@
 					
 					
 					
-					$query = "SELECT `idcombo`,`combo`,`damage`,`value`,`idResources_values`,`number_value`,`character`.`idcharacter`,`character`.`Name`, `video`, `game_resources`.`text_name`,`game_resources`.`type`, `combo`.`type` as listingtype, `combo`.`comments`,`game_resources`.`primaryORsecundary`, `character`.`game_idgame`, `resources_values`.`order`
+					$query = "SELECT `idcombo`,`combo`,`damage`,`value`,`idResources_values`,`number_value`,`character`.`idcharacter`,`character`.`Name`, `video`, `game_resources`.`text_name`,`game_resources`.`type`, `combo`.`type` as listingtype, `combo`.`comments`,`game_resources`.`primaryORsecundary`, `character`.`game_idgame`, `resources_values`.`order`, `combo`.`submited`
 FROM `combo` 
 INNER JOIN `resources` ON `combo`.`idcombo` = `resources`.`combo_idcombo` 
 LEFT JOIN `resources_values` ON `resources_values`.`idResources_values` = `resources`.`Resources_values_idResources_values` 
@@ -220,6 +220,7 @@ WHERE `idcombo` = ? ";
 						$comment = $data['comments'];
 						$video = $data['video'];
 						$damage = $data['damage'];
+						$submited = new DateTime($data['submited']);
 						if($data['primaryORsecundary'] == 0){
 							if($data['order'] != 0){
 								array_push($secondaryTitle,$data['text_name']);
@@ -328,7 +329,7 @@ WHERE `idcombo` = ? ";
 											echo $video;
 											echo '" allowfullscreen></iframe>
 										</div>';*/
-										$video = substr_replace($video, "/s", 22,0);
+										//$i = substr_replace($video, "/s", 22,0);
 										echo '<div style="width: 100%; height: 0px; position: relative; padding-bottom: 56.250%;">
 						<iframe src="';
 											echo $video;
@@ -343,9 +344,9 @@ WHERE `idcombo` = ? ";
 											echo '" frameborder="0" width="100%" height="100%" allowfullscreen style="width: 100%; height: 100%; position: absolute;"></iframe></div>';*/
 											
 					}else if(strpos($video, 'twitch') !== false && strpos($video, 'clips') !== false && strpos($video, 'https') !== false){
-						$video = substr_replace($video, "embed?clip=", 24,0);
+						$i = substr_replace($video, "embed?clip=", 24,0);
 						echo '<iframe
-							src="'.$video.'"
+							src="'.$i.'"
 							height="360"
 							width="640"
 							frameborder="0"
@@ -438,7 +439,7 @@ WHERE `idcombo` = ? ";
 					<input type="hidden" name="combo" value="<?php echo $combo; ?>">
 					<input type="hidden" name="comment" value="<?php echo $comment; ?>">
 					<input type="hidden" name="video" value="<?php echo $video; ?>">
-					<button class="btn btn-primary">Edit</button>
+					<button class="btn btn-primary">Edit</button><p>Submited: <?php echo $submited->format('d-m-Y');?>
 				</form>
 			</div>
 			</div>
