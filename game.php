@@ -148,7 +148,7 @@
 								}
 								echo '</td><td>';
 								$i = new DateTime($data['submited']);
-								echo $i->format('d-m-Y');
+								echo $i->format('d-m');
 								echo '</td></tr>';
 							}
 							echo '</table>';
