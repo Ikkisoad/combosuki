@@ -91,6 +91,12 @@
 					
 					
 					?>" action="submit.php">
+					<?php
+						if(!isset($_POST['type'])){
+									echo '<p><button type="submit" class="btn btn-info btn-block">Search</button></p>';
+								
+							}
+						?>
 						
 						<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 						<p><select name="listingtype" class="custom-select">
@@ -307,9 +313,9 @@
 						
 						?>
 						
-						
-						<p><button type="submit" class="btn btn-primary btn-block">Submit</button></p>
-						
+						<?php if(isset($_POST['type'])){
+							echo '<p><button type="submit" class="btn btn-primary btn-block">Submit</button></p>';
+						}?>
 					</form>
 				</div>
 			</div>
