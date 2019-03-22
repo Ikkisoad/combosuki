@@ -268,7 +268,10 @@
 							echo '</p><br>';
 						?>
 						<label>Comments:</label>
-						<textarea name="comments" style="background-color: #474747; color:#999999;" class="form-control" id="exampleFormControlTextarea1" title="trabalho" <?php if(!isset($_POST['type'])){echo 'placeholder="Use # to search for multiple variables in a comment - e.g. #universal #corner"';} ?>><?php 
+						<textarea name="comments" style="background-color: #474747; color:#999999;" class="form-control" id="exampleFormControlTextarea1" title="trabalho" <?php if(!isset($_POST['type'])){echo 'placeholder="Use # to search for multiple variables in a comment - e.g. #universal #corner"';}else{
+
+						echo 'placeholder="Comments like: Corner only, universal, etc... Are recommended to make it easier to search specific situations."';
+						}?>><?php 
 							if(isset($_POST['type'])){
 								if($_POST['type'] == 2){
 									echo $_POST['comment'];
@@ -287,7 +290,7 @@
 						?>
 						
 						<label for="exampleFormControlTextarea1">Video:</label>
-						<textarea name="video" style="background-color: #474747; color:#999999;" class="form-control" id="exampleFormControlTextarea1" rows="1" maxlength="255" title="trabalho"><?php 
+						<textarea name="video" style="background-color: #474747; color:#999999;" class="form-control" id="exampleFormControlTextarea1" rows="1" maxlength="255" title="trabalho" placeholder="Currently supports youtube, twitter, streamable and twitch clips."><?php 
 							if(isset($_POST['type'])){
 								if($_POST['type'] == 2){
 									echo $_POST['video'];
