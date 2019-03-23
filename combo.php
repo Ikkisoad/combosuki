@@ -58,7 +58,7 @@
 					<h1 class="display-3"></h1>
 						<p>
 							<a href="<?php
-									if(!empty($_GET)){
+									if(!empty($_GET) && isset($_GET['gameid'])){
 										echo 'game.php?gameid=';
 										echo $_GET['gameid'];
 									}else{
@@ -66,12 +66,12 @@
 									}
 								?>"><img 
 								<?php
-									if(!empty($_GET)){
+									if(!empty($_GET) && isset($_GET['gameid'])){
 										echo 'src=img/games/';
 										echo $_GET['gameid'];
 										echo '.png ';
 									}else{
-										echo 'src="img/FGCcombos.png"';	
+										echo 'src="img/combosuki.png"';	
 									}
 								?>
 								align="middle" height="200" >
@@ -82,7 +82,7 @@
 			<div class="container">
 				<div class="btn-group" role="group" aria-label="Basic example">
 					<form id="MyForm" method="get" action="game.php">
-							<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+							<input type="hidden" id="gameid" name="gameid" value="<?php  if(isset($_GET['gameid'])){echo $_GET['gameid'];} ?>">
 							<button class="btn btn-secondary"><< back</button>
 					</form>
 					<form id="MyForm" method="get" action="index.php">
@@ -96,9 +96,6 @@
 					require "server/conexao.php";
 					$_GET = array_map("strip_tags", $_GET);
 					
-					
-					//print_r($buttonsName);
-					//print_r($buttonsPNG);
 					$i = 0;
 					
 					$primaryTitle = array();
@@ -106,14 +103,7 @@
 					$secondaryTitle = array();
 					$secondaryValue = array();
 					
-					//echo array_search('5555',$buttonsName);
-					echo '<table>';
-					echo '<tr>';
-					//$query = 
-					
-					
-					
-					$query = "SELECT `idcombo`,`combo`,`damage`,`value`,`idResources_values`,`number_value`,`character`.`idcharacter`,`character`.`Name`, `video`, `game_resources`.`text_name`,`game_resources`.`type`, `combo`.`type` as listingtype, `combo`.`comments`,`game_resources`.`primaryORsecundary`, `character`.`game_idgame`, `resources_values`.`order`, `combo`.`submited`
+					$query = "SELECT `idcombo`,`combo`,`damage`,`value`,`idResources_values`,`number_value`,`character`.`idcharacter`,`character`.`Name`, `video`, `game_resources`.`text_name`,`game_resources`.`type`, `combo`.`type` as listingtype, `combo`.`comments`,`game_resources`.`primaryORsecundary`, `character`.`game_idgame`, `resources_values`.`order`, `combo`.`submited`, `combo`.`patch`
 FROM `combo` 
 INNER JOIN `resources` ON `combo`.`idcombo` = `resources`.`combo_idcombo` 
 LEFT JOIN `resources_values` ON `resources_values`.`idResources_values` = `resources`.`Resources_values_idResources_values` 
@@ -128,7 +118,7 @@ WHERE `idcombo` = ? ";
 					$result = $conn -> prepare($query);
 					$result -> bind_param("i",$_GET['idcombo']);
 					$result -> execute();
-					echo '<th>'; 
+					
 					$id_combo = -1;
 					
 					$k_res = 0;
@@ -140,6 +130,12 @@ WHERE `idcombo` = ? ";
 						
 						//print_r($data);
 						if($id_combo != $data['idcombo']){
+							
+							if($data['patch'] != ''){
+								echo '<p><button class="btn btn-dark" disabled>';
+								echo 'Patch: '.$data['patch'].'</button></p>';
+							}
+							
 							$query = "SELECT name,png FROM `button` WHERE `game_idgame` = ? OR `game_idgame` IS NULL";
 							$result = $conn -> prepare($query);
 							$result -> bind_param("i",$data['game_idgame']);
@@ -152,6 +148,9 @@ WHERE `idcombo` = ? ";
 								array_push($buttonsName,$each['name']);
 								array_push($buttonsPNG,$each['png']);
 							}
+							echo '<table>';
+							echo '<tr>';
+							echo '<th>'; 
 							$listing_type = $data['listingtype'];
 							$character = $data['idcharacter'];
 							echo $data['Name'];
@@ -403,7 +402,7 @@ WHERE `idcombo` = ? ";
 								break;
 						}
 						echo '?");" action="game.php?gameid=';
-						echo $_GET['gameid'];
+						if(isset($_GET['gameid'])){echo $_GET['gameid'];}
 						echo '">
 						<input type="hidden" id="action" name="action" value="1">
 						<input type="hidden" id="idcombo" name="idcombo" value="';
@@ -414,7 +413,7 @@ WHERE `idcombo` = ? ";
 					}
 				?>
 				
-				<form method="post" action="forms.php?gameid=<?php echo $_GET['gameid']; ?>">
+				<form method="post" action="forms.php?gameid=<?php if(isset($_GET['gameid'])){echo $_GET['gameid'];} ?>">
 					<?php //print_r($secondaryTitle);?>
 					<!-- <input type="hidden" name="<?php //echo $secondaryTitle; ?>" value="<?php //echo $secondaryValue; ?>"> -->
 					<?php

@@ -177,7 +177,7 @@
 								
 							}
 						?>
-					<p>	<div class="input-group mb-3">
+						<p>	<div class="input-group mb-3">
 							<div class="input-group-prepend">
 								<span class="input-group-text">Damage:
 							</div>
@@ -185,6 +185,20 @@
 							if(isset($_POST['type'])){
 								if($_POST['type'] == 2){
 									echo ' value="'.$_POST['damage'].'"';
+								}
+							}
+						
+						?>>
+						</div> </p>
+						
+						<p>	<div class="input-group mb-3">
+							<div class="input-group-prepend">
+								<span class="input-group-text">Patch:
+							</div>
+							<input type="text" name="patch" class="input-sm"<?php 
+							if(isset($_POST['type'])){
+								if($_POST['type'] == 2 && isset($_POST['patch'])){
+									echo ' value="'.$_POST['patch'].'"';
 								}
 							}
 						

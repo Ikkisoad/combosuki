@@ -11,11 +11,11 @@
 					}
 					//print_r($_POST); echo ' -> second<br>';
 					if(!isset($_POST['idcombo'])){
-						$query = "INSERT INTO `combo`(`idcombo`, `combo`, `comments`, `video`, `user_iduser`, `character_idcharacter`, `submited`, `damage`, `type`) 
-												VALUES (NULL,		?,		?,			?,	NULL,			?,						?, ?, ?)";
+						$query = "INSERT INTO `combo`(`idcombo`, `combo`, `comments`, `video`, `user_iduser`, `character_idcharacter`, `submited`, `damage`, `type`, `patch`) 
+												VALUES (NULL,		?,		?,			?,	NULL,			?,						?, ?, ?, ?)";
 						$result = $conn -> prepare($query);
 						$date = date("Y-m-d H:i:s");
-						$result -> bind_param("sssisdi", $_POST['combo'], $_POST['comments'],$_POST['video'],$_POST['characterid'],$date, $_POST['damage'], $_POST['listingtype']);
+						$result -> bind_param("sssisdis", $_POST['combo'], $_POST['comments'],$_POST['video'],$_POST['characterid'],$date, $_POST['damage'], $_POST['listingtype'], $_POST['patch']);
 						$result -> execute();
 						
 						$comboid = mysqli_insert_id($conn);
