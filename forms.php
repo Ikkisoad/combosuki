@@ -100,10 +100,10 @@
 						
 						<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 						<p><select name="listingtype" class="custom-select">
-						<option value="0">combo</option>
-						<option value="1">blockstring</option>
-						<option value="2">mixup</option>
-						<option value="3">archive</option>
+						<option value="0" <?php if(isset($_POST['type'])){if($_POST['type'] == 2){if($_POST['listingtype'] == 0){echo 'selected';}}} ?>>Combo</option>
+						<option value="1" <?php if(isset($_POST['type'])){if($_POST['type'] == 2){if($_POST['listingtype'] == 1){echo 'selected';}}} ?>>Blockstring</option>
+						<option value="2" <?php if(isset($_POST['type'])){if($_POST['type'] == 2){if($_POST['listingtype'] == 2){echo 'selected';}}} ?>>Mix Up</option>
+						<option value="3" <?php if(isset($_POST['type'])){if($_POST['type'] == 2){if($_POST['listingtype'] == 3){echo 'selected';}}} ?>>Archive</option>
 						<?php if(!isset($_POST['type'])){echo '<option value="-">-</option>';} ?>
 						</select></p>
 						<?php

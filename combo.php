@@ -445,6 +445,7 @@ WHERE `idcombo` = ? ";
 								echo $secondaryValue[$i].'">';
 						}
 					?>
+					<input type="hidden" id="listingtype" name="listingtype" value="<?php echo $listing_type; ?>">
 					<input type="hidden" id="type" name="type" value="2">
 					<input type="hidden" name="characterid" value="<?php echo $character; ?>">
 					<input type="hidden" name="damage" value="<?php echo $damage; ?>">
