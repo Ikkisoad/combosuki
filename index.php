@@ -100,6 +100,17 @@
 					echo '"Combo好きs main purpose is to be a community-fueled searchable environment that shares and perfects combos."<p>u/madninhaman @ reddit </p>';
 				}else if($_GET['about'] == 2){
 					echo '<img src="img/numpadNotationBlack.jpg">';
+				}else if($_GET['about'] == 3){
+					echo '<h2>Log</h2>';
+					require "server/conexao.php";
+						$query = "SELECT * FROM logs ORDER BY Date;";
+						$result = $conn -> prepare($query);
+						$result -> execute();
+						
+						foreach($result -> get_result()	as $log){
+							echo $log['Date'].': ';
+							echo $log['Description'].'<br>';
+						}
 				}
 				echo '<br><br><br><br><br><br>';
 			?>
@@ -110,7 +121,9 @@
 		  <p style="text-align: right;">Buttons designed by: <a href="https://twitter.com/Makaaaaai" target="_blank">@Makaaaaai</a></p>
 		  <p style="text-align: center;"><a href="https://goo.gl/forms/xzjGo1dQEGOTzZGT2" target="_blank">Request a new game   </a> / 
 		  <a href="index.php?about=1" style="padding-right: 5px;">About </a> / 
-		  <a href="index.php?about=2">Combo Guidelines </a> / <a href="https://discord.gg/49Qrkz4" target="_blank">Discord </a></p>
+		  <a href="index.php?about=2">Combo Guidelines </a> / <a href="https://discord.gg/49Qrkz4" target="_blank">Discord </a>
+		   / <a href="index.php?about=3" style="padding-right: 5px;">Logs </a>
+		  </p>
 		</div>
 	</body>
 	    <!-- Bootstrap core JavaScript

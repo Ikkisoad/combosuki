@@ -91,7 +91,7 @@
 				</div>
 				<p><button class="btn btn-secondary" onclick="change_display()">Display Method</button></p>
 				
-				<p>
+				
 				<?php
 					require "server/conexao.php";
 					$_GET = array_map("strip_tags", $_GET);
@@ -148,7 +148,7 @@ WHERE `idcombo` = ? ";
 								array_push($buttonsName,$each['name']);
 								array_push($buttonsPNG,$each['png']);
 							}
-							echo '<table>';
+							echo '<p><table>';
 							echo '<tr>';
 							echo '<th>'; 
 							$listing_type = $data['listingtype'];
@@ -175,7 +175,7 @@ WHERE `idcombo` = ? ";
 							// ###################################BUTTON PRINTING###############################################
 								echo '<tr>';
 								echo '<td id="combo_line">';
-								echo '<img class="img-fluid" alt="Responsive image" src=img/buttons/start.png>';
+								$combo_image = '<img class="img-fluid" alt="Responsive image" src=img/buttons/start.png>';
 									$buttonID;
 									$combo = $data['combo'];
 									
@@ -192,11 +192,11 @@ WHERE `idcombo` = ? ";
 												//echo $buttonID;
 												if($buttonID > -1){
 													if($image == '->'){echo '<br>';}
-													echo '<img class="img-fluid" alt="Responsive image" src=img/buttons/';
-													echo $buttonsPNG[$buttonID];
-													echo '.png>';
+													$combo_image .= '<img class="img-fluid" alt="Responsive image" src=img/buttons/';
+													$combo_image .= $buttonsPNG[$buttonID];
+													$combo_image .= '.png>';
 												}else{
-													echo ' '.$image.' ';
+													$combo_image .= ' '.$image.' ';
 												}
 												$image = '';
 											}
@@ -206,14 +206,23 @@ WHERE `idcombo` = ? ";
 												//echo $buttonID;
 												if($buttonID > -1){
 													if($image == '->'){echo '<br>';}
-													echo '<img class="img-fluid" alt="Responsive image" src=img/buttons/';
-													echo $buttonsPNG[$buttonID];
-													echo '.png>';
+													$combo_image .= '<img class="img-fluid" alt="Responsive image" src=img/buttons/';
+													$combo_image .= $buttonsPNG[$buttonID];
+													$combo_image .= '.png>';
 												}else{
-													echo ' '.$image.' ';
+													$combo_image .= ' '.$image.' ';
 												}
 									}
 							//#####################################BUTTON PRINTING##############################################
+							if(!isset($_COOKIE['display_preference'])){
+								echo $combo_image;
+								$_COOKIE['display_preference'] = 1;
+							}else if($_COOKIE['display_preference']){
+								echo $combo_image;
+							}else{
+								echo $combo;
+							}
+							//echo 'THE COOKIE IS:'. $_COOKIE['display_preference'];
 							echo		'</td></table>';
 						}
 						
@@ -282,7 +291,12 @@ WHERE `idcombo` = ? ";
 			
 			<div id="combo_text" style="display: none;">
 				<?php 
-					echo $combo;
+				
+					if($_COOKIE['display_preference']){
+						echo $combo;
+					}else{
+						echo $combo_image;
+					}
 				?>
 			</div>
 			<?php
@@ -446,6 +460,12 @@ WHERE `idcombo` = ? ";
 	</body>
 		<script>
 			function change_display(){
+				/*var preference = getCookie("display_preference");
+				if(preference == 1){
+					document.cookie = "display_preference=0;";
+				}else{
+					document.cookie = "display_preference=1;";
+				}*/
 				var temp = document.getElementById("combo_line").innerHTML;
 				document.getElementById("combo_line").innerHTML = document.getElementById("combo_text").innerHTML;
 				document.getElementById("combo_text").innerHTML = temp;

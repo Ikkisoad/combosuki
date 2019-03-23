@@ -157,7 +157,7 @@
 								echo '</td><td>';
 								echo		'<a href="combo.php?gameid='.$_GET['gameid'].'&idcombo='.$data['idcombo'].'">'.$data['combo'].'</a>';
 								echo '</td><td>';
-								echo $data['damage'];
+								echo number_format($data['damage'],'0','','.');
 								echo '</td><td>';
 								switch($data['type']){
 									case 0:

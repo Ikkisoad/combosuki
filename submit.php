@@ -259,6 +259,13 @@ AND `character`.`game_idgame` = ? ";
 							$binded_parameters[$parameters_counter++] = $_GET['damage'];
 						}
 					}
+					if(isset($_GET['patch'])){
+						if($_GET['patch'] != ''){
+							$query .= "AND `patch` LIKE ? ";
+							$parameter_type .= "s";
+							$binded_parameters[$parameters_counter++] = $_GET['patch'];
+						}
+					}
 					if(isset($_GET['comments'])){
 						if($_GET['comments'] != ''){
 							$pieces = explode("#", $_GET['comments']);
@@ -395,7 +402,7 @@ AND `character`.`game_idgame` = ? ";
 							$id_combo = $data['idcombo'];
 							echo		'<td>'.$data['Name'].'</td>';
 							echo		'<td><a href="combo.php?gameid='.$_GET['gameid'].'&idcombo='.$data['idcombo'].'">'.$data['combo'].'</a></td>';
-							echo		'<td>'.$data['damage'].'</td>';
+							echo		'<td>'.number_format($data['damage'],'0','','.').'</td>';
 						}
 						if($j[$k] == 1){
 							echo		'<td>'.$data['value'].'</td>';
