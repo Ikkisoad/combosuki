@@ -103,7 +103,7 @@
 				}else if($_GET['about'] == 3){
 					echo '<h2>Log</h2>';
 					require "server/conexao.php";
-						$query = "SELECT * FROM logs ORDER BY Date;";
+						$query = "SELECT * FROM logs ORDER BY Date DESC;";
 						$result = $conn -> prepare($query);
 						$result -> execute();
 						
