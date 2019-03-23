@@ -167,7 +167,7 @@
 					$_GET = array_map("strip_tags", $_GET);
 					?>
 					<div class="btn-group" role="group" aria-label="Basic example">
-						<form id="MyForm" method="get" action="forms.php">
+						<form id="MyForm" method="get" action="game.php">
 							<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 							<button class="btn btn-secondary"><< back</button>
 						</form>
