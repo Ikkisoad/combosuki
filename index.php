@@ -25,7 +25,6 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
 		<meta name="description" content="">
 		<meta name="Ikkisoad" content="">
-		<link rel="icon" href="img/favicon.ico">
 
 		<title>ComboSuki</title>
     <!-- Bootstrap core CSS -->
