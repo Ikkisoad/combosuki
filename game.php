@@ -112,6 +112,33 @@
 						<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 					</form>
 				</div>
+				
+				<form class="form-inline" method="get" action="submit.php">
+					<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+					<?php require "server/conexao.php";
+							
+							$query = "SELECT `Name`,`idcharacter` FROM `character` WHERE game_idgame = ? ORDER BY name;";
+							$result = $conn -> prepare($query);
+							$result -> bind_param("i", $_GET['gameid']);
+							$result -> execute();
+							
+							echo '<p><select name="characterid" class="custom-select">';
+							if(!isset($_POST['type'])){echo '<option value="-">-</option>';}
+							foreach($result -> get_result() as $character){
+								echo '<option value="'.$character['idcharacter'].'" ';
+								if(isset($_POST['type'])){
+									if($_POST['type'] == 2){
+										if($character['idcharacter'] == $_POST['characterid']){
+											echo 'selected';
+										}
+									}
+								}
+								echo '>'.$character['Name'].'</option>';
+							}
+							echo '</select></p>'; ?>
+					<div class="form-group mb-2"><button type="submit" class="btn btn-info mb-2">Quick Search</button></div>
+				</form>
+				
 					<p><h2>Latest submissions</h2></p>
 					<?php
 						require "server/conexao.php";
