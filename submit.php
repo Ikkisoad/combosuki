@@ -44,28 +44,31 @@
 					$result = $conn -> prepare($query);
 					$result -> execute();
 					foreach($result -> get_result()	as $resource){
-							if($resource['type'] == 1){
-								$query = "INSERT INTO `resources`(`idResources`, `combo_idcombo`, `Resources_values_idResources_values`, `number_value`) 
-											VALUES (				NULL,					?		,							?			,		NULL)";
-								$result = $conn -> prepare($query);
-								$name = str_replace(' ', '_', $resource['text_name']);
-								$result -> bind_param("ii", $comboid, $_POST[$name]);
-								$result -> execute();
-							}else if($resource['type'] == 2){
-								$query = "SELECT idResources_values FROM resources_values WHERE game_resources_idgame_resources = ".$resource['idgame_resources']."";
-								$result = $conn -> prepare($query);
-								$result -> execute();
-								
-								foreach($result -> get_result()	as $id){
-									
+							$name = str_replace(' ', '_', $resource['text_name']);
+							if($_POST[$name] != '-'){
+								if($resource['type'] == 1){
 									$query = "INSERT INTO `resources`(`idResources`, `combo_idcombo`, `Resources_values_idResources_values`, `number_value`) 
-												VALUES (				NULL,					?		,							?,		?)";
+												VALUES (				NULL,					?		,							?			,		NULL)";
 									$result = $conn -> prepare($query);
-									$name = str_replace(' ', '_', $resource['text_name']);
-									//print_r($_POST);
-									$result -> bind_param("iid", $comboid, $id['idResources_values'], $_POST[$name]);
+									
+									$result -> bind_param("ii", $comboid, $_POST[$name]);
+									$result -> execute();
+								}else if($resource['type'] == 2){
+									$query = "SELECT idResources_values FROM resources_values WHERE game_resources_idgame_resources = ".$resource['idgame_resources']."";
+									$result = $conn -> prepare($query);
 									$result -> execute();
 									
+									foreach($result -> get_result()	as $id){
+										
+										$query = "INSERT INTO `resources`(`idResources`, `combo_idcombo`, `Resources_values_idResources_values`, `number_value`) 
+													VALUES (				NULL,					?		,							?,		?)";
+										$result = $conn -> prepare($query);
+										//$name = str_replace(' ', '_', $resource['text_name']);
+										//print_r($_POST);
+										$result -> bind_param("iid", $comboid, $id['idResources_values'], $_POST[$name]);
+										$result -> execute();
+										
+									}
 								}
 							}
 						}

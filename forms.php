@@ -219,7 +219,7 @@
 									
 									$result = $conn -> prepare($query);
 									$result -> execute();
-									if(!isset($_POST['type'])){echo '<option value="-">-</option>';}
+									if(!isset($_POST['type']) || $lap){echo '<option value="-">-</option>';}
 									foreach($result -> get_result() as $resource_value){
 										echo '<option value="';
 										echo $resource_value['idResources_values'].'" ';

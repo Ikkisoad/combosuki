@@ -210,6 +210,8 @@ WHERE `idcombo` = ? ";
 													echo '<img class="img-fluid" alt="Responsive image" src=img/buttons/';
 													echo $buttonsPNG[$buttonID];
 													echo '.png>';
+												}else{
+													echo ' '.$image.' ';
 												}
 									}
 							//#####################################BUTTON PRINTING##############################################
@@ -222,14 +224,12 @@ WHERE `idcombo` = ? ";
 						$damage = $data['damage'];
 						$submited = new DateTime($data['submited']);
 						if($data['primaryORsecundary'] == 0){
-							if($data['order'] != 0){
 								array_push($secondaryTitle,$data['text_name']);
 								if($data['type'] == 1){
 									array_push($secondaryValue, $data['value']);
 								}else{
 									array_push($secondaryValue, $data['number_value']);
 								}
-							}	
 						}else{
 							array_push($primaryTitle,$data['text_name']);
 							if($data['type'] == 1){
