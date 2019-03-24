@@ -152,7 +152,7 @@ WHERE `idcombo` = ? ";
 								echo 'Patch: '.$data['patch'].'</button></p>';
 							}
 							
-							$query = "SELECT name,png FROM `button` WHERE `game_idgame` = ? OR `game_idgame` IS NULL";
+							$query = "SELECT name,png FROM `button` WHERE `game_idgame` = ?";
 							$result = $conn -> prepare($query);
 							$result -> bind_param("i",$data['game_idgame']);
 							$result -> execute();
