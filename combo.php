@@ -146,7 +146,7 @@ WHERE `idcombo` = ? ";
 						
 						//print_r($data);
 						if($id_combo != $data['idcombo']){
-							
+							$patch = $data['patch'];
 							if($data['patch'] != ''){
 								echo '<p><button class="btn btn-dark" disabled>';
 								echo 'Patch: '.$data['patch'].'</button></p>';
@@ -463,6 +463,7 @@ WHERE `idcombo` = ? ";
 					?>
 					<input type="hidden" id="listingtype" name="listingtype" value="<?php echo $listing_type; ?>">
 					<input type="hidden" id="type" name="type" value="2">
+					<input type="hidden" name="patch" value="<?php echo $patch; ?>">
 					<input type="hidden" name="characterid" value="<?php echo $character; ?>">
 					<input type="hidden" name="damage" value="<?php echo $damage; ?>">
 					<input type="hidden" name="idcombo" value="<?php echo $id_combo; ?>">

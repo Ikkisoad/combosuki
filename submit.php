@@ -26,11 +26,11 @@
 						
 					}else{
 						$query = "UPDATE `combo` SET 
-						`combo`= ?,`comments`= ?,`video`= ?,`character_idcharacter`= ?, `damage`= ?,`type`= ?
+						`combo`= ?,`comments`= ?,`video`= ?,`character_idcharacter`= ?, `damage`= ?,`type`= ?, `patch` = ? 
 						WHERE `idcombo` = ?";
 						$result = $conn -> prepare($query);
 						//print_r($_POST);
-						$result -> bind_param("sssidii", $_POST['combo'], $_POST['comments'],$_POST['video'],$_POST['characterid'], $_POST['damage'], $_POST['listingtype'], $_POST['idcombo']);
+						$result -> bind_param("sssidisi", $_POST['combo'], $_POST['comments'],$_POST['video'],$_POST['characterid'], $_POST['damage'], $_POST['listingtype'], $_POST['patch'], $_POST['idcombo']);
 						$result -> execute();
 						
 						$comboid = $_POST['idcombo'];
