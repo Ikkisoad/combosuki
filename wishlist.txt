@@ -2,3 +2,4 @@
 > Get rid of useless information. DONE
 > Ready to go selections. (Corner, universal... etc).
 > Change between images and text button. DONE
+> Upload CSV file. 
