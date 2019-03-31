@@ -119,7 +119,7 @@
 					$secondaryTitle = array();
 					$secondaryValue = array();
 					
-					$query = "SELECT `idcombo`,`combo`,`damage`,`value`,`idResources_values`,`number_value`,`character`.`idcharacter`,`character`.`Name`, `video`, `game_resources`.`text_name`,`game_resources`.`type`, `combo`.`type` as listingtype, `combo`.`comments`,`game_resources`.`primaryORsecundary`, `character`.`game_idgame`, `resources_values`.`order`, `combo`.`submited`, `combo`.`patch`
+					$query = "SELECT `idcombo`,`combo`,`damage`,`value`,`idResources_values`,`number_value`,`character`.`idcharacter`,`character`.`Name`, `video`, `game_resources`.`text_name`,`game_resources`.`type`, `combo`.`type` as listingtype, `combo`.`comments`,`game_resources`.`primaryORsecundary`, `character`.`game_idgame`, `resources_values`.`order`, `combo`.`submited`, `combo`.`patch`, `combo`.`author`
 FROM `combo` 
 INNER JOIN `resources` ON `combo`.`idcombo` = `resources`.`combo_idcombo` 
 LEFT JOIN `resources_values` ON `resources_values`.`idResources_values` = `resources`.`Resources_values_idResources_values` 
@@ -247,6 +247,7 @@ WHERE `idcombo` = ? ";
 						$video = $data['video'];
 						$damage = $data['damage'];
 						$submited = new DateTime($data['submited']);
+						$author = $data['author'];
 						if($data['primaryORsecundary'] == 0){
 								array_push($secondaryTitle,$data['text_name']);
 								if($data['type'] == 1){
@@ -275,7 +276,7 @@ WHERE `idcombo` = ? ";
 								echo '</th>';
 							}
 							echo '</tr><tr>';
-							echo '<td>'.$damage.'</td>';
+							echo '<td>'.number_format($damage,'0','','.').'</td>';
 							for($i = 0; $i<sizeof($primaryTitle); $i++){
 								echo '<td>';
 								echo $primaryValue[$i];
@@ -415,7 +416,7 @@ WHERE `idcombo` = ? ";
 				</form> -->
 				
 				<?php
-					if($listing_type != 3){
+					/*if($listing_type != 3){
 						echo '<form method="post" onsubmit="return confirm("Are you sure you want to archive this';
 						switch($listing_type){
 							case 0:
@@ -440,7 +441,7 @@ WHERE `idcombo` = ? ";
 						echo '">
 						<button type="submit" class="btn btn-warning">Archive</button>
 						</form></p>';
-					}
+					}*/
 				?>
 				
 				<form method="post" action="forms.php?gameid=<?php if(isset($_GET['gameid'])){echo $_GET['gameid'];} ?>">
@@ -470,7 +471,9 @@ WHERE `idcombo` = ? ";
 					<input type="hidden" name="combo" value="<?php echo $combo; ?>">
 					<input type="hidden" name="comment" value="<?php echo $comment; ?>">
 					<input type="hidden" name="video" value="<?php echo $video; ?>">
-					<button class="btn btn-primary">Edit</button><p>Submited: <?php echo $submited->format('d-m-Y');?>
+					<input type="hidden" name="author" value="<?php echo $author; ?>">
+					<button class="btn btn-primary">Edit</button>
+					<p>Submited: <?php echo $submited->format('d-m-Y');?> <?php if($author != ''): ?><br>Author: <?php echo $author; ?></p><?php endif; ?>
 				</form>
 			</div>
 			</div>

@@ -11,11 +11,11 @@
 					}
 					//print_r($_POST); echo ' -> second<br>';
 					if(!isset($_POST['idcombo'])){
-						$query = "INSERT INTO `combo`(`idcombo`, `combo`, `comments`, `video`, `user_iduser`, `character_idcharacter`, `submited`, `damage`, `type`, `patch`) 
-												VALUES (NULL,		?,		?,			?,	NULL,			?,						?, ?, ?, ?)";
+						$query = "INSERT INTO `combo`(`idcombo`, `combo`, `comments`, `video`, `user_iduser`, `character_idcharacter`, `submited`, `damage`, `type`, `patch`, `author`, `password`) 
+												VALUES (NULL,		?,		?,			?,	NULL,			?,						?, ?, ?, ?, ?, ?)";
 						$result = $conn -> prepare($query);
 						$date = date("Y-m-d H:i:s");
-						$result -> bind_param("sssisdis", $_POST['combo'], $_POST['comments'],$_POST['video'],$_POST['characterid'],$date, $_POST['damage'], $_POST['listingtype'], $_POST['patch']);
+						$result -> bind_param("sssisdisss", $_POST['combo'], $_POST['comments'],$_POST['video'],$_POST['characterid'],$date, $_POST['damage'], $_POST['listingtype'], $_POST['patch'], $_POST['author'], $_POST['comboPass']);
 						$result -> execute();
 						
 						$comboid = mysqli_insert_id($conn);
@@ -25,15 +25,31 @@
 						
 						
 					}else{
+						
+						$comboid = $_POST['idcombo'];
+						
+						$query = "SELECT `password` FROM 
+						`combo` WHERE `idcombo` = ?";
+						$result = $conn -> prepare($query);
+						$result -> bind_param("i", $comboid);
+						$result -> execute();
+						foreach($result -> get_result() as $pass){
+							echo $pass['password'];
+							if($pass['password'] != $_POST['comboPass']){
+								header("Location: combo.php?gameid=".$_POST['gameid']."&idcombo=".$comboid."");
+								exit();
+							}
+						}
+						
 						$query = "UPDATE `combo` SET 
-						`combo`= ?,`comments`= ?,`video`= ?,`character_idcharacter`= ?, `damage`= ?,`type`= ?, `patch` = ? 
+						`combo`= ?,`comments`= ?,`video`= ?,`character_idcharacter`= ?, `damage`= ?,`type`= ?, `patch` = ?, `author`= ?
 						WHERE `idcombo` = ?";
 						$result = $conn -> prepare($query);
 						//print_r($_POST);
-						$result -> bind_param("sssidisi", $_POST['combo'], $_POST['comments'],$_POST['video'],$_POST['characterid'], $_POST['damage'], $_POST['listingtype'], $_POST['patch'], $_POST['idcombo']);
+						$result -> bind_param("sssidissi", $_POST['combo'], $_POST['comments'],$_POST['video'],$_POST['characterid'], $_POST['damage'], $_POST['listingtype'], $_POST['patch'], $_POST['author'], $comboid);
 						$result -> execute();
 						
-						$comboid = $_POST['idcombo'];
+						
 						
 						$query = "DELETE FROM `resources` WHERE `combo_idcombo` = ?";
 						$result = $conn -> prepare($query);
@@ -73,6 +89,7 @@
 							}
 						}
 						header("Location: combo.php?gameid=".$_POST['gameid']."&idcombo=".$comboid."");
+						exit();
 					//echo $comboid;
 				}
 			
@@ -325,6 +342,16 @@ AND `character`.`game_idgame` = ? ";
 							$binded_parameters[$parameters_counter++] = $parameterValue;
 						}
 					}
+					
+					if(isset($_GET['author'])){
+						if($_GET['author'] != ''){
+							$parameterValue .= $_GET['author'];
+							$query .= "AND `combo`.`author` LIKE ? ";
+							$parameter_type .= "s";
+							$binded_parameters[$parameters_counter++] = $parameterValue;
+						}
+					}
+					
 					if(isset($_GET['listingtype'])){
 						if($_GET['listingtype'] != '-'){
 							$query .= "AND `combo`.`type` = ? ";
@@ -402,6 +429,7 @@ AND `character`.`game_idgame` = ? ";
 					echo '<br>';
 					$i = 0;
 					foreach($result -> get_result() as $data){
+						//print_r($data); echo '<br>';
 						$i++;
 						if($id_combo != $data['idcombo']){
 							if($id_combo == -1){
@@ -430,8 +458,7 @@ AND `character`.`game_idgame` = ? ";
 						$k++;
 					}
 					
-					$i = $i / $num_rows;
-				
+						$i = $i / $num_rows;
 				}
 				 // calculate total pages with results
 			?>
