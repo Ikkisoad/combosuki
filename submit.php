@@ -28,14 +28,12 @@
 						
 						$comboid = $_POST['idcombo'];
 						
-						$query = "SELECT `password` FROM 
-						`combo` WHERE `idcombo` = ?";
+						$query = "SELECT `password`, (SELECT game.globalPass FROM game WHERE game.idgame = ?) as gPass FROM `combo` WHERE `idcombo` = ?";
 						$result = $conn -> prepare($query);
-						$result -> bind_param("i", $comboid);
+						$result -> bind_param("ii", $_POST['gameid'], $comboid);
 						$result -> execute();
 						foreach($result -> get_result() as $pass){
-							echo $pass['password'];
-							if($pass['password'] != $_POST['comboPass']){
+							if($pass['password'] != $_POST['comboPass'] && $pass['gPass'] != $_POST['comboPass']){
 								header("Location: combo.php?gameid=".$_POST['gameid']."&idcombo=".$comboid."");
 								exit();
 							}
