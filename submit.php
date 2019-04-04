@@ -39,20 +39,33 @@
 							}
 						}
 						
-						$query = "UPDATE `combo` SET 
-						`combo`= ?,`comments`= ?,`video`= ?,`character_idcharacter`= ?, `damage`= ?,`type`= ?, `patch` = ?, `author`= ?
-						WHERE `idcombo` = ?";
-						$result = $conn -> prepare($query);
-						//print_r($_POST);
-						$result -> bind_param("sssidissi", $_POST['combo'], $_POST['comments'],$_POST['video'],$_POST['characterid'], $_POST['damage'], $_POST['listingtype'], $_POST['patch'], $_POST['author'], $comboid);
-						$result -> execute();
-						
-						
-						
 						$query = "DELETE FROM `resources` WHERE `combo_idcombo` = ?";
 						$result = $conn -> prepare($query);
 						$result -> bind_param("i", $_POST['idcombo']);
 						$result -> execute();
+						
+						if($_POST['action'] == 'Submit'){
+						
+							$query = "UPDATE `combo` SET 
+							`combo`= ?,`comments`= ?,`video`= ?,`character_idcharacter`= ?, `damage`= ?,`type`= ?, `patch` = ?, `author`= ?
+							WHERE `idcombo` = ?";
+							$result = $conn -> prepare($query);
+							//print_r($_POST);
+							$result -> bind_param("sssidissi", $_POST['combo'], $_POST['comments'],$_POST['video'],$_POST['characterid'], $_POST['damage'], $_POST['listingtype'], $_POST['patch'], $_POST['author'], $comboid);
+							$result -> execute();
+						
+						}else{
+							
+							$query = "DELETE FROM `combo` WHERE `idcombo` = ?";
+							$result = $conn -> prepare($query);
+							$result -> bind_param("i", $comboid);
+							$result -> execute();
+							
+							header("Location: game.php?gameid=".$_POST['gameid']."");
+							exit();
+							
+						}
+						
 					}
 					$query = "SELECT text_name,type,idgame_resources FROM `game_resources` WHERE game_idgame = ".$_POST['gameid']." ORDER BY text_name;";
 					$result = $conn -> prepare($query);

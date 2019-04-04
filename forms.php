@@ -369,8 +369,12 @@
 						?>"></textarea></p>
 						<?php endif; ?>
 						
-						<?php if(isset($_POST['type'])){
-							echo '<p><button type="submit" class="btn btn-primary btn-block">Submit</button></p>';
+						<?php 
+							if(isset($_POST['type'])){
+								echo '<p><button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Submit</button></p>';
+								if($_POST['type'] == 2){
+									echo '<p><button type="submit" name="action" value="Delete" class="btn btn-danger btn-block">Delete</button></p>';
+								}
 						}?>
 					</form>
 				</div>
