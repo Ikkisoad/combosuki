@@ -108,10 +108,15 @@
 					
 					?>" action="submit.php">
 					<?php
+						
 						if(!isset($_POST['type'])){
 									echo '<p><button type="submit" class="btn btn-info btn-block">Search</button></p>';
 								
-							}
+						}else{
+							if($_POST['type'] == 2){
+								echo '<p><button type="submit" name="action" value="Delete" class="btn btn-danger btn-block">Delete</button></p>';
+							}		
+						}
 						?>
 						
 						<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
@@ -372,9 +377,7 @@
 						<?php 
 							if(isset($_POST['type'])){
 								echo '<p><button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Submit</button></p>';
-								if($_POST['type'] == 2){
-									echo '<p><button type="submit" name="action" value="Delete" class="btn btn-danger btn-block">Delete</button></p>';
-								}
+								
 						}?>
 					</form>
 				</div>
