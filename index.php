@@ -62,10 +62,6 @@
 			  
 			  background: url("img/black-honeycomb.png");
 			}
-			
-			.jumbotron{
-				width: 50vh;
-			}
 		</style> <!-- BACKGROUND COLOR-->
 	</head>
 	

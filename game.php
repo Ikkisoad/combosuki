@@ -66,10 +66,6 @@
 				color: #000000;	
 			}
 			.img-responsive{width:100%;}
-			
-			.jumbotron{
-				width: 100vh;
-			}
 		</style> <!-- BACKGROUND COLOR-->
 		<?php
 			$_POST = array_map("strip_tags", $_POST);

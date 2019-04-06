@@ -175,10 +175,6 @@
 			textare{
 				color: #000000;	
 			}
-			
-			.jumbotron{
-				width: 120vh;
-			}
 				
 		</style> <!-- BACKGROUND COLOR-->
 	</head>
