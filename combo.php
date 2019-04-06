@@ -73,20 +73,19 @@
 					<h1 class="display-3"></h1>
 						<p>
 							<a href="<?php
-									if(!empty($_GET) && isset($_GET['gameid'])){
+									require "server/conexao.php";
+									$query = "SELECT `character`.`game_idgame` FROM `character` INNER JOIN `combo` ON `character`.`idcharacter` = `combo`.`character_idcharacter` WHERE `combo`.`idcombo` = ?";
+									$result = $conn -> prepare($query);
+									$result -> bind_param("i",$_GET['idcombo']);
+									$result -> execute();
+									
+									foreach($result -> get_result() as $data){
 										echo 'game.php?gameid=';
-										echo $_GET['gameid'];
-									}else{
-										echo 'index.php';	
-									}
-								?>"><img 
-								<?php
-									if(!empty($_GET) && isset($_GET['gameid'])){
+										echo $data['game_idgame'].'"><img ';
 										echo 'src=img/games/';
-										echo $_GET['gameid'];
+										echo $data['game_idgame'];
 										echo '.png ';
-									}else{
-										echo 'src="img/combosuki.png"';	
+										$gameid = $data['game_idgame'];
 									}
 								?>
 								align="middle" height="200" >
@@ -96,8 +95,8 @@
 			</div>
 			<div class="container">
 				<div class="btn-group" role="group" aria-label="Basic example">
-					<form id="MyForm" method="get" action="<?php if(isset($_GET['gameid'])){echo 'game.php';}else{echo 'index.php';} ?>">
-							<input type="hidden" id="gameid" name="gameid" value="<?php  if(isset($_GET['gameid'])){echo $_GET['gameid'];} ?>">
+					<form id="MyForm" method="get" action="<?php if(isset($gameid)){echo 'game.php';}else{echo 'index.php';} ?>">
+							<input type="hidden" id="gameid" name="gameid" value="<?php  if(isset($gameid)){echo $gameid;} ?>">
 							<button class="btn btn-secondary"><< back</button>
 					</form>
 					<form id="MyForm" method="get" action="index.php">
@@ -443,7 +442,7 @@ WHERE `idcombo` = ? ";
 					}*/
 				?>
 				
-				<form method="post" action="forms.php?gameid=<?php if(isset($_GET['gameid'])){echo $_GET['gameid'];} ?>">
+				<form method="post" action="forms.php?gameid=<?php if(isset($gameid)){echo $gameid;} ?>">
 					<?php //print_r($secondaryTitle);?>
 					<!-- <input type="hidden" name="<?php //echo $secondaryTitle; ?>" value="<?php //echo $secondaryValue; ?>"> -->
 					<?php

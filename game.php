@@ -171,7 +171,7 @@
 								echo '<tr><td>';
 								echo $data['Name'];
 								echo '</td><td style="min-width:400px">';
-								echo		'<a href="combo.php?gameid='.$_GET['gameid'].'&idcombo='.$data['idcombo'].'">'.$data['combo'].'</a>';
+								echo		'<a href="combo.php?idcombo='.$data['idcombo'].'">'.$data['combo'].'</a>';
 								echo '</td><td>';
 								echo number_format($data['damage'],'0','','.');
 								echo '</td><td>';

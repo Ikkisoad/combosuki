@@ -8,4 +8,4 @@
 > Choose background.
 > Display method preference.
 
-> Fix vertical notations.
+> Fix vertical notations. DONE

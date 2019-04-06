@@ -34,7 +34,7 @@
 						$result -> execute();
 						foreach($result -> get_result() as $pass){
 							if($pass['password'] != $_POST['comboPass'] && $pass['gPass'] != $_POST['comboPass']){
-								header("Location: combo.php?gameid=".$_POST['gameid']."&idcombo=".$comboid."");
+								header("Location: combo.php?idcombo=".$comboid."");
 								exit();
 							}
 						}
@@ -99,7 +99,7 @@
 								}
 							}
 						}
-						header("Location: combo.php?gameid=".$_POST['gameid']."&idcombo=".$comboid."");
+						header("Location: combo.php?idcombo=".$comboid."");
 						exit();
 					//echo $comboid;
 				}
@@ -456,7 +456,7 @@ AND `character`.`game_idgame` = ? ";
 							$k = 0;
 							$id_combo = $data['idcombo'];
 							echo		'<td>'.$data['Name'].'</td>';
-							echo		'<td style="min-width:400px"><a href="combo.php?gameid='.$_GET['gameid'].'&idcombo='.$data['idcombo'].'">'.$data['combo'].'</a></td>';
+							echo		'<td style="min-width:400px"><a href="combo.php?idcombo='.$data['idcombo'].'">'.$data['combo'].'</a></td>';
 							echo		'<td>'.number_format($data['damage'],'0','','.').'</td>';
 						}
 						if($j[$k] == 1){
