@@ -209,6 +209,7 @@
 			</div>
 			<div class="container">
 			
+			
 			<?php
 				if(!empty($_GET)){
 					$_GET = array_map("strip_tags", $_GET);
@@ -472,8 +473,39 @@ AND `character`.`game_idgame` = ? ";
 						$i = $i / $num_rows;
 				}
 				 // calculate total pages with results
-			?>
-			</div>
+				
+				if($page > 0){
+					echo '<a href="submit.php?page=';
+					
+						echo $page - 1;
+					
+					foreach ($_GET as $key => $entry){
+						if($entry != '-' && $entry != '' && $key != 'page'){
+							echo '&';
+							echo $key;
+							echo '=';
+							echo $entry;
+						}
+					}
+					echo '" style="padding-right: 5px;">Previous </a>';
+				}
+				if($i == 50 && $page > 0){echo '/';}
+				if($i == 50){
+					echo '<a href="submit.php?page=';
+					echo $page + 1;
+					foreach ($_GET as $key => $entry){
+						if($entry != '-' && $entry != '' && $key != 'page'){
+							echo '&';
+							echo $key;
+							echo '=';
+							echo $entry;
+						}
+						
+					}
+					echo '" style="padding-right: 5px;">Next </a>';
+				}
+			?></table>
+			
 			<?php
 				if($page > 0){
 					echo '<a href="submit.php?page=';
@@ -508,7 +540,8 @@ AND `character`.`game_idgame` = ? ";
 					echo '" style="padding-right: 5px;">Next </a>';
 				}
 			 ?>
-		</main>
+		</div></main>
+		
 	</body>
 	    <!-- Bootstrap core JavaScript
 		================================================== -->
