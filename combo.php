@@ -64,6 +64,9 @@
 			}
 			.img-responsive{width:100%;}
 				
+			.jumbotron{
+				width: 50vh;
+			}
 		</style> <!-- BACKGROUND COLOR-->
 	</head>
 	

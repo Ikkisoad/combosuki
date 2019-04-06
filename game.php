@@ -66,6 +66,10 @@
 				color: #000000;	
 			}
 			.img-responsive{width:100%;}
+			
+			.jumbotron{
+				width: 100vh;
+			}
 		</style> <!-- BACKGROUND COLOR-->
 		<?php
 			$_POST = array_map("strip_tags", $_POST);
@@ -101,9 +105,9 @@
 
 	<body>
 		<main role="main">
-			<div class="jumbotron">
+			<div class="jumbotron jumbotron-fluid">
 				<div class="container">
-					<h1 class="display-3"></h1>
+					<h1 class="display-4"></h1>
 						<p>
 							<a href="index.php"><img <?php
 									echo 'src=img/games/';
@@ -170,7 +174,7 @@
 							foreach($result -> get_result() as $data){
 								echo '<tr><td>';
 								echo $data['Name'];
-								echo '</td><td>';
+								echo '</td><td style="min-width:400px">';
 								echo		'<a href="combo.php?gameid='.$_GET['gameid'].'&idcombo='.$data['idcombo'].'">'.$data['combo'].'</a>';
 								echo '</td><td>';
 								echo number_format($data['damage'],'0','','.');

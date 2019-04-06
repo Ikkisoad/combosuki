@@ -1,8 +1,11 @@
-> Log in system.
+> Log in system. FAILED
 > Get rid of useless information. DONE
 > Ready to go selections. (Corner, universal... etc).
 > Change between images and text button. DONE
 > Upload CSV file. 
+
 > Use cookies for:
 > Choose background.
 > Display method preference.
+
+> Fix vertical notations.

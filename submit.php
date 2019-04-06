@@ -175,6 +175,10 @@
 			textare{
 				color: #000000;	
 			}
+			
+			.jumbotron{
+				width: 120vh;
+			}
 				
 		</style> <!-- BACKGROUND COLOR-->
 	</head>
@@ -456,7 +460,7 @@ AND `character`.`game_idgame` = ? ";
 							$k = 0;
 							$id_combo = $data['idcombo'];
 							echo		'<td>'.$data['Name'].'</td>';
-							echo		'<td><a href="combo.php?gameid='.$_GET['gameid'].'&idcombo='.$data['idcombo'].'">'.$data['combo'].'</a></td>';
+							echo		'<td style="min-width:400px"><a href="combo.php?gameid='.$_GET['gameid'].'&idcombo='.$data['idcombo'].'">'.$data['combo'].'</a></td>';
 							echo		'<td>'.number_format($data['damage'],'0','','.').'</td>';
 						}
 						if($j[$k] == 1){

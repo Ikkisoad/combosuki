@@ -62,19 +62,24 @@
 			  
 			  background: url("img/black-honeycomb.png");
 			}
+			
+			.jumbotron{
+				width: 50vh;
+			}
 		</style> <!-- BACKGROUND COLOR-->
 	</head>
 	
 	<body>
-		<main role="main">
-			<div class="jumbotron">
+	<div class="jumbotron jumbotron-fluid">
 				<div class="container">
-					<h1 class="display-3"></h1>
-						<p>
+					<h1 class="display-4"></h1>
+						<p class="lead">
 							<a href="index.php"><img src="img/combosuki.png" align="middle" height="100" ></a>
 						</p>
 				</div>
 			</div>
+		<main role="main">
+			
 			<div class="container"><div class="body">
 			<?php
 				if(!isset($_GET['about'])){
@@ -121,7 +126,9 @@
 		  <p style="text-align: center;"><a href="https://goo.gl/forms/xzjGo1dQEGOTzZGT2" target="_blank">Request a new game   </a> / 
 		  <a href="index.php?about=1" style="padding-right: 5px;">About </a> / 
 		  <a href="index.php?about=2">Combo Guidelines </a> / <a href="https://discord.gg/49Qrkz4" target="_blank">Discord </a>
-		   / <a href="index.php?about=3" style="padding-right: 5px;">Logs </a>
+		   / <a href="index.php?about=3" style="padding-right: 5px;">Logs </a> / <a href="https://docs.google.com/spreadsheets/d/1ac2nRBy0tTPz6k6heook5w8R7dDngutW8OkK5alhI7k/edit#gid=1066344564" target="_blank" style="padding-right: 5px;">FGC Discord Compendium </a>
+		   
+		   
 		  </p>
 		</div>
 	</body>
