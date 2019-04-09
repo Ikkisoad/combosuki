@@ -7,5 +7,9 @@
 > Use cookies for:
 > Choose background.
 > Display method preference.
+> Favortites.
+>CREATE COOKIE USER
 
 > Fix vertical notations. DONE
+
+> Moderation station

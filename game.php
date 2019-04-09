@@ -32,7 +32,13 @@
 		<style>
 			body{
 				background-color: #35340a;
-				background: url("img/red-honeycomb.png");
+				background: url("img/<?php
+				if(isset($_COOKIE['color'])){
+					echo 'bg/'.$_COOKIE["color"].'honeycomb.png';
+				}else{
+					echo 'yellow-honeycomb.png';
+				}?>
+					");
 				color: white;
 			}
 			.jumbotron{

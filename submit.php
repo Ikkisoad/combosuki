@@ -166,7 +166,12 @@
 			body{
 				background-color: #35340a;
 				color: white;
-				background: url("img/cyan-honeycomb.png");
+				background: url("img/<?php
+				if(isset($_COOKIE['color'])){
+					echo 'bg/'.$_COOKIE["color"].'honeycomb.png';
+				}else{
+					echo 'yellow-honeycomb.png';
+				}?>");
 			}
 			.jumbotron{
 				max-height: 250px;
@@ -489,7 +494,7 @@ AND `character`.`game_idgame` = ? ";
 					}
 					echo '" style="padding-right: 5px;">Previous </a>';
 				}
-				if($i == 50 && $page > 0){echo '/';}
+				if($i == 50 && $page > 0){echo '/ ';}
 				if($i == 50){
 					echo '<a href="submit.php?page=';
 					echo $page + 1;
@@ -522,7 +527,7 @@ AND `character`.`game_idgame` = ? ";
 					}
 					echo '" style="padding-right: 5px;">Previous </a>';
 				}
-				if($i == 50 && $page > 0){echo '/';}
+				if($i == 50 && $page > 0){echo '/ ';}
 			 ?>
 			 <?php
 				if($i == 50){

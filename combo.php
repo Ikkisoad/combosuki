@@ -52,7 +52,12 @@
 			
 			body{
 				background-color: #35340a;
-				background: url("img/dark-honeycomb.png");
+				background: url("img/<?php
+				if(isset($_COOKIE['color'])){
+					echo 'bg/'.$_COOKIE["color"].'honeycomb.png';
+				}else{
+					echo 'yellow-honeycomb.png';
+				}?>");
 				color: white;
 			}
 			.jumbotron{
@@ -228,10 +233,10 @@ WHERE `idcombo` = ? ";
 												}
 									}
 							//#####################################BUTTON PRINTING##############################################
-							if(!isset($_COOKIE['display_preference'])){
+							if(!isset($_COOKIE['display'])){
 								echo $combo_image;
-								$_COOKIE['display_preference'] = 1;
-							}else if($_COOKIE['display_preference']){
+								$_COOKIE['display'] = 1;
+							}else if($_COOKIE['display']){
 								echo $combo_image;
 							}else{
 								echo $combo;
@@ -307,7 +312,7 @@ WHERE `idcombo` = ? ";
 			<div id="combo_text" style="display: none;">
 				<?php 
 				
-					if($_COOKIE['display_preference']){
+					if($_COOKIE['display']){
 						echo $combo;
 					}else{
 						echo $combo_image;

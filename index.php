@@ -32,12 +32,34 @@
 
     <!-- Custom styles for this template -->
 		<link href="jumbotron.css" rel="stylesheet">
+		
 		<style>
 			body{
 				padding: 0;
 				margin: 0;
 				background-color: #00190f;
-				background: url("img/yellow-honeycomb.png");
+				background: url("img/<?php
+					/*if(!isset($_SESSION)){
+						session_start();
+					}*/
+					
+					if(isset($_POST['color'])){
+						setcookie("color", $_POST['color'], time() + (10 * 365 * 24 * 60 * 60), "/"); // 86400 = 1 day
+						//$_SESSION["color"] = $_POST['color'];
+					}
+					
+					if(isset($_POST['display'])){
+						setcookie("display", $_POST['display'], time() + (10 * 365 * 24 * 60 * 60), "/"); // 86400 = 1 day
+						//$_SESSION["color"] = $_POST['color'];
+					}
+					
+					if(isset($_COOKIE['color'])){
+						echo 'bg/'.$_COOKIE["color"].'honeycomb.png';
+					}else{
+						echo 'yellow-honeycomb.png';
+					}
+				
+				?>");
 				color: white;
 			}
 			.container{
@@ -111,6 +133,22 @@
 							echo $log['Date'].': ';
 							echo $log['Description'].'<br>';
 						}
+				}else if($_GET['about'] == 4){
+					echo '<form method="post" action="index.php">Color:<p>';
+					echo '<select name="color" class="custom-select">
+					<option value="0">Green</option>
+					<option value="1">Red</option>
+					<option value="2">Yellow</option>
+					<option value="3">Purple</option>
+					<option value="4">Black</option>
+					<option value="5">Gray</option>
+					<option value="6">Cyan</option>
+					<option value="7">Orange</option>
+					<option value="8">Blue</option>
+					<option value="9">White</option>
+					</select></p>Display mathod:<p>
+					<select name="display" class="custom-select"><option value="1">Image</option><option value="0">Text</option></select>
+					</p><button class="btn btn-secondary">Save</button></form>';
 				}
 				echo '<br><br><br><br><br><br>';
 			?>
@@ -122,7 +160,7 @@
 		  <p style="text-align: center;"><a href="https://goo.gl/forms/xzjGo1dQEGOTzZGT2" target="_blank">Request a new game   </a> / 
 		  <a href="index.php?about=1" style="padding-right: 5px;">About </a> / 
 		  <a href="index.php?about=2">Combo Guidelines </a> / <a href="https://discord.gg/49Qrkz4" target="_blank">Discord </a>
-		   / <a href="index.php?about=3" style="padding-right: 5px;">Logs </a> / <a href="https://docs.google.com/spreadsheets/d/1ac2nRBy0tTPz6k6heook5w8R7dDngutW8OkK5alhI7k/edit#gid=1066344564" target="_blank" style="padding-right: 5px;">FGC Discord Compendium </a>
+		   / <a href="index.php?about=3" style="padding-right: 5px;">Logs </a> / <a href="https://docs.google.com/spreadsheets/d/1ac2nRBy0tTPz6k6heook5w8R7dDngutW8OkK5alhI7k/edit#gid=1066344564" target="_blank" style="padding-right: 5px;">FGC Discord Compendium </a> / <a href="index.php?about=4" style="padding-right: 5px;">Preferences </a>
 		   
 		   
 		  </p>
