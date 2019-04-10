@@ -277,7 +277,7 @@
 					$resource_result = $conn -> prepare($query);
 					$resource_result -> bind_param("i", $_GET['gameid']);
 					$resource_result -> execute();
-					$query = "SELECT `character`.`Name`,`game_resources`.`text_name`,`combo`.`character_idcharacter`,`idcombo`,`combo`,`damage`,`value`,`idResources_values`,`number_value`
+					$query = "SELECT `character`.`Name`,`game_resources`.`text_name`,`combo`.`character_idcharacter`,`idcombo`,`combo`,`damage`,`value`,`idResources_values`,`number_value`, `comments`
 FROM `combo` 
 INNER JOIN `resources` ON `combo`.`idcombo` = `resources`.`combo_idcombo` 
 LEFT JOIN `resources_values` ON `resources_values`.`idResources_values` = `resources`.`Resources_values_idResources_values`
@@ -462,7 +462,7 @@ AND `character`.`game_idgame` = ? ";
 							$k = 0;
 							$id_combo = $data['idcombo'];
 							echo		'<td>'.$data['Name'].'</td>';
-							echo		'<td style="min-width:400px"><a href="combo.php?idcombo='.$data['idcombo'].'">'.$data['combo'].'</a></td>';
+							echo		'<td style="min-width:400px"><a data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'" href="combo.php?idcombo='.$data['idcombo'].'">'.$data['combo'].'</a></td>';
 							echo		'<td>'.number_format($data['damage'],'0','','.').'</td>';
 						}
 						if($j[$k] == 1){

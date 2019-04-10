@@ -3,6 +3,7 @@
 > Ready to go selections. (Corner, universal... etc).
 > Change between images and text button. DONE
 > Upload CSV file. 
+> Show purpose of combos in the search (Probably just show the comment with a tooltip 
 
 > Use cookies for:
 > Choose background.

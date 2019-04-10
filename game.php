@@ -164,7 +164,7 @@
 					<p><h2>Latest submissions</h2></p>
 					<?php
 						require "server/conexao.php";
-						$query = "SELECT idcombo,Name,combo,damage,type, submited FROM `combo` INNER JOIN `character` ON `combo`.`character_idcharacter` = `character`.`idcharacter` WHERE `character`.`game_idgame` = ? ORDER BY submited DESC LIMIT 0,25";
+						$query = "SELECT idcombo,Name,combo,damage,type, comments, submited FROM `combo` INNER JOIN `character` ON `combo`.`character_idcharacter` = `character`.`idcharacter` WHERE `character`.`game_idgame` = ? ORDER BY submited DESC LIMIT 0,25";
 						$result = $conn -> prepare($query);
 						$result -> bind_param("i",$_GET['gameid']);
 						$result -> execute();
@@ -177,7 +177,7 @@
 								echo '<tr><td>';
 								echo $data['Name'];
 								echo '</td><td style="min-width:400px">';
-								echo		'<a href="combo.php?idcombo='.$data['idcombo'].'">'.$data['combo'].'</a>';
+								echo		'<a data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'" href="combo.php?idcombo='.$data['idcombo'].'">'.$data['combo'].'</a>';
 								echo '</td><td>';
 								echo number_format($data['damage'],'0','','.');
 								echo '</td><td>';

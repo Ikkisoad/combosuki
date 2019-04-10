@@ -210,7 +210,7 @@ WHERE `idcombo` = ? ";
 												$buttonID = array_search($image,$buttonsName);
 												//echo $buttonID;
 												if($buttonID > -1){
-													if($image == '->'){echo '<br>';}
+													if($image == '->'){$combo_image .= '<br>';}
 													$combo_image .= '<img class="img-fluid" alt="Responsive image" src=img/buttons/';
 													$combo_image .= $buttonsPNG[$buttonID];
 													$combo_image .= '.png>';
