@@ -207,7 +207,7 @@
 							<div class="input-group-prepend">
 								<span class="input-group-text">Damage:
 							</div>
-							<input type="number" name="damage" min="0" class="input-sm"<?php 
+							<input class="form-control" type="number" name="damage" min="0" <?php 
 							if(isset($_POST['type'])){
 								if($_POST['type'] == 2){
 									echo ' value="'.$_POST['damage'].'"';
@@ -221,7 +221,7 @@
 							<div class="input-group-prepend">
 								<span class="input-group-text">Patch:
 							</div>
-							<input type="text" name="patch" class="input-sm"<?php 
+							<input type="text" name="patch" class="form-control"<?php 
 							if(isset($_POST['type'])){
 								if($_POST['type'] == 2 && isset($_POST['patch'])){
 									echo ' value="'.$_POST['patch'].'"';
@@ -292,7 +292,7 @@
 								<span class="input-group-text">';
 											echo $resource['text_name'];
 											echo ' </div>
-							<input type="number" min="0" class="input-sm" name="';
+							<input class="form-control" type="number" min="0" class="input-sm" name="';
 											echo $resource['text_name'];
 											echo '" max="';
 											echo $resource_value['value'];
