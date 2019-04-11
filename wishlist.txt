@@ -3,7 +3,8 @@
 > Ready to go selections. (Corner, universal... etc).
 > Change between images and text button. DONE
 > Upload CSV file. 
-> Show purpose of combos in the search (Probably just show the comment with a tooltip 
+> Show purpose of combos in the search (Probably just show the comment with a tooltip) DONE but FAILED for mobile.
+> Give a drop down option to show video and comments of the combo.
 
 > Use cookies for:
 > Choose background.
