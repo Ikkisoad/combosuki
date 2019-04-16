@@ -227,7 +227,7 @@
 					<p><h2>Latest submissions</h2></p>
 					<?php
 						require "server/conexao.php";
-						$query = "SELECT idcombo,Name,combo,damage,type, comments, submited FROM `combo` INNER JOIN `character` ON `combo`.`character_idcharacter` = `character`.`idcharacter` WHERE `character`.`game_idgame` = ? ORDER BY submited DESC LIMIT 0,25";
+						$query = "SELECT idcombo,Name,combo,damage,type, comments, submited, video FROM `combo` INNER JOIN `character` ON `combo`.`character_idcharacter` = `character`.`idcharacter` WHERE `character`.`game_idgame` = ? ORDER BY submited DESC LIMIT 0,25";
 						$result = $conn -> prepare($query);
 						$result -> bind_param("i",$_GET['gameid']);
 						$result -> execute();
@@ -238,9 +238,74 @@
 						
 							foreach($result -> get_result() as $data){
 								echo '<tr><td data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'">';
-								echo $data['Name'];
+								echo '<button class="btn btn-dark" onclick="showDIV('.$data['idcombo'].')">'.$data['Name'].'</button>';
 								echo '</td><td style="min-width:400px">';
 								echo		'<a data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'" href="combo.php?idcombo='.$data['idcombo'].'">'.$data['combo'].'</a>';
+								echo '<div id="'.$data['idcombo'].'" style="display: none;">';
+								echo $data['comments'];
+  
+  //####################################################################VIDEO HERE
+  
+  if($data['video'] != ''){
+					if (strpos($data['video'], 'twitter') !== false && strpos($data['video'], 'https') !== false) {
+						echo '<blockquote class="twitter-tweet" data-conversation="none" data-lang="en"><p lang="en" dir="ltr">
+						<a href="';
+						echo $data['video'];
+						echo '"></a>
+					</blockquote>
+					<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>';
+					}else if (strpos($data['video'], 'youtu') !== false) {
+						preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $data['video'], $match);
+						$youtube_id = $match[1];
+						//print_r($match);
+						//echo '<br> URL: ';
+						//echo $youtube_id;
+						$whatIWant = substr($data['video'], strpos($data['video'], "=") + 1);    
+						//echo '<br>what I want:';
+						//echo $whatIWant;
+						echo '<div class="embed-responsive embed-responsive-16by9">
+						<iframe class="embed-responsive-item" src="https://www.youtube.com/embed/';
+						echo $youtube_id;
+						echo '?start=';echo $whatIWant; echo '" allowfullscreen></iframe></div>';
+					}else if(strpos($data['video'], 'streamable') !== false && strpos($data['video'], 'https') !== false){
+											/*echo '<div class="embed-responsive embed-responsive-16by9">
+											<iframe class="embed-responsive-item" src="';
+											echo $data['video'];
+											echo '" allowfullscreen></iframe>
+										</div>';*/
+										//$i = substr_replace($data['video'], "/s", 22,0);
+										echo '<div style="width: 100%; height: 0px; position: relative; padding-bottom: 56.250%;">
+						<iframe src="';
+											echo $data['video'];
+											echo '" frameborder="0" width="100%" height="100%" allowfullscreen style="width: 100%; height: 100%; position: absolute;">
+						</iframe>
+						</div>';
+											
+											
+											/*echo '<div style="width: 100%; height: 0px; position: relative; padding-bottom: 56.250%;"><iframe src="';
+											echo $streamable;
+											
+											echo '" frameborder="0" width="100%" height="100%" allowfullscreen style="width: 100%; height: 100%; position: absolute;"></iframe></div>';*/
+											
+					}else if(strpos($data['video'], 'twitch') !== false && strpos($data['video'], 'clips') !== false && strpos($data['video'], 'https') !== false){
+						$i = substr_replace($data['video'], "embed?clip=", 24,0);
+						echo '<iframe
+							src="'.$i.'"
+							height="360"
+							width="640"
+							frameborder="0"
+							scrolling="no"
+							allowfullscreen="true">
+						</iframe>';
+						
+					}else{
+						echo $data['video'];	
+					}
+				}
+  
+  //######################################################################VIDEO ABOVE
+  
+								echo '</div>';
 								echo '</td><td>';
 								echo number_format($data['damage'],'0','','.');
 								echo '</td><td>';
@@ -337,4 +402,13 @@
 			  }
 			}
 		</script>
+		<script>
+		function showDIV(DIV_ID) {
+		  var x = document.getElementById(DIV_ID);
+		  if (x.style.display === "none") {
+			x.style.display = "block";
+		  } else {
+			x.style.display = "none";
+		  }
+		}</script>
 </html>

@@ -7,11 +7,14 @@
 > Give a drop down option to show video and comments of the combo.
 
 > Use cookies for:
-> Choose background.
-> Display method preference.
+> Choose background. DONE
+> Display method preference. DONE
 > Favortites.
 >CREATE COOKIE USER
 
 > Fix vertical notations. DONE
 
 > Moderation station
+> More data in game.php, eg.: Most damaging combo, combos/character, solo combos
+
+> Upvote system with cookie users.
