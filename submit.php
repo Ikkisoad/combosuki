@@ -243,7 +243,7 @@
 					foreach($result -> get_result() as $each){
 						$num_rows = $each['total'];
 					}
-					$limit = $num_rows * $page * 50;
+					$limit = $num_rows * $page * 50; //HAVE TO CHANGE WHEN COMPARING TO $I BELLOW AS WELL
 					$offset = $num_rows * 50;
 					$i = 0;
 					$parameterValue = '';
