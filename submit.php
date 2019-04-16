@@ -461,7 +461,14 @@ AND `character`.`game_idgame` = ? ";
 							}
 							$k = 0;
 							$id_combo = $data['idcombo'];
-							echo		'<td>'.'<button class="btn btn-dark" onclick="showDIV('.$data['idcombo'].')">'.$data['Name'].'</button>'.'</td>';
+							echo '<td>';
+							if($data['comments'] != '' && $data['video'] != ''){
+								echo '<button class="btn btn-dark" onclick="showDIV('.$data['idcombo'].')">'.$data['Name'].'</button>';
+							}else{
+								echo $data['Name'];
+							}
+							echo '</td>';
+							
 							echo		'<td style="min-width:400px"><a data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'" href="combo.php?idcombo='.$data['idcombo'].'">'.$data['combo'].'</a>';
 							echo '<div id="'.$data['idcombo'].'" style="display: none;">';
 								echo $data['comments'];

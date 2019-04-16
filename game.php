@@ -225,6 +225,7 @@
 				</form>
 				
 					<p><h2>Latest submissions</h2></p>
+					<p><small>Click the character name to see comments/video if the combo has them.</small></p>
 					<?php
 						require "server/conexao.php";
 						$query = "SELECT idcombo,Name,combo,damage,type, comments, submited, video FROM `combo` INNER JOIN `character` ON `combo`.`character_idcharacter` = `character`.`idcharacter` WHERE `character`.`game_idgame` = ? ORDER BY submited DESC LIMIT 0,25";
@@ -238,7 +239,11 @@
 						
 							foreach($result -> get_result() as $data){
 								echo '<tr><td data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'">';
-								echo '<button class="btn btn-dark" onclick="showDIV('.$data['idcombo'].')">'.$data['Name'].'</button>';
+								if($data['comments'] != '' && $data['video'] != ''){
+									echo '<button class="btn btn-dark" onclick="showDIV('.$data['idcombo'].')">'.$data['Name'].'</button>';
+								}else{
+									echo $data['Name'];
+								}
 								echo '</td><td style="min-width:400px">';
 								echo		'<a data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'" href="combo.php?idcombo='.$data['idcombo'].'">'.$data['combo'].'</a>';
 								echo '<div id="'.$data['idcombo'].'" style="display: none;">';

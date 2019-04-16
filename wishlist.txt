@@ -15,6 +15,9 @@
 > Fix vertical notations. DONE
 
 > Moderation station
-> More data in game.php, eg.: Most damaging combo, combos/character, solo combos
+> More data in game.php, eg.: Most damaging combo, combos/character, solo combos DONE
 
 > Upvote system with cookie users.
+
+BROKE:
+> Next and previous buttons on submit.php

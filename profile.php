@@ -144,7 +144,11 @@
 						
 							foreach($result -> get_result() as $data){
 								echo '<tr><td data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'">';
-								echo '<button class="btn btn-dark" onclick="showDIV('.$data['idcombo'].')">'.$data['Name'].'</button>';
+								if($data['comments'] != '' && $data['video'] != ''){
+									echo '<button class="btn btn-dark" onclick="showDIV('.$data['idcombo'].')">'.$data['Name'].'</button>';
+								}else{
+									echo $data['Name'];
+								}
 								echo '</td><td style="min-width:400px">';
 								echo		'<a data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'" href="combo.php?idcombo='.$data['idcombo'].'">'.$data['combo'].'</a>';
 								echo '<div id="'.$data['idcombo'].'" style="display: none;">';
