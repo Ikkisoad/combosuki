@@ -230,7 +230,7 @@
 					</div>
 				
 					<?php
-					if (isset($_GET["page"])) { $page  = $_GET["page"]; } else { $page=0; };
+					if(isset($_GET["page"])) { $page  = $_GET["page"]; } else { $page=0; };
 					$query = "SELECT COUNT(`idgame_resources`) as total FROM `game_resources` WHERE `game_idgame` = ? AND `primaryORsecundary` = 1";
 					
 					$result = $conn -> prepare($query);
@@ -462,7 +462,7 @@ AND `character`.`game_idgame` = ? ";
 							$k = 0;
 							$id_combo = $data['idcombo'];
 							echo '<td>';
-							if($data['comments'] != '' && $data['video'] != ''){
+							if($data['comments'] != '' || $data['video'] != ''){
 								echo '<button class="btn btn-dark" onclick="showDIV('.$data['idcombo'].')">'.$data['Name'].'</button>';
 							}else{
 								echo $data['Name'];
@@ -517,9 +517,9 @@ AND `character`.`game_idgame` = ? ";
 											echo '" frameborder="0" width="100%" height="100%" allowfullscreen style="width: 100%; height: 100%; position: absolute;"></iframe></div>';*/
 											
 					}else if(strpos($data['video'], 'twitch') !== false && strpos($data['video'], 'clips') !== false && strpos($data['video'], 'https') !== false){
-						$i = substr_replace($data['video'], "embed?clip=", 24,0);
+						$not_i = substr_replace($data['video'], "embed?clip=", 24,0);
 						echo '<iframe
-							src="'.$i.'"
+							src="'.$not_i.'"
 							height="360"
 							width="640"
 							frameborder="0"

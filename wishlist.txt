@@ -10,7 +10,7 @@
 > Choose background. DONE
 > Display method preference. DONE
 > Favortites.
->CREATE COOKIE USER
+> CREATE COOKIE USER. DIDN'T WORK
 
 > Fix vertical notations. DONE
 
@@ -19,5 +19,7 @@
 
 > Upvote system with cookie users.
 
+> Optimize the code, looks hella shitty.
+
 BROKE:
-> Next and previous buttons on submit.php
+> Next and previous buttons on submit.php FIXED
