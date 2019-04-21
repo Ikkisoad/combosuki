@@ -23,6 +23,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
 		<meta name="description" content="">
 		<meta name="Ikkisoad" content="">
+		<meta name="description" content="Community-fueled searchable environment that shares and perfects combos.">
 
 		<title>Combo好き</title>
 		<!-- Bootstrap core CSS -->
@@ -82,6 +83,7 @@
 			  
 			  background: url("img/black-honeycomb.png");
 			}
+			
 		</style> <!-- BACKGROUND COLOR-->
 	</head>
 	
@@ -91,7 +93,7 @@
 		<div class="container">
 			<h1 class="display-4"></h1>
 				<p class="lead">
-					<a href="index.php"><img src="img/combosuki.png" align="middle" height="100" ></a>
+					<a href="index.php"><img src="img/combosuki.png" align="middle" height="150" ></a>
 				</p>
 		</div>
 	</div>
@@ -110,9 +112,14 @@
 								foreach($result -> get_result()	as $gameid){
 									echo '<a style="margin-left:5em;" href=game.php?gameid=';
 									echo $gameid['idgame'];
-									echo '><img src=img/games/';
+									echo '><img style="
+				max-height:150px;
+				max-width:150px;
+				height:auto;
+				width:auto;
+			" src=img/games/';
 									echo $gameid['idgame'];
-									echo '.png height=100 ';
+									echo '.png height=100 alt="Responsive image"';
 									echo '></a>';
 								}
 						}else if($_GET['about'] == 1){
@@ -120,7 +127,7 @@
 							echo 'Hopefully with this database we will be able to keep the best combos known, without losing them to tweeter feeds.';
 							echo '<p><h2>About me:</h2>Brazilian Computer Science stundent that spends most of his time playing games.<br>My first fighting game was SFV, one year after DBFZ came out and it became my main game. I play 21, Kid Buu and Frieza.';
 							echo '<br><br><h3>This is the best explanation for this application:</h3>';
-							echo '"Combo好きs main purpose is to be a community-fueled searchable environment that shares and perfects combos."<p>u/madninhaman @ reddit </p>';
+							echo '"Combo好きs main purpose is to be a community-fueled searchable environment that shares and perfects combos."<p>u/madninjaman @ reddit </p>';
 						}else if($_GET['about'] == 2){
 							echo '<img src="img/numpadNotationBlack.jpg">';
 						}else if($_GET['about'] == 3){
@@ -151,7 +158,7 @@
 							<select name="display" class="custom-select"><option value="1">Image</option><option value="0">Text</option></select>
 							</p><button class="btn btn-secondary">Save</button></form>';
 						}
-						echo '<br><br><br><br><br><br>';
+						echo '<br><br><br><br><br><br><br><br><br>';
 					?>
 				</div>
 			</div>

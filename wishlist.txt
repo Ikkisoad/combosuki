@@ -1,25 +1,29 @@
-> Log in system. FAILED
-> Get rid of useless information. DONE
-> Ready to go selections. (Corner, universal... etc).
-> Change between images and text button. DONE
-> Upload CSV file. 
-> Show purpose of combos in the search (Probably just show the comment with a tooltip) DONE but FAILED for mobile.
-> Give a drop down option to show video and comments of the combo.
+DONE:
 
-> Use cookies for:
-> Choose background. DONE
-> Display method preference. DONE
-> Favortites.
-> CREATE COOKIE USER. DIDN'T WORK
+	> Get rid of useless information. DONE
+	> Change between images and text button. DONE
+	> Show purpose of combos in the search (Probably just show the comment with a tooltip) DONE but FAILED for mobile. DONE
+	> Give a drop down option to show video and comments of the combo. DONE
+	> Choose background. DONE
+	> Display method preference. DONE
+	> Fix vertical notations. DONE
+	> More data in game.php, eg.: Most damaging combo, combos/character, solo combos DONE
 
-> Fix vertical notations. DONE
+TO DO:
 
-> Moderation station
-> More data in game.php, eg.: Most damaging combo, combos/character, solo combos DONE
-
-> Upvote system with cookie users.
-
-> Optimize the code, looks hella shitty.
-
+	> Ready to go selections. (Corner, universal... etc).
+	> Upload CSV file. 
+	> Favortites.
+	> Moderation station
+	> Upvote system with cookie users.
+	> Optimize the code, looks hella shitty.
+	> A page to create lists. List name, list password >> add combo... genius.
+	
 BROKE:
-> Next and previous buttons on submit.php FIXED
+
+	> Next and previous buttons on submit.php FIXED
+	
+FAILED:
+
+	> Log in system. FAILED
+	> CREATE COOKIE USER. DIDN'T WORK
