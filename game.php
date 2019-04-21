@@ -255,6 +255,7 @@
 					</p>
 					
 					<?php
+					//$query = "SELECT COUNT(`idcombo`) as amount, `character`.`Name`, `combo`.`type` FROM `combo` INNER JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` WHERE `character`.`game_idgame` = ? GROUP BY `combo`.`type`,`combo`.`character_idcharacter` ORDER BY `character`.`Name`, `combo`.`type`;";
 						require "server/conexao.php";
 						$query = "SELECT idcombo,Name,combo,damage,type, comments, submited, video FROM `combo` INNER JOIN `character` ON `combo`.`character_idcharacter` = `character`.`idcharacter` WHERE `character`.`game_idgame` = ? ORDER BY submited DESC LIMIT 0,25";
 						$result = $conn -> prepare($query);
