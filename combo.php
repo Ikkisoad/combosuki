@@ -270,66 +270,6 @@ WHERE `idcombo` = ? ";
 					
 				//echo $query;
 				if(!isset($damage)){ exit();}
-					echo '</td></table><p><table>';
-							echo '<tr>';
-							echo '<th>Damage</th>';
-							for($i = 0; $i<sizeof($primaryTitle); $i++){
-								echo '<th>';
-								echo $primaryTitle[$i];
-								echo '</th>';
-							}
-							echo '</tr><tr>';
-							echo '<td>'.number_format($damage,'0','','.').'</td>';
-							for($i = 0; $i<sizeof($primaryTitle); $i++){
-								echo '<td>';
-								echo $primaryValue[$i];
-								echo '</td>';
-							}
-							echo '</tr>';
-					echo '</table></p>';
-					if(sizeof($secondaryTitle)){
-						echo '</td></table><p><table>';
-								echo '<tr>';
-								for($i = 0; $i<sizeof($secondaryTitle); $i++){
-									echo '<th>';
-									echo $secondaryTitle[$i];
-									echo '</th>';
-								}
-								echo '</tr><tr>';
-								for($i = 0; $i<sizeof($secondaryTitle); $i++){
-									echo '<td>';
-									echo $secondaryValue[$i];
-									echo '</td>';
-								}
-								echo '</tr>';
-						echo '</table></p>';
-					}
-				
-				?>
-			
-			<!-- </tr></table></p> -->
-			
-			<div id="combo_text" style="display: none;">
-				<?php 
-				
-					if($_COOKIE['display']){
-						echo $combo;
-					}else{
-						echo $combo_image;
-					}
-				?>
-			</div>
-			<?php
-				if($comment != ''){
-					echo '<p><table>';
-						echo '<tr><td>';
-							echo 'Comment:';
-						echo '</td></tr>';
-						echo '<tr><td>';
-							echo nl2br($comment);
-						echo '</td></tr>';
-					echo '</table></p>';
-				}
 				if($video != ''){
 					echo '<p><table>';
 							echo '<tr><td>';
@@ -392,6 +332,68 @@ WHERE `idcombo` = ? ";
 					}
 					
 					echo '</td></tr>';
+					echo '</table></p>';
+				}
+					echo '</td></table><p><table>';
+							echo '<tr>';
+							echo '<th>Damage</th>';
+							for($i = 0; $i<sizeof($primaryTitle); $i++){
+								echo '<th>';
+								echo $primaryTitle[$i];
+								echo '</th>';
+							}
+							echo '</tr><tr>';
+							echo '<td>'.number_format($damage,'0','','.').'</td>';
+							for($i = 0; $i<sizeof($primaryTitle); $i++){
+								echo '<td>';
+								echo $primaryValue[$i];
+								echo '</td>';
+							}
+							echo '</tr>';
+					echo '</table></p>';
+					if(sizeof($secondaryTitle)){
+						echo '</td></table><p><table>';
+								echo '<tr>';
+								for($i = 0; $i<sizeof($secondaryTitle); $i++){
+									echo '<th>';
+									echo $secondaryTitle[$i];
+									echo '</th>';
+								}
+								echo '</tr><tr>';
+								for($i = 0; $i<sizeof($secondaryTitle); $i++){
+									echo '<td>';
+									echo $secondaryValue[$i];
+									echo '</td>';
+								}
+								echo '</tr>';
+						echo '</table></p>';
+					}
+				
+				?>
+			
+			<!-- </tr></table></p> -->
+			
+			<div id="combo_text" style="display: none;">
+				<?php 
+				
+					if($_COOKIE['display']){
+						echo $combo;
+					}else{
+						echo $combo_image;
+					}
+				?>
+			</div>
+			<?php
+				
+				
+				if($comment != ''){
+					echo '<p><table>';
+						echo '<tr><td>';
+							echo 'Comment:';
+						echo '</td></tr>';
+						echo '<tr><td>';
+							echo nl2br($comment);
+						echo '</td></tr>';
 					echo '</table></p>';
 				}
 			

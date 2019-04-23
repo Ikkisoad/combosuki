@@ -164,15 +164,15 @@
 			</div>
 		</main>
 		<div class="footer">
-		  <p style="text-align: right;">Created by: <a href="https://twitter.com/Ikkisoad" target="_blank">@Ikkisoad</a>   E-Mail: <a href="mailto:ikkisoad@combosuki.com">ikkisoad@combosuki.com</a></p>
-		  <p style="text-align: right;">Buttons designed by: <a href="https://twitter.com/Makaaaaai" target="_blank">@Makaaaaai</a></p>
-		  <p style="text-align: center;"><a href="https://goo.gl/forms/xzjGo1dQEGOTzZGT2" target="_blank">Request a new game   </a> / 
+		  <div style="text-align: right;">Created by: <a href="https://twitter.com/Ikkisoad" target="_blank">@Ikkisoad</a>   E-Mail: <a href="mailto:ikkisoad@combosuki.com">ikkisoad@combosuki.com</a></div>
+		  <div style="text-align: right;">Buttons designed by: <a href="https://twitter.com/Makaaaaai" target="_blank">@Makaaaaai</a></div>
+		  <div style="text-align: center;"><a href="https://goo.gl/forms/xzjGo1dQEGOTzZGT2" target="_blank">Request a new game   </a> / 
 		  <a href="index.php?about=1" style="padding-right: 5px;">About </a> / 
 		  <a href="index.php?about=2">Combo Guidelines </a> / <a href="https://discord.gg/49Qrkz4" target="_blank">Discord </a>
 		   / <a href="index.php?about=3" style="padding-right: 5px;">Logs </a> / <a href="https://docs.google.com/spreadsheets/d/1ac2nRBy0tTPz6k6heook5w8R7dDngutW8OkK5alhI7k/edit#gid=1066344564" target="_blank" style="padding-right: 5px;">FGC Discord Compendium </a> / <a href="index.php?about=4" style="padding-right: 5px;">Preferences </a>
 		   
 		   
-		  </p>
+		  </div>
 		</div>
 	</body>
 	    <!-- Bootstrap core JavaScript
