@@ -243,8 +243,8 @@
 					foreach($result -> get_result() as $each){
 						$num_rows = $each['total'];
 					}
-					$limit = $num_rows * $page * 50; //HAVE TO CHANGE WHEN COMPARING TO $I BELLOW AS WELL
-					$offset = $num_rows * 50;
+					$limit = $num_rows * $page * 10; //HAVE TO CHANGE WHEN COMPARING TO $I BELLOW AS WELL
+					$offset = $num_rows * 10;
 					$i = 0;
 					$parameterValue = '';
 					$parameters_counter = 0;
@@ -567,8 +567,8 @@ AND `character`.`game_idgame` = ? ";
 					}
 					echo '" style="padding-right: 5px;">Previous </a>';
 				}
-				if($i == 50 && $page > 0){echo '/ ';}
-				if($i == 50){
+				if($i == 10 && $page > 0){echo '/ ';}
+				if($i == 10){
 					echo '<a href="submit.php?page=';
 					echo $page + 1;
 					foreach ($_GET as $key => $entry){
@@ -600,10 +600,10 @@ AND `character`.`game_idgame` = ? ";
 					}
 					echo '" style="padding-right: 5px;">Previous </a>';
 				}
-				if($i == 50 && $page > 0){echo '/ ';}
+				if($i == 10 && $page > 0){echo '/ ';}
 			 ?>
 			 <?php
-				if($i == 50){
+				if($i == 10){
 					echo '<a href="submit.php?page=';
 					echo $page + 1;
 					foreach ($_GET as $key => $entry){

@@ -257,7 +257,7 @@
 					<?php
 					//$query = "SELECT COUNT(`idcombo`) as amount, `character`.`Name`, `combo`.`type` FROM `combo` INNER JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` WHERE `character`.`game_idgame` = ? GROUP BY `combo`.`type`,`combo`.`character_idcharacter` ORDER BY `character`.`Name`, `combo`.`type`;";
 						require "server/conexao.php";
-						$query = "SELECT idcombo,Name,combo,damage,type, comments, submited, video FROM `combo` INNER JOIN `character` ON `combo`.`character_idcharacter` = `character`.`idcharacter` WHERE `character`.`game_idgame` = ? ORDER BY submited DESC LIMIT 0,25";
+						$query = "SELECT idcombo,Name,combo,damage,type, comments, submited, video FROM `combo` INNER JOIN `character` ON `combo`.`character_idcharacter` = `character`.`idcharacter` WHERE `character`.`game_idgame` = ? ORDER BY submited DESC LIMIT 0,10";
 						$result = $conn -> prepare($query);
 						$result -> bind_param("i",$_GET['gameid']);
 						$result -> execute();
@@ -277,7 +277,7 @@
 							echo '</td><td style="min-width:400px">';
 							echo		'<a data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'" href="combo.php?idcombo='.$data['idcombo'].'">'.$data['combo'].'</a>';
 							echo '<div id="'.$data['idcombo'].'" style="display: none;">';
-							echo $data['comments'];
+							echo $data['comments'].'<br>';
   
   //####################################################################VIDEO HERE
   
@@ -333,8 +333,16 @@
 										allowfullscreen="true">
 									</iframe>';
 									
-								}else{
-									echo $data['video'];	
+								}/*else if(strpos($data['video'], 'imgur') !== false && strpos($data['video'], 'https') !== false){
+									//echo '<blockquote class="imgur-embed-pub" lang="en" data-id="a/amuAPtr"><a href="//imgur.com/amuAPtr">Jesus saves</a></blockquote><script async src="//s.imgur.com/min/embed.js" charset="utf-8"></script>'; https://imgur.com/sJyThyf
+									$i = substr($data['video'], 18);
+									echo '<blockquote class="imgur-embed-pub" lang="en" data-id="';
+									echo $i;
+									echo '"><a href="';
+									echo $data['video'];
+									echo '"></a></blockquote><script async src="//s.imgur.com/min/embed.js" charset="utf-8"></script>';
+								}*/else{
+									echo $data['video'];
 								}
 							}
   

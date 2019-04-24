@@ -327,6 +327,14 @@ WHERE `idcombo` = ? ";
 							allowfullscreen="true">
 						</iframe>';
 						
+					}else if(strpos($video, 'imgur') !== false && strpos($video, 'https') !== false){
+						//echo '<blockquote class="imgur-embed-pub" lang="en" data-id="a/amuAPtr"><a href="//imgur.com/amuAPtr">Jesus saves</a></blockquote><script async src="//s.imgur.com/min/embed.js" charset="utf-8"></script>'; https://imgur.com/sJyThyf
+						$i = substr($video, 18);
+						echo '<blockquote class="imgur-embed-pub" lang="en" data-id="';
+						echo $i;
+						echo '"><a href="';
+						echo $video;
+						echo '"></a></blockquote><script async src="//s.imgur.com/min/embed.js" charset="utf-8"></script>';
 					}else{
 						echo $video;	
 					}
