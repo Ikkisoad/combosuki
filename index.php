@@ -101,7 +101,13 @@
 		<main role="main">
 			
 			<div class="container">
+				<div class="btn-group" role="group" aria-label="Basic example">
+					<form id="MyForm" method="get" action="list.php">
+						<button class="btn btn-secondary">Listing</button>
+					</form>
+				</div>
 				<div class="body">
+					
 					<?php
 						if(!isset($_GET['about'])){
 								require "server/conexao.php";
@@ -128,6 +134,14 @@
 							echo '<p><h2>About me:</h2>Brazilian Computer Science stundent that spends most of his time playing games.<br>My first fighting game was SFV, one year after DBFZ came out and it became my main game. I play 21, Kid Buu and Frieza.';
 							echo '<br><br><h3>This is the best explanation for this application:</h3>';
 							echo '"Combo好きs main purpose is to be a community-fueled searchable environment that shares and perfects combos."<p>u/madninjaman @ reddit </p>';
+							
+							echo '<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+							<input type="hidden" name="cmd" value="_s-xclick" />
+							<input type="hidden" name="hosted_button_id" value="JNX6A2HZETH5Y" />
+							<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
+							<img alt="" border="0" src="https://www.paypal.com/en_BR/i/scr/pixel.gif" width="1" height="1" />
+							</form>';
+							
 						}else if($_GET['about'] == 2){
 							echo '<img src="img/numpadNotationBlack.jpg">';
 						}else if($_GET['about'] == 3){

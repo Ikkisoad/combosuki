@@ -296,7 +296,7 @@
 											echo $resource['text_name'];
 											echo '" max="';
 											echo $resource_value['value'];
-											echo '"step=".01"' ;
+											echo '"step="any"' ;
 											if(isset($_POST['type'])){
 												if($_POST['type'] == 2){
 													$name = str_replace(' ', '_', $resource['text_name']);

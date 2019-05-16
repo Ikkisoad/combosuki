@@ -230,7 +230,7 @@
 										echo '" placeholder="'.$resource['text_name'].'"';
 										echo ' max="';
 										echo $resource_value['value'];
-										echo '"step=".01"' ;
+										echo '"step="any"' ;
 										echo '> </div> </p>';
 									}
 								}
@@ -257,7 +257,7 @@
 					<?php
 					//$query = "SELECT COUNT(`idcombo`) as amount, `character`.`Name`, `combo`.`type` FROM `combo` INNER JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` WHERE `character`.`game_idgame` = ? GROUP BY `combo`.`type`,`combo`.`character_idcharacter` ORDER BY `character`.`Name`, `combo`.`type`;";
 						require "server/conexao.php";
-						$query = "SELECT idcombo,Name,combo,damage,type, comments, submited, video FROM `combo` INNER JOIN `character` ON `combo`.`character_idcharacter` = `character`.`idcharacter` WHERE `character`.`game_idgame` = ? ORDER BY submited DESC LIMIT 0,10";
+						$query = "SELECT idcombo,Name,combo,damage,type, comments, submited, video FROM `combo` INNER JOIN `character` ON `combo`.`character_idcharacter` = `character`.`idcharacter` WHERE `character`.`game_idgame` = ? ORDER BY submited DESC LIMIT 0,5";
 						$result = $conn -> prepare($query);
 						$result -> bind_param("i",$_GET['gameid']);
 						$result -> execute();
@@ -323,9 +323,11 @@
 														echo '" frameborder="0" width="100%" height="100%" allowfullscreen style="width: 100%; height: 100%; position: absolute;"></iframe></div>';*/
 														
 								}else if(strpos($data['video'], 'twitch') !== false && strpos($data['video'], 'clips') !== false && strpos($data['video'], 'https') !== false){
-									$i = substr_replace($data['video'], "embed?clip=", 24,0);
+									$i = substr_replace($data['video'], "embed?autoplay=false&clip=", 24,0);
 									echo '<iframe
 										src="'.$i.'"
+										preload="none"
+										autoplay="false"
 										height="360"
 										width="640"
 										frameborder="0"
@@ -372,7 +374,24 @@
 							echo '</td></tr>';
 						}
 						echo '</table>';
+						
+						$query = "SELECT `character_idcharacter`, COUNT(idcombo) as amount, `character`.`Name` FROM `combo` INNER JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` WHERE `character`.`game_idgame` = ? GROUP BY `character_idcharacter` ORDER BY amount DESC";
+						$result = $conn -> prepare($query);
+						$result -> bind_param("i",$_GET['gameid']);
+						$result -> execute();
+						
+						/*echo '<table>';
+						echo '<tr>';
+						echo '<th>Character</th><th>Total Entries</th></th>';
+						echo '</tr>';*/
+						echo '<p><h3> Total Entries </h3>';
+						foreach($result -> get_result() as $data){
+							/*echo '<tr><td>'.$data['Name'].'</td>';
+							echo '<td>'.$data['amount'].'</td></tr>';*/
+							echo '<div>'.$data['Name'].': '.$data['amount'].'</div>';
+						}
 					?>
+					</p>
 			</div>
 		</main>
 	</body>
