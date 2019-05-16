@@ -102,9 +102,13 @@
 			
 			<div class="container">
 				<div class="btn-group" role="group" aria-label="Basic example">
+					<form id="MyForm" method="get" action="index.php">
+						<button class="btn btn-secondary">Home</button>
+					</form>
 					<form id="MyForm" method="get" action="list.php">
 						<button class="btn btn-secondary">Listing</button>
 					</form>
+					
 				</div>
 				<div class="body">
 					
