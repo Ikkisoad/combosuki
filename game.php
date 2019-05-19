@@ -170,6 +170,7 @@
 								<option value="0">Combo</option>
 								<option value="1">Blockstring</option>
 								<option value="2">Mix Up</option>
+								<option value="4">Okizeme</option>
 								<option value="3">Archive</option>
 								<option value="-">Show All</option>
 							</select>
@@ -367,6 +368,9 @@
 								case 3:
 									echo 'Archive';
 									break;
+								case 4:
+									echo 'Okizeme';
+									break;		
 							}
 							echo '</td><td>';
 							$i = new DateTime($data['submited']);

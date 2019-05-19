@@ -195,8 +195,15 @@ WHERE `idlist` = ? ORDER BY `comment`, `combo`.`damage`;";
 						echo '<tr>';
 						echo '<th onclick="sortTable(0)">Character</th><th onclick="sortTable(1)">Inputs</th><th onclick="sortTable(2,1)">Damage</th><th onclick="sortTable(3)">Type</th>';
 						echo '</tr>';
+						$comment = '';
 						
 						foreach($result -> get_result() as $data){
+							if($comment != $data['comment']){
+								echo '</table>';
+								echo '<h2>'.$data['comment'].'</h2>';
+								echo '<table>';
+								$comment = $data['comment'];
+							}
 							echo '<tr><td data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'">';
 							if($data['comments'] != '' || $data['video'] != ''){
 								echo '<button class="btn btn-dark" onclick="showDIV('.$data['idcombo'].')">'.$data['Name'].'</button>';
@@ -296,6 +303,9 @@ WHERE `idlist` = ? ORDER BY `comment`, `combo`.`damage`;";
 								case 3:
 									echo 'Archive';
 									break;
+								case 4:
+									echo 'Okizeme';
+									break;	
 							}
 							echo '</td>';
 						}
@@ -400,68 +410,4 @@ WHERE `idlist` = ? ORDER BY `comment`, `combo`.`damage`;";
 				}
 			}
 		</script>
-		<script>
-			function sortTable(n,isNumber) {
-				var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-				table = document.getElementById("myTable");
-				switching = true;
-				  //Set the sorting direction to ascending:
-				dir = "asc"; 
-				  /*Make a loop that will continue until
-				  no switching has been done:*/
-				while (switching) {
-					//start by saying: no switching is done:
-					switching = false;
-					rows = table.rows;
-						/*Loop through all table rows (except the
-						first, which contains table headers):*/
-					for (i = 1; i < (rows.length - 1); i++) {
-						  //start by saying there should be no switching:
-						shouldSwitch = false;
-						  /*Get the two elements you want to compare,
-						  one from current row and one from the next:*/
-						x = rows[i].getElementsByTagName("TD")[n];
-						y = rows[i + 1].getElementsByTagName("TD")[n];
-						  /*check if the two rows should switch place,
-						  based on the direction, asc or desc:*/
-						if (dir == "asc") {
-							if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase() && !isNumber) {
-							  //if so, mark as a switch and break the loop:
-								shouldSwitch= true;
-								break;
-							}else if(Number(x.innerHTML.toLowerCase()) > Number(y.innerHTML.toLowerCase())){
-								shouldSwitch= true;
-								break;
-							}
-						}else if (dir == "desc") {
-							if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase() && !isNumber) {
-							  //if so, mark as a switch and break the loop:
-								shouldSwitch = true;
-								break;
-							}else if(Number(x.innerHTML.toLowerCase()) < Number(y.innerHTML.toLowerCase())){
-								shouldSwitch= true;
-								break;
-							}
-						}
-					}
-					if(shouldSwitch){
-						  /*If a switch has been marked, make the switch
-						  and mark that a switch has been done:*/
-						rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-						switching = true;
-						  //Each time a switch is done, increase this count by 1:
-						switchcount ++;      
-					}else{
-						  /*If no switching has been done AND the direction is "asc",
-						  set the direction to "desc" and run the while loop again.*/
-						if (switchcount == 0 && dir == "asc") {
-							dir = "desc";
-							switching = true;
-						}
-					}
-				}
-			}
-		</script>
-		<!-- <script src="../../../../assets/js/vendor/popper.min.js"></script> 
-		<script src="../../../../dist/js/bootstrap.min.js"></script> -->
 </html>

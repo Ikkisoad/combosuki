@@ -187,6 +187,9 @@ WHERE `idcombo` = ? ";
 								case 3:
 									echo ' Archive:<br>';
 									break;
+								case 4:
+									echo ' Okizeme:<br>';
+									break;	
 							}
 							
 							echo '</th>';

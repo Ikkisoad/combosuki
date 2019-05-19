@@ -129,6 +129,7 @@
 						<option value="0" <?php if(isset($_POST['type'])){if($_POST['type'] == 2){if($_POST['listingtype'] == 0){echo 'selected';}}} ?>>Combo</option>
 						<option value="1" <?php if(isset($_POST['type'])){if($_POST['type'] == 2){if($_POST['listingtype'] == 1){echo 'selected';}}} ?>>Blockstring</option>
 						<option value="2" <?php if(isset($_POST['type'])){if($_POST['type'] == 2){if($_POST['listingtype'] == 2){echo 'selected';}}} ?>>Mix Up</option>
+						<option value="4" <?php if(isset($_POST['type'])){if($_POST['type'] == 2){if($_POST['listingtype'] == 4){echo 'selected';}}} ?>>Okizeme</option>
 						<option value="3" <?php if(isset($_POST['type'])){if($_POST['type'] == 2){if($_POST['listingtype'] == 3){echo 'selected';}}} ?>>Archive</option>
 						<?php if(!isset($_POST['type'])){echo '<option value="-">Show All</option>';} ?>
 						</select></p>
