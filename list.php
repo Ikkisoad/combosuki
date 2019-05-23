@@ -3,7 +3,7 @@
 		if(!empty($_POST)){
 			$_POST = array_map("strip_tags", $_POST);
 			$_GET = array_map("strip_tags", $_GET);
-			if($_POST['action'] == 'Submit'){
+			if($_POST['action'] != 'Search'){
 				if($_POST['submission_type'] == 1){
 					$query = "INSERT INTO `list`(`list_name`, `game_idgame`, `password`) VALUES (?,?,?)";
 					$result = $conn -> prepare($query);
@@ -32,10 +32,18 @@
 							exit();
 						}
 						if($lul['password'] == $_POST['listPass']){
-							$query = "INSERT INTO `combo_listing`(`idcombo`, `idlist`, `comment`) VALUES (?,?,?)";
-							$result = $conn -> prepare($query);
-							$result -> bind_param("iis", $_POST['comboid'], $_GET['listid'], $_POST['comment']);
-							$result -> execute();
+							if($_POST['action'] == 'Submit'){
+								$query = "INSERT INTO `combo_listing`(`idcombo`, `idlist`, `comment`) VALUES (?,?,?)";
+								$result = $conn -> prepare($query);
+								$result -> bind_param("iis", $_POST['comboid'], $_GET['listid'], $_POST['comment']);
+								$result -> execute();
+							}
+							if($_POST['action'] == 'Delete'){
+								$query = "DELETE FROM `combo_listing` WHERE `idcombo` = ? AND `idlist` = ?";
+								$result = $conn -> prepare($query);
+								$result -> bind_param("ii", $_POST['comboid'], $_GET['listid']);
+								$result -> execute();
+							}
 						}else{
 							header("Location: list.php?listid=".$_GET['listid']."");
 							exit();
@@ -312,14 +320,15 @@ WHERE `idlist` = ? ORDER BY `comment`, `combo`.`damage`;";
 						echo '</table>';
 										
 										
-										echo '<h3>Add Combo</h3>
+										echo '<h3>Edit List</h3>
 					<p><form class="form-inline" method="post" action="list.php?listid='.$_GET['listid'].'">
 							<input type="hidden" name="submission_type" value="2">
 							<div class="form-group mb-2"><input placeholder="Combo ID" style="background-color: #474747; color:#999999;" name="comboid" class="form-control" maxlength="45" rows="1"></input></div>
 							
 							<div class="form-group mb-2"><input placeholder="List Password" name="listPass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1"></input></div>
 							<div class="form-group mb-2"><input placeholder="Tag to order combo by" name="comment" maxlength="45" style="background-color: #474747; color:#999999;" class="form-control" rows="1"></input></div>
-							<div class="form-group mb-2"><button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Submit</button></div>
+							<div class="form-group mb-2"><button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Add Combo</button></div>
+							<div class="form-group mb-2"><button type="submit" name="action" value="Delete" class="btn btn-danger btn-block">Remove Combo</button></div>
 						</form></p>';
 									}else{
 										echo '<h3>Listing</h3>
