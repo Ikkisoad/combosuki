@@ -7,7 +7,8 @@ DONE:
 	> Choose background. DONE
 	> Display method preference. DONE
 	> Fix vertical notations. DONE
-	> More data in game.php, eg.: Most damaging combo, combos/character, solo combos DONE
+	
+	> A page to create lists. List name, list password >> add combo... genius.
 
 TO DO:
 
@@ -17,7 +18,8 @@ TO DO:
 	> Moderation station
 	> Upvote system with cookie users.
 	> Optimize the code, looks hella shitty.
-	> A page to create lists. List name, list password >> add combo... genius.
+	> More data in game.php, eg.: Most damaging combo, combos/character, solo combos
+
 	
 BROKE:
 
