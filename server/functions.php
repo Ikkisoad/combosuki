@@ -204,5 +204,57 @@ function combo_table($gameid){
 function game_combo_table($gameid){
 	
 }
+function game_title(){
+	require "server/conexao.php";
+	$query = "SELECT idgame, name FROM game WHERE complete = 1 ORDER BY name;";
+	$result = $conn -> prepare($query);
+	$result -> execute();
+	
+	foreach($result -> get_result()	as $gameid){
+		echo '<a style="margin-left:5em;" href=game.php?gameid=';
+		echo $gameid['idgame'];
+		echo '><img style="
+		max-height:150px;
+		max-width:150px;
+		height:auto;
+		width:auto;
+		" src=img/games/';
+		echo $gameid['idgame'];
+		echo '.png height=100 alt="Responsive image"';
+		echo '></a>';
+		
+		/* TEXT ONLY
+		echo '<a style="margin-left:5em;" href=game.php?gameid=';
+		echo $gameid['idgame'];
+		echo '>';
+		echo $gameid['name'].'</a><br>';*/
+	}
+		
+}
+
+function count_combos(){
+	require "server/conexao.php";
+	$query = "SELECT COUNT(idcombo) as total FROM `combo`;";
+	$result = $conn -> prepare($query);
+	$result -> execute();
+	
+	foreach($result -> get_result()	as $combo_count){
+		echo 'Total submissions: ';
+		echo $combo_count['total'];
+	}
+	
+}
+
+function logs(){
+	require "server/conexao.php";
+	$query = "SELECT * FROM logs ORDER BY Date DESC;";
+	$result = $conn -> prepare($query);
+	$result -> execute();
+	
+	foreach($result -> get_result()	as $log){
+		echo $log['Date'].': ';
+		echo $log['Description'].'<br>';
+	}
+}
 
 ?>

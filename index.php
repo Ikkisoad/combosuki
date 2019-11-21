@@ -113,36 +113,12 @@
 				<div class="body">
 					
 					<?php
+						require "server/functions.php";
 						if(!isset($_GET['about'])){
-								require "server/conexao.php";
-								$query = "SELECT idgame FROM game WHERE complete = 1 ORDER BY name;";
-								$result = $conn -> prepare($query);
-								$result -> execute();
-								
-								foreach($result -> get_result()	as $gameid){
-									echo '<a style="margin-left:5em;" href=game.php?gameid=';
-									echo $gameid['idgame'];
-									echo '><img style="
-				max-height:150px;
-				max-width:150px;
-				height:auto;
-				width:auto;
-			" src=img/games/';
-									echo $gameid['idgame'];
-									echo '.png height=100 alt="Responsive image"';
-									echo '></a>';
-								}
+							game_title();
 						}else if($_GET['about'] == 1){
+							count_combos();
 							
-							require "server/conexao.php";
-							$query = "SELECT COUNT(idcombo) as total FROM `combo`;";
-							$result = $conn -> prepare($query);
-							$result -> execute();
-							
-							foreach($result -> get_result()	as $combo_count){
-								echo 'Total submissions: ';
-								echo $combo_count['total'];
-							}
 							
 							echo '<h2>About the application:</h2><p>This application started as a fun project in the end of 2018, and the main motivation to keep at it is to help out the FGC assemble their findings and sort out the best options with a determined set of resources.</p>';
 							echo 'Hopefully with this database we will be able to keep the best combos known, without losing them to tweeter feeds.';
@@ -161,15 +137,7 @@
 							echo '<img src="img/numpadNotationBlack.jpg">';
 						}else if($_GET['about'] == 3){
 							echo '<h2>Log</h2>';
-							require "server/conexao.php";
-								$query = "SELECT * FROM logs ORDER BY Date DESC;";
-								$result = $conn -> prepare($query);
-								$result -> execute();
-								
-								foreach($result -> get_result()	as $log){
-									echo $log['Date'].': ';
-									echo $log['Description'].'<br>';
-								}
+							logs();
 						}else if($_GET['about'] == 4){
 							echo '<form method="post" action="index.php">Background Color:<p>';
 							echo '<select name="color" class="custom-select">
@@ -187,7 +155,7 @@
 							<select name="display" class="custom-select"><option value="1">Image</option><option value="0">Text</option></select>
 							</p><button class="btn btn-secondary">Save</button></form>';
 						}
-						echo '<br><br><br><br><br><br><br><br><br>';
+						//echo '<br><br><br><br><br><br><br><br><br>';
 					?>
 				</div>
 			</div>
