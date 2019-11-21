@@ -170,7 +170,7 @@
 				if(isset($_COOKIE['color'])){
 					echo 'bg/'.$_COOKIE["color"].'honeycomb.png';
 				}else{
-					echo 'yellow-honeycomb.png';
+					echo 'dark-honeycomb.png';
 				}?>");
 			}
 			.jumbotron{
@@ -433,6 +433,7 @@ AND `character`.`game_idgame` = ? ";
 					for($i = 0; $i < $parameters_counter; $i++) {
 						$parameterValue[] = & $binded_parameters[$i];
 					}
+					
 					$result = $conn -> prepare($query);
 					
 					if($parameterValue[0] != ''){

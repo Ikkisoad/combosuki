@@ -36,7 +36,7 @@
 				if(isset($_COOKIE['color'])){
 					echo 'bg/'.$_COOKIE["color"].'honeycomb.png';
 				}else{
-					echo 'yellow-honeycomb.png';
+					echo 'dark-honeycomb.png';
 				}?>
 					");
 				color: white;
@@ -257,128 +257,8 @@
 					
 					<?php
 					//$query = "SELECT COUNT(`idcombo`) as amount, `character`.`Name`, `combo`.`type` FROM `combo` INNER JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` WHERE `character`.`game_idgame` = ? GROUP BY `combo`.`type`,`combo`.`character_idcharacter` ORDER BY `character`.`Name`, `combo`.`type`;";
-						require "server/conexao.php";
-						$query = "SELECT idcombo,Name,combo,damage,type, comments, submited, video FROM `combo` INNER JOIN `character` ON `combo`.`character_idcharacter` = `character`.`idcharacter` WHERE `character`.`game_idgame` = ? ORDER BY submited DESC LIMIT 0,5";
-						$result = $conn -> prepare($query);
-						$result -> bind_param("i",$_GET['gameid']);
-						$result -> execute();
-						
-						echo '<table id="myTable">';
-						echo '<tr>';
-						echo '<th onclick="sortTable(0)">Character</th><th onclick="sortTable(1)">Inputs</th><th onclick="sortTable(2,1)">Damage</th><th onclick="sortTable(3)">Type</th><th onclick="sortTable(4)">Submited</th>';
-						echo '</tr>';
-						
-						foreach($result -> get_result() as $data){
-							echo '<tr><td data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'">';
-							if($data['comments'] != '' || $data['video'] != ''){
-								echo '<button class="btn btn-dark" onclick="showDIV('.$data['idcombo'].')">'.$data['Name'].'</button>';
-							}else{
-								echo $data['Name'];
-							}
-							echo '</td><td style="min-width:400px">';
-							echo		'<a data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'" href="combo.php?idcombo='.$data['idcombo'].'">'.$data['combo'].'</a>';
-							echo '<div id="'.$data['idcombo'].'" style="display: none;">';
-							echo $data['comments'].'<br>';
-  
-  //####################################################################VIDEO HERE
-  
-							if($data['video'] != ''){
-								if (strpos($data['video'], 'twitter') !== false && strpos($data['video'], 'https') !== false) {
-									echo '<blockquote class="twitter-tweet" data-conversation="none" data-lang="en"><p lang="en" dir="ltr">
-									<a href="';
-									echo $data['video'];
-									echo '"></a>
-								</blockquote>
-								<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>';
-								}else if (strpos($data['video'], 'youtu') !== false) {
-									preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $data['video'], $match);
-									$youtube_id = $match[1];
-									//print_r($match);
-									//echo '<br> URL: ';
-									//echo $youtube_id;
-									$whatIWant = substr($data['video'], strpos($data['video'], "=") + 1);    
-									//echo '<br>what I want:';
-									//echo $whatIWant;
-									echo '<div class="embed-responsive embed-responsive-16by9">
-									<iframe class="embed-responsive-item" src="https://www.youtube.com/embed/';
-									echo $youtube_id;
-									echo '?start=';echo $whatIWant; echo '" allowfullscreen></iframe></div>';
-								}else if(strpos($data['video'], 'streamable') !== false && strpos($data['video'], 'https') !== false){
-														/*echo '<div class="embed-responsive embed-responsive-16by9">
-														<iframe class="embed-responsive-item" src="';
-														echo $data['video'];
-														echo '" allowfullscreen></iframe>
-													</div>';*/
-													//$i = substr_replace($data['video'], "/s", 22,0);
-									echo '<div style="width: 100%; height: 0px; position: relative; padding-bottom: 56.250%;">
-									<iframe src="';
-									echo $data['video'];
-									echo '" frameborder="0" width="100%" height="100%" allowfullscreen style="width: 100%; height: 100%; position: absolute;">
-									</iframe>
-									</div>';
-														
-														
-														/*echo '<div style="width: 100%; height: 0px; position: relative; padding-bottom: 56.250%;"><iframe src="';
-														echo $streamable;
-														
-														echo '" frameborder="0" width="100%" height="100%" allowfullscreen style="width: 100%; height: 100%; position: absolute;"></iframe></div>';*/
-														
-								}else if(strpos($data['video'], 'twitch') !== false && strpos($data['video'], 'clips') !== false && strpos($data['video'], 'https') !== false){
-									$i = substr_replace($data['video'], "embed?autoplay=false&clip=", 24,0);
-									echo '<iframe
-										src="'.$i.'"
-										preload="none"
-										autoplay="false"
-										height="360"
-										width="640"
-										frameborder="0"
-										scrolling="no"
-										allowfullscreen="true">
-									</iframe>';
-									
-								}/*else if(strpos($data['video'], 'imgur') !== false && strpos($data['video'], 'https') !== false){
-									//echo '<blockquote class="imgur-embed-pub" lang="en" data-id="a/amuAPtr"><a href="//imgur.com/amuAPtr">Jesus saves</a></blockquote><script async src="//s.imgur.com/min/embed.js" charset="utf-8"></script>'; https://imgur.com/sJyThyf
-									$i = substr($data['video'], 18);
-									echo '<blockquote class="imgur-embed-pub" lang="en" data-id="';
-									echo $i;
-									echo '"><a href="';
-									echo $data['video'];
-									echo '"></a></blockquote><script async src="//s.imgur.com/min/embed.js" charset="utf-8"></script>';
-								}*/else{
-									echo $data['video'];
-								}
-							}
-  
-  //######################################################################VIDEO ABOVE
-  
-							echo '</div>';
-							echo '</td><td>';
-							echo number_format($data['damage'],'0','','.');
-							echo '</td><td>';
-							switch($data['type']){
-								case 0:
-									echo 'Combo';
-									break;
-								case 1:
-									echo 'Blockstring';
-									break;
-								case 2:
-									echo 'Mix Up';
-									break;
-								case 3:
-									echo 'Archive';
-									break;
-								case 4:
-									echo 'Okizeme';
-									break;		
-							}
-							echo '</td><td>';
-							$i = new DateTime($data['submited']);
-							echo $i->format('d-m');
-							echo '</td></tr>';
-						}
-						echo '</table>';
-						
+						require "server/functions.php";
+						combo_table($_GET['gameid']);
 						$query = "SELECT `character_idcharacter`, COUNT(idcombo) as amount, `character`.`Name` FROM `combo` INNER JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` WHERE `character`.`game_idgame` = ? GROUP BY `character_idcharacter` ORDER BY amount DESC";
 						$result = $conn -> prepare($query);
 						$result -> bind_param("i",$_GET['gameid']);
@@ -389,11 +269,13 @@
 						echo '<th>Character</th><th>Total Entries</th></th>';
 						echo '</tr>';*/
 						echo '<p><h3> Total Entries </h3>';
+						//echo '├┬┴┬┴';
 						foreach($result -> get_result() as $data){
 							/*echo '<tr><td>'.$data['Name'].'</td>';
 							echo '<td>'.$data['amount'].'</td></tr>';*/
-							echo '<div>'.$data['Name'].': '.$data['amount'].'</div>';
+							echo ' '.$data['Name'].': '.$data['amount'].' ▰ ';
 						}
+						//echo '┬┴┬┴┤';
 					?>
 					</p>
 			</div>

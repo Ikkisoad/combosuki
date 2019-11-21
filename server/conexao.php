@@ -1,10 +1,10 @@
 <?php
 
-		/*$db_name="u177687112_csuki";
-        $mysql_user = "u177687112_ikkis";
-        $mysql_pass = "d:cYzcUX>:ce8;*&@`";
+			/*$db_name="u177687112_combosuki";
+        $mysql_user = "u177687112_ikkisoad";
+        $mysql_pass = "pKN@*P5[+dm^y@Rzf4";
         $server_name = "sql189.main-hosting.eu";*/
-		$db_name = "u177687112_csuki";
+		$db_name = "test";
 		$mysql_user = "root";
         $mysql_pass = "";
         $server_name = "localhost:3307";

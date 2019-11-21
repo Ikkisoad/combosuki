@@ -103,7 +103,7 @@
 					if(isset($_COOKIE['color'])){
 						echo 'bg/'.$_COOKIE["color"].'honeycomb.png';
 					}else{
-						echo 'yellow-honeycomb.png';
+						echo 'dark-honeycomb.png';
 					}
 				
 				?>");

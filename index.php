@@ -55,7 +55,7 @@
 					if(isset($_COOKIE['color'])){
 						echo 'bg/'.$_COOKIE["color"].'honeycomb.png';
 					}else{
-						echo 'yellow-honeycomb.png';
+						echo 'dark-honeycomb.png';
 					}
 				
 				?>");
@@ -133,6 +133,17 @@
 									echo '></a>';
 								}
 						}else if($_GET['about'] == 1){
+							
+							require "server/conexao.php";
+							$query = "SELECT COUNT(idcombo) as total FROM `combo`;";
+							$result = $conn -> prepare($query);
+							$result -> execute();
+							
+							foreach($result -> get_result()	as $combo_count){
+								echo 'Total submissions: ';
+								echo $combo_count['total'];
+							}
+							
 							echo '<h2>About the application:</h2><p>This application started as a fun project in the end of 2018, and the main motivation to keep at it is to help out the FGC assemble their findings and sort out the best options with a determined set of resources.</p>';
 							echo 'Hopefully with this database we will be able to keep the best combos known, without losing them to tweeter feeds.';
 							echo '<p><h2>About me:</h2>Brazilian Computer Science stundent that spends most of his time playing games.<br>My first fighting game was SFV, one year after DBFZ came out and it became my main game. I play 21, Kid Buu and Frieza.';
@@ -186,7 +197,7 @@
 		  <div style="text-align: right;">Buttons designed by: <a href="https://twitter.com/Makaaaaai" target="_blank">@Makaaaaai</a></div>
 		  <div style="text-align: center;"><a href="https://goo.gl/forms/xzjGo1dQEGOTzZGT2" target="_blank">Request a new game   </a> / 
 		  <a href="index.php?about=1" style="padding-right: 5px;">About </a> / 
-		  <a href="index.php?about=2">Combo Guidelines </a> / <a href="https://discord.gg/49Qrkz4" target="_blank">Discord </a>
+		  <a href="index.php?about=2">Combo Guidelines </a>
 		   / <a href="index.php?about=3" style="padding-right: 5px;">Logs </a> / <a href="https://docs.google.com/spreadsheets/d/1ac2nRBy0tTPz6k6heook5w8R7dDngutW8OkK5alhI7k/edit#gid=1066344564" target="_blank" style="padding-right: 5px;">FGC Discord Compendium </a> / <a href="index.php?about=4" style="padding-right: 5px;">Preferences </a>
 		   
 		   
