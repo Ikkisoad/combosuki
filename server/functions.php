@@ -201,9 +201,6 @@ function combo_table($gameid){
 						echo '</table>';
 }
 
-function game_combo_table($gameid){
-	
-}
 function game_title(){
 	require "server/conexao.php";
 	$query = "SELECT idgame, name FROM game WHERE complete = 1 ORDER BY name;";
@@ -256,5 +253,7 @@ function logs(){
 		echo $log['Description'].'<br>';
 	}
 }
+
+
 
 ?>

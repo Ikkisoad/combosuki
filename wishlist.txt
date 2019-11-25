@@ -12,8 +12,8 @@ DONE:
 
 TO DO:
 
-	> Ready to go selections. (Corner, universal... etc).
-	> Upload CSV file. 
+	> Ready to go selections. (Corner, universal... etc). X
+	> Upload CSV file. X
 	> Moderation station.
 	> Optimize the code, looks hella shitty.
 	> More data in game.php, eg.: Most damaging combo, combos/character, solo combos
