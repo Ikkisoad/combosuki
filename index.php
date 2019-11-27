@@ -89,14 +89,14 @@
 	
 	<body>
 	
-	<div class="jumbotron jumbotron-fluid">
-		<div class="container">
-			<h1 class="display-4"></h1>
-				<p class="lead">
-					<a href="index.php"><img src="img/combosuki.png" align="middle" height="150" ></a>
-				</p>
+		<div class="jumbotron jumbotron-fluid">
+			<div class="container">
+				<h1 class="display-4"></h1>
+					<p class="lead">
+						<a href="index.php"><img src="img/combosuki.png" align="middle" height="150" ></a>
+					</p>
+			</div>
 		</div>
-	</div>
 	
 		<main role="main">
 			
@@ -155,7 +155,6 @@
 							<select name="display" class="custom-select"><option value="1">Image</option><option value="0">Text</option></select>
 							</p><button class="btn btn-secondary">Save</button></form>';
 						}
-						//echo '<br><br><br><br><br><br><br><br><br>';
 					?>
 				</div>
 			</div>

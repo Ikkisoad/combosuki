@@ -254,6 +254,125 @@ function logs(){
 	}
 }
 
+function count_char(){
+	require "server/conexao.php";
+	$query = "SELECT `character_idcharacter`, COUNT(idcombo) as amount, `character`.`Name` FROM `combo` INNER JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` WHERE `character`.`game_idgame` = ? GROUP BY `character_idcharacter` ORDER BY amount DESC";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i",$_GET['gameid']);
+	$result -> execute();
+	
+	/*echo '<table>';
+	echo '<tr>';
+	echo '<th>Character</th><th>Total Entries</th></th>';
+	echo '</tr>';*/
+	echo '<p><h3> Total Entries </h3>';
+	//echo '├┬┴┬┴';
+	foreach($result -> get_result() as $data){
+		/*echo '<tr><td>'.$data['Name'].'</td>';
+		echo '<td>'.$data['amount'].'</td></tr>';*/
+		echo ' '.$data['Name'].': '.$data['amount'].' ▰ ';
+	}
+}
 
+function delete_combo($idcombo){
+	require "server/conexao.php";
+	$query = "DELETE FROM `resources` WHERE `combo_idcombo` = ?";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i", $idcombo);
+	$result -> execute();
 
+	$query = "DELETE FROM `combo` WHERE `idcombo` = ?";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i", $idcombo);
+	$result -> execute();	
+}
+
+function quick_search_form($gameid){
+						require "server/conexao.php";
+							
+						$query = "SELECT `Name`,`idcharacter` FROM `character` WHERE game_idgame = ? ORDER BY name;";
+						$result = $conn -> prepare($query);
+						$result -> bind_param("i", $gameid);
+						$result -> execute();
+							
+						echo '<p><select name="characterid" class="custom-select">';
+							
+						echo '<option value="-">Character</option>';
+						foreach($result -> get_result() as $character){
+							echo '<option value="'.$character['idcharacter'].'" ';
+							echo '>'.$character['Name'].'</option>';
+						}
+						echo '</select></p>'; 
+							
+						echo '<p>
+							<select name="listingtype" class="custom-select">
+								<option value="0">Combo</option>
+								<option value="1">Blockstring</option>
+								<option value="2">Mix Up</option>
+								<option value="4">Okizeme</option>
+								<option value="3">Archive</option>
+								<option value="-">Show All</option>
+							</select>
+						</p>';
+						
+						
+							require "server/conexao.php";
+							
+							$query = "SELECT text_name,type,idgame_resources FROM `game_resources` WHERE game_idgame = ? AND primaryORsecundary = 1 ORDER BY game_resources.primaryORsecundary DESC,text_name;";
+							$result = $conn -> prepare($query);
+							$result -> bind_param("i", $gameid);
+							$result -> execute();
+							
+							echo '<br><p>';
+							
+							foreach($result -> get_result()	as $resource){
+								if($resource['type'] == 1){
+									echo '<div class="input-group mb-3">
+  <div class="input-group-prepend">
+    <label class="input-group-text">'; 
+									echo '</label></div>  <select name="';
+									echo $resource['text_name'];
+									
+									echo '"class="custom-select input-small">';
+									
+									$query = "SELECT idResources_values,value FROM `resources_values` WHERE `game_resources_idgame_resources` = ".$resource['idgame_resources']." ORDER BY resources_values.order, value;";
+									$result = $conn -> prepare($query);
+									$result -> execute();
+									
+									echo '<option value="-">'.$resource['text_name'].'</option>';
+									
+									foreach($result -> get_result() as $resource_value){
+										echo '<option value="';
+										echo $resource_value['idResources_values'].'" ';
+										echo '>';
+										echo $resource_value['value'];
+										echo '</option>';
+									}
+									echo '</select></div> ';
+									
+								}else if($resource['type'] == 2){
+									
+									$query = "SELECT idResources_values,value FROM `resources_values` WHERE `game_resources_idgame_resources` = ?;";
+									$result = $conn -> prepare($query);
+									$result -> bind_param("i", $resource['idgame_resources']);
+									$result -> execute();
+									
+									foreach($result -> get_result() as $resource_value){
+										echo '<p>	<div class="input-group mb-3">
+							<div class="input-group-prepend">
+								<span class="input-group-text">';
+										echo ' </div>
+							<input class="form-control" type="number" min="0" class="input-sm" name="';
+										echo $resource['text_name'];
+										echo '" placeholder="'.$resource['text_name'].'"';
+										echo ' max="';
+										echo $resource_value['value'];
+										echo '"step="any"' ;
+										echo '> </div> </p>';
+									}
+								}
+							}
+							
+							echo '</p><br>';
+}
 ?>
