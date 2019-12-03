@@ -172,7 +172,7 @@ WHERE `idcombo` = ? ";
 							echo '<th>'; 
 							$listing_type = $data['listingtype'];
 							$character = $data['idcharacter'];
-							echo 'Combo ID: '.$data['idcombo'].' / ';
+							echo 'Entry ID: '.$data['idcombo'].' / ';
 							echo $data['Name'];
 							switch($data['listingtype']){
 								case 0:
