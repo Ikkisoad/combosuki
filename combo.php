@@ -79,6 +79,7 @@
 						<p>
 							<a href="<?php
 									require "server/conexao.php";
+									include "server/functions.php";
 									$query = "SELECT `character`.`game_idgame` FROM `character` INNER JOIN `combo` ON `character`.`idcharacter` = `combo`.`character_idcharacter` WHERE `combo`.`idcombo` = ?";
 									$result = $conn -> prepare($query);
 									$result -> bind_param("i",$_GET['idcombo']);
@@ -87,9 +88,7 @@
 									foreach($result -> get_result() as $data){
 										echo 'game.php?gameid=';
 										echo $data['game_idgame'].'"><img ';
-										echo 'src=img/games/';
-										echo $data['game_idgame'];
-										echo '.png ';
+										game_image($data['game_idgame']);
 										$gameid = $data['game_idgame'];
 									}
 								?>
@@ -274,7 +273,6 @@ WHERE `idcombo` = ? ";
 					
 				//echo $query;
 				if(!isset($damage)){ exit();}
-				require "server/functions.php";
 				embed_video($video);
 					echo '</td></table><p><table>';
 							echo '<tr>';
