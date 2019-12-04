@@ -84,9 +84,8 @@
 					<h1 class="display-4"></h1>
 						<p>
 							<a href="index.php"><img <?php
-									echo 'src=img/games/';
-									echo $_GET['gameid'];
-									echo '.png ';
+									require "server/functions.php";
+									game_image($_GET['gameid']);
 								?> align="middle" height="100" ></a>
 						</p>
 				</div>

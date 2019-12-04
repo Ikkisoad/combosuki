@@ -125,10 +125,6 @@
 				border: 1px solid #ddd;
 				
 			}
-
-			th {
-				cursor: pointer;
-			}
 			
 			th, td {
 				text-align: left;
@@ -185,7 +181,7 @@
 										$result -> bind_param("i", $_GET['listid']);
 										$result -> execute();
 										foreach($result -> get_result() as $list){
-											echo '<h3>'.$list['list_name'].'</h3>';
+											echo '<h3 class="mt-3">'.$list['list_name'].'</h3>';
 											echo $list['name'];
 										}
 										
@@ -195,20 +191,20 @@
 										$query = "SELECT `combo_listing`.`idcombo`, `comment`, `combo`.`damage`, `character`.`Name`, `combo`.`combo`, `combo`.`comments`,`combo`.`video`,`combo`.`type` FROM `combo_listing` 
 INNER JOIN `combo` ON `combo`.`idcombo` = `combo_listing`.`idcombo` 
 LEFT JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` 
-WHERE `idlist` = ? ORDER BY `comment`, `combo`.`damage`;";
+WHERE `idlist` = ? ORDER BY `comment`, `combo`.`damage` DESC;";
 										$result = $conn -> prepare($query);
 										$result -> bind_param("i", $_GET['listid']);
 										$result -> execute();
 										echo '<table id="myTable">';
 						echo '<tr>';
-						echo '<th onclick="sortTable(0)">Character</th><th onclick="sortTable(1)">Inputs</th><th onclick="sortTable(2,1)">Damage</th><th onclick="sortTable(3)">Type</th>';
+						echo '<th>Character</th><th>Inputs</th><th>Damage</th><th>Type</th>';
 						echo '</tr>';
 						$comment = '';
 						
 						foreach($result -> get_result() as $data){
 							if($comment != $data['comment']){
 								echo '</table>';
-								echo '<h2>'.$data['comment'].'</h2>';
+								echo '<h2 class="mt-3">'.$data['comment'].'</h2>';
 								echo '<table>';
 								$comment = $data['comment'];
 							}
@@ -320,7 +316,7 @@ WHERE `idlist` = ? ORDER BY `comment`, `combo`.`damage`;";
 						echo '</table>';
 										
 										
-										echo '<h3>Edit List</h3>
+										echo '<h3 class="mt-3">Edit List</h3>
 					<p><form class="form-inline" method="post" action="list.php?listid='.$_GET['listid'].'">
 							<input type="hidden" name="submission_type" value="2">
 							<div class="form-group mb-2"><input placeholder="Combo ID" style="background-color: #474747; color:#999999;" name="comboid" class="form-control" maxlength="45" rows="1"></input></div>

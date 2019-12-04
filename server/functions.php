@@ -203,7 +203,7 @@ function combo_table($gameid){
 
 function game_title(){
 	require "server/conexao.php";
-	$query = "SELECT idgame, name FROM game WHERE complete = 1 ORDER BY name;";
+	$query = "SELECT idgame, name, image FROM game WHERE complete = 1 ORDER BY name;";
 	$result = $conn -> prepare($query);
 	$result -> execute();
 	
@@ -215,10 +215,18 @@ function game_title(){
 		max-width:150px;
 		height:auto;
 		width:auto;
-		" src=img/games/';
-		echo $gameid['idgame'];
-		echo '.png height=100 alt="Responsive image"';
-		echo '></a>';
+		" ';
+		if($gameid['image'] == ''){
+			echo 'src=img/games/';
+			echo $gameid['idgame'];
+			echo '.png height=100 alt="Responsive image"';
+			echo '></a>';
+		}else{
+			echo 'src=';
+			echo $gameid['image'];
+			echo ' height=100 alt="Responsive image"';
+			echo '></a>';
+		}
 		
 		/* TEXT ONLY
 		echo '<a style="margin-left:5em;" href=game.php?gameid=';
@@ -227,6 +235,26 @@ function game_title(){
 		echo $gameid['name'].'</a><br>';*/
 	}
 		
+}
+
+function game_image($gameid){
+	require "server/conexao.php";
+	$query = "SELECT image FROM game WHERE idgame = ?;";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i",$gameid);
+	$result -> execute();
+	
+	foreach($result -> get_result()	as $gameimage){
+		if($gameimage['image'] == ''){
+			echo 'src=img/games/';
+			echo $_GET['gameid'];
+			echo '.png ';
+		}else{
+			echo 'src=';
+			echo $gameimage['image'];
+			echo '';
+		}
+	}
 }
 
 function count_combos(){
