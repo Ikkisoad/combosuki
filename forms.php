@@ -184,7 +184,7 @@
 								echo '.png"> </button> ';
 							}
 						?>
-						<button type="button" style="border:#ffffff;background:none;" value="backspace"  name="no" onclick="backspace()"><img src="img/buttons/backspace.png"> </button> 
+						<button type="button" style="border:#ffffff;background:none;" value="backspace"  name="no" onclick="backspace()"><img src="img/buttons/hidden/backspace.png"> </button> 
 
 						<textarea style="background-color: #474747; color:#999999;" name="combo" class="form-control" id="comboarea" rows="4" title="combo" placeholder="Make sure to leave a space between every button. (Eg.: 2 A > 5 B > 236 C). Text can be added if needed."><?php 
 							if(isset($_POST['type'])){
