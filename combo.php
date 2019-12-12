@@ -154,18 +154,7 @@ WHERE `idcombo` = ? ";
 								echo 'Patch: '.$data['patch'].'</button></p>';
 							}
 							
-							$query = "SELECT name,png FROM `button` WHERE `game_idgame` = ?";
-							$result = $conn -> prepare($query);
-							$result -> bind_param("i",$data['game_idgame']);
-							$result -> execute();
 							
-							$buttonsName = array();
-							$buttonsPNG = array();
-							
-							foreach($result -> get_result() as $each){
-								array_push($buttonsName,$each['name']);
-								array_push($buttonsPNG,$each['png']);
-							}
 							echo '<p><table>';
 							echo '<tr>';
 							echo '<th>'; 
@@ -197,44 +186,8 @@ WHERE `idcombo` = ? ";
 							// ###################################BUTTON PRINTING###############################################
 								echo '<tr>';
 								echo '<td id="combo_line">';
-								$combo_image = '<img class="img-fluid" alt="Responsive image" src=img/buttons/start.png>';
-									$buttonID;
-									$combo = $data['combo'];
-									
-									$array = str_split($combo);
-									$image = '';
-									foreach($array as $char){
-										
-											if(isset($char) && $char != ' '){
-												
-												$image .= $char;
-															
-											}else if($image != ''){
-												$buttonID = array_search($image,$buttonsName);
-												//echo $buttonID;
-												if($buttonID > -1){
-													if($image == '->'){$combo_image .= '<br>';}
-													$combo_image .= '<img class="img-fluid" alt="Responsive image" src=img/buttons/';
-													$combo_image .= $buttonsPNG[$buttonID];
-													$combo_image .= '.png>';
-												}else{
-													$combo_image .= ' '.$image.' ';
-												}
-												$image = '';
-											}
-									}
-									if($image != ''){
-												$buttonID = array_search($image,$buttonsName);
-												//echo $buttonID;
-												if($buttonID > -1){
-													if($image == '->'){echo '<br>';}
-													$combo_image .= '<img class="img-fluid" alt="Responsive image" src=img/buttons/';
-													$combo_image .= $buttonsPNG[$buttonID];
-													$combo_image .= '.png>';
-												}else{
-													$combo_image .= ' '.$image.' ';
-												}
-									}
+								$combo = $data['combo'];
+								$combo_image = button_printing($data['game_idgame'], $combo);
 							//#####################################BUTTON PRINTING##############################################
 							if(!isset($_COOKIE['display'])){
 								echo $combo_image;
@@ -244,9 +197,9 @@ WHERE `idcombo` = ? ";
 							}else{
 								echo $combo;
 							}
-							//echo 'THE COOKIE IS:'. $_COOKIE['display_preference'];
 							echo		'</td></table>';
 						}
+						//echo $combo_image;
 						
 						
 						$comment = $data['comments'];
@@ -271,7 +224,6 @@ WHERE `idcombo` = ? ";
 						}
 					}
 					
-				//echo $query;
 				if(!isset($damage)){ exit();}
 				embed_video($video);
 					echo '</td></table><p><table>';
@@ -311,8 +263,6 @@ WHERE `idcombo` = ? ";
 				
 				?>
 			
-			<!-- </tr></table></p> -->
-			
 			<div id="combo_text" style="display: none;">
 				<?php 
 				
@@ -339,59 +289,8 @@ WHERE `idcombo` = ? ";
 			
 			?>
 			<div class="btn-group" role="group">
-				<!-- <form method="post" onsubmit="return confirm('Do you really want to delete this <?php
-							/*switch($listing_type){
-								case 0:
-									echo 'combo';
-									break;
-								case 1:
-									echo 'blockstring';
-									break;
-								case 2:
-									echo 'mix up';
-									break;
-								case 3:
-									echo 'archive';
-									break;
-							}*/
-						?>?');" action="game.php?gameid=<?php //echo $_GET['gameid']; ?>">
-					<input type="hidden" id="action" name="action" value="0">
-					<input type="hidden" id="idcombo" name="idcombo" value="<?php //echo $_GET['idcombo'] ?>">
-					<button type="submit" class="btn btn-danger">Delete</button>
-				</form> -->
-				
-				<?php
-					/*if($listing_type != 3){
-						echo '<form method="post" onsubmit="return confirm("Are you sure you want to archive this';
-						switch($listing_type){
-							case 0:
-								echo 'combo';
-								break;
-							case 1:
-								echo 'blockstring';
-								break;
-							case 2:
-								echo 'mix up';
-								break;
-							case 3:
-								echo 'archive';
-								break;
-						}
-						echo '?");" action="game.php?gameid=';
-						if(isset($_GET['gameid'])){echo $_GET['gameid'];}
-						echo '">
-						<input type="hidden" id="action" name="action" value="1">
-						<input type="hidden" id="idcombo" name="idcombo" value="';
-						echo $_GET['idcombo'];
-						echo '">
-						<button type="submit" class="btn btn-warning">Archive</button>
-						</form></p>';
-					}*/
-				?>
 				
 				<form method="post" action="forms.php?gameid=<?php if(isset($gameid)){echo $gameid;} ?>">
-					<?php //print_r($secondaryTitle);?>
-					<!-- <input type="hidden" name="<?php //echo $secondaryTitle; ?>" value="<?php //echo $secondaryValue; ?>"> -->
 					<?php
 						
 						for($i = 0; $i<sizeof($primaryTitle); $i++){
@@ -426,12 +325,6 @@ WHERE `idcombo` = ? ";
 	</body>
 		<script>
 			function change_display(){
-				/*var preference = getCookie("display_preference");
-				if(preference == 1){
-					document.cookie = "display_preference=0;";
-				}else{
-					document.cookie = "display_preference=1;";
-				}*/
 				var temp = document.getElementById("combo_line").innerHTML;
 				document.getElementById("combo_line").innerHTML = document.getElementById("combo_text").innerHTML;
 				document.getElementById("combo_text").innerHTML = temp;

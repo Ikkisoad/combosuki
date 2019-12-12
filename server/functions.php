@@ -247,7 +247,7 @@ function game_image($gameid){
 	foreach($result -> get_result()	as $gameimage){
 		if($gameimage['image'] == ''){
 			echo 'src=img/games/';
-			echo $_GET['gameid'];
+			echo $gameid;
 			echo '.png ';
 		}else{
 			echo 'src=';
@@ -402,5 +402,61 @@ function quick_search_form($gameid){
 							}
 							
 							echo '</p><br>';
+}
+
+function button_printing($idgame, $dataCombo){
+	require 'server/conexao.php';
+	$query = "SELECT name,png FROM `button` WHERE `game_idgame` = ?";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i",$idgame);
+	$result -> execute();
+	
+	$buttonsName = array();
+	$buttonsPNG = array();
+	
+	foreach($result -> get_result() as $each){
+		array_push($buttonsName,$each['name']);
+		array_push($buttonsPNG,$each['png']);
+	}
+	$combo_image = '<img class="img-fluid" alt="Responsive image" src=img/buttons/start.png>';
+		$buttonID;
+		
+		
+		$array = str_split($dataCombo);
+		$image = '';
+		foreach($array as $char){
+			
+				if(isset($char) && $char != ' '){
+					
+					$image .= $char;
+								
+				}else if($image != ''){
+					$buttonID = array_search($image,$buttonsName);
+					//echo $buttonID;
+					if($buttonID > -1){
+						if($image == '->'){$combo_image .= '<br>';}
+						$combo_image .= '<img class="img-fluid" alt="Responsive image" src=img/buttons/';
+						$combo_image .= $buttonsPNG[$buttonID];
+						$combo_image .= '.png>';
+					}else{
+						$combo_image .= ' '.$image.' ';
+					}
+					$image = '';
+				}
+		}
+		if($image != ''){
+					$buttonID = array_search($image,$buttonsName);
+					//echo $buttonID;
+					if($buttonID > -1){
+						if($image == '->'){echo '<br>';}
+						$combo_image .= '<img class="img-fluid" alt="Responsive image" src=img/buttons/';
+						$combo_image .= $buttonsPNG[$buttonID];
+						$combo_image .= '.png>';
+					}else{
+						$combo_image .= ' '.$image.' ';
+					}
+		}	
+		
+	return $combo_image;
 }
 ?>
