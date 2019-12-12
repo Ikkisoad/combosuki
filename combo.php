@@ -1,4 +1,69 @@
 <!doctype php>
+<?php
+	require "server/conexao.php";
+	include "server/functions.php";
+	$_GET = array_map("strip_tags", $_GET);
+	
+	$primaryTitle = array();
+	$primaryValue = array();
+	$secondaryTitle = array();
+	$secondaryValue = array();
+	
+	$query = "SELECT `idcombo`,`combo`,`damage`,`value`,`idResources_values`,`number_value`,`character`.`idcharacter`,`character`.`Name`, `video`, `game_resources`.`text_name`,`game_resources`.`type`, `combo`.`type` as listingtype, `combo`.`comments`,`game_resources`.`primaryORsecundary`, `character`.`game_idgame`, `resources_values`.`order`, `combo`.`submited`, `combo`.`patch`, `combo`.`author`
+FROM `combo` 
+INNER JOIN `resources` ON `combo`.`idcombo` = `resources`.`combo_idcombo` 
+LEFT JOIN `resources_values` ON `resources_values`.`idResources_values` = `resources`.`Resources_values_idResources_values` 
+LEFT JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` 
+LEFT JOIN `game_resources` ON `game_resources`.`idgame_resources` = `resources_values`.`game_resources_idgame_resources` 
+WHERE `idcombo` = ? ";
+	
+	$query = $query . "ORDER BY  `game_resources`.`primaryORsecundary` DESC, `idcombo`, `text_name`;";
+	
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i",$_GET['idcombo']);
+	$result -> execute();
+	
+	$id_combo = -1;
+	
+	$primaryORsecundary = 0;
+	
+	$secondaryNames = array();
+	
+	foreach($result -> get_result() as $data){
+		if($id_combo != $data['idcombo']){
+			$patch = $data['patch'];
+			
+			$listing_type = $data['listingtype'];
+			$character = $data['idcharacter'];
+			$name = $data['Name'];
+			$id_combo = $data['idcombo'];
+			$combo = $data['combo'];
+			$combo_image = button_printing($data['game_idgame'], $combo);
+	
+		}
+		
+		$comment = $data['comments'];
+		$video = $data['video'];
+		$damage = $data['damage'];
+		$submited = new DateTime($data['submited']);
+		$author = $data['author'];
+		if($data['primaryORsecundary'] == 0){
+				array_push($secondaryTitle,$data['text_name']);
+				if($data['type'] == 1){
+					array_push($secondaryValue, $data['value']);
+				}else{
+					array_push($secondaryValue, $data['number_value']);
+				}
+		}else{
+			array_push($primaryTitle,$data['text_name']);
+			if($data['type'] == 1){
+				array_push($primaryValue, $data['value']);
+			}else{
+				array_push($primaryValue, $data['number_value']);
+			}
+		}
+	}
+?>
 <html>
 	<head>
 		<meta charset="utf-8">
@@ -79,7 +144,6 @@
 						<p>
 							<a href="<?php
 									require "server/conexao.php";
-									include "server/functions.php";
 									$query = "SELECT `character`.`game_idgame` FROM `character` INNER JOIN `combo` ON `character`.`idcharacter` = `combo`.`character_idcharacter` WHERE `combo`.`idcombo` = ?";
 									$result = $conn -> prepare($query);
 									$result -> bind_param("i",$_GET['idcombo']);
@@ -111,112 +175,52 @@
 				
 				
 				<?php
-					require "server/conexao.php";
-					$_GET = array_map("strip_tags", $_GET);
-					
-					$primaryTitle = array();
-					$primaryValue = array();
-					$secondaryTitle = array();
-					$secondaryValue = array();
-					
-					$query = "SELECT `idcombo`,`combo`,`damage`,`value`,`idResources_values`,`number_value`,`character`.`idcharacter`,`character`.`Name`, `video`, `game_resources`.`text_name`,`game_resources`.`type`, `combo`.`type` as listingtype, `combo`.`comments`,`game_resources`.`primaryORsecundary`, `character`.`game_idgame`, `resources_values`.`order`, `combo`.`submited`, `combo`.`patch`, `combo`.`author`
-FROM `combo` 
-INNER JOIN `resources` ON `combo`.`idcombo` = `resources`.`combo_idcombo` 
-LEFT JOIN `resources_values` ON `resources_values`.`idResources_values` = `resources`.`Resources_values_idResources_values` 
-LEFT JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` 
-LEFT JOIN `game_resources` ON `game_resources`.`idgame_resources` = `resources_values`.`game_resources_idgame_resources` 
-WHERE `idcombo` = ? ";
-					
-					$query = $query . "ORDER BY  `game_resources`.`primaryORsecundary` DESC, `idcombo`, `text_name`;"; //`character_idcharacter` DESC,
-					
-					//echo $query;
-					$result = $conn -> prepare($query);
-					$result -> bind_param("i",$_GET['idcombo']);
-					$result -> execute();
-					
-					$id_combo = -1;
-					
-					$primaryORsecundary = 0;
-					
-					$secondaryNames = array();
-					
-					foreach($result -> get_result() as $data){
-						if($id_combo != $data['idcombo']){
-							$patch = $data['patch'];
-							if($data['patch'] != ''){
-								echo '<p><button class="btn btn-dark" disabled>';
-								echo 'Patch: '.$patch.'</button></p>';
-							}
+				
+				if($patch != ''){
+					echo '<p><button class="btn btn-dark" disabled>';
+					echo 'Patch: '.$patch.'</button></p>';
+				}
+				
 							
-							
-							echo '<p><table>';
-							echo '<tr>';
-							echo '<th>'; 
-							$listing_type = $data['listingtype'];
-							$character = $data['idcharacter'];
-							echo 'Entry ID: '.$data['idcombo'].' / ';
-							echo $data['Name'];
-							switch($data['listingtype']){
-								case 0:
-									echo ' Combo:<br>';
-									break;
-								case 1:
-									echo ' Blockstring:<br>';
-									break;
-								case 2:
-									echo ' Mix Up:<br>';
-									break;
-								case 3:
-									echo ' Archive:<br>';
-									break;
-								case 4:
-									echo ' Okizeme:<br>';
-									break;	
-							}
-							
-							echo '</th>';
-							echo '</tr>';
-							$id_combo = $data['idcombo'];
-							// ###################################BUTTON PRINTING###############################################
-								echo '<tr>';
-								echo '<td id="combo_line">';
-								$combo = $data['combo'];
-								$combo_image = button_printing($data['game_idgame'], $combo);
-							//#####################################BUTTON PRINTING##############################################
-							if(!isset($_COOKIE['display'])){
-								echo $combo_image;
-								$_COOKIE['display'] = 1;
-							}else if($_COOKIE['display']){
-								echo $combo_image;
-							}else{
-								echo $combo;
-							}
-							echo		'</td></table>';
-						}
-						//echo $combo_image;
-						
-						
-						$comment = $data['comments'];
-						$video = $data['video'];
-						$damage = $data['damage'];
-						$submited = new DateTime($data['submited']);
-						$author = $data['author'];
-						if($data['primaryORsecundary'] == 0){
-								array_push($secondaryTitle,$data['text_name']);
-								if($data['type'] == 1){
-									array_push($secondaryValue, $data['value']);
-								}else{
-									array_push($secondaryValue, $data['number_value']);
-								}
-						}else{
-							array_push($primaryTitle,$data['text_name']);
-							if($data['type'] == 1){
-								array_push($primaryValue, $data['value']);
-							}else{
-								array_push($primaryValue, $data['number_value']);
-							}
-						}
-					}
+				echo '<p><table>';
+				echo '<tr>';
+				echo '<th>'; 
+				echo 'Entry ID: '.$id_combo.' / ';
+				echo $name;
+				switch($listing_type){
+					case 0:
+						echo ' Combo:<br>';
+						break;
+					case 1:
+						echo ' Blockstring:<br>';
+						break;
+					case 2:
+						echo ' Mix Up:<br>';
+						break;
+					case 3:
+						echo ' Archive:<br>';
+						break;
+					case 4:
+						echo ' Okizeme:<br>';
+						break;	
+				}
+				
+				echo '</th>';
+				echo '</tr>';
+				
+					echo '<tr>';
+					echo '<td id="combo_line">';
+				
+					
+				if(!isset($_COOKIE['display'])){
+					echo $combo_image;
+					$_COOKIE['display'] = 1;
+				}else if($_COOKIE['display']){
+					echo $combo_image;
+				}else{
+					echo $combo;
+				}
+				echo		'</td></table>';
 					
 				if(!isset($damage)){ exit();}
 				embed_video($video);
