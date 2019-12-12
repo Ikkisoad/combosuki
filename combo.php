@@ -88,9 +88,11 @@ WHERE `idcombo` = ? ";
 		<meta name="msapplication-TileImage" content="img/ms-icon-144x144.png">
 		<meta name="theme-color" content="#ffffff">
 		
+		<meta property="og:url" content="<?php echo $video;?>" />
 		<meta property="og:title" content="<?php echo $name;?>" />
 		<meta property="og:description" content="<?php echo $combo;?>" />
-		<meta property="og:video" content="<?php echo $video;?>" />
+		<meta name="theme-color" content="#d94040" />
+		
 
 		<title>ComboSuki</title>
 		<!-- Bootstrap core CSS -->

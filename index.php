@@ -26,6 +26,7 @@
 		<meta property="og:description" 
   content="Community-fueled searchable environment that shares and perfects combos." />
 		<meta name="theme-color" content="#d94040" />
+		<meta property="og:image" content="http://combosuki.com/img/combosuki.png" />
 		
 		<meta name="description" content="Community-fueled searchable environment that shares and perfects combos.">
 
