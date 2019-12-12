@@ -114,8 +114,6 @@
 					require "server/conexao.php";
 					$_GET = array_map("strip_tags", $_GET);
 					
-					$i = 0;
-					
 					$primaryTitle = array();
 					$primaryValue = array();
 					$secondaryTitle = array();
