@@ -151,7 +151,7 @@ WHERE `idcombo` = ? ";
 							$patch = $data['patch'];
 							if($data['patch'] != ''){
 								echo '<p><button class="btn btn-dark" disabled>';
-								echo 'Patch: '.$data['patch'].'</button></p>';
+								echo 'Patch: '.$patch.'</button></p>';
 							}
 							
 							
