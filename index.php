@@ -21,8 +21,12 @@
 		<meta name="theme-color" content="#ffffff">
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
-		<meta name="description" content="">
-		<meta name="Ikkisoad" content="">
+		
+		<meta property="og:title" content="Combo好き" />
+		<meta property="og:description" 
+  content="Community-fueled searchable environment that shares and perfects combos." />
+		<meta name="theme-color" content="#d94040" />
+		
 		<meta name="description" content="Community-fueled searchable environment that shares and perfects combos.">
 
 		<title>Combo好き</title>
