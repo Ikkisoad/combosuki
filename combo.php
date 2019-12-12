@@ -139,14 +139,11 @@ WHERE `idcombo` = ? ";
 					
 					$id_combo = -1;
 					
-					$k_res = 0;
 					$primaryORsecundary = 0;
 					
 					$secondaryNames = array();
 					
 					foreach($result -> get_result() as $data){
-						
-						//print_r($data);
 						if($id_combo != $data['idcombo']){
 							$patch = $data['patch'];
 							if($data['patch'] != ''){
