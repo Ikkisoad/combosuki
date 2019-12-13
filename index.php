@@ -26,6 +26,7 @@
 		<meta property="og:type" content="website" />
 		<meta property="og:image" content="http://combosuki.com/img/combosuki.png" />
 		<meta property="og:url" content="http://combosuki.com/index.php" />
+		
 		<meta property="og:description" 
   content="Community-fueled searchable environment that shares and perfects combos." />
 		<meta name="theme-color" content="#d94040" />
