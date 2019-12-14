@@ -96,6 +96,7 @@
 	</head>
 	
 	<body>
+	<?php //echo phpversion(); ?>
 	
 		<div class="jumbotron jumbotron-fluid">
 			<div class="container">

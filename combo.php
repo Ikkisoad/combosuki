@@ -86,11 +86,11 @@ WHERE `idcombo` = ? ";
 		<link rel="manifest" href="img/manifest.json">
 		<meta name="msapplication-TileColor" content="#ffffff">
 		<meta name="msapplication-TileImage" content="img/ms-icon-144x144.png">
-		<meta name="theme-color" content="#ffffff">
 		
 		<!-- <meta property="og:url" content="<?php //echo $video;?>" /> -->
 		<meta property="og:title" content="<?php echo $name.' > '.$damage.' damage';?>" />
 		<meta property="og:description" content="<?php echo $combo;?>" />
+		<meta property="og:image" content="http://combosuki.com/img/combosuki.png" />
 		<meta name="theme-color" content="#d94040" />
 		
 
