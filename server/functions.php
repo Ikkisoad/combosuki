@@ -459,4 +459,15 @@ function button_printing($idgame, $dataCombo){
 		
 	return $combo_image;
 }
+
+function get_game($gameid){
+	require "server/conexao.php";
+	$query = "SELECT name,complete,image FROM game WHERE idgame = ?;";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i",$gameid);
+	$result -> execute();
+	
+	return $result;// -> get_result();
+}
+
 ?>
