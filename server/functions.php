@@ -237,7 +237,7 @@ function game_title(){
 		
 }
 
-function game_image($gameid){
+function game_image($gameid, $height){
 	require "server/conexao.php";
 	$query = "SELECT image FROM game WHERE idgame = ?;";
 	$result = $conn -> prepare($query);
@@ -250,9 +250,9 @@ function game_image($gameid){
 			echo $gameid;
 			echo '.png ';
 		}else{
-			echo 'src=';
+			echo '<img src=';
 			echo $gameimage['image'];
-			echo '';
+			echo ' align="middle" height="'.$height.'" >';
 		}
 	}
 }

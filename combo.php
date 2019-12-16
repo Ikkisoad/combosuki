@@ -157,12 +157,12 @@ WHERE `idcombo` = ? ";
 									
 									foreach($result -> get_result() as $data){
 										echo 'game.php?gameid=';
-										echo $data['game_idgame'].'"><img ';
-										game_image($data['game_idgame']);
+										echo $data['game_idgame'].'">';
+										game_image($data['game_idgame'], 200);
 										$gameid = $data['game_idgame'];
 									}
 								?>
-								align="middle" height="200" >
+								
 							</a>
 						</p>
 				</div>

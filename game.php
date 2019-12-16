@@ -85,8 +85,8 @@
 						<p>
 							<a href="index.php"><img <?php
 									require "server/functions.php";
-									game_image($_GET['gameid']);
-								?> align="middle" height="100" ></a>
+									game_image($_GET['gameid'], 100);
+								?></a>
 						</p>
 				</div>
 			</div>

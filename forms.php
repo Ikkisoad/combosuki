@@ -66,11 +66,9 @@
 									}
 								?>"><img 
 								<?php
-									echo 'src=img/games/';
-									echo $_GET['gameid'];
-									echo '.png ';
+									include "server/functions.php";
+									game_image($_GET['gameid'], 200);
 								?>
-								align="middle" height="200" >
 							</a>
 						</p>
 				</div>
