@@ -108,6 +108,10 @@
 					</form>
 				</div>
 				
+				<?php
+					echo '<a href="editgame.php?gameid='.$_GET['gameid'].'">Edit Game</a>';
+				?>
+				
 				<form class="form-inline" method="get" action="submit.php">
 					<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 					<?php

@@ -1,4 +1,32 @@
 <!doctype php>
+<?php
+	include "server/conexao.php";
+	if(!empty($_POST)){
+	//	print_r($_POST);
+		$query = "SELECT globalPass FROM game WHERE idgame = ?";
+		$result = $conn -> prepare($query);
+		$result -> bind_param("i", $_GET['gameid']);
+		$result -> execute();
+		foreach($result -> get_result() as $pass){
+		//	echo 'hi';
+			if($pass['globalPass'] != $_POST['password']){
+				header("Location: index.php");
+				exit();
+			}
+		}
+		
+		if($_POST['action'] == 'Submit'){
+		
+			$query = "UPDATE `game` SET `name`= ?,`image`= ? WHERE `idgame` = ?";
+			$result = $conn -> prepare($query);
+			//print_r($_POST);
+			$result -> bind_param("ssi", $_POST['title'], $_POST['image'], $_GET['gameid']);
+			$result -> execute();
+		}else if($_POST['action'] == 'Delete'){
+			
+		}
+	}
+?>
 <html>
 	<head>
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
@@ -62,15 +90,50 @@
 							<button class="btn btn-secondary">Home</button>
 						</form>
 					</div>
+						<form method="post" action="editgame.php?gameid=<?php echo $_GET['gameid']?>">
 					<?php
-						$game = get_game($_GET['gameid']);
-						print_r($game);
+						//$game = get_game($_GET['gameid']);
+						//print_r($game);
+						
+						require "server/conexao.php";
+						$query = "SELECT name,image FROM game WHERE idgame = ?;";
+						$result = $conn -> prepare($query);
+						$result -> bind_param("i",$_GET['gameid']);
+						$result -> execute();
+						//print_r($result);
 						
 						//$game -> get_result()
-						foreach($game -> get_result()	as $lol){
-							print_r($lol);
+						foreach($result -> get_result()	as $lol){
+							//print_r($lol);
+							echo '<div class="input-group mb-3">
+							<div class="input-group-prepend">
+								<span class="input-group-text">Game Title:
+							</span></div>
+							<input type="text" name="title" class="form-control" value="'.$lol['name'].'">
+						</div>';
+						echo '<div class="input-group mb-3">
+							<div class="input-group-prepend">
+								<span class="input-group-text">Game Image:
+							</span></div>
+							<input type="text" name="image" class="form-control" value="'.$lol['image'].'">
+						</div>';
+						game_image($_GET['gameid'],250);
+						echo '<div class="input-group mb-3">
+							<div class="input-group-prepend">
+								<span class="input-group-text">Game Password:
+							</span></div>
+							<input type="password" maxlength="16" name="password" class="form-control">
+						</div>';
+						
 						}
+						
+						
 					?>
+					
+						<p><button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Submit</button></p>
+						<p><button type="submit" name="action" value="Delete" class="btn btn-danger btn-block" onclick="return confirm('Are you sure you want to delete this game?');">Delete</button></p>
+					
+						</form>
 				</div>
 			</div>
 		</main>

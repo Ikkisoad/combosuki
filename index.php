@@ -164,6 +164,7 @@
 							<select name="display" class="custom-select"><option value="1">Image</option><option value="0">Text</option></select>
 							</p><button class="btn btn-secondary">Save</button></form>';
 						}
+						echo '<br><br><br><br><br><br><br>';
 					?>
 				</div>
 			</div>
