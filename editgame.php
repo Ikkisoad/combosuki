@@ -134,6 +134,25 @@
 						<p><button type="submit" name="action" value="Delete" class="btn btn-danger btn-block" onclick="return confirm('Are you sure you want to delete this game?');">Delete</button></p>
 					
 						</form>
+						
+						<div class="btn-group" role="group">
+							<form method="get" action="game.php">
+								<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+								<button class="btn btn-secondary"><< back</button>
+							</form>
+							<form method="get" action="index.php">
+								<button class="btn btn-secondary">Characters</button>
+							</form>
+							<form method="post" action="forms.php?gameid=<?php echo $_GET['gameid']; ?>">
+								<button class="btn btn-secondary">Buttons</button>
+								<input type="hidden" id="type" name="type" value="1">
+							</form>
+
+							<form method="get" action="forms.php">
+								<button class="btn btn-secondary">Resources</button>
+								<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+							</form>
+						</div>
 				</div>
 			</div>
 		</main>
