@@ -93,7 +93,7 @@
 			
 			<div class="container">
 				<div class="btn-group" role="group" aria-label="Basic example">
-					<form id="MyForm" method="get" action="index.php">
+					<form method="get" action="index.php">
 						<button class="btn btn-secondary">Home</button>
 					</form>
 					
@@ -102,15 +102,20 @@
 						<input type="hidden" id="type" name="type" value="1">
 					</form>
 
-					<form id="MyForm" method="get" action="forms.php">
+					<form method="get" action="forms.php">
 						<button class="btn btn-secondary">Search</button>
 						<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 					</form>
+					
+					<form method="get" action="list.php">
+						<button class="btn btn-secondary">Listing</button>
+					</form>
+					
+					<form method="get" action="editgame.php">
+						<button class="btn btn-secondary">Edit Game</button>
+						<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+					</form>
 				</div>
-				
-				<?php
-					echo '<a href="editgame.php?gameid='.$_GET['gameid'].'">Edit Game</a>';
-				?>
 				
 				<form class="form-inline" method="get" action="submit.php">
 					<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">

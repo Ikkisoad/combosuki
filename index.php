@@ -111,10 +111,10 @@
 			
 			<div class="container">
 				<div class="btn-group" role="group" aria-label="Basic example">
-					<form id="MyForm" method="get" action="index.php">
+					<form method="get" action="index.php">
 						<button class="btn btn-secondary">Home</button>
 					</form>
-					<form id="MyForm" method="get" action="list.php">
+					<form method="get" action="list.php">
 						<button class="btn btn-secondary">Listing</button>
 					</form>
 					
@@ -170,8 +170,8 @@
 			</div>
 		</main>
 		<div class="footer">
-		  <div style="text-align: right;">Created by: <a href="https://twitter.com/Ikkisoad" target="_blank">@Ikkisoad</a>   E-Mail: <a href="mailto:ikkisoad@combosuki.com">ikkisoad@combosuki.com</a></div>
-		  <div style="text-align: right;">Buttons designed by: <a href="https://twitter.com/Makaaaaai" target="_blank">@Makaaaaai</a></div>
+		  <!-- <div style="text-align: right;">Created by: <a href="https://twitter.com/Ikkisoad" target="_blank">@Ikkisoad</a>   E-Mail: <a href="mailto:ikkisoad@combosuki.com">ikkisoad@combosuki.com</a></div>
+		  <div style="text-align: right;">Buttons designed by: <a href="https://twitter.com/Makaaaaai" target="_blank">@Makaaaaai</a></div> -->
 		  <div style="text-align: center;"><a href="https://goo.gl/forms/xzjGo1dQEGOTzZGT2" target="_blank">Request a new game   </a> / 
 		  <a href="index.php?about=1" style="padding-right: 5px;">About </a> / 
 		  <a href="index.php?about=2">Combo Guidelines </a>
