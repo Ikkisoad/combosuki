@@ -24,6 +24,12 @@
 			$result -> execute();
 		}else if($_POST['action'] == 'Delete'){
 			
+		}else if($_POST['action'] == 'Add'){
+			$query = "INSERT INTO `character`(`idcharacter`, `Name`, `game_idgame`) VALUES (NULL,?,?)";
+			$result = $conn -> prepare($query);
+			//print_r($_POST);
+			$result -> bind_param("si", $_POST['character'], $_GET['gameid']);
+			$result -> execute();
 		}
 	}
 ?>
@@ -106,7 +112,11 @@
 				<div class="form-group">
 					<!-- <button id="Mybtn" class="btn btn-primary" onclick="changeMethod(this)">Submit a Combo</button> -->
 					<div class="btn-group" role="group" aria-label="Basic example">
-						<form id="MyForm" method="get" action="index.php">
+						<form method="get" action="game.php">
+							<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+							<button class="btn btn-secondary"><< back</button>
+						</form>
+						<form method="get" action="index.php">
 							<button class="btn btn-secondary">Home</button>
 						</form>
 					</div>
@@ -145,14 +155,25 @@
 							echo '</tr>';
 						
 						}
+						
+						echo '<tr><td>';
+							echo '<form method="post" action="editcharacters.php?gameid='.$_GET['gameid'].'">';
+							echo '<div class="input-group"><textarea name="character" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Add Character"></textarea>';
+							//echo $lol['Name'];
+							echo '
+  <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
+  <div class="input-group-append" id="button-addon4">
+    <button type="submit" name="action" value="Add" class="btn btn-primary">Add</button>
+  </div>
+</div>';
+							echo '</td>';
+							echo '</form>';
+							echo '</tr>';
+						
 						echo '</table><br>';
 						
 					?>
 						<div class="btn-group" role="group">
-							<form method="get" action="game.php">
-								<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
-								<button class="btn btn-secondary"><< back</button>
-							</form>
 							<form method="get" action="editcharacters.php">
 								<button class="btn btn-secondary">Characters</button>
 								<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
