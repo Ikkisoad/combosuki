@@ -2,6 +2,8 @@
 <?php
 	include "server/conexao.php";
 	if(!empty($_POST)){
+		$_POST = array_map("strip_tags", $_POST);
+		$_GET = array_map("strip_tags", $_GET);
 		//print_r($_POST);
 		$query = "SELECT globalPass FROM game WHERE idgame = ?";
 		$result = $conn -> prepare($query);
@@ -135,7 +137,7 @@ WHERE `character`.`idcharacter` = ?";
 				<div class="form-group">
 					<!-- <button id="Mybtn" class="btn btn-primary" onclick="changeMethod(this)">Submit a Combo</button> -->
 					<div class="btn-group" role="group" aria-label="Basic example">
-						<form method="get" action="game.php">
+						<form method="get" action="editgame.php">
 							<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 							<button class="btn btn-secondary"><< back</button>
 						</form>
