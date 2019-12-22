@@ -2,25 +2,25 @@
 <?php
 	include "server/conexao.php";
 	if(!empty($_POST)){
-	//	print_r($_POST);
+		print_r($_POST);
 		$query = "SELECT globalPass FROM game WHERE idgame = ?";
 		$result = $conn -> prepare($query);
 		$result -> bind_param("i", $_GET['gameid']);
 		$result -> execute();
 		foreach($result -> get_result() as $pass){
 		//	echo 'hi';
-			if($pass['globalPass'] != $_POST['password']){
+			if($pass['globalPass'] != $_POST['gamePass']){
 				header("Location: index.php");
 				exit();
 			}
 		}
 		
-		if($_POST['action'] == 'Submit'){
+		if($_POST['action'] == 'Update'){
 		
-			$query = "UPDATE `game` SET `name`= ?,`image`= ? WHERE `idgame` = ?";
+			$query = "UPDATE `character` SET `Name`=? WHERE `idcharacter` = ?";
 			$result = $conn -> prepare($query);
 			//print_r($_POST);
-			$result -> bind_param("ssi", $_POST['title'], $_POST['image'], $_GET['gameid']);
+			$result -> bind_param("si", $_POST['character'], $_POST['idcharacter']);
 			$result -> execute();
 		}else if($_POST['action'] == 'Delete'){
 			
@@ -77,6 +77,26 @@
 			textare{
 				color: #000000;	
 			}
+			
+			table {
+				border-spacing: 0;
+				width: 100%;
+				border: 1px solid #ddd;
+				
+			}
+			
+			th, td {
+				text-align: center;
+				padding:7px;
+			}
+
+			tr:nth-child(even) {
+				background-color: #212121
+			}
+			
+			tr:nth-child(odd) {
+				background-color: #000000
+			}
 		</style> <!-- BACKGROUND COLOR-->
 	</head>
 	
@@ -90,59 +110,52 @@
 							<button class="btn btn-secondary">Home</button>
 						</form>
 					</div>
-						<form method="post" action="editgame.php?gameid=<?php echo $_GET['gameid']?>">
 					<?php
 						//$game = get_game($_GET['gameid']);
 						//print_r($game);
 						
 						require "server/conexao.php";
-						$query = "SELECT name,image FROM game WHERE idgame = ?;";
+						$query = "SELECT `idcharacter`, `Name` FROM `character` WHERE `game_idgame` = ? ORDER BY Name;";
 						$result = $conn -> prepare($query);
 						$result -> bind_param("i",$_GET['gameid']);
 						$result -> execute();
 						//print_r($result);
 						
 						//$game -> get_result()
+						echo '<table id="myTable">';
+						echo '<tr>';
+						echo '<th>Character</th';
+						echo '</tr>';
 						foreach($result -> get_result()	as $lol){
-							//print_r($lol);
-							echo '<div class="input-group mb-3">
-							<div class="input-group-prepend">
-								<span class="input-group-text">Game Title:
-							</span></div>
-							<input type="text" name="title" class="form-control" value="'.$lol['name'].'">
-						</div>';
-						echo '<div class="input-group mb-3">
-							<div class="input-group-prepend">
-								<span class="input-group-text">Game Image:
-							</span></div>
-							<input type="text" name="image" class="form-control" value="'.$lol['image'].'">
-						</div>';
-						game_image($_GET['gameid'],250);
-						echo '<div class="input-group mb-3">
-							<div class="input-group-prepend">
-								<span class="input-group-text">Game Password:
-							</span></div>
-							<input type="password" maxlength="16" name="password" class="form-control">
-						</div>';
+							
+							echo '<tr><td>';
+							echo '<form method="post" action="editcharacters.php?gameid='.$_GET['gameid'].'">';
+							echo '<div class="input-group"><textarea name="character" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Character Name">'.$lol['Name'].'</textarea>';
+							//echo $lol['Name'];
+							echo '
+  <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
+  <div class="input-group-append" id="button-addon4">
+  <input type="hidden" name="idcharacter" value="'.$lol['idcharacter'].'">
+    <button type="submit" name="action" value="Update" class="btn btn-primary">Update</button>
+    <button type="submit" name="action" value="Delete" class="btn btn-danger">Delete</button>
+  </div>
+</div>';
+							echo '</td>';
+							echo '</form>';
+							echo '</tr>';
 						
 						}
-						
+						echo '</table><br>';
 						
 					?>
-					
-						<p><button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Submit</button></p>
-						<p><button type="submit" name="action" value="Delete" class="btn btn-danger btn-block" onclick="return confirm('Are you sure you want to delete this game?');">Delete</button></p>
-					
-						</form>
-						
 						<div class="btn-group" role="group">
 							<form method="get" action="game.php">
-								<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+								<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 								<button class="btn btn-secondary"><< back</button>
 							</form>
 							<form method="get" action="editcharacters.php">
 								<button class="btn btn-secondary">Characters</button>
-								<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+								<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 							</form>
 							<form method="post" action="forms.php?gameid=<?php echo $_GET['gameid']; ?>">
 								<button class="btn btn-secondary">Buttons</button>
@@ -150,7 +163,7 @@
 
 							<form method="get" action="forms.php">
 								<button class="btn btn-secondary">Resources</button>
-								<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+								<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 							</form>
 						</div>
 				</div>
