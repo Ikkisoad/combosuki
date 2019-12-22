@@ -23,6 +23,29 @@
 			$result -> bind_param("si", $_POST['character'], $_POST['idcharacter']);
 			$result -> execute();
 		}else if($_POST['action'] == 'Delete'){
+			$query = "DELETE `resources` FROM `character` 
+JOIN `combo` ON `combo`.`character_idcharacter` = `character`.`idcharacter`
+JOIN `resources` ON `resources`.`combo_idcombo` = `combo`.`idcombo`
+WHERE `character`.`idcharacter` = ?";
+			$result = $conn -> prepare($query);
+			//print_r($_POST);
+			$result -> bind_param("i", $_POST['idcharacter']);
+			$result -> execute();
+			
+			$query = "DELETE `combo` FROM `character` 
+JOIN `combo` ON `combo`.`character_idcharacter` = `character`.`idcharacter`
+WHERE `character`.`idcharacter` = ?";
+			$result = $conn -> prepare($query);
+			//print_r($_POST);
+			$result -> bind_param("i", $_POST['idcharacter']);
+			$result -> execute();
+			
+			$query = "DELETE FROM `character` WHERE `idcharacter` = ?";
+			$result = $conn -> prepare($query);
+			//print_r($_POST);
+			$result -> bind_param("i", $_POST['idcharacter']);
+			$result -> execute();
+			
 			
 		}else if($_POST['action'] == 'Add'){
 			$query = "INSERT INTO `character`(`idcharacter`, `Name`, `game_idgame`) VALUES (NULL,?,?)";
