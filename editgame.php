@@ -86,7 +86,11 @@
 				<div class="form-group">
 					<!-- <button id="Mybtn" class="btn btn-primary" onclick="changeMethod(this)">Submit a Combo</button> -->
 					<div class="btn-group" role="group" aria-label="Basic example">
-						<form id="MyForm" method="get" action="index.php">
+						<form method="get" action="game.php">
+							<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+							<button class="btn btn-secondary"><< back</button>
+						</form>
+						<form method="get" action="index.php">
 							<button class="btn btn-secondary">Home</button>
 						</form>
 					</div>
@@ -130,16 +134,12 @@
 						
 					?>
 					
-						<p><button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Submit</button></p>
+						<p><button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Update</button></p>
 						<p><button type="submit" name="action" value="Delete" class="btn btn-danger btn-block" onclick="return confirm('Are you sure you want to delete this game?');">Delete</button></p>
 					
 						</form>
 						
 						<div class="btn-group" role="group">
-							<form method="get" action="game.php">
-								<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
-								<button class="btn btn-secondary"><< back</button>
-							</form>
 							<form method="get" action="editcharacters.php">
 								<button class="btn btn-secondary">Characters</button>
 								<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">

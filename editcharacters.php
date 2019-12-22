@@ -2,7 +2,7 @@
 <?php
 	include "server/conexao.php";
 	if(!empty($_POST)){
-		print_r($_POST);
+		//print_r($_POST);
 		$query = "SELECT globalPass FROM game WHERE idgame = ?";
 		$result = $conn -> prepare($query);
 		$result -> bind_param("i", $_GET['gameid']);

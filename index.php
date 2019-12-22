@@ -130,12 +130,12 @@
 							
 							
 							echo '<h2>About the application:</h2><p>This application started as a fun project in the end of 2018, and the main motivation to keep at it is to help out the FGC assemble their findings and sort out the best options with a determined set of resources.</p>';
-							echo 'Hopefully with this database we will be able to keep the best combos known, without losing them to tweeter feeds.';
-							echo '<p><h2>About me:</h2>Brazilian Computer Science stundent that spends most of his time playing games.<br>My first fighting game was SFV, one year after DBFZ came out and it became my main game. I play 21, Kid Buu and Frieza.';
+							echo 'Hopefully with this database we will be able to keep the best combos known, without losing them to endless feeds.';
+							//echo '<p><h2>About me:</h2>Brazilian Computer Science stundent that spends most of his time playing games.<br>My first fighting game was SFV, one year after DBFZ came out and it became my main game. I play 21, Kid Buu and Frieza.';
 							//echo '<br><br><h3>This is the best explanation for this application:</h3>';
-							echo '<br><br>"Combo好きs main purpose is to be a community-fueled searchable environment that shares and perfects combos."<p>u/madninjaman @ reddit </p>';
+							//echo '<br><br>"Combo好きs main purpose is to be a community-fueled searchable environment that shares and perfects combos."<p>u/madninjaman @ reddit </p>';
 							
-							echo '<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+							echo '<br><br><form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
 							<input type="hidden" name="cmd" value="_s-xclick" />
 							<input type="hidden" name="hosted_button_id" value="JNX6A2HZETH5Y" />
 							<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
