@@ -1,33 +1,39 @@
 <!doctype php>
 <?php
 	include "server/conexao.php";
+	$edit = 0;
 	if(!empty($_POST)){
 		$_POST = array_map("strip_tags", $_POST);
 		$_GET = array_map("strip_tags", $_GET);
-		//print_r($_POST);
-		$query = "SELECT globalPass FROM game WHERE idgame = ?";
-		$result = $conn -> prepare($query);
-		$result -> bind_param("i", $_GET['gameid']);
-		$result -> execute();
-		foreach($result -> get_result() as $pass){
-		//	echo 'hi';
-			if($pass['globalPass'] != $_POST['gamePass']){
-				header("Location: index.php");
-				exit();
-			}
-		}
-		
-		if($_POST['action'] == 'Update'){
-		
-			$query = "UPDATE `game_resources` SET `text_name`= ?,`type`= ?,`primaryORsecundary`= ? WHERE `idgame_resources` = ? AND `game_idgame` = ?";
-			$result = $conn -> prepare($query);
 			//print_r($_POST);
-			$result -> bind_param("siiii", $_POST['resource'], $_POST['type'],$_POST['primaryORsecundary'],$_POST['idresource'], $_GET['gameid']);
+		if($_POST['action'] != 'Edit'){
+			$query = "SELECT globalPass FROM game WHERE idgame = ?";
+			$result = $conn -> prepare($query);
+			$result -> bind_param("i", $_GET['gameid']);
 			$result -> execute();
-		}else if($_POST['action'] == 'Delete'){
+			foreach($result -> get_result() as $pass){
+			//	echo 'hi';
+				if($pass['globalPass'] != $_POST['gamePass']){
+					header("Location: index.php");
+					exit();
+				}
+			}
 			
-		}else if($_POST['action'] == 'Add'){
+			if($_POST['action'] == 'Update'){
 			
+				$query = "UPDATE `game_resources` SET `text_name`= ?,`type`= ?,`primaryORsecundary`= ? WHERE `idgame_resources` = ? AND `game_idgame` = ?";
+				$result = $conn -> prepare($query);
+				//print_r($_POST);
+				$result -> bind_param("siiii", $_POST['resource'], $_POST['type'],$_POST['primaryORsecundary'],$_POST['idresource'], $_GET['gameid']);
+				$result -> execute();
+			}else if($_POST['action'] == 'Delete'){
+				
+			}else if($_POST['action'] == 'Add'){
+				
+			}
+			
+		}else if($_POST['action'] == 'Edit'){
+			$edit = 1;
 		}
 	}
 ?>
@@ -121,84 +127,86 @@
 					<?php
 						//$game = get_game($_GET['gameid']);
 						//print_r($game);
-						
-						require "server/conexao.php";
-						$query = "SELECT `idgame_resources`, `text_name`, `type`, `primaryORsecundary` FROM `game_resources` WHERE `game_idgame` = ? ORDER BY primaryORsecundary DESC, text_name";
-						$result = $conn -> prepare($query);
-						$result -> bind_param("i",$_GET['gameid']);
-						$result -> execute();
-						//print_r($result);
-						
-						//$game -> get_result()
-						echo '<table id="myTable">';
-						echo '<tr>';
-						echo '<th>Resource</th';
-						echo '</tr>';
-						foreach($result -> get_result()	as $lol){
+						if($edit){
+							
+						}else{
+							require "server/conexao.php";
+							$query = "SELECT `idgame_resources`, `text_name`, `type`, `primaryORsecundary` FROM `game_resources` WHERE `game_idgame` = ? ORDER BY primaryORsecundary DESC, text_name";
+							$result = $conn -> prepare($query);
+							$result -> bind_param("i",$_GET['gameid']);
+							$result -> execute();
+							//print_r($result);
+							
+							//$game -> get_result()
+							echo '<table id="myTable">';
+							echo '<tr>';
+							echo '<th>Resource</th';
+							echo '</tr>';
+							foreach($result -> get_result()	as $lol){
+								
+								echo '<tr><td>';
+								echo '<form method="post" action="editresources.php?gameid='.$_GET['gameid'].'">';
+								echo '<div class="input-group"><textarea name="resource" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Character Name">'.$lol['text_name'].'</textarea>';
+								//echo $lol['Name'];
+								echo '<select name="type" class="custom-select">
+								<option value="1" ';
+								if($lol['type'] == 1)echo 'selected';
+								echo '>List</option>
+								<option value="2" ';
+								if($lol['type'] == 2)echo 'selected';
+								echo '>Number</option>
+								</select>';
+								echo '<select name="primaryORsecundary" class="custom-select">
+								<option value="1" ';
+								if($lol['primaryORsecundary'] == 1)echo 'selected';
+								echo '>Primary</option>
+								<option value="0" ';
+								if($lol['primaryORsecundary'] != 1)echo 'selected';
+								echo '>Secondary</option>
+								</select>';
+								echo '
+	  <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
+	  <div class="input-group-append" id="button-addon4">
+	  <input type="hidden" name="idresource" value="'.$lol['idgame_resources'].'">
+		<button type="submit" name="action" value="Update" class="btn btn-primary">Update</button>
+		<button type="submit" name="action" value="Edit" class="btn btn-secondary">Edit</button>
+		<button type="submit" name="action" value="Delete" class="btn btn-danger">Delete</button>
+	  </div>
+	</div>';
+								echo '</td>';
+								echo '</form>';
+								echo '</tr>';
+							
+							}
 							
 							echo '<tr><td>';
-							echo '<form method="post" action="editresources.php?gameid='.$_GET['gameid'].'">';
-							echo '<div class="input-group"><textarea name="resource" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Character Name">'.$lol['text_name'].'</textarea>';
-							//echo $lol['Name'];
-							echo '<select name="type" class="custom-select">
-							<option value="1" ';
-							if($lol['type'] == 1)echo 'selected';
-							echo '>List</option>
-							<option value="2" ';
-							if($lol['type'] == 2)echo 'selected';
-							echo '>Number</option>
-							</select>';
-							echo '<select name="primaryORsecundary" class="custom-select">
-							<option value="1" ';
-							if($lol['primaryORsecundary'] == 1)echo 'selected';
-							echo '>Primary</option>
-							<option value="0" ';
-							if($lol['primaryORsecundary'] != 1)echo 'selected';
-							echo '>Secondary</option>
-							</select>';
-							echo '
-  <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
-  <div class="input-group-append" id="button-addon4">
-  <input type="hidden" name="idresource" value="'.$lol['idgame_resources'].'">
-    <button type="submit" name="action" value="Update" class="btn btn-primary">Update</button>
-	<button type="submit" name="action" value="Update" class="btn btn-secondary">Edit</button>
-    <button type="submit" name="action" value="Delete" class="btn btn-danger">Delete</button>
-  </div>
-</div>';
-							echo '</td>';
-							echo '</form>';
-							echo '</tr>';
-						
+								echo '<form method="post" action="editcharacters.php?gameid='.$_GET['gameid'].'">';
+								echo '<div class="input-group"><textarea name="character" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Resource Name"></textarea>';
+								//echo $lol['Name'];
+								echo '<select name="characterid" class="custom-select">
+								<option ';
+								echo '>List</option>
+								<option ';
+								echo '>Number</option>
+								</select>';
+								echo '<select name="characterid" class="custom-select">
+								<option ';
+								echo '>Primary</option>
+								<option ';
+								echo '>Secondary</option>
+								</select>';
+								echo '
+	  <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
+	  <div class="input-group-append" id="button-addon4">
+		<button type="submit" name="action" value="Add" class="btn btn-primary">Add</button>
+	  </div>
+	</div>';
+								echo '</td>';
+								echo '</form>';
+								echo '</tr>';
+							
+							echo '</table><br>';
 						}
-						
-						echo '<tr><td>';
-							echo '<form method="post" action="editcharacters.php?gameid='.$_GET['gameid'].'">';
-							echo '<div class="input-group"><textarea name="character" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Resource Name"></textarea>';
-							//echo $lol['Name'];
-							echo '<select name="characterid" class="custom-select">
-							<option ';
-							echo '>List</option>
-							<option ';
-							echo '>Number</option>
-							</select>';
-							echo '<select name="characterid" class="custom-select">
-							<option ';
-							echo '>Primary</option>
-							<option ';
-							echo '>Secondary</option>
-							</select>';
-							echo '
-  <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
-  <div class="input-group-append" id="button-addon4">
-    <button type="submit" name="action" value="Add" class="btn btn-primary">Add</button>
-  </div>
-</div>';
-							echo '</td>';
-							echo '</form>';
-							echo '</tr>';
-						
-						echo '</table><br>';
-						
 					?>
 						<div class="btn-group" role="group">
 							<form method="get" action="editcharacters.php">
