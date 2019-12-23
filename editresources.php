@@ -1,6 +1,7 @@
 <!doctype php>
 <?php
 	include "server/conexao.php";
+	include "server/functions.php";
 	$edit = 0;
 	if(!empty($_POST)){
 		$_POST = array_map("strip_tags", $_POST);
@@ -20,13 +21,20 @@
 			}
 			
 			if($_POST['action'] == 'Update'){
-			
+				if(verify_resource_game($_POST['idresource']) != $_GET['gameid']){
+					header("Location: index.php");
+					exit();	
+				}
 				$query = "UPDATE `game_resources` SET `text_name`= ?,`type`= ?,`primaryORsecundary`= ? WHERE `idgame_resources` = ? AND `game_idgame` = ?";
 				$result = $conn -> prepare($query);
 				//print_r($_POST);
 				$result -> bind_param("siiii", $_POST['resource'], $_POST['type'],$_POST['primaryORsecundary'],$_POST['idresource'], $_GET['gameid']);
 				$result -> execute();
 			}else if($_POST['action'] == 'Delete'){
+				if(verify_resource_game($_POST['idresource']) != $_GET['gameid']){
+					header("Location: index.php");
+					exit();	
+				}
 				$query = "DELETE FROM `resources_values` WHERE `game_resources_idgame_resources` = ?";
 				$result = $conn -> prepare($query);
 				//print_r($_POST);
@@ -52,13 +60,21 @@
 				$result -> execute();
 				$edit = 1;
 			}else if($_POST['action'] == 'EditUpdate'){
-				$query = "UPDATE `resources_values` SET `value`=?,`order`=? WHERE `idResources_values` = ?";
-				$result = $conn -> prepare($query);
-				//print_r($_POST);
-				$result -> bind_param("sii", $_POST['resourcevalue'], $_POST['order'],$_POST['idresourcevalue']);
-				$result -> execute();
+					if(verify_resourcevalue_game($_POST['idresourcevalue']) != $_GET['gameid']){
+						header("Location: index.php");
+						exit();	
+					}
+					$query = "UPDATE `resources_values` SET `value`=?,`order`=? WHERE `idResources_values` = ?";
+					$result = $conn -> prepare($query);
+					//print_r($_POST);
+					$result -> bind_param("sii", $_POST['resourcevalue'], $_POST['order'],$_POST['idresourcevalue']);
+					$result -> execute();
 				$edit = 1;
 			}else if($_POST['action'] == 'EditDelete'){
+				if(verify_resourcevalue_game($_POST['idresourcevalue']) != $_GET['gameid']){
+					header("Location: index.php");
+					exit();	
+				}
 				$query = "DELETE FROM `resources_values` WHERE `idResources_values` = ?";
 				$result = $conn -> prepare($query);
 				//print_r($_POST);
@@ -107,7 +123,6 @@
 			body{
 				background-color: #190000;
 				background: url("img/<?php
-				include "server/functions.php";
 				if(isset($_COOKIE['color'])){
 					echo 'bg/'.$_COOKIE["color"].'honeycomb.png';
 				}else{
@@ -275,10 +290,10 @@
 								<option ';
 								echo '>Number</option>
 								</select>';
-								echo '<select name="primaryorsecondary" class="custom-select">
-								<option ';
+								echo '<select name="primaryorsecundary" class="custom-select">
+								<option value="1"';
 								echo '>Primary</option>
-								<option ';
+								<option value="0"';
 								echo '>Secondary</option>
 								</select>';
 								echo '

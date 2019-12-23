@@ -487,4 +487,31 @@ function get_game($gameid){
 	return $result;// -> get_result();
 }
 
+function verify_resourcevalue_game($idresourcevalue){
+	require "server/conexao.php";
+	$query = "SELECT `game`.`idgame` as game FROM `resources_values` 
+JOIN `game_resources` ON `game_resources`.`idgame_resources` = `resources_values`.`game_resources_idgame_resources`
+JOIN `game` ON `game`.`idgame` = `game_resources`.`game_idgame`
+WHERE `idResources_values` = ?";
+	$result = $conn -> prepare($query);
+	//print_r($_POST);
+	$result -> bind_param("i",$idresourcevalue);
+	$result -> execute();
+	$result = $result -> get_result();
+	$row = $result -> fetch_array(MYSQLI_ASSOC);
+	return $row['game'];
+}
+
+function verify_resource_game($idresource){
+	require "server/conexao.php";
+	$query = "SELECT `game_idgame` as game FROM `game_resources` WHERE `idgame_resources` = ?";
+	$result = $conn -> prepare($query);
+	//print_r($_POST);
+	$result -> bind_param("i",$idresource);
+	$result -> execute();
+	$result = $result -> get_result();
+	$row = $result -> fetch_array(MYSQLI_ASSOC);
+	return $row['game'];
+}
+
 ?>
