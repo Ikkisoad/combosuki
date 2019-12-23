@@ -144,13 +144,13 @@
 								<button class="btn btn-secondary">Characters</button>
 								<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 							</form>
-							<form method="post" action="forms.php?gameid=<?php echo $_GET['gameid']; ?>">
+							<form method="get" action="forms.php?gameid=<?php echo $_GET['gameid']; ?>">
 								<button class="btn btn-secondary">Buttons</button>
 							</form>
 
-							<form method="get" action="forms.php">
+							<form method="get" action="editresources.php">
+								<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 								<button class="btn btn-secondary">Resources</button>
-								<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 							</form>
 						</div>
 				</div>

@@ -19,42 +19,15 @@
 		
 		if($_POST['action'] == 'Update'){
 		
-			$query = "UPDATE `character` SET `Name`=? WHERE `idcharacter` = ?";
+			$query = "UPDATE `game_resources` SET `text_name`= ?,`type`= ?,`primaryORsecundary`= ? WHERE `idgame_resources` = ? AND `game_idgame` = ?";
 			$result = $conn -> prepare($query);
 			//print_r($_POST);
-			$result -> bind_param("si", $_POST['character'], $_POST['idcharacter']);
+			$result -> bind_param("siiii", $_POST['resource'], $_POST['type'],$_POST['primaryORsecundary'],$_POST['idresource'], $_GET['gameid']);
 			$result -> execute();
 		}else if($_POST['action'] == 'Delete'){
-			$query = "DELETE `resources` FROM `character` 
-JOIN `combo` ON `combo`.`character_idcharacter` = `character`.`idcharacter`
-JOIN `resources` ON `resources`.`combo_idcombo` = `combo`.`idcombo`
-WHERE `character`.`idcharacter` = ?";
-			$result = $conn -> prepare($query);
-			//print_r($_POST);
-			$result -> bind_param("i", $_POST['idcharacter']);
-			$result -> execute();
-			
-			$query = "DELETE `combo` FROM `character` 
-JOIN `combo` ON `combo`.`character_idcharacter` = `character`.`idcharacter`
-WHERE `character`.`idcharacter` = ?";
-			$result = $conn -> prepare($query);
-			//print_r($_POST);
-			$result -> bind_param("i", $_POST['idcharacter']);
-			$result -> execute();
-			
-			$query = "DELETE FROM `character` WHERE `idcharacter` = ?";
-			$result = $conn -> prepare($query);
-			//print_r($_POST);
-			$result -> bind_param("i", $_POST['idcharacter']);
-			$result -> execute();
-			
 			
 		}else if($_POST['action'] == 'Add'){
-			$query = "INSERT INTO `character`(`idcharacter`, `Name`, `game_idgame`) VALUES (NULL,?,?)";
-			$result = $conn -> prepare($query);
-			//print_r($_POST);
-			$result -> bind_param("si", $_POST['character'], $_GET['gameid']);
-			$result -> execute();
+			
 		}
 	}
 ?>
@@ -150,7 +123,7 @@ WHERE `character`.`idcharacter` = ?";
 						//print_r($game);
 						
 						require "server/conexao.php";
-						$query = "SELECT `idcharacter`, `Name` FROM `character` WHERE `game_idgame` = ? ORDER BY Name;";
+						$query = "SELECT `idgame_resources`, `text_name`, `type`, `primaryORsecundary` FROM `game_resources` WHERE `game_idgame` = ? ORDER BY primaryORsecundary DESC, text_name";
 						$result = $conn -> prepare($query);
 						$result -> bind_param("i",$_GET['gameid']);
 						$result -> execute();
@@ -159,19 +132,36 @@ WHERE `character`.`idcharacter` = ?";
 						//$game -> get_result()
 						echo '<table id="myTable">';
 						echo '<tr>';
-						echo '<th>Character</th';
+						echo '<th>Resource</th';
 						echo '</tr>';
 						foreach($result -> get_result()	as $lol){
 							
 							echo '<tr><td>';
-							echo '<form method="post" action="editcharacters.php?gameid='.$_GET['gameid'].'">';
-							echo '<div class="input-group"><textarea name="character" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Character Name">'.$lol['Name'].'</textarea>';
+							echo '<form method="post" action="editresources.php?gameid='.$_GET['gameid'].'">';
+							echo '<div class="input-group"><textarea name="resource" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Character Name">'.$lol['text_name'].'</textarea>';
 							//echo $lol['Name'];
+							echo '<select name="type" class="custom-select">
+							<option value="1" ';
+							if($lol['type'] == 1)echo 'selected';
+							echo '>List</option>
+							<option value="2" ';
+							if($lol['type'] == 2)echo 'selected';
+							echo '>Number</option>
+							</select>';
+							echo '<select name="primaryORsecundary" class="custom-select">
+							<option value="1" ';
+							if($lol['primaryORsecundary'] == 1)echo 'selected';
+							echo '>Primary</option>
+							<option value="0" ';
+							if($lol['primaryORsecundary'] != 1)echo 'selected';
+							echo '>Secondary</option>
+							</select>';
 							echo '
   <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
   <div class="input-group-append" id="button-addon4">
-  <input type="hidden" name="idcharacter" value="'.$lol['idcharacter'].'">
+  <input type="hidden" name="idresource" value="'.$lol['idgame_resources'].'">
     <button type="submit" name="action" value="Update" class="btn btn-primary">Update</button>
+	<button type="submit" name="action" value="Update" class="btn btn-secondary">Edit</button>
     <button type="submit" name="action" value="Delete" class="btn btn-danger">Delete</button>
   </div>
 </div>';
@@ -183,8 +173,20 @@ WHERE `character`.`idcharacter` = ?";
 						
 						echo '<tr><td>';
 							echo '<form method="post" action="editcharacters.php?gameid='.$_GET['gameid'].'">';
-							echo '<div class="input-group"><textarea name="character" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Add Character"></textarea>';
+							echo '<div class="input-group"><textarea name="character" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Resource Name"></textarea>';
 							//echo $lol['Name'];
+							echo '<select name="characterid" class="custom-select">
+							<option ';
+							echo '>List</option>
+							<option ';
+							echo '>Number</option>
+							</select>';
+							echo '<select name="characterid" class="custom-select">
+							<option ';
+							echo '>Primary</option>
+							<option ';
+							echo '>Secondary</option>
+							</select>';
 							echo '
   <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
   <div class="input-group-append" id="button-addon4">
@@ -203,14 +205,13 @@ WHERE `character`.`idcharacter` = ?";
 								<button class="btn btn-secondary">Characters</button>
 								<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 							</form>
-							<form method="get" action="editbuttons.php">
-							<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+							<form method="post" action="forms.php?gameid=<?php echo $_GET['gameid']; ?>">
 								<button class="btn btn-secondary">Buttons</button>
 							</form>
 
-							<form method="get" action="editresources.php">
-							<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+							<form method="get" action="forms.php">
 								<button class="btn btn-secondary">Resources</button>
+								<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 							</form>
 						</div>
 				</div>
