@@ -2,28 +2,59 @@
 <?php
 	include "server/conexao.php";
 	if(!empty($_POST)){
-	//	print_r($_POST);
+		$_POST = array_map("strip_tags", $_POST);
+		$_GET = array_map("strip_tags", $_GET);
+		//print_r($_POST);
 		$query = "SELECT globalPass FROM game WHERE idgame = ?";
 		$result = $conn -> prepare($query);
 		$result -> bind_param("i", $_GET['gameid']);
 		$result -> execute();
 		foreach($result -> get_result() as $pass){
 		//	echo 'hi';
-			if($pass['globalPass'] != $_POST['password']){
+			if($pass['globalPass'] != $_POST['gamePass']){
 				header("Location: index.php");
 				exit();
 			}
 		}
 		
-		if($_POST['action'] == 'Submit'){
+		if($_POST['action'] == 'Update'){
 		
-			$query = "UPDATE `game` SET `name`= ?,`image`= ? WHERE `idgame` = ?";
+			$query = "UPDATE `character` SET `Name`=? WHERE `idcharacter` = ?";
 			$result = $conn -> prepare($query);
 			//print_r($_POST);
-			$result -> bind_param("ssi", $_POST['title'], $_POST['image'], $_GET['gameid']);
+			$result -> bind_param("si", $_POST['character'], $_POST['idcharacter']);
 			$result -> execute();
 		}else if($_POST['action'] == 'Delete'){
+			$query = "DELETE `resources` FROM `character` 
+JOIN `combo` ON `combo`.`character_idcharacter` = `character`.`idcharacter`
+JOIN `resources` ON `resources`.`combo_idcombo` = `combo`.`idcombo`
+WHERE `character`.`idcharacter` = ?";
+			$result = $conn -> prepare($query);
+			//print_r($_POST);
+			$result -> bind_param("i", $_POST['idcharacter']);
+			$result -> execute();
 			
+			$query = "DELETE `combo` FROM `character` 
+JOIN `combo` ON `combo`.`character_idcharacter` = `character`.`idcharacter`
+WHERE `character`.`idcharacter` = ?";
+			$result = $conn -> prepare($query);
+			//print_r($_POST);
+			$result -> bind_param("i", $_POST['idcharacter']);
+			$result -> execute();
+			
+			$query = "DELETE FROM `character` WHERE `idcharacter` = ?";
+			$result = $conn -> prepare($query);
+			//print_r($_POST);
+			$result -> bind_param("i", $_POST['idcharacter']);
+			$result -> execute();
+			
+			
+		}else if($_POST['action'] == 'Add'){
+			$query = "INSERT INTO `character`(`idcharacter`, `Name`, `game_idgame`) VALUES (NULL,?,?)";
+			$result = $conn -> prepare($query);
+			//print_r($_POST);
+			$result -> bind_param("si", $_POST['character'], $_GET['gameid']);
+			$result -> execute();
 		}
 	}
 ?>
@@ -77,6 +108,26 @@
 			textare{
 				color: #000000;	
 			}
+			
+			table {
+				border-spacing: 0;
+				width: 100%;
+				border: 1px solid #ddd;
+				
+			}
+			
+			th, td {
+				text-align: center;
+				padding:7px;
+			}
+
+			tr:nth-child(even) {
+				background-color: #212121
+			}
+			
+			tr:nth-child(odd) {
+				background-color: #000000
+			}
 		</style> <!-- BACKGROUND COLOR-->
 	</head>
 	
@@ -86,71 +137,29 @@
 				<div class="form-group">
 					<!-- <button id="Mybtn" class="btn btn-primary" onclick="changeMethod(this)">Submit a Combo</button> -->
 					<div class="btn-group" role="group" aria-label="Basic example">
-						<form method="get" action="game.php">
-							<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+						<form method="get" action="editgame.php">
+							<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 							<button class="btn btn-secondary"><< back</button>
 						</form>
 						<form method="get" action="index.php">
 							<button class="btn btn-secondary">Home</button>
 						</form>
 					</div>
-						<form method="post" action="editgame.php?gameid=<?php echo $_GET['gameid']?>">
 					<?php
-						//$game = get_game($_GET['gameid']);
-						//print_r($game);
-						
-						require "server/conexao.php";
-						$query = "SELECT name,image FROM game WHERE idgame = ?;";
-						$result = $conn -> prepare($query);
-						$result -> bind_param("i",$_GET['gameid']);
-						$result -> execute();
-						//print_r($result);
-						
-						//$game -> get_result()
-						foreach($result -> get_result()	as $lol){
-							//print_r($lol);
-							echo '<div class="input-group mb-3">
-							<div class="input-group-prepend">
-								<span class="input-group-text">Game Title:
-							</span></div>
-							<input type="text" name="title" class="form-control" value="'.$lol['name'].'">
-						</div>';
-						echo '<div class="input-group mb-3">
-							<div class="input-group-prepend">
-								<span class="input-group-text">Game Image:
-							</span></div>
-							<input type="text" name="image" class="form-control" value="'.$lol['image'].'">
-						</div>';
-						game_image($_GET['gameid'],250);
-						echo '<div class="input-group mb-3">
-							<div class="input-group-prepend">
-								<span class="input-group-text">Game Password:
-							</span></div>
-							<input type="password" maxlength="16" name="password" class="form-control">
-						</div>';
-						
-						}
-						
-						
+					echo '<p>WORK IN PROGRESS</p>';
 					?>
-					
-						<p><button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Update</button></p>
-						<!-- <p><button type="submit" name="action" value="Delete" class="btn btn-danger btn-block" onclick="return confirm('Are you sure you want to delete this game?');">Delete</button></p>
-					-->
-						</form>
-						
 						<div class="btn-group" role="group">
 							<form method="get" action="editcharacters.php">
 								<button class="btn btn-secondary">Characters</button>
-								<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+								<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 							</form>
 							<form method="get" action="editbuttons.php">
-								<button class="btn btn-secondary">Buttons</button>								
-								<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+							<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+								<button class="btn btn-secondary">Buttons</button>
 							</form>
 
 							<form method="get" action="editresources.php">
-								<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+							<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 								<button class="btn btn-secondary">Resources</button>
 							</form>
 						</div>
