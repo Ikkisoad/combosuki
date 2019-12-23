@@ -237,6 +237,23 @@ function game_title(){
 		
 }
 
+function game_text_only(){
+	require "server/conexao.php";
+	$query = "SELECT idgame, name, image FROM game WHERE 1 ORDER BY name;";
+	$result = $conn -> prepare($query);
+	$result -> execute();
+	
+	foreach($result -> get_result()	as $gameid){
+		
+		//TEXT ONLY
+		echo '<a style="margin-left:5em;" href=game.php?gameid=';
+		echo $gameid['idgame'];
+		echo '>';
+		echo $gameid['name'].'</a><br>';
+	}
+		
+}
+
 function game_image($gameid, $height){
 	require "server/conexao.php";
 	$query = "SELECT image FROM game WHERE idgame = ?;";

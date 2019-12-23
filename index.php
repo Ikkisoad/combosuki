@@ -142,6 +142,9 @@
 							<img alt="" border="0" src="https://www.paypal.com/en_BR/i/scr/pixel.gif" width="1" height="1" />
 							</form>';
 							
+							echo '<h2>All Games</h2>';
+							game_text_only();
+							
 						}else if($_GET['about'] == 2){
 							echo '<img src="img/numpadNotationBlack.jpg">';
 						}else if($_GET['about'] == 3){
