@@ -1,4 +1,30 @@
 <!doctype php>
+<?php
+	include "server/conexao.php";
+	if(!empty($_POST)){
+	//	p
+		$_POST = array_map("strip_tags", $_POST);
+		$_GET = array_map("strip_tags", $_GET);
+		
+		if($_POST['action'] == 'Submit'){
+			
+			if($_POST['gameName'] == '' || $_POST['gameImage'] == '' || $_POST['gamePass'] == ''){
+				header("Location: index.php");
+				//print_r($_POST);
+				exit();
+			}
+		
+			$query = "INSERT INTO `game`(`idgame`, `name`, `complete`, `image`, `globalPass`) VALUES (NULL, ?,NULL,?,?)";
+			$result = $conn -> prepare($query);
+			
+			$result -> bind_param("sss", $_POST['gameName'], $_POST['gameImage'], $_GET['gamePass']);
+			$result -> execute();
+			$gameid = mysqli_insert_id($conn);
+			header("Location: editgame.php?gameid=".$gameid."");
+			exit();
+		}
+	}
+?>
 <html>
 	<head>
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
@@ -61,35 +87,24 @@
 							<button class="btn btn-secondary">Home</button>
 						</form>
 					</div>
-					<form method="" action="submit.php">
+					<form method="post" action="addgame.php">
 						<div class="input-group mb-3">
 							<div class="input-group-prepend">
 								<span class="input-group-text">Game Name </span></div>
-							<input class="form-control" type="text" name="gameName"> 
+							<input class="form-control" type="text" name="gameName" required> 
 						</div>
 						<div class="input-group mb-3">
 							<div class="input-group-prepend">
 								<span class="input-group-text">Game Image </span></div>
-							<input class="form-control" type="text" name="gameImage"> 
+							<input class="form-control" type="text" name="gameImage" required> 
 						</div>
 						
-						<?php $directory = "img/buttons";
-						$images = glob($directory . "/*.png");
-
-						foreach($images as $image){
-							//echo $image;
-							echo '<button type="button" style="border:none;background:none;margin-left:1em;margin-bottom:1em" value="'; //style="border:none;background:none;"border-color: #000000;background-color: #002f7c;
-								$image = str_replace("img/buttons/", "", $image);
-								echo str_replace(".png", "", $image);
-								echo '"onclick="moveNumbers(this.value)"><img src=img/buttons/';
-								echo $image;
-							echo '> </button> ';
-						} ?>
-						<button type="button" style="border:#ffffff;background:none;" value="backspace" name="no" onclick="backspace()"><img src="img/buttons/backspace.png"> </button>
-						<textarea style="background-color: #474747; color:#999999;" name="combo" class="form-control" id="comboarea" rows="4" title="combo" placeholder="The buttons you selected for the game will appear here, you will get to name them after."></textarea>
+						<?php
+						
+						 ?>
 						
 						<label for="exampleFormControlTextarea1">Game Password:</label>
-						<input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Refrain from using personal passwords.">
+						<input name="gamePass" type="password" maxlength="16" required style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Refrain from using personal passwords.">
 						<p class="mt-3"><button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Submit</button></p>
 					</form>
 				</div>

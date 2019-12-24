@@ -514,4 +514,20 @@ function verify_resource_game($idresource){
 	return $row['game'];
 }
 
+function print_all_buttons(){
+$directory = "img/buttons";
+	$images = glob($directory . "/*.png");
+
+	foreach($images as $image){
+		//echo $image;
+		echo '<button type="button" style="border:none;background:none;margin-left:1em;margin-bottom:1em" value="'; //style="border:none;background:none;"border-color: #000000;background-color: #002f7c;
+		$image = str_replace("img/buttons/", "", $image);
+		echo str_replace(".png", "", $image);
+		echo '"onclick="moveNumbers(this.value)"><img src=img/buttons/';
+		echo $image;
+		echo '> </button> ';	
+
+	}
+}
+
 ?>

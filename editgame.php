@@ -2,6 +2,8 @@
 <?php
 	include "server/conexao.php";
 	if(!empty($_POST)){
+		$_POST = array_map("strip_tags", $_POST);
+		$_GET = array_map("strip_tags", $_GET);
 	//	print_r($_POST);
 		$query = "SELECT globalPass FROM game WHERE idgame = ?";
 		$result = $conn -> prepare($query);
@@ -23,6 +25,73 @@
 			$result -> bind_param("ssi", $_POST['title'], $_POST['image'], $_GET['gameid']);
 			$result -> execute();
 		}else if($_POST['action'] == 'Delete'){
+			$query = "DELETE `resources` FROM `resources` 
+JOIN `combo` ON `combo`.`idcombo` = `resources`.`combo_idcombo`
+JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter`
+JOIN `game` ON `game`.`idgame` = `character`.`game_idgame`
+WHERE `game`.`idgame` = ?";
+			$result = $conn -> prepare($query);
+			//print_r($_POST);
+			$result -> bind_param("i", $_GET['gameid']);
+			$result -> execute();
+			
+			$query = "DELETE `resources_values` FROM `resources_values` 
+JOIN `game_resources` ON `game_resources`.`idgame_resources` = `resources_values`.`game_resources_idgame_resources`
+WHERE `game_resources`.`game_idgame` = ?";
+			$result = $conn -> prepare($query);
+			//print_r($_POST);
+			$result -> bind_param("i", $_GET['gameid']);
+			$result -> execute();
+			
+			$query = "DELETE FROM `game_resources` WHERE `game_idgame` = ?";
+			$result = $conn -> prepare($query);
+			//print_r($_POST);
+			$result -> bind_param("i", $_GET['gameid']);
+			$result -> execute();
+			
+			$query = "DELETE `combo_listing` FROM `combo_listing` 
+JOIN `list` ON `list`.`idlist` = `combo_listing`.`idlist`
+WHERE `list`.`game_idgame` = ?";
+			$result = $conn -> prepare($query);
+			//print_r($_POST);
+			$result -> bind_param("i", $_GET['gameid']);
+			$result -> execute();
+			
+			$query = "DELETE FROM `list` WHERE `game_idgame` = ?";
+			$result = $conn -> prepare($query);
+			//print_r($_POST);
+			$result -> bind_param("i", $_GET['gameid']);
+			$result -> execute();
+			
+			$query = "DELETE `combo` FROM `combo`
+JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter`
+JOIN `game` ON `game`.`idgame` = `character`.`game_idgame`
+WHERE `game`.`idgame` = ?";
+			$result = $conn -> prepare($query);
+			//print_r($_POST);
+			$result -> bind_param("i", $_GET['gameid']);
+			$result -> execute();
+			
+			$query = "DELETE FROM `character` WHERE `game_idgame` = ?";
+			$result = $conn -> prepare($query);
+			//print_r($_POST);
+			$result -> bind_param("i", $_GET['gameid']);
+			$result -> execute();
+			
+			$query = "DELETE FROM `button` WHERE `game_idgame` = ?";
+			$result = $conn -> prepare($query);
+			//print_r($_POST);
+			$result -> bind_param("i", $_GET['gameid']);
+			$result -> execute();
+			
+			$query = "DELETE FROM `game` WHERE `idgame` = ?";
+			$result = $conn -> prepare($query);
+			//print_r($_POST);
+			$result -> bind_param("i", $_GET['gameid']);
+			$result -> execute();
+			
+			header("Location: index.php");
+			exit();
 			
 		}
 	}
@@ -135,8 +204,8 @@
 					?>
 					
 						<p><button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Update</button></p>
-						<!-- <p><button type="submit" name="action" value="Delete" class="btn btn-danger btn-block" onclick="return confirm('Are you sure you want to delete this game?');">Delete</button></p>
-					-->
+						<p><button type="submit" name="action" value="Delete" class="btn btn-danger btn-block" onclick="return confirm('Are you sure you want to delete this game?');">Delete</button></p>
+					
 						</form>
 						
 						<div class="btn-group" role="group">
