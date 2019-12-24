@@ -147,7 +147,7 @@
 							echo '<div class="input-group"><textarea name="name" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Character Name">'.$lol['name'].'</textarea>';
 							$directory = "img/buttons";
 							$images = glob($directory . "/*.png");
-							echo '<select name="png" class="custom-select">';
+							echo '<select name="png" class="custom-select" onchange="setImage(this,'.$lol['idbutton'].');">';
 							foreach($images as $image){
 								$image = str_replace("img/buttons/", "", $image);
 								$image = str_replace(".png", "", $image);
@@ -159,7 +159,7 @@
 								echo $image.'</option>';
 							}
 							echo '</select>';
-							echo '<img src=img/buttons/'.$lol['png'].'.png height=35></img>';
+							echo '<img src=img/buttons/'.$lol['png'].'.png height=35 name="image-'.$lol['idbutton'].'"></img>';
 							echo '<input class="form-control" type="number" name="order" placeholder="Order" value="'.$lol['order'].'" step="any">';
 							echo '
   <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
@@ -181,7 +181,7 @@
 							//echo $lol['Name'];
 							$directory = "img/buttons";
 							$images = glob($directory . "/*.png");
-							echo '<select name="png" class="custom-select" onchange="setImage(this);">';
+							echo '<select name="png" class="custom-select" onchange="setImage(this,0);">';
 							foreach($images as $image){
 								$image = str_replace("img/buttons/", "", $image);
 								$image = str_replace(".png", "", $image);
@@ -190,7 +190,7 @@
 								echo $image.'</option>';
 							}
 							echo '</select>';
-							echo '<img src="img/buttons/+.png" height="35" name="image-swap" /> ';
+							echo '<img src="img/buttons/+.png" height="35" name="image-0" /> ';
 							echo '<input class="form-control" type="number" name="order" placeholder="Order" value="" step="any">';
 							echo '
   <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
@@ -261,8 +261,8 @@
 		}
 		</script>
 		<script>
-		function setImage(select){
-		  var image = document.getElementsByName("image-swap")[0];
+		function setImage(select,id){
+		  var image = document.getElementsByName("image-"+id)[0];
 		  image.src = "img/buttons/"+select.options[select.selectedIndex].value+".png";
 		}
 		</script>
