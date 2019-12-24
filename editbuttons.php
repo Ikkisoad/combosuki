@@ -19,41 +19,23 @@
 		
 		if($_POST['action'] == 'Update'){
 		
-			$query = "UPDATE `character` SET `Name`=? WHERE `idcharacter` = ?";
+			$query = "UPDATE `button` SET `name`=?,`png`=?,`order`=? WHERE `game_idgame` = ? AND `idbutton` = ?";
 			$result = $conn -> prepare($query);
 			//print_r($_POST);
-			$result -> bind_param("si", $_POST['character'], $_POST['idcharacter']);
+			$result -> bind_param("ssiii", $_POST['name'], $_POST['png'], $_POST['order'], $_GET['gameid'], $_POST['idbutton']);
 			$result -> execute();
 		}else if($_POST['action'] == 'Delete'){
-			$query = "DELETE `resources` FROM `character` 
-JOIN `combo` ON `combo`.`character_idcharacter` = `character`.`idcharacter`
-JOIN `resources` ON `resources`.`combo_idcombo` = `combo`.`idcombo`
-WHERE `character`.`idcharacter` = ?";
+			$query = "DELETE FROM `button` WHERE `idbutton` = ? AND `game_idgame` = ?";
 			$result = $conn -> prepare($query);
 			//print_r($_POST);
-			$result -> bind_param("i", $_POST['idcharacter']);
-			$result -> execute();
-			
-			$query = "DELETE `combo` FROM `character` 
-JOIN `combo` ON `combo`.`character_idcharacter` = `character`.`idcharacter`
-WHERE `character`.`idcharacter` = ?";
-			$result = $conn -> prepare($query);
-			//print_r($_POST);
-			$result -> bind_param("i", $_POST['idcharacter']);
-			$result -> execute();
-			
-			$query = "DELETE FROM `character` WHERE `idcharacter` = ?";
-			$result = $conn -> prepare($query);
-			//print_r($_POST);
-			$result -> bind_param("i", $_POST['idcharacter']);
-			$result -> execute();
-			
+			$result -> bind_param("ii", $_POST['idbutton'], $_GET['gameid']);
+			$result -> execute();		
 			
 		}else if($_POST['action'] == 'Add'){
-			$query = "INSERT INTO `character`(`idcharacter`, `Name`, `game_idgame`) VALUES (NULL,?,?)";
+			$query = "INSERT INTO `button`(`idbutton`, `name`, `png`, `game_idgame`, `order`) VALUES (NULL, ?, ?, ?, ?)";
 			$result = $conn -> prepare($query);
 			//print_r($_POST);
-			$result -> bind_param("si", $_POST['character'], $_GET['gameid']);
+			$result -> bind_param("ssii", $_POST['name'], $_POST['png'], $_GET['gameid'], $_POST['order']);
 			$result -> execute();
 		}
 	}
@@ -146,7 +128,81 @@ WHERE `character`.`idcharacter` = ?";
 						</form>
 					</div>
 					<?php
-					echo '<p>WORK IN PROGRESS</p>';
+					require "server/conexao.php";
+						$query = "SELECT `idbutton`, `name`, `png`, `order` FROM `button` WHERE `game_idgame` = ? ORDER BY `order`;";
+						$result = $conn -> prepare($query);
+						$result -> bind_param("i",$_GET['gameid']);
+						$result -> execute();
+						//print_r($result);
+						
+						//$game -> get_result()
+						echo '<table id="myTable">';
+						echo '<tr>';
+						echo '<th>Button</th';
+						echo '</tr>';
+						foreach($result -> get_result()	as $lol){
+							
+							echo '<tr><td>';
+							echo '<form method="post" action="editbuttons.php?gameid='.$_GET['gameid'].'">';
+							echo '<div class="input-group"><textarea name="name" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Character Name">'.$lol['name'].'</textarea>';
+							$directory = "img/buttons";
+							$images = glob($directory . "/*.png");
+							echo '<select name="png" class="custom-select">';
+							foreach($images as $image){
+								$image = str_replace("img/buttons/", "", $image);
+								$image = str_replace(".png", "", $image);
+								echo '<option value="'.$image.'"';
+								if($image == $lol['png']){
+									echo 'selected';
+								}
+								echo '>';
+								echo $image.'</option>';
+							}
+							echo '</select>';
+							echo '<img src=img/buttons/'.$lol['png'].'.png height=35></img>';
+							echo '<input class="form-control" type="number" name="order" placeholder="Order" value="'.$lol['order'].'" step="any">';
+							echo '
+  <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
+  <div class="input-group-append" id="button-addon4">
+  <input type="hidden" name="idbutton" value="'.$lol['idbutton'].'">
+    <button type="submit" name="action" value="Update" class="btn btn-primary">Update</button>
+    <button type="submit" name="action" value="Delete" class="btn btn-danger">Delete</button>
+  </div>
+</div>';
+							echo '</td>';
+							echo '</form>';
+							echo '</tr>';
+						
+						}
+						
+						echo '<tr><td>';
+							echo '<form method="post" action="editbuttons.php?gameid='.$_GET['gameid'].'">';
+							echo '<div class="input-group"><textarea name="name" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Add Button"></textarea>';
+							//echo $lol['Name'];
+							$directory = "img/buttons";
+							$images = glob($directory . "/*.png");
+							echo '<select name="png" class="custom-select" onchange="setImage(this);">';
+							foreach($images as $image){
+								$image = str_replace("img/buttons/", "", $image);
+								$image = str_replace(".png", "", $image);
+								echo '<option value="'.$image.'"';
+								echo '>';
+								echo $image.'</option>';
+							}
+							echo '</select>';
+							echo '<img src="img/buttons/+.png" height="35" name="image-swap" /> ';
+							echo '<input class="form-control" type="number" name="order" placeholder="Order" value="" step="any">';
+							echo '
+  <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
+  <div class="input-group-append" id="button-addon4">
+    <button type="submit" name="action" value="Add" class="btn btn-primary">Add</button>
+  </div>
+</div>';
+							echo '</td>';
+							echo '</form>';
+							echo '</tr>';
+						
+						echo '</table><br>';
 					?>
 						<div class="btn-group" role="group">
 							<form method="get" action="editcharacters.php">
@@ -202,6 +258,12 @@ WHERE `character`.`idcharacter` = ?";
 				}
 			}
 			document.getElementById("comboarea").value=txt; 
+		}
+		</script>
+		<script>
+		function setImage(select){
+		  var image = document.getElementsByName("image-swap")[0];
+		  image.src = "img/buttons/"+select.options[select.selectedIndex].value+".png";
 		}
 		</script>
 		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>

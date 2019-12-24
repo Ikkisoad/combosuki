@@ -515,7 +515,7 @@ function verify_resource_game($idresource){
 }
 
 function print_all_buttons(){
-$directory = "img/buttons";
+	$directory = "img/buttons";
 	$images = glob($directory . "/*.png");
 
 	foreach($images as $image){
