@@ -331,7 +331,7 @@ WHERE `idcombo` = ? ";
 					<input type="hidden" name="video" value="<?php echo $video; ?>">
 					<input type="hidden" name="author" value="<?php echo $author; ?>">
 					<button class="btn btn-primary">Edit</button>
-					<p>Submited: <?php echo $submited->format('d-m-Y');?> <?php if($author != ''): ?><br><a href="profile.php?author=<?php echo $author; ?>">Author: <?php echo $author; ?><a></p><?php endif; ?>
+					<p>Submitted: <?php echo $submited->format('d-m-Y');?> <?php if($author != ''): ?><br><a href="profile.php?author=<?php echo $author; ?>">Author: <?php echo $author; ?><a></p><?php endif; ?>
 				</form>
 			</div>
 			</div>

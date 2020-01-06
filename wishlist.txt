@@ -7,17 +7,17 @@ DONE:
 	> Choose background. DONE
 	> Display method preference. DONE
 	> Fix vertical notations. DONE
-	
+	> Moderation station.	
 	> A page to create lists. List name, list password >> add combo... genius.
 
 TO DO:
 
 	> Ready to go selections. (Corner, universal... etc). X
 	> Upload CSV file. X
-	> Moderation station.
 	> Optimize the code, looks hella shitty.
 	> More data in game.php, eg.: Most damaging combo, combos/character, solo combos
-
+	> Game Links
+	> Moderation Password
 	
 BROKE:
 

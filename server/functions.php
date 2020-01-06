@@ -195,7 +195,7 @@ function combo_table($gameid){
 							}
 							echo '</td><td>';
 							$i = new DateTime($data['submited']);
-							echo $i->format('d-m');
+							echo $i->format('d-m-y');
 							echo '</td></tr>';
 						}
 						echo '</table>';
