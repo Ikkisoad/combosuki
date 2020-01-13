@@ -66,6 +66,18 @@ function embed_video($video){
 						echo '"><a href="';
 						echo $video;
 						echo '"></a></blockquote><script async src="//s.imgur.com/min/embed.js" charset="utf-8"></script>';
+					}else if(strpos($video, 'nicovideo') !== false && strpos($video, 'https') !== false){
+						$i = substr($video, 12);
+						//echo $i;
+						echo '<script type="application/javascript" src="https://embed.'.$i.'/script?w=640&h=360"></script>';
+						
+					}else if(strpos($video, 'nico') !== false && strpos($video, 'https') !== false){
+						$i = substr($video, 16);
+						$i = substr_replace($i,'w=640&h=360&',11	,0);
+						$i = substr_replace($i,'/script',10	,0);
+						//echo $i;
+						echo '<script type="application/javascript" src="https://embed.nicovideo.jp/watch/'.$i.'"></script>';
+						
 					}else{
 						echo $video;	
 					}
@@ -138,8 +150,20 @@ function embed_video_notable($video){
 									echo '"><a href="';
 									echo $video;
 									echo '"></a></blockquote><script async src="//s.imgur.com/min/embed.js" charset="utf-8"></script>';
+								}else if(strpos($video, 'nicovideo') !== false && strpos($video, 'https') !== false){
+									$i = substr($video, 12);
+									//echo $i;
+									echo '<script type="application/javascript" src="https://embed.'.$i.'/script?w=640&h=360"></script>';
+									
+								}else if(strpos($video, 'nico') !== false && strpos($video, 'https') !== false){
+									$i = substr($video, 16);
+									$i = substr_replace($i,'w=640&h=360&',11	,0);
+									$i = substr_replace($i,'/script',10	,0);
+									//echo $i;
+									echo '<script type="application/javascript" src="https://embed.nicovideo.jp/watch/'.$i.'"></script>';
+									
 								}else{
-									echo $video;
+									echo $video;	
 								}
 							}
 }
