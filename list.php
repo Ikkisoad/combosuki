@@ -14,6 +14,31 @@
 					header("Location: list.php?listid=".$listid."");
 					exit();
 				}else if($_POST['submission_type'] == 2){
+					if($_POST['action'] == 'DeleteList'){
+						$query = "SELECT `password` FROM `list` WHERE idlist = ?";
+						$result = $conn -> prepare($query);
+						$result -> bind_param("i",$_GET['listid']);
+						$result -> execute();
+						foreach($result -> get_result() as $lul){
+							if($lul['password'] == $_POST['listPass']){
+								echo 'delete this list';
+								$query = "DELETE FROM `combo_listing` WHERE `idlist` = ?";
+								$result = $conn -> prepare($query);
+								$result -> bind_param("i", $_GET['listid']);
+								$result -> execute();
+								
+								$query = "DELETE FROM `list` WHERE `idlist` = ?";
+								$result = $conn -> prepare($query);
+								$result -> bind_param("i", $_GET['listid']);
+								$result -> execute();
+								
+											
+								header("Location: list.php");
+								exit();
+							
+							}
+						}
+					}
 					$query = "SELECT `character`.`game_idgame` FROM `combo` INNER JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` WHERE `combo`.`idcombo` = ?";
 					$result = $conn -> prepare($query);
 					$result -> bind_param("i",$_POST['comboid']);
@@ -318,8 +343,12 @@ WHERE `idlist` = ? ORDER BY `comment`, `combo`.`damage` DESC;";
 										
 										echo '<h3 class="mt-3">Edit List</h3>
 					<p><form class="form-inline" method="post" action="list.php?listid='.$_GET['listid'].'">
-							<input type="hidden" name="submission_type" value="2">
-							<div class="form-group mb-2"><input placeholder="Combo ID" style="background-color: #474747; color:#999999;" name="comboid" class="form-control" maxlength="45" rows="1"></input></div>
+							<input type="hidden" name="submission_type" value="2">';
+							if(isset($_GET['listid'])): ?>
+								<div class="form-group mb-2"><button type="submit" name="action" value="DeleteList" class="btn btn-warning btn-block" onclick="return confirm('Are you sure you want to delete this list?');">Delete List</button></div>
+							<?php
+							endif;
+							echo '<div class="form-group mb-2"><input placeholder="Combo ID" style="background-color: #474747; color:#999999;" name="comboid" class="form-control" maxlength="45" rows="1"></input></div>
 							
 							<div class="form-group mb-2"><input placeholder="List Password" name="listPass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1"></input></div>
 							<div class="form-group mb-2"><input placeholder="Tag to order combo by" name="comment" maxlength="45" style="background-color: #474747; color:#999999;" class="form-control" rows="1"></input></div>
