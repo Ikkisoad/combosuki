@@ -1,5 +1,6 @@
 <?php
 	require "server/conexao.php";
+	include "server/functions.php";
 		if(!empty($_POST)){
 			$_POST = array_map("strip_tags", $_POST);
 			$_GET = array_map("strip_tags", $_GET);
@@ -185,18 +186,10 @@
 		<main role="main">
 			
 			<div class="container">
-				<div class="body">
-					<div class="btn-group" role="group" aria-label="Basic example">
-						<form id="MyForm" method="get" action="list.php">
-							<button class="btn btn-secondary"><< back</button>
-						</form>
-						<form id="MyForm" method="get" action="index.php">
-							<button class="btn btn-secondary">Home</button>
-						</form>
-					</div>
-					
+				<div class="body">					
 						
 								<?php 
+									header_buttons(1, 0, 'list.php');
 									require "server/conexao.php";
 									$_GET = array_map("strip_tags", $_GET);
 									

@@ -92,30 +92,7 @@
 			</div>
 			
 			<div class="container">
-				<div class="btn-group" role="group" aria-label="Basic example">
-					<form method="get" action="index.php">
-						<button class="btn btn-secondary">Home</button>
-					</form>
-					
-					<form method="post" action="forms.php?gameid=<?php echo $_GET['gameid']; ?>">
-						<button class="btn btn-secondary">Submit</button>
-						<input type="hidden" id="type" name="type" value="1">
-					</form>
-
-					<form method="get" action="forms.php">
-						<button class="btn btn-secondary">Search</button>
-						<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
-					</form>
-					
-					<form method="get" action="list.php">
-						<button class="btn btn-secondary">Listing</button>
-					</form>
-					
-					<form method="get" action="editgame.php">
-						<button class="btn btn-secondary">Edit Game</button>
-						<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
-					</form>
-				</div>
+				<?php header_buttons(2, 0, 0); ?>
 				
 				<form class="form-inline" method="get" action="submit.php">
 					<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">

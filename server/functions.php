@@ -605,4 +605,53 @@ function edit_controls($gameid){
 						</div>';
 }
 
+function header_buttons($buttons, $back, $backDestination){ //Buttons=1 -> Home/Listing Buttons>1 -> Home/Listing/Submit/Search/Edit Game
+															//Back=1 -> Game Back=2 -> Combo
+	if($buttons): ?>
+		<div class="btn-group" role="group" aria-label="Basic example">
+		
+			<?php 
+				if($back){
+					echo '	<form method="get" action="'.$backDestination.'">';
+					if($back == 1){
+						echo '	<input type="hidden" id="gameid" name="gameid" value="'.$_GET['gameid'].'">';
+					}else if($back == 2){
+						echo '	<input type="hidden" id="idcombo" name="idcombo" value="'.$_POST['idcombo'].'">';
+					}
+								
+					echo '		<button class="btn btn-secondary"> << back</button>
+							</form>';
+					
+				}			
+			?>
+			<form method="get" action="index.php">
+				<button class="btn btn-secondary">Home</button>
+			</form>
+			
+			<form method="get" action="list.php">
+				<button class="btn btn-secondary">Listing</button>
+			</form>
+			
+			<?php if($buttons > 1): ?>
+			
+			<form method="post" action="forms.php?gameid=<?php echo $_GET['gameid']; ?>">
+				<button class="btn btn-secondary">Submit</button>
+				<input type="hidden" id="type" name="type" value="1">
+			</form>
+
+			<form method="get" action="forms.php">
+				<button class="btn btn-secondary">Search</button>
+				<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+			</form>
+			
+			<form method="get" action="editgame.php">
+				<button class="btn btn-secondary">Edit Game</button>
+				<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+			</form>
+			<?php endif; ?>
+		</div>
+	<?php
+	endif;
+}
+
 ?>

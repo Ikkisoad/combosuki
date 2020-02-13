@@ -171,17 +171,8 @@
 		<main role="main">
 			<div class="container">
 				<div class="form-group">
-					<!-- <button id="Mybtn" class="btn btn-primary" onclick="changeMethod(this)">Submit a Combo</button> -->
-					<div class="btn-group" role="group" aria-label="Basic example">
-						<form method="get" action="editgame.php">
-							<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
-							<button class="btn btn-secondary"><< back</button>
-						</form>
-						<form method="get" action="index.php">
-							<button class="btn btn-secondary">Home</button>
-						</form>
-					</div>
 					<?php
+						header_buttons(2, 1, 'game.php');
 						//$game = get_game($_GET['gameid']);
 						//print_r($game);
 						if($edit){

@@ -117,17 +117,8 @@
 		<main role="main">
 			<div class="container">
 				<div class="form-group">
-					<!-- <button id="Mybtn" class="btn btn-primary" onclick="changeMethod(this)">Submit a Combo</button> -->
-					<div class="btn-group" role="group" aria-label="Basic example">
-						<form method="get" action="editgame.php">
-							<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
-							<button class="btn btn-secondary"><< back</button>
-						</form>
-						<form method="get" action="index.php">
-							<button class="btn btn-secondary">Home</button>
-						</form>
-					</div>
 					<?php
+					header_buttons(2, 1, 'game.php');
 					require "server/conexao.php";
 						$query = "SELECT `idbutton`, `name`, `png`, `order` FROM `button` WHERE `game_idgame` = ? ORDER BY `order`;";
 						$result = $conn -> prepare($query);

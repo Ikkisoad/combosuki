@@ -46,6 +46,7 @@
 				margin: 0;
 				background-color: #00190f;
 				background: url("img/<?php
+					include "server/functions.php";
 					/*if(!isset($_SESSION)){
 						session_start();
 					}*/
@@ -110,19 +111,12 @@
 		<main role="main">
 			
 			<div class="container">
-				<div class="btn-group" role="group" aria-label="Basic example">
-					<form method="get" action="index.php">
-						<button class="btn btn-secondary">Home</button>
-					</form>
-					<form method="get" action="list.php">
-						<button class="btn btn-secondary">Listing</button>
-					</form>
-					
-				</div>
+				<?php
+					header_buttons(1, 0, 0);
+				?>
 				<div class="body">
 					
 					<?php
-						require "server/functions.php";
 						if(!isset($_GET['about'])){
 							game_title();
 						}else if($_GET['about'] == 1){

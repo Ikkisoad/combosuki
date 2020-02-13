@@ -212,27 +212,9 @@
 			<?php
 				if(!empty($_GET)){
 					$_GET = array_map("strip_tags", $_GET);
-					?>
-					<div class="btn-group" role="group" aria-label="Basic example">
-						<form method="get" action="game.php">
-							<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
-							<button class="btn btn-secondary"><< back</button>
-						</form>
-						<form method="get" action="index.php">
-							<button class="btn btn-secondary">Home</button>
-						</form>
-						<form method="post" action="forms.php?gameid=<?php echo $_GET['gameid']; ?>">
-							<button class="btn btn-secondary">Submit</button>
-							<input type="hidden" id="type" name="type" value="1">
-						</form>
-
-						<form method="get" action="forms.php">
-							<button class="btn btn-secondary">Search</button>
-							<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
-						</form>
-					</div>
-				
-					<?php
+					
+					header_buttons(2, 1, 'game.php');
+					
 					if(isset($_GET["page"])) { $page  = $_GET["page"]; } else { $page=0; };
 					$query = "SELECT COUNT(`idgame_resources`) as total FROM `game_resources` WHERE `game_idgame` = ? AND `primaryORsecundary` = 1";
 					

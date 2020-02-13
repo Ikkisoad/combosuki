@@ -75,28 +75,17 @@
 			</div>
 			<div class="container">
 				<div class="form-group">
-					<!-- <button id="Mybtn" class="btn btn-primary" onclick="changeMethod(this)">Submit a Combo</button> -->
-					<div class="btn-group" role="group" aria-label="Basic example">
-						<form id="MyForm" method="get" action="<?php
+						<?php
 							if(isset($_POST['type'])){
 								if($_POST['type'] == 1){
-									echo 'game.php';
+									header_buttons(2, 1, 'game.php');
 								}else if($_POST['type'] == 2){
-									echo 'combo.php">';
-									echo '<input type="hidden" id="idcombo" name="idcombo" value="'.$_POST['idcombo'].'';
+									header_buttons(2, 2, 'combo.php');
 								}
 							}else{
-								echo 'game.php';
+								header_buttons(2, 1, 'game.php');
 							}
 						?>
-						">		
-								<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
-								<button class="btn btn-secondary"><< back</button>
-						</form>
-						<form id="MyForm" method="get" action="index.php">
-							<button class="btn btn-secondary">Home</button>
-						</form>
-					</div>
 					<form method="<?php
 						//print_r($_POST);
 						$_POST = array_map("strip_tags", $_POST);
