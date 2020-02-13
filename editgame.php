@@ -18,11 +18,17 @@
 		}
 		
 		if($_POST['action'] == 'Submit'){
-		
-			$query = "UPDATE `game` SET `name`= ?,`image`= ? WHERE `idgame` = ?";
-			$result = $conn -> prepare($query);
-			//print_r($_POST);
-			$result -> bind_param("ssi", $_POST['title'], $_POST['image'], $_GET['gameid']);
+			if($_POST['modPass'] != ''){
+				$query = "UPDATE `game` SET `name`= ?,`image`= ?, `modPass`= ? WHERE `idgame` = ?";
+				$result = $conn -> prepare($query);
+				//print_r($_POST);
+				$_POST['modPass'] = password_hash($_POST['modPass'],PASSWORD_DEFAULT);
+				$result -> bind_param("sssi", $_POST['title'], $_POST['image'], $_POST['modPass'], $_GET['gameid']);
+			}else{
+				$query = "UPDATE `game` SET `name`= ?,`image`= ? WHERE `idgame` = ?";
+				$result = $conn -> prepare($query);
+				$result -> bind_param("ssi", $_POST['title'], $_POST['image'], $_GET['gameid']);	
+			}
 			$result -> execute();
 		}else if($_POST['action'] == 'Delete'){
 			$query = "DELETE `resources` FROM `resources` 
@@ -178,12 +184,18 @@ WHERE `game`.`idgame` = ?";
 						//$game -> get_result()
 						foreach($result -> get_result()	as $lol){
 							//print_r($lol);
-							echo '<div class="input-group mb-3">
+						echo '<div class="input-group mb-3">
 							<div class="input-group-prepend">
 								<span class="input-group-text">Game Title:
 							</span></div>
 							<input type="text" name="title" class="form-control" value="'.$lol['name'].'">
 						</div>';
+					/*	echo '<div class="input-group mb-3">
+							<div class="input-group-prepend">
+								<span class="input-group-text">Current Version:
+							</span></div>
+							<input type="text" name="patch" class="form-control" value="">
+						</div>'; */
 						echo '<div class="input-group mb-3">
 							<div class="input-group-prepend">
 								<span class="input-group-text">Game Image:
@@ -191,6 +203,12 @@ WHERE `game`.`idgame` = ?";
 							<input type="text" name="image" class="form-control" value="'.$lol['image'].'">
 						</div>';
 						game_image($_GET['gameid'],250);
+						echo '<div class="input-group mb-3">
+							<div class="input-group-prepend">
+								<span class="input-group-text">Moderation Password:
+							</span></div>
+							<input type="password" maxlength="16" name="modPass" class="form-control">
+						</div>';
 						echo '<div class="input-group mb-3">
 							<div class="input-group-prepend">
 								<span class="input-group-text">Game Password:

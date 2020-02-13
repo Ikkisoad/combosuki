@@ -14,10 +14,10 @@
 				exit();
 			}
 		
-			$query = "INSERT INTO `game`(`idgame`, `name`, `complete`, `image`, `globalPass`) VALUES (NULL, ?,NULL,?,?)";
+			$query = "INSERT INTO `game`(`idgame`, `name`, `complete`, `image`, `globalPass`, `modPass`) VALUES (NULL, ?,NULL,?,?,?)";
 			$result = $conn -> prepare($query);
-			
-			$result -> bind_param("sss", $_POST['gameName'], $_POST['gameImage'], $_GET['gamePass']);
+			$modPass = password_hash($_POST['gamePass'],PASSWORD_DEFAULT);
+			$result -> bind_param("ssss", $_POST['gameName'], $_POST['gameImage'], $_POST['gamePass'], $modPass);
 			$result -> execute();
 			$gameid = mysqli_insert_id($conn);
 			header("Location: editgame.php?gameid=".$gameid."");
@@ -102,7 +102,6 @@
 						<?php
 						
 						 ?>
-						
 						<label for="exampleFormControlTextarea1">Game Password:</label>
 						<input name="gamePass" type="password" maxlength="16" required style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Refrain from using personal passwords.">
 						<p class="mt-3"><button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Submit</button></p>

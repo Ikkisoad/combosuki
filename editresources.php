@@ -8,13 +8,13 @@
 		$_GET = array_map("strip_tags", $_GET);
 			//print_r($_POST);
 		if($_POST['action'] != 'Edit'){
-			$query = "SELECT globalPass FROM game WHERE idgame = ?";
+			$query = "SELECT globalPass, modPass FROM game WHERE idgame = ?";
 			$result = $conn -> prepare($query);
 			$result -> bind_param("i", $_GET['gameid']);
 			$result -> execute();
 			foreach($result -> get_result() as $pass){
 			//	echo 'hi';
-				if($pass['globalPass'] != $_POST['gamePass']){
+				if($pass['globalPass'] != $_POST['gamePass'] && !password_verify($_POST['gamePass'], $pass['modPass'])){
 					header("Location: index.php");
 					exit();
 				}
