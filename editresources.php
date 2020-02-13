@@ -203,7 +203,12 @@
 	  <input type="hidden" name="resource" value="'.$_POST['resource'].'">
 	  <input type="hidden" name="idresource" value="'.$_POST['idresource'].'">
 		<button type="submit" name="action" value="EditUpdate" class="btn btn-primary">Update</button>
-		<button type="submit" name="action" value="EditDelete" class="btn btn-danger">Delete</button>
+		<button type="submit" name="action" value="EditDelete" class="btn btn-danger" ';
+							if(1):?>
+							onclick="return confirm('Are you sure you want to delete this resource?');"
+							<?php
+							endif;
+							echo ' >Delete</button>
 	  </div>
 	</div>';
 								echo '</td>';
@@ -271,7 +276,12 @@
 	  <input type="hidden" name="idresource" value="'.$lol['idgame_resources'].'">
 		<button type="submit" name="action" value="Update" class="btn btn-primary">Update</button>
 		<button type="submit" name="action" value="Edit" class="btn btn-secondary">Edit</button>
-		<button type="submit" name="action" value="Delete" class="btn btn-danger">Delete</button>
+		<button type="submit" name="action" value="Delete" class="btn btn-danger" ';
+							if(1):?>
+							onclick="return confirm('Are you sure you want to delete this resource?');"
+							<?php
+							endif;
+							echo ' >Delete</button>
 	  </div>
 	</div>';
 								echo '</td>';
@@ -308,26 +318,9 @@
 							
 							echo '</table><br>';
 						}
+						
+						edit_controls($_GET['gameid']);
 					?>
-						<div class="btn-group" role="group">
-							<form method="get" action="editcharacters.php">
-								<button class="btn btn-secondary">Characters</button>
-								<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
-							</form>
-							<form method="post" action="editbuttons.php?gameid=<?php echo $_GET['gameid']; ?>">
-								<button class="btn btn-secondary">Buttons</button>
-							</form>
-
-							<form method="get" action="editresources.php">
-								<button class="btn btn-secondary">Resources</button>
-								<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
-							</form>
-							
-							<form method="get" action="editlinks.php">
-								<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
-								<button class="btn btn-secondary">Links</button>
-							</form>
-						</div>
 				</div>
 			</div>
 		</main>

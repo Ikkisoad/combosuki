@@ -570,4 +570,27 @@ function print_game_links($idgame){
 	}
 }
 
+function edit_controls($gameid){
+	echo '<div class="btn-group" role="group">
+							<form method="get" action="editcharacters.php">
+								<button class="btn btn-secondary">Characters</button>
+								<input type="hidden" name="gameid" value="'.$gameid.'">
+							</form>
+							<form method="get" action="editbuttons.php">
+							<input type="hidden" name="gameid" value="'.$gameid.'">
+								<button class="btn btn-secondary">Buttons</button>
+							</form>
+
+							<form method="get" action="editresources.php">
+							<input type="hidden" name="gameid" value="'.$gameid.'">
+								<button class="btn btn-secondary">Resources</button>
+							</form>
+							
+							<form method="get" action="editlinks.php">
+								<input type="hidden" name="gameid" value="'.$gameid.'">
+								<button class="btn btn-secondary">Links</button>
+							</form>
+						</div>';
+}
+
 ?>

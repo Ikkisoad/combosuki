@@ -166,7 +166,12 @@
   <div class="input-group-append" id="button-addon4">
   <input type="hidden" name="idbutton" value="'.$lol['idbutton'].'">
     <button type="submit" name="action" value="Update" class="btn btn-primary">Update</button>
-    <button type="submit" name="action" value="Delete" class="btn btn-danger">Delete</button>
+    <button type="submit" name="action" value="Delete" class="btn btn-danger" ';
+							if(1):?>
+							onclick="return confirm('Are you sure you want to delete this button?');"
+							<?php
+							endif;
+							echo ' >Delete</button>
   </div>
 </div>';
 							echo '</td>';
@@ -203,27 +208,9 @@
 							echo '</tr>';
 						
 						echo '</table><br>';
+						
+						edit_controls($_GET['gameid']);
 					?>
-						<div class="btn-group" role="group">
-							<form method="get" action="editcharacters.php">
-								<button class="btn btn-secondary">Characters</button>
-								<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
-							</form>
-							<form method="get" action="editbuttons.php">
-							<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
-								<button class="btn btn-secondary">Buttons</button>
-							</form>
-
-							<form method="get" action="editresources.php">
-							<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
-								<button class="btn btn-secondary">Resources</button>
-							</form>
-							
-							<form method="get" action="editlinks.php">
-								<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
-								<button class="btn btn-secondary">Links</button>
-							</form>
-						</div>
 				</div>
 			</div>
 		</main>

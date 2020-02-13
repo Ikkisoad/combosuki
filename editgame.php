@@ -226,26 +226,9 @@ WHERE `game`.`idgame` = ?";
 					
 						</form>
 						
-						<div class="btn-group" role="group">
-							<form method="get" action="editcharacters.php">
-								<button class="btn btn-secondary">Characters</button>
-								<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
-							</form>
-							<form method="get" action="editbuttons.php">
-								<button class="btn btn-secondary">Buttons</button>								
-								<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
-							</form>
-
-							<form method="get" action="editresources.php">
-								<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
-								<button class="btn btn-secondary">Resources</button>
-							</form>
-							
-							<form method="get" action="editlinks.php">
-								<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
-								<button class="btn btn-secondary">Links</button>
-							</form>
-						</div>
+						<?php
+							edit_controls($_GET['gameid']);
+						?>
 				</div>
 			</div>
 		</main>
