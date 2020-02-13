@@ -341,16 +341,13 @@ function count_char(){
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i",$_GET['gameid']);
 	$result -> execute();
-	
-	/*echo '<table>';
-	echo '<tr>';
-	echo '<th>Character</th><th>Total Entries</th></th>';
-	echo '</tr>';*/
-	echo '<p><h3> Total Entries </h3>';
-	//echo '├┬┴┬┴';
+	$i = 1;
 	foreach($result -> get_result() as $data){
-		/*echo '<tr><td>'.$data['Name'].'</td>';
-		echo '<td>'.$data['amount'].'</td></tr>';*/
+		if($i){
+			echo '<p><h3> Total Entries </h3>';
+			echo '▰';
+			$i--;
+		}
 		echo ' '.$data['Name'].': '.$data['amount'].' ▰ ';
 	}
 }
@@ -576,6 +573,7 @@ function print_game_links($idgame){
 	foreach($result -> get_result()	as $lol){
 		if($i){
 			echo '<h3>Related Links: </h3>';
+			echo '▰ ';
 			$i--;
 		}
 		echo '<a href="'.$lol['Link'].'" target="_blank">'.$lol['Title'].'</a> ▰ ';
@@ -605,8 +603,7 @@ function edit_controls($gameid){
 						</div>';
 }
 
-function header_buttons($buttons, $back, $backDestination){ //Buttons=1 -> Home/Listing Buttons>1 -> Home/Listing/Submit/Search/Edit Game
-															//Back=1 -> Game Back=2 -> Combo
+function header_buttons($buttons, $back, $backDestination){ //Buttons=1 -> Home/Listing Buttons>1 -> Home/Listing/Submit/Search/Edit Game Back=1 -> Game Back=2 -> Combo
 	if($buttons): ?>
 		<div class="btn-group" role="group" aria-label="Basic example">
 		
