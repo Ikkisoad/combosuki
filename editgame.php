@@ -19,15 +19,15 @@
 		
 		if($_POST['action'] == 'Submit'){
 			if($_POST['modPass'] != ''){
-				$query = "UPDATE `game` SET `name`= ?,`image`= ?, `modPass`= ? WHERE `idgame` = ?";
+				$query = "UPDATE `game` SET `name`= ?,`image`= ?, `modPass`= ?, `patch`= ? WHERE `idgame` = ?";
 				$result = $conn -> prepare($query);
 				//print_r($_POST);
 				$_POST['modPass'] = password_hash($_POST['modPass'],PASSWORD_DEFAULT);
-				$result -> bind_param("sssi", $_POST['title'], $_POST['image'], $_POST['modPass'], $_GET['gameid']);
+				$result -> bind_param("ssssi", $_POST['title'], $_POST['image'], $_POST['modPass'], $_POST['patch'], $_GET['gameid']);
 			}else{
-				$query = "UPDATE `game` SET `name`= ?,`image`= ? WHERE `idgame` = ?";
+				$query = "UPDATE `game` SET `name`= ?,`image`= ?, `patch`= ? WHERE `idgame` = ?";
 				$result = $conn -> prepare($query);
-				$result -> bind_param("ssi", $_POST['title'], $_POST['image'], $_GET['gameid']);	
+				$result -> bind_param("sssi", $_POST['title'], $_POST['image'], $_POST['patch'],$_GET['gameid']);	
 			}
 			$result -> execute();
 		}else if($_POST['action'] == 'Delete'){
@@ -175,7 +175,7 @@ WHERE `game`.`idgame` = ?";
 						//print_r($game);
 						
 						require "server/conexao.php";
-						$query = "SELECT name,image FROM game WHERE idgame = ?;";
+						$query = "SELECT name,image, patch FROM game WHERE idgame = ?;";
 						$result = $conn -> prepare($query);
 						$result -> bind_param("i",$_GET['gameid']);
 						$result -> execute();
@@ -190,12 +190,12 @@ WHERE `game`.`idgame` = ?";
 							</span></div>
 							<input type="text" name="title" class="form-control" value="'.$lol['name'].'">
 						</div>';
-					/*	echo '<div class="input-group mb-3">
+						echo '<div class="input-group mb-3">
 							<div class="input-group-prepend">
 								<span class="input-group-text">Current Version:
 							</span></div>
-							<input type="text" name="patch" class="form-control" value="">
-						</div>'; */
+							<input type="text" maxlength="10" name="patch" class="form-control" value="'.$lol['patch'].'">
+						</div>';
 						echo '<div class="input-group mb-3">
 							<div class="input-group-prepend">
 								<span class="input-group-text">Game Image:

@@ -298,6 +298,18 @@ function game_image($gameid, $height){
 	}
 }
 
+function game_patch($gameid){
+	require "server/conexao.php";
+	$query = "SELECT patch FROM game WHERE idgame = ?;";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i",$gameid);
+	$result -> execute();
+	
+	foreach($result -> get_result()	as $lol){
+		return $lol['patch'];
+	}
+}
+
 function count_combos(){
 	require "server/conexao.php";
 	$query = "SELECT COUNT(idcombo) as total FROM `combo`;";

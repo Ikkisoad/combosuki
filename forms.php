@@ -220,6 +220,8 @@
 							if(isset($_POST['type'])){
 								if($_POST['type'] == 2 && isset($_POST['patch'])){
 									echo ' value="'.$_POST['patch'].'"';
+								}else{
+									echo ' value="'.game_patch($_GET['gameid']).'"';
 								}
 							}
 						
