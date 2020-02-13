@@ -153,16 +153,16 @@
 						}else if($_GET['about'] == 4){
 							echo '<form method="post" action="index.php">Background Color:<p>';
 							echo '<select name="color" class="custom-select">
-							<option value="0">Green</option>
-							<option value="1">Red</option>
-							<option value="2">Yellow</option>
-							<option value="3">Purple</option>
 							<option value="4">Black</option>
-							<option value="5">Gray</option>
-							<option value="6">Cyan</option>
-							<option value="7">Orange</option>
 							<option value="8">Blue</option>
+							<option value="6">Cyan</option>
+							<option value="5">Gray</option>
+							<option value="0">Green</option>
+							<option value="3">Purple</option>
+							<option value="1">Red</option>
+							<option value="7">Orange</option>
 							<option value="9">White</option>
+							<option value="2">Yellow</option>
 							</select></p>Display method:<p>
 							<select name="display" class="custom-select"><option value="1">Image</option><option value="0">Text</option></select>
 							</p><button class="btn btn-secondary">Save</button></form>';

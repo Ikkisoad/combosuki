@@ -75,6 +75,13 @@
 					header("Location: index.php");
 					exit();	
 				}
+				
+				$query = "DELETE FROM `resources` WHERE `Resources_values_idResources_values` = ?";
+				$result = $conn -> prepare($query);
+				//print_r($_POST);
+				$result -> bind_param("i",$_POST['idresourcevalue']);
+				$result -> execute();
+				
 				$query = "DELETE FROM `resources_values` WHERE `idResources_values` = ?";
 				$result = $conn -> prepare($query);
 				//print_r($_POST);
