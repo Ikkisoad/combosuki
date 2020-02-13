@@ -566,7 +566,7 @@ function print_game_links($idgame){
 			echo '<h3>Related Links: </h3>';
 			$i--;
 		}
-		echo '<a href="'.$lol['Link'].'">'.$lol['Title'].'</a> ▰ ';
+		echo '<a href="'.$lol['Link'].'" target="_blank">'.$lol['Title'].'</a> ▰ ';
 	}
 }
 
