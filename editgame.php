@@ -240,6 +240,11 @@ WHERE `game`.`idgame` = ?";
 								<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 								<button class="btn btn-secondary">Resources</button>
 							</form>
+							
+							<form method="get" action="editlinks.php">
+								<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+								<button class="btn btn-secondary">Links</button>
+							</form>
 						</div>
 				</div>
 			</div>
