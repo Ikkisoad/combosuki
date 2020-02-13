@@ -554,4 +554,20 @@ function print_all_buttons(){
 	}
 }
 
+function print_game_links($idgame){
+	require "server/conexao.php";
+	$query = "SELECT * FROM `link` WHERE `idGame` = ? ORDER BY `title`;";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i",$idgame);
+	$result -> execute();
+	$i = 1;
+	foreach($result -> get_result()	as $lol){
+		if($i){
+			echo '<h3>Related Links: </h3>';
+			$i--;
+		}
+		echo '<a href="'.$lol['Link'].'">'.$lol['Title'].'</a> ▰ ';
+	}
+}
+
 ?>

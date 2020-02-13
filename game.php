@@ -130,6 +130,8 @@
 					
 				</form>
 				
+					<?php print_game_links($_GET['gameid']); ?>
+				
 					<p>
 						<h2>Latest submissions</h2>
 					</p>
