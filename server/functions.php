@@ -381,6 +381,17 @@ function entry_select($selected, $showall){
 	echo '</select></p>';
 }
 
+function print_listingtype($listingtype){
+	require "server/conexao.php";
+	$query = "SELECT `title` FROM `game_entry` WHERE `entryid` = ?;";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i",$listingtype);
+	$result -> execute();
+	foreach($result -> get_result()	as $lol){
+		echo ' '.$lol['title'].':<br>';
+	}
+}
+
 function quick_search_form($gameid){
 						require "server/conexao.php";
 						

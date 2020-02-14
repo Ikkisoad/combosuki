@@ -203,23 +203,7 @@ WHERE `idcombo` = ? ";
 				echo '<th>'; 
 				echo 'Entry ID: '.$id_combo.' / ';
 				echo $name;
-				switch($listing_type){
-					case 0:
-						echo ' Combo:<br>';
-						break;
-					case 1:
-						echo ' Blockstring:<br>';
-						break;
-					case 2:
-						echo ' Mix Up:<br>';
-						break;
-					case 3:
-						echo ' Archive:<br>';
-						break;
-					case 4:
-						echo ' Okizeme:<br>';
-						break;	
-				}
+				print_listingtype($listing_type);
 				
 				echo '</th>';
 				echo '</tr>';
