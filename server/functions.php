@@ -365,8 +365,27 @@ function delete_combo($idcombo){
 	$result -> execute();	
 }
 
+function entry_select($selected, $showall){
+	require "server/conexao.php";
+	$query = "SELECT `entryid`, `title` FROM `game_entry` WHERE `gameid` = ? ORDER BY `order`,`title`;";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i",$_GET['gameid']);
+	$result -> execute();
+	echo '<p><select name="listingtype" class="custom-select">';
+	foreach($result -> get_result()	as $lol){
+		echo 	'<option value="'.$lol['entryid'].'"';
+		if($selected == $lol['entryid'])echo ' selected ';
+		echo '>'.$lol['title'].'</option>';
+	}
+	if($showall)echo '<option value="-">Show All</option>';
+	echo '</select></p>';
+}
+
 function quick_search_form($gameid){
 						require "server/conexao.php";
+						
+						echo '<form class="form-inline" method="get" action="submit.php">
+					<input type="hidden" id="gameid" name="gameid" value="'.$_GET['gameid'].'">';
 							
 						$query = "SELECT `Name`,`idcharacter` FROM `character` WHERE game_idgame = ? ORDER BY name;";
 						$result = $conn -> prepare($query);
@@ -382,16 +401,7 @@ function quick_search_form($gameid){
 						}
 						echo '</select></p>'; 
 							
-						echo '<p>
-							<select name="listingtype" class="custom-select">
-								<option value="0">Combo</option>
-								<option value="1">Blockstring</option>
-								<option value="2">Mix Up</option>
-								<option value="4">Okizeme</option>
-								<option value="3">Archive</option>
-								<option value="-">Show All</option>
-							</select>
-						</p>';
+						entry_select(0,1);
 						
 						
 							require "server/conexao.php";
@@ -452,6 +462,13 @@ function quick_search_form($gameid){
 							}
 							
 							echo '</p><br>';
+							echo '
+						
+					<div class="form-group mb-2">
+						<button type="submit" class="btn btn-info mb-2">Quick Search</button>
+					</div>
+					
+				</form>';
 }
 
 function button_printing($idgame, $dataCombo){
@@ -600,6 +617,11 @@ function edit_controls($gameid){
 								<input type="hidden" name="gameid" value="'.$gameid.'">
 								<button class="btn btn-secondary">Links</button>
 							</form>
+							
+							<form method="get" action="editentries.php">
+								<input type="hidden" name="gameid" value="'.$gameid.'">
+								<button class="btn btn-secondary">Entries</button>
+							</form>
 						</div>';
 }
 
@@ -650,5 +672,6 @@ function header_buttons($buttons, $back, $backDestination){ //Buttons=1 -> Home/
 	<?php
 	endif;
 }
+
 
 ?>

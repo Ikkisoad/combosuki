@@ -94,18 +94,11 @@
 			<div class="container">
 				<?php header_buttons(2, 0, 0); ?>
 				
-				<form class="form-inline" method="get" action="submit.php">
-					<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+				
 					<?php
 						include_once "server/functions.php";
 						quick_search_form($_GET['gameid']);
 					?>
-						
-					<div class="form-group mb-2">
-						<button type="submit" class="btn btn-info mb-2">Quick Search</button>
-					</div>
-					
-				</form>
 				
 					<?php print_game_links($_GET['gameid']); ?>
 				

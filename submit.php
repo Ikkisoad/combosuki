@@ -215,6 +215,8 @@
 					
 					header_buttons(2, 1, 'game.php');
 					
+					quick_search_form($_GET['gameid']);
+					
 					if(isset($_GET["page"])) { $page  = $_GET["page"]; } else { $page=0; };
 					$query = "SELECT COUNT(`idgame_resources`) as total FROM `game_resources` WHERE `game_idgame` = ? AND `primaryORsecundary` = 1";
 					
