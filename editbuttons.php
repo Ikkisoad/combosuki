@@ -1,6 +1,7 @@
 <!doctype php>
 <?php
-	include "server/conexao.php";
+	include_once "server/conexao.php";
+	include_once "server/functions.php";
 	if(!empty($_POST)){
 		$_POST = array_map("strip_tags", $_POST);
 		$_GET = array_map("strip_tags", $_GET);
@@ -75,7 +76,6 @@
 			body{
 				background-color: #190000;
 				background: url("img/<?php
-				include "server/functions.php";
 				if(isset($_COOKIE['color'])){
 					echo 'bg/'.$_COOKIE["color"].'honeycomb.png';
 				}else{
@@ -119,7 +119,6 @@
 				<div class="form-group">
 					<?php
 					header_buttons(2, 1, 'game.php');
-					require "server/conexao.php";
 						$query = "SELECT `idbutton`, `name`, `png`, `order` FROM `button` WHERE `game_idgame` = ? ORDER BY `order`;";
 						$result = $conn -> prepare($query);
 						$result -> bind_param("i",$_GET['gameid']);
@@ -201,6 +200,7 @@
 						echo '</table><br>';
 						
 						edit_controls($_GET['gameid']);
+						mysqli_close($conn);
 					?>
 				</div>
 			</div>

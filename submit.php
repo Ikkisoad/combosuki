@@ -200,7 +200,7 @@
 								?>"> 
 								<?php
 									include "server/functions.php";
-									game_image($_GET['gameid'], 200);
+									game_image($_GET['gameid'], 200, $conn);
 								?>
 							</a>
 						</p>
@@ -215,7 +215,7 @@
 					
 					header_buttons(2, 1, 'game.php');
 					
-					quick_search_form($_GET['gameid']);
+					quick_search_form($_GET['gameid'], $conn);
 					
 					if(isset($_GET["page"])) { $page  = $_GET["page"]; } else { $page=0; };
 					$query = "SELECT COUNT(`idgame_resources`) as total FROM `game_resources` WHERE `game_idgame` = ? AND `primaryORsecundary` = 1";
@@ -239,7 +239,7 @@
 					$binded_parameters = array();
 					if(isset($_GET['listingtype'])){
 						echo '<h2>';
-						print_listingtype($_GET['listingtype']);
+						print_listingtype($_GET['listingtype'], $conn);
 						if($_GET['listingtype'] == '-')echo 'Show All';
 						echo '</h2>';
 					}else{
@@ -537,6 +537,7 @@ AND `character`.`game_idgame` = ? ";
 					}
 					echo '" style="padding-right: 5px;">Next </a>';
 				}
+				mysqli_close($conn);
 			 ?>
 		</div></main>
 		

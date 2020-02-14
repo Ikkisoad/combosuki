@@ -1,6 +1,6 @@
 <!doctype php>
 <?php
-	include "server/conexao.php";
+	include_once "server/conexao.php";
 	if(!empty($_POST)){
 	//	p
 		$_POST = array_map("strip_tags", $_POST);
@@ -100,7 +100,7 @@
 						</div>
 						
 						<?php
-						
+							mysqli_close($conn);
 						 ?>
 						<label for="exampleFormControlTextarea1">Game Password:</label>
 						<input name="gamePass" type="password" maxlength="16" required style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Refrain from using personal passwords.">

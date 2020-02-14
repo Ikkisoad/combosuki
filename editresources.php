@@ -1,7 +1,7 @@
 <!doctype php>
 <?php
-	include "server/conexao.php";
-	include "server/functions.php";
+	include_once "server/conexao.php";
+	include_once "server/functions.php";
 	$edit = 0;
 	if(!empty($_POST)){
 		$_POST = array_map("strip_tags", $_POST);
@@ -21,7 +21,7 @@
 			}
 			
 			if($_POST['action'] == 'Update'){
-				if(verify_resource_game($_POST['idresource']) != $_GET['gameid']){
+				if(verify_resource_game($_POST['idresource'], $conn) != $_GET['gameid']){
 					header("Location: index.php");
 					exit();	
 				}
@@ -176,7 +176,6 @@
 						//$game = get_game($_GET['gameid']);
 						//print_r($game);
 						if($edit){
-							require "server/conexao.php";
 							$query = "SELECT `idResources_values`,`value`, `order` FROM `resources_values` WHERE `game_resources_idgame_resources` = ? ORDER BY `order`, `value`;";
 							$result = $conn -> prepare($query);
 							$result -> bind_param("i",$_POST['idresource']);
@@ -234,7 +233,6 @@
 							
 							echo '</table><br>';
 						}else{
-							require "server/conexao.php";
 							$query = "SELECT `idgame_resources`, `text_name`, `type`, `primaryORsecundary` FROM `game_resources` WHERE `game_idgame` = ? ORDER BY primaryORsecundary DESC, text_name";
 							$result = $conn -> prepare($query);
 							$result -> bind_param("i",$_GET['gameid']);
@@ -293,9 +291,9 @@
 								echo '<div class="input-group"><textarea name="resource" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Resource Name"></textarea>';
 								//echo $lol['Name'];
 								echo '<select name="type" class="custom-select">
-								<option ';
+								<option value="1"';
 								echo '>List</option>
-								<option ';
+								<option value="2"';
 								echo '>Number</option>
 								</select>';
 								echo '<select name="primaryorsecundary" class="custom-select">
@@ -318,6 +316,7 @@
 						}
 						
 						edit_controls($_GET['gameid']);
+						mysqli_close($conn);
 					?>
 				</div>
 			</div>

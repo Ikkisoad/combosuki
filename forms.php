@@ -1,4 +1,11 @@
 <!doctype php>
+<?php
+	include_once "server/functions.php";
+	include_once "server/conexao.php";
+	
+	$_POST = array_map("strip_tags", $_POST);
+	$_GET = array_map("strip_tags", $_GET);
+?>
 <html>
 	<head>
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
@@ -66,8 +73,8 @@
 									}
 								?>"><img 
 								<?php
-									include "server/functions.php";
-									game_image($_GET['gameid'], 200);
+									
+									game_image($_GET['gameid'], 200, $conn);
 								?>
 							</a>
 						</p>
@@ -88,11 +95,8 @@
 						?>
 					<form method="<?php
 						//print_r($_POST);
-						$_POST = array_map("strip_tags", $_POST);
-						$_GET = array_map("strip_tags", $_GET);
 						if(isset($_POST['type'])){
 							echo 'post';
-							
 						}else{
 							echo 'get';
 						}
@@ -108,19 +112,18 @@
 						//print_r($_POST);
 						if(isset($_POST['type'])){
 							if($_POST['type'] == 2){
-								entry_select($_POST['listingtype'], 0);
+								entry_select($_POST['listingtype'], 0, $conn);
 							}else{
-								entry_select(0,0);
+								entry_select(0,0, $conn);
 							}
 						}else{
-							entry_select(0,1);
+							entry_select(0,1, $conn);
 						}
 						?>
 						
 						<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 						<?php
-							require "server/conexao.php";
-							
+							//Could make a function out of this <>><><>><><><><><><>><><><><>>>><><><><>><><>><><><><>><><><><><><>
 							$query = "SELECT `Name`,`idcharacter` FROM `character` WHERE game_idgame = ? ORDER BY name;";
 							$result = $conn -> prepare($query);
 							$result -> bind_param("i", $_GET['gameid']);
@@ -143,11 +146,12 @@
 							}
 							echo '</select></p>';
 							
+							//Could make a function out of this <>><><>><><><><><><>><><><><>>>><><><><>><><>><><><><>><><><><><><>
+							
 							$query = "SELECT name,png,game_idgame FROM `button` WHERE game_idgame = ? ORDER BY game_idgame, `order`, idbutton";
 							$result = $conn -> prepare($query);
 							$result -> bind_param("i", $_GET['gameid']);
 							$result -> execute();
-							//echo $query;
 							
 							if(!isset($_POST['type'])){
 								echo 'The combo:';
@@ -163,8 +167,6 @@
 								echo $button['name'];
 								if($button['game_idgame']){
 									echo '"onclick="moveNumbers(this.value)"><img src="img/buttons/';
-									/*echo $button['game_idgame'];
-									echo '/';*/
 									echo $button['png'];
 								}else{
 									echo '"onclick="moveNumbers(this.value)"><img src="img/buttons/';
@@ -212,7 +214,7 @@
 								if($_POST['type'] == 2 && isset($_POST['patch'])){
 									echo ' value="'.$_POST['patch'].'"';
 								}else{
-									echo ' value="'.game_patch($_GET['gameid']).'"';
+									echo ' value="'.game_patch($_GET['gameid'], $conn).'"';
 								}
 							}
 						
@@ -374,6 +376,8 @@
 									echo '<p><button type="submit" name="action" value="Delete" class="btn btn-danger btn-block" onclick="return confirm(\'Are you sure you want to delete this entry?\');">Delete</button></p>';
 								}
 							}
+							
+							mysqli_close($conn);
 						?>
 					</form>
 				</div>

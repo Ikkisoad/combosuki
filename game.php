@@ -84,8 +84,9 @@
 					<h1 class="display-4"></h1>
 						<p>
 							<a href="index.php"><img <?php
-									require "server/functions.php";
-									game_image($_GET['gameid'], 100);
+									include_once "server/conexao.php";
+									include_once "server/functions.php";
+									game_image($_GET['gameid'], 100, $conn);
 								?></a>
 						</p>
 				</div>
@@ -96,11 +97,10 @@
 				
 				
 					<?php
-						include_once "server/functions.php";
-						quick_search_form($_GET['gameid']);
+						quick_search_form($_GET['gameid'], $conn);
 					?>
 				
-					<?php print_game_links($_GET['gameid']); ?>
+					<?php print_game_links($_GET['gameid'], $conn); ?>
 				
 					<p>
 						<h2>Latest submissions</h2>
@@ -111,8 +111,9 @@
 					</p>
 					
 					<?php
-						combo_table($_GET['gameid']);
-						count_char();
+						combo_table($_GET['gameid'],$conn);
+						count_char($conn);
+						mysqli_close($conn);
 					?>
 					</p>
 			</div>

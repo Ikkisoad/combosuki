@@ -168,8 +168,8 @@ function embed_video_notable($video){
 							}
 }
 
-function combo_table($gameid){
-	require "server/conexao.php";
+function combo_table($gameid, $conn){
+	//require "server/conexao.php";
 						$query = "SELECT idcombo,Name,combo,damage,type, comments, submited, video FROM `combo` INNER JOIN `character` ON `combo`.`character_idcharacter` = `character`.`idcharacter` WHERE `character`.`game_idgame` = ? ORDER BY submited DESC LIMIT 0,5";
 						$result = $conn -> prepare($query);
 						$result -> bind_param("i",$gameid);
@@ -225,8 +225,8 @@ function combo_table($gameid){
 						echo '</table>';
 }
 
-function game_title(){
-	require "server/conexao.php";
+function game_title($conn){
+	//require "server/conexao.php";
 	$query = "SELECT idgame, name, image FROM game WHERE complete = 1 ORDER BY name;";
 	$result = $conn -> prepare($query);
 	$result -> execute();
@@ -261,8 +261,8 @@ function game_title(){
 		
 }
 
-function game_text_only(){
-	require "server/conexao.php";
+function game_text_only($conn){
+	//require "server/conexao.php";
 	$query = "SELECT idgame, name, image FROM game WHERE 1 ORDER BY name;";
 	$result = $conn -> prepare($query);
 	$result -> execute();
@@ -278,8 +278,8 @@ function game_text_only(){
 		
 }
 
-function game_image($gameid, $height){
-	require "server/conexao.php";
+function game_image($gameid, $height, $conn){
+	//require "server/conexao.php";
 	$query = "SELECT image FROM game WHERE idgame = ?;";
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i",$gameid);
@@ -298,8 +298,8 @@ function game_image($gameid, $height){
 	}
 }
 
-function game_patch($gameid){
-	require "server/conexao.php";
+function game_patch($gameid, $conn){
+	//require "server/conexao.php";
 	$query = "SELECT patch FROM game WHERE idgame = ?;";
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i",$gameid);
@@ -310,8 +310,8 @@ function game_patch($gameid){
 	}
 }
 
-function count_combos(){
-	require "server/conexao.php";
+function count_combos($conn){
+	//require "server/conexao.php";
 	$query = "SELECT COUNT(idcombo) as total FROM `combo`;";
 	$result = $conn -> prepare($query);
 	$result -> execute();
@@ -323,8 +323,8 @@ function count_combos(){
 	
 }
 
-function logs(){
-	require "server/conexao.php";
+function logs($conn){
+	//require "server/conexao.php";
 	$query = "SELECT * FROM logs ORDER BY Date DESC;";
 	$result = $conn -> prepare($query);
 	$result -> execute();
@@ -335,8 +335,8 @@ function logs(){
 	}
 }
 
-function count_char(){
-	require "server/conexao.php";
+function count_char($conn){
+	//require "server/conexao.php";
 	$query = "SELECT `character_idcharacter`, COUNT(idcombo) as amount, `character`.`Name` FROM `combo` INNER JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` WHERE `character`.`game_idgame` = ? GROUP BY `character_idcharacter` ORDER BY amount DESC";
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i",$_GET['gameid']);
@@ -352,8 +352,8 @@ function count_char(){
 	}
 }
 
-function delete_combo($idcombo){
-	require "server/conexao.php";
+function delete_combo($idcombo, $conn){
+	//require "server/conexao.php";
 	$query = "DELETE FROM `resources` WHERE `combo_idcombo` = ?";
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i", $idcombo);
@@ -365,8 +365,8 @@ function delete_combo($idcombo){
 	$result -> execute();	
 }
 
-function entry_select($selected, $showall){
-	require "server/conexao.php";
+function entry_select($selected, $showall, $conn){ //Has to come before quick_search_form
+	//require "server/conexao.php";
 	$query = "SELECT `entryid`, `title` FROM `game_entry` WHERE `gameid` = ? ORDER BY `order`,`title`;";
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i",$_GET['gameid']);
@@ -381,8 +381,8 @@ function entry_select($selected, $showall){
 	echo '</select></p>';
 }
 
-function print_listingtype($listingtype){
-	require "server/conexao.php";
+function print_listingtype($listingtype, $conn){
+	//require "server/conexao.php";
 	$query = "SELECT `title` FROM `game_entry` WHERE `entryid` = ?;";
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i",$listingtype);
@@ -392,8 +392,8 @@ function print_listingtype($listingtype){
 	}
 }
 
-function quick_search_form($gameid){
-						require "server/conexao.php";
+function quick_search_form($gameid, $conn){
+						//require "server/conexao.php";
 						
 						echo '<form class="form-inline" method="get" action="submit.php">
 					<input type="hidden" id="gameid" name="gameid" value="'.$_GET['gameid'].'">';
@@ -412,10 +412,10 @@ function quick_search_form($gameid){
 						}
 						echo '</select></p>'; 
 							
-						entry_select(0,1);
+						entry_select(0,1, $conn);
 						
 						
-							require "server/conexao.php";
+							//require "server/conexao.php";
 							
 							$query = "SELECT text_name,type,idgame_resources FROM `game_resources` WHERE game_idgame = ? AND primaryORsecundary = 1 ORDER BY game_resources.primaryORsecundary DESC,text_name;";
 							$result = $conn -> prepare($query);
@@ -482,8 +482,8 @@ function quick_search_form($gameid){
 				</form>';
 }
 
-function button_printing($idgame, $dataCombo){
-	require 'server/conexao.php';
+function button_printing($idgame, $dataCombo, $conn){
+	//require 'server/conexao.php';
 	$query = "SELECT name,png FROM `button` WHERE `game_idgame` = ?";
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i",$idgame);
@@ -538,8 +538,8 @@ function button_printing($idgame, $dataCombo){
 	return $combo_image;
 }
 
-function get_game($gameid){
-	require "server/conexao.php";
+function get_game($gameid, $conn){
+	//require "server/conexao.php";
 	$query = "SELECT name,complete,image FROM game WHERE idgame = ?;";
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i",$gameid);
@@ -548,8 +548,8 @@ function get_game($gameid){
 	return $result;// -> get_result();
 }
 
-function verify_resourcevalue_game($idresourcevalue){
-	require "server/conexao.php";
+function verify_resourcevalue_game($idresourcevalue, $conn){
+	//require "server/conexao.php";
 	$query = "SELECT `game`.`idgame` as game FROM `resources_values` 
 JOIN `game_resources` ON `game_resources`.`idgame_resources` = `resources_values`.`game_resources_idgame_resources`
 JOIN `game` ON `game`.`idgame` = `game_resources`.`game_idgame`
@@ -563,8 +563,8 @@ WHERE `idResources_values` = ?";
 	return $row['game'];
 }
 
-function verify_resource_game($idresource){
-	require "server/conexao.php";
+function verify_resource_game($idresource, $conn){
+	//require "server/conexao.php";
 	$query = "SELECT `game_idgame` as game FROM `game_resources` WHERE `idgame_resources` = ?";
 	$result = $conn -> prepare($query);
 	//print_r($_POST);
@@ -591,8 +591,8 @@ function print_all_buttons(){
 	}
 }
 
-function print_game_links($idgame){
-	require "server/conexao.php";
+function print_game_links($idgame, $conn){
+	//require "server/conexao.php";
 	$query = "SELECT * FROM `link` WHERE `idGame` = ? ORDER BY `title`;";
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i",$idgame);

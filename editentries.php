@@ -171,6 +171,7 @@
 						echo '</table><br>';
 						
 						edit_controls($_GET['gameid']);
+						mysqli_close($conn);
 					?>
 				</div>
 			</div>

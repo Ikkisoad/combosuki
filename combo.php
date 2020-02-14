@@ -1,14 +1,14 @@
 <!doctype php>
 <?php
-	require "server/conexao.php";
-	include "server/functions.php";
+	include_once "server/conexao.php";
+	include_once "server/functions.php";
 	$_GET = array_map("strip_tags", $_GET);
 	
 	$primaryTitle = array();
 	$primaryValue = array();
 	$secondaryTitle = array();
 	$secondaryValue = array();
-	
+
 	$query = "SELECT `idcombo`,`combo`,`damage`,`value`,`idResources_values`,`number_value`,`character`.`idcharacter`,`character`.`Name`, `video`, `game_resources`.`text_name`,`game_resources`.`type`, `combo`.`type` as listingtype, `combo`.`comments`,`game_resources`.`primaryORsecundary`, `character`.`game_idgame`, `resources_values`.`order`, `combo`.`submited`, `combo`.`patch`, `combo`.`author`
 FROM `combo` 
 INNER JOIN `resources` ON `combo`.`idcombo` = `resources`.`combo_idcombo` 
@@ -18,7 +18,7 @@ LEFT JOIN `game_resources` ON `game_resources`.`idgame_resources` = `resources_v
 WHERE `idcombo` = ? ";
 	
 	$query = $query . "ORDER BY  `game_resources`.`primaryORsecundary` DESC, `idcombo`, `text_name`;";
-	
+	//echo $query;
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i",$_GET['idcombo']);
 	$result -> execute();
@@ -38,7 +38,7 @@ WHERE `idcombo` = ? ";
 			$name = $data['Name'];
 			$id_combo = $data['idcombo'];
 			$combo = $data['combo'];
-			$combo_image = button_printing($data['game_idgame'], $combo);
+			$combo_image = button_printing($data['game_idgame'], $combo, $conn);
 	
 		}
 		
@@ -149,7 +149,6 @@ WHERE `idcombo` = ? ";
 					<h1 class="display-3"></h1>
 						<p>
 							<a href="<?php
-									require "server/conexao.php";
 									$query = "SELECT `character`.`game_idgame` FROM `character` INNER JOIN `combo` ON `character`.`idcharacter` = `combo`.`character_idcharacter` WHERE `combo`.`idcombo` = ?";
 									$result = $conn -> prepare($query);
 									$result -> bind_param("i",$_GET['idcombo']);
@@ -158,7 +157,7 @@ WHERE `idcombo` = ? ";
 									foreach($result -> get_result() as $data){
 										echo 'game.php?gameid=';
 										echo $data['game_idgame'].'">';
-										game_image($data['game_idgame'], 200);
+										game_image($data['game_idgame'], 200, $conn);
 										$gameid = $data['game_idgame'];
 									}
 								?>
@@ -203,7 +202,7 @@ WHERE `idcombo` = ? ";
 				echo '<th>'; 
 				echo 'Entry ID: '.$id_combo.' / ';
 				echo $name;
-				print_listingtype($listing_type);
+				print_listingtype($listing_type, $conn);
 				
 				echo '</th>';
 				echo '</tr>';
@@ -303,6 +302,7 @@ WHERE `idcombo` = ? ";
 								echo '" value="';
 								echo $secondaryValue[$i].'">';
 						}
+						mysqli_close($conn);
 					?>
 					<input type="hidden" id="listingtype" name="listingtype" value="<?php echo $listing_type; ?>">
 					<input type="hidden" id="type" name="type" value="2">

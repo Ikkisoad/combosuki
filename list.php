@@ -1,11 +1,15 @@
 <?php
-	require "server/conexao.php";
-	include "server/functions.php";
+	include_once "server/conexao.php";
+	include_once "server/functions.php";
 		if(!empty($_POST)){
 			$_POST = array_map("strip_tags", $_POST);
 			$_GET = array_map("strip_tags", $_GET);
 			if($_POST['action'] != 'Search'){
 				if($_POST['submission_type'] == 1){
+					/*if($_POST['list_name'] == ''){ //This prevents '' lists from being created
+						header("Location: list.php");
+						exit();	
+					}*/
 					$query = "INSERT INTO `list`(`list_name`, `game_idgame`, `password`) VALUES (?,?,?)";
 					$result = $conn -> prepare($query);
 					$result -> bind_param("sis", $_POST['list_name'], $_POST['gameid'], $_POST['listPass']);
@@ -190,7 +194,6 @@
 						
 								<?php 
 									header_buttons(1, 0, 'list.php');
-									require "server/conexao.php";
 									$_GET = array_map("strip_tags", $_GET);
 									
 									if(isset($_GET['listid'])){
@@ -415,6 +418,8 @@ WHERE `idlist` = ? ORDER BY `comment`, `combo`.`damage` DESC;";
 										}
 										}
 									}
+									
+									mysqli_close($conn);
 								?>
 							
 					

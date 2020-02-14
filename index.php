@@ -1,4 +1,8 @@
 <!doctype php>
+<?php
+include_once "server/functions.php";
+include_once "server/conexao.php";
+?>
 <html>
 	<head>
 	
@@ -46,7 +50,6 @@
 				margin: 0;
 				background-color: #00190f;
 				background: url("img/<?php
-					include "server/functions.php";
 					/*if(!isset($_SESSION)){
 						session_start();
 					}*/
@@ -118,9 +121,9 @@
 					
 					<?php
 						if(!isset($_GET['about'])){
-							game_title();
+							game_title($conn);
 						}else if($_GET['about'] == 1){
-							count_combos();
+							count_combos($conn);
 							
 							
 							echo '<h2>About the application:</h2><p>This application started as a fun project in the end of 2018, and the main motivation to keep at it is to help out the FGC assemble their findings and sort out the best options with a determined set of resources.</p>';
@@ -137,13 +140,13 @@
 							</form>';
 							
 							echo '<h2>All Games</h2>';
-							game_text_only();
+							game_text_only($conn);
 							
 						}else if($_GET['about'] == 2){
 							echo '<img src="img/numpadNotationBlack.jpg">';
 						}else if($_GET['about'] == 3){
 							echo '<h2>Log</h2>';
-							logs();
+							logs($conn);
 						}else if($_GET['about'] == 4){
 							echo '<form method="post" action="index.php">Background Color:<p>';
 							echo '<select name="color" class="custom-select">
@@ -162,6 +165,7 @@
 							</p><button class="btn btn-secondary">Save</button></form>';
 						}
 						echo '<br><br><br><br><br><br><br>';
+						mysqli_close($conn);
 					?>
 				</div>
 			</div>

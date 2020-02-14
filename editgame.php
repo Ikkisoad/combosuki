@@ -1,6 +1,7 @@
 <!doctype php>
 <?php
-	include "server/conexao.php";
+	include_once "server/conexao.php";
+	include_once "server/functions.php";
 	if(!empty($_POST)){
 		$_POST = array_map("strip_tags", $_POST);
 		$_GET = array_map("strip_tags", $_GET);
@@ -137,7 +138,6 @@ WHERE `game`.`idgame` = ?";
 			body{
 				background-color: #190000;
 				background: url("img/<?php
-				include "server/functions.php";
 				if(isset($_COOKIE['color'])){
 					echo 'bg/'.$_COOKIE["color"].'honeycomb.png';
 				}else{
@@ -162,51 +162,44 @@ WHERE `game`.`idgame` = ?";
 						<?php header_buttons(2, 1, 'game.php'); ?>
 						<form method="post" action="editgame.php?gameid=<?php echo $_GET['gameid']?>">
 					<?php
-						//$game = get_game($_GET['gameid']);
-						//print_r($game);
-						
-						require "server/conexao.php";
 						$query = "SELECT name,image, patch FROM game WHERE idgame = ?;";
 						$result = $conn -> prepare($query);
 						$result -> bind_param("i",$_GET['gameid']);
 						$result -> execute();
-						//print_r($result);
 						
-						//$game -> get_result()
 						foreach($result -> get_result()	as $lol){
-							//print_r($lol);
-						echo '<div class="input-group mb-3">
-							<div class="input-group-prepend">
-								<span class="input-group-text">Game Title:
-							</span></div>
-							<input type="text" name="title" class="form-control" value="'.$lol['name'].'">
-						</div>';
-						echo '<div class="input-group mb-3">
-							<div class="input-group-prepend">
-								<span class="input-group-text">Current Version:
-							</span></div>
-							<input type="text" maxlength="10" name="patch" class="form-control" value="'.$lol['patch'].'">
-						</div>';
-						echo '<div class="input-group mb-3">
-							<div class="input-group-prepend">
-								<span class="input-group-text">Game Image:
-							</span></div>
-							<input type="text" name="image" class="form-control" value="'.$lol['image'].'">
-						</div>';
-						game_image($_GET['gameid'],250);
-						echo '<div class="input-group mb-3">
-							<div class="input-group-prepend">
-								<span class="input-group-text">Moderation Password:
-							</span></div>
-							<input type="password" maxlength="16" name="modPass" class="form-control">
-						</div>';
-						echo '<div class="input-group mb-3">
-							<div class="input-group-prepend">
-								<span class="input-group-text">Game Password:
-							</span></div>
-							<input type="password" maxlength="16" name="password" class="form-control">
-						</div>';
-						
+							echo '<div class="input-group mb-3">
+								<div class="input-group-prepend">
+									<span class="input-group-text">Game Title:
+								</span></div>
+								<input type="text" name="title" class="form-control" value="'.$lol['name'].'">
+							</div>';
+							echo '<div class="input-group mb-3">
+								<div class="input-group-prepend">
+									<span class="input-group-text">Current Version:
+								</span></div>
+								<input type="text" maxlength="10" name="patch" class="form-control" value="'.$lol['patch'].'">
+							</div>';
+							echo '<div class="input-group mb-3">
+								<div class="input-group-prepend">
+									<span class="input-group-text">Game Image:
+								</span></div>
+								<input type="text" name="image" class="form-control" value="'.$lol['image'].'">
+							</div>';
+							game_image($_GET['gameid'],250, $conn);
+							echo '<div class="input-group mb-3">
+								<div class="input-group-prepend">
+									<span class="input-group-text">Moderation Password:
+								</span></div>
+								<input type="password" maxlength="16" name="modPass" class="form-control">
+							</div>';
+							echo '<div class="input-group mb-3">
+								<div class="input-group-prepend">
+									<span class="input-group-text">Game Password:
+								</span></div>
+								<input type="password" maxlength="16" name="password" class="form-control">
+							</div>';
+							
 						}
 						
 						
@@ -219,6 +212,7 @@ WHERE `game`.`idgame` = ?";
 						
 						<?php
 							edit_controls($_GET['gameid']);
+							mysqli_close($conn);
 						?>
 				</div>
 			</div>

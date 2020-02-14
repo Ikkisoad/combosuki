@@ -239,6 +239,7 @@
 								echo '</td></tr>';
 							}
 							echo '</table>';
+							mysqli_close($conn);
 					?>
 			</div>
 		</main>
