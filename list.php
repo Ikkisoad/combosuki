@@ -316,23 +316,7 @@ WHERE `idlist` = ? ORDER BY `comment`, `combo`.`damage` DESC;";
 							echo '</td><td>';
 							echo number_format($data['damage'],'0','','.');
 							echo '</td><td>';
-							switch($data['type']){
-								case 0:
-									echo 'Combo';
-									break;
-								case 1:
-									echo 'Blockstring';
-									break;
-								case 2:
-									echo 'Mix Up';
-									break;
-								case 3:
-									echo 'Archive';
-									break;
-								case 4:
-									echo 'Okizeme';
-									break;	
-							}
+							print_listingtype($data['type'], $conn);
 							echo '</td>';
 						}
 						echo '</table>';
@@ -359,7 +343,7 @@ WHERE `idlist` = ? ORDER BY `comment`, `combo`.`damage` DESC;";
 							<div class="form-group mb-2"><input placeholder="List Name" style="background-color: #474747; color:#999999;" name="list_name" class="form-control" maxlength="45" rows="1"></input></div>
 							<div class="form-group mb-2">';
 									
-										$query = "SELECT `idgame`, `name` FROM `game` WHERE `complete` = 1 ORDER BY `name`";
+										$query = "SELECT `idgame`, `name` FROM `game` WHERE `complete` > 0 ORDER BY `name`";
 										$result = $conn -> prepare($query);
 										$result -> execute();
 											
