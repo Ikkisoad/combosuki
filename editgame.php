@@ -5,13 +5,11 @@
 	if(!empty($_POST)){
 		$_POST = array_map("strip_tags", $_POST);
 		$_GET = array_map("strip_tags", $_GET);
-	//	print_r($_POST);
 		$query = "SELECT globalPass FROM game WHERE idgame = ?";
 		$result = $conn -> prepare($query);
 		$result -> bind_param("i", $_GET['gameid']);
 		$result -> execute();
 		foreach($result -> get_result() as $pass){
-		//	echo 'hi';
 			if($pass['globalPass'] != $_POST['password']){
 				header("Location: index.php");
 				exit();
