@@ -238,23 +238,10 @@
 					
 					$binded_parameters = array();
 					if(isset($_GET['listingtype'])){
-						switch($_GET['listingtype']){
-							case '-':
-								echo '<h2>Show All:</h2>';
-								break;
-							case 0:
-								echo '<h2>Combos:</h2>';
-								break;
-							case 1:
-								echo '<h2>Blockstrings:</h2>';
-								break;
-							case 2:
-								echo '<h2>Mix Ups:</h2>';
-								break;
-							case 3:
-								echo '<h2>Archives:</h2>';
-								break;
-						}
+						echo '<h2>';
+						print_listingtype($_GET['listingtype']);
+						if($_GET['listingtype'] == '-')echo 'Show All';
+						echo '</h2>';
 					}else{
 						echo '<h2>Show All:</h2>';
 					}
