@@ -1,19 +1,11 @@
 <!doctype php>
 <?php
-	include "server/conexao.php";
+	include_once "server/conexao.php";
+	include_once "server/functions.php";
 	if(!empty($_POST)){
 		$_POST = array_map("strip_tags", $_POST);
 		$_GET = array_map("strip_tags", $_GET);
-		$query = "SELECT globalPass, modPass FROM game WHERE idgame = ?";
-		$result = $conn -> prepare($query);
-		$result -> bind_param("i", $_GET['gameid']);
-		$result -> execute();
-		foreach($result -> get_result() as $pass){
-			if($pass['globalPass'] != $_POST['gamePass'] && !password_verify($_POST['gamePass'], $pass['modPass'])){
-				header("Location: index.php");
-				exit();
-			}
-		}
+		verify_password($conn);
 		
 		if($_POST['action'] == 'Update'){
 		
@@ -72,7 +64,6 @@
 			body{
 				background-color: #190000;
 				background: url("img/<?php
-				include "server/functions.php";
 				if(isset($_COOKIE['color'])){
 					echo 'bg/'.$_COOKIE["color"].'honeycomb.png';
 				}else{

@@ -8,17 +8,7 @@
 		$_GET = array_map("strip_tags", $_GET);
 			//print_r($_POST);
 		if($_POST['action'] != 'Edit'){
-			$query = "SELECT globalPass, modPass FROM game WHERE idgame = ?";
-			$result = $conn -> prepare($query);
-			$result -> bind_param("i", $_GET['gameid']);
-			$result -> execute();
-			foreach($result -> get_result() as $pass){
-			//	echo 'hi';
-				if($pass['globalPass'] != $_POST['gamePass'] && !password_verify($_POST['gamePass'], $pass['modPass'])){
-					header("Location: index.php");
-					exit();
-				}
-			}
+			verify_password($conn);
 			
 			if($_POST['action'] == 'Update'){
 				if(verify_resource_game($_POST['idresource'], $conn) != $_GET['gameid']){
@@ -31,7 +21,7 @@
 				$result -> bind_param("siiii", $_POST['resource'], $_POST['type'],$_POST['primaryORsecundary'],$_POST['idresource'], $_GET['gameid']);
 				$result -> execute();
 			}else if($_POST['action'] == 'Delete'){
-				if(verify_resource_game($_POST['idresource']) != $_GET['gameid']){
+				if(verify_resource_game($_POST['idresource'], $conn) != $_GET['gameid']){
 					header("Location: index.php");
 					exit();	
 				}
@@ -60,7 +50,7 @@
 				$result -> execute();
 				$edit = 1;
 			}else if($_POST['action'] == 'EditUpdate'){
-					if(verify_resourcevalue_game($_POST['idresourcevalue']) != $_GET['gameid']){
+					if(verify_resourcevalue_game($_POST['idresourcevalue'], $conn) != $_GET['gameid']){
 						header("Location: index.php");
 						exit();	
 					}
@@ -71,7 +61,7 @@
 					$result -> execute();
 				$edit = 1;
 			}else if($_POST['action'] == 'EditDelete'){
-				if(verify_resourcevalue_game($_POST['idresourcevalue']) != $_GET['gameid']){
+				if(verify_resourcevalue_game($_POST['idresourcevalue'], $conn) != $_GET['gameid']){
 					header("Location: index.php");
 					exit();	
 				}

@@ -100,6 +100,18 @@ WHERE `game`.`idgame` = ?";
 			header("Location: index.php");
 			exit();
 			
+		}else if($_POST['action'] == 'Lock'){
+			$query = "UPDATE `game` SET `complete`= ? WHERE `idgame` = ?";
+			$result = $conn -> prepare($query);
+			$i = 2;
+			$result -> bind_param("ii", $i,$_GET['gameid']);
+			$result -> execute();	
+		}else if($_POST['action'] == 'Unlock'){
+			$query = "UPDATE `game` SET `complete`= ? WHERE `idgame` = ?";
+			$result = $conn -> prepare($query);
+			$i = 1;
+			$result -> bind_param("ii", $i,$_GET['gameid']);
+			$result -> execute();	
 		}
 	}
 ?>
@@ -207,7 +219,7 @@ WHERE `game`.`idgame` = ?";
 					
 						<p><button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Update</button></p>
 						<p><button type="submit" name="action" value="Delete" class="btn btn-danger btn-block" onclick="return confirm('Are you sure you want to delete this game?');">Delete</button></p>
-					
+						<?php game_lock($conn); ?>
 						</form>
 						
 						<?php

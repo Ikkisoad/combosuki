@@ -168,6 +168,17 @@ function embed_video_notable($video){
 							}
 }
 
+function print_listingtype($listingtype, $conn){
+	//require "server/conexao.php";
+	$query = "SELECT `title` FROM `game_entry` WHERE `entryid` = ?;";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i",$listingtype);
+	$result -> execute();
+	foreach($result -> get_result()	as $lol){
+		echo ' '.$lol['title'];
+	}
+}
+
 function combo_table($gameid, $conn){
 	//require "server/conexao.php";
 						$query = "SELECT idcombo,Name,combo,damage,type, comments, submited, video FROM `combo` INNER JOIN `character` ON `combo`.`character_idcharacter` = `character`.`idcharacter` WHERE `character`.`game_idgame` = ? ORDER BY submited DESC LIMIT 0,5";
@@ -200,23 +211,7 @@ function combo_table($gameid, $conn){
 							echo '</td><td>';
 							echo number_format($data['damage'],'0','','.');
 							echo '</td><td>';
-							switch($data['type']){
-								case 0:
-									echo 'Combo';
-									break;
-								case 1:
-									echo 'Blockstring';
-									break;
-								case 2:
-									echo 'Mix Up';
-									break;
-								case 3:
-									echo 'Archive';
-									break;
-								case 4:
-									echo 'Okizeme';
-									break;		
-							}
+							print_listingtype($data['type'], $conn);
 							echo '</td><td>';
 							$i = new DateTime($data['submited']);
 							echo $i->format('d-m-y');
@@ -225,9 +220,25 @@ function combo_table($gameid, $conn){
 						echo '</table>';
 }
 
+function game_lock($conn){
+	$query = "SELECT complete FROM game WHERE idgame = ?";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i",$_GET['gameid']);
+	$result -> execute();
+	
+	foreach($result -> get_result() as $lol){
+		echo '<p><button type="submit" name="action" value="';
+		if($lol['complete'] == 1){
+			echo 'Lock" class="btn btn-success btn-block">Lock</button></p>';
+		}else{
+			echo 'Unlock" class="btn btn-warning btn-block">Unlock</button></p>';	
+		}
+	}
+}
+
 function game_title($conn){
 	//require "server/conexao.php";
-	$query = "SELECT idgame, name, image FROM game WHERE complete = 1 ORDER BY name;";
+	$query = "SELECT idgame, name, image FROM game WHERE complete > 0 ORDER BY name;";
 	$result = $conn -> prepare($query);
 	$result -> execute();
 	
@@ -379,17 +390,6 @@ function entry_select($selected, $showall, $conn){ //Has to come before quick_se
 	}
 	if($showall)echo '<option value="-">Show All</option>';
 	echo '</select></p>';
-}
-
-function print_listingtype($listingtype, $conn){
-	//require "server/conexao.php";
-	$query = "SELECT `title` FROM `game_entry` WHERE `entryid` = ?;";
-	$result = $conn -> prepare($query);
-	$result -> bind_param("i",$listingtype);
-	$result -> execute();
-	foreach($result -> get_result()	as $lol){
-		echo ' '.$lol['title'].':<br>';
-	}
 }
 
 function quick_search_form($gameid, $conn){
@@ -692,6 +692,20 @@ function get_mod_password($gameid, $conn){
 	foreach($result -> get_result() as $pass){
 		return $pass['modPass'];
 	}
+}
+
+function verify_password($conn){
+	$query = "SELECT globalPass, modPass, complete FROM game WHERE idgame = ?";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i", $_GET['gameid']);
+	$result -> execute();
+	foreach($result -> get_result() as $pass){
+	//	echo 'hi';
+		if($pass['globalPass'] != $_POST['gamePass'] && (!password_verify($_POST['gamePass'], $pass['modPass']) || $pass['complete'] == 2)){
+			header("Location: index.php");
+			exit();
+		}
+	}	
 }
 
 ?>
