@@ -684,5 +684,14 @@ function header_buttons($buttons, $back, $backDestination){ //Buttons=1 -> Home/
 	endif;
 }
 
+function get_mod_password($gameid, $conn){
+	$query = "SELECT modPass FROM game WHERE idgame = ?";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i", $gameid);
+	$result -> execute();
+	foreach($result -> get_result() as $pass){
+		return $pass['modPass'];
+	}
+}
 
 ?>

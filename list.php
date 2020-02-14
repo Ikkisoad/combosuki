@@ -20,13 +20,13 @@
 					exit();
 				}else if($_POST['submission_type'] == 2){
 					if($_POST['action'] == 'DeleteList'){
-						$query = "SELECT `password` FROM `list` WHERE idlist = ?";
+						$query = "SELECT `password`, `game_idgame` FROM `list` WHERE idlist = ?";
 						$result = $conn -> prepare($query);
 						$result -> bind_param("i",$_GET['listid']);
 						$result -> execute();
 						foreach($result -> get_result() as $lul){
-							if($lul['password'] == $_POST['listPass']){
-								echo 'delete this list';
+							$modPass = get_mod_password($lul['game_idgame'], $conn);
+							if($lul['password'] == $_POST['listPass'] || password_verify($_POST['listPass'], $modPass)){
 								$query = "DELETE FROM `combo_listing` WHERE `idlist` = ?";
 								$result = $conn -> prepare($query);
 								$result -> bind_param("i", $_GET['listid']);
@@ -61,7 +61,8 @@
 							header("Location: list.php?listid=".$_GET['listid']."");
 							exit();
 						}
-						if($lul['password'] == $_POST['listPass']){
+						$modPass = get_mod_password($lul['game_idgame'], $conn);
+						if($lul['password'] == $_POST['listPass'] || password_verify($_POST['listPass'], $modPass)){
 							if($_POST['action'] == 'Submit'){
 								$query = "INSERT INTO `combo_listing`(`idcombo`, `idlist`, `comment`) VALUES (?,?,?)";
 								$result = $conn -> prepare($query);
@@ -403,7 +404,7 @@ WHERE `idlist` = ? ORDER BY `comment`, `combo`.`damage` DESC;";
 													
 												}
 											}else{
-											$query = "SELECT `idlist`, `list_name` FROM `list` LIMIT 0,25";
+											$query = "SELECT `idlist`, `list_name` FROM `list` ORDER BY `idlist` DESC LIMIT 0,25";
 											$result = $conn -> prepare($query);
 											$result -> execute();
 											echo '<table id="myTable">';
