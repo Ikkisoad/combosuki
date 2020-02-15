@@ -6,10 +6,10 @@
 			$_GET = array_map("strip_tags", $_GET);
 			if($_POST['action'] != 'Search'){
 				if($_POST['submission_type'] == 1){
-					/*if($_POST['list_name'] == ''){                                           //This prevents '' lists from being created
+					if($_POST['list_name'] == ''){                                           //This prevents '' lists from being created
 						header("Location: list.php");
 						exit();	
-					}*/
+					}
 					$query = "INSERT INTO `list`(`list_name`, `game_idgame`, `password`) VALUES (?,?,?)";
 					$result = $conn -> prepare($query);
 					$result -> bind_param("sis", $_POST['list_name'], $_POST['gameid'], $_POST['listPass']);
@@ -275,7 +275,7 @@ WHERE `idlist` = ? ORDER BY `comment`, `combo`.`damage` DESC;";
 										echo '<h3>Listing</h3>
 					<p><form class="form-inline" method="post" action="list.php">
 							<input type="hidden" name="submission_type" value="1">
-							<div class="form-group mb-2"><input placeholder="List Name" style="background-color: #474747; color:#999999;" name="list_name" class="form-control" maxlength="45" rows="1"></input></div>
+							<div class="form-group mb-2"><input placeholder="List Name" style="background-color: #474747; color:#999999;" name="list_name" class="form-control" maxlength="45" rows="1" required></input></div>
 							<div class="form-group mb-2">';
 									
 										$query = "SELECT `idgame`, `name` FROM `game` WHERE `complete` > 0 ORDER BY `name`";

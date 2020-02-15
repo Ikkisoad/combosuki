@@ -282,9 +282,11 @@
 								<span class="input-group-text">';
 											echo $resource['text_name'];
 											echo ' </div>
-							<input class="form-control" type="number" min="0" class="input-sm" name="';
+							<input class="form-control" type="number" class="input-sm" name="';
 											echo $resource['text_name'];
 											echo '" max="';
+											echo $resource_value['value'];
+											echo '" min="-';
 											echo $resource_value['value'];
 											echo '"step="any"' ;
 											if(isset($_POST['type'])){
