@@ -171,9 +171,7 @@ WHERE `idcombo` = ? ";
 				$_GET['gameid'] = get_combogame($_GET['idcombo'], $conn);
 				header_buttons(2,1,'game.php');
 				
-				?>
-				<p><button class="btn btn-secondary" onclick="change_display()">Display Method</button></p>
-				
+				?>			
 				
 				<?php
 				
@@ -190,6 +188,10 @@ WHERE `idcombo` = ? ";
 				echo $name;
 				print_listingtype($listing_type, $conn);
 				
+				if(1): ?>
+					<button alignt="right" style="float: right;" class="btn btn-secondary" onclick="change_display()">Display Method</button>
+				
+				<?php endif;
 				echo '</th>';
 				echo '</tr>';
 				
