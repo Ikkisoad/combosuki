@@ -345,16 +345,6 @@
 						
 						?>
 						
-						<label for="exampleFormControlTextarea1">Author:</label>
-						<textarea name="author" maxlength="45" style="background-color: #474747; color:#999999;" class="form-control" rows="1" maxlength="255" placeholder="Who found this?"><?php 
-							if(isset($_POST['type'])){
-								if($_POST['type'] == 2){
-									echo $_POST['author'];
-								}
-							}
-						
-						?></textarea></p>
-						
 						<?php if(isset($_POST['type'])): ?>
 						<label for="exampleFormControlTextarea1">Combo Password:</label>
 						<input name="comboPass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" maxlength="255" placeholder="<?php
