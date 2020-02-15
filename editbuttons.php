@@ -7,6 +7,8 @@
 		$_GET = array_map("strip_tags", $_GET);
 		verify_password($conn);
 		
+		$_POST['name'] = str_replace(' ', '', $_POST['name']);
+		
 		if($_POST['action'] == 'Update'){
 		
 			$query = "UPDATE `button` SET `name`=?,`png`=?,`order`=? WHERE `game_idgame` = ? AND `idbutton` = ?";
