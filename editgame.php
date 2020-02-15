@@ -20,7 +20,6 @@
 			if($_POST['modPass'] != ''){
 				$query = "UPDATE `game` SET `name`= ?,`image`= ?, `modPass`= ?, `patch`= ? WHERE `idgame` = ?";
 				$result = $conn -> prepare($query);
-				//print_r($_POST);
 				$_POST['modPass'] = password_hash($_POST['modPass'],PASSWORD_DEFAULT);
 				$result -> bind_param("ssssi", $_POST['title'], $_POST['image'], $_POST['modPass'], $_POST['patch'], $_GET['gameid']);
 			}else{

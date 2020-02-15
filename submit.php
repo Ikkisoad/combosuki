@@ -1,6 +1,7 @@
 <?php
 
-				require "server/conexao.php";
+				include_once "server/conexao.php";
+				include_once "server/functions.php";
 				if(!empty($_POST)){
 					
 					//print_r($_POST); echo ' -> first<br>';
@@ -199,7 +200,6 @@
 									}
 								?>"> 
 								<?php
-									include "server/functions.php";
 									game_image($_GET['gameid'], 200, $conn);
 								?>
 							</a>

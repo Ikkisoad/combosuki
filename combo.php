@@ -167,25 +167,11 @@ WHERE `idcombo` = ? ";
 				</div>
 			</div>
 			<div class="container">
-				<div class="btn-group" role="group" aria-label="Basic example">
-					<form method="get" action="<?php if(isset($gameid)){echo 'game.php';}else{echo 'index.php';} ?>">
-							<input type="hidden" id="gameid" name="gameid" value="<?php  if(isset($gameid)){echo $gameid;} ?>">
-							<button class="btn btn-secondary"><< back</button>
-					</form>
-					<form method="get" action="index.php">
-								<button class="btn btn-secondary">Home</button>
-					</form>
-					
-					<form method="post" action="forms.php?gameid=<?php echo $gameid; ?>">
-						<button class="btn btn-secondary">Submit</button>
-						<input type="hidden" id="type" name="type" value="1">
-					</form>
-
-					<form method="get" action="forms.php">
-						<button class="btn btn-secondary">Search</button>
-						<input type="hidden" id="gameid" name="gameid" value="<?php echo $gameid ?>">
-					</form>
-				</div>
+				<?php
+				$_GET['gameid'] = get_combogame($_GET['idcombo'], $conn);
+				header_buttons(2,1,'game.php');
+				
+				?>
 				<p><button class="btn btn-secondary" onclick="change_display()">Display Method</button></p>
 				
 				

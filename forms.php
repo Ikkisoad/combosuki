@@ -187,7 +187,7 @@
 						?></textarea>
 						<?php
 						if(isset($_POST['type'])){
-									echo '<p><a href="https://goo.gl/forms/6Q8dVlNbdOyTMA4h2"> Is something missing?</a></p>';
+									echo '<p><a href="https://goo.gl/forms/6Q8dVlNbdOyTMA4h2" target="_blank"> Is something missing?</a></p>';
 								
 							}
 						?>
@@ -326,7 +326,7 @@
 						?>
 						
 						<label for="exampleFormControlTextarea1">Video:</label>
-						<textarea name="video" style="background-color: #474747; color:#999999;" class="form-control" id="exampleFormControlTextarea1" rows="1" maxlength="255" title="trabalho" placeholder="Currently supports youtube, twitter, streamable and twitch clips."><?php 
+						<textarea name="video" style="background-color: #474747; color:#999999;" class="form-control" id="exampleFormControlTextarea1" rows="1" maxlength="255" title="trabalho" placeholder="Currently supports youtube, niconico, twitter, imgur and twitch clips."><?php 
 							if(isset($_POST['type'])){
 								if($_POST['type'] == 2){
 									echo $_POST['video'];

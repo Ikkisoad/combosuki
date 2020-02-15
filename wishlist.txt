@@ -9,15 +9,17 @@ DONE:
 	> Fix vertical notations. DONE
 	> Moderation station.	DONE
 	> A page to create lists. List name, list password >> add combo... genius. DONE
+	> Game Links DONE
+	> Moderation Password DONE
 
 TO DO:
+
+	> BIRTHDAY MONTH, LOGO WITH BIRTHDAY HAT.
 
 	> Ready to go selections. (Corner, universal... etc). X REJECTED
 	> Upload CSV file. X REJECTED
 	> Optimize the code, looks hella shitty.
 	> More data in game.php, eg.: Most damaging combo, combos/character, solo combos
-	> Game Links
-	> Moderation Password
 	> Replace combo substring: UPDATE `combo` SET `combo`.`combo` = REPLACE(`combo`, 'L M H S', 'SparkingBlast') WHERE `combo`.`combo` LIKE '%L M H S%' AND gameid = ?
 	
 BROKE:

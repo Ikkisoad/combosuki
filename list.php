@@ -6,7 +6,7 @@
 			$_GET = array_map("strip_tags", $_GET);
 			if($_POST['action'] != 'Search'){
 				if($_POST['submission_type'] == 1){
-					/*if($_POST['list_name'] == ''){ //This prevents '' lists from being created
+					/*if($_POST['list_name'] == ''){                                           //This prevents '' lists from being created
 						header("Location: list.php");
 						exit();	
 					}*/
@@ -243,72 +243,7 @@ WHERE `idlist` = ? ORDER BY `comment`, `combo`.`damage` DESC;";
   
   //####################################################################VIDEO HERE
   
-							if($data['video'] != ''){
-								if (strpos($data['video'], 'twitter') !== false && strpos($data['video'], 'https') !== false) {
-									echo '<blockquote class="twitter-tweet" data-conversation="none" data-lang="en"><p lang="en" dir="ltr">
-									<a href="';
-									echo $data['video'];
-									echo '"></a>
-								</blockquote>
-								<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>';
-								}else if (strpos($data['video'], 'youtu') !== false) {
-									preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $data['video'], $match);
-									$youtube_id = $match[1];
-									//print_r($match);
-									//echo '<br> URL: ';
-									//echo $youtube_id;
-									$whatIWant = substr($data['video'], strpos($data['video'], "=") + 1);    
-									//echo '<br>what I want:';
-									//echo $whatIWant;
-									echo '<div class="embed-responsive embed-responsive-16by9">
-									<iframe class="embed-responsive-item" src="https://www.youtube.com/embed/';
-									echo $youtube_id;
-									echo '?start=';echo $whatIWant; echo '" allowfullscreen></iframe></div>';
-								}else if(strpos($data['video'], 'streamable') !== false && strpos($data['video'], 'https') !== false){
-														/*echo '<div class="embed-responsive embed-responsive-16by9">
-														<iframe class="embed-responsive-item" src="';
-														echo $data['video'];
-														echo '" allowfullscreen></iframe>
-													</div>';*/
-													//$i = substr_replace($data['video'], "/s", 22,0);
-									echo '<div style="width: 100%; height: 0px; position: relative; padding-bottom: 56.250%;">
-									<iframe src="';
-									echo $data['video'];
-									echo '" frameborder="0" width="100%" height="100%" allowfullscreen style="width: 100%; height: 100%; position: absolute;">
-									</iframe>
-									</div>';
-														
-														
-														/*echo '<div style="width: 100%; height: 0px; position: relative; padding-bottom: 56.250%;"><iframe src="';
-														echo $streamable;
-														
-														echo '" frameborder="0" width="100%" height="100%" allowfullscreen style="width: 100%; height: 100%; position: absolute;"></iframe></div>';*/
-														
-								}else if(strpos($data['video'], 'twitch') !== false && strpos($data['video'], 'clips') !== false && strpos($data['video'], 'https') !== false){
-									$i = substr_replace($data['video'], "embed?autoplay=false&clip=", 24,0);
-									echo '<iframe
-										src="'.$i.'"
-										preload="none"
-										autoplay="false"
-										height="360"
-										width="640"
-										frameborder="0"
-										scrolling="no"
-										allowfullscreen="true">
-									</iframe>';
-									
-								}/*else if(strpos($data['video'], 'imgur') !== false && strpos($data['video'], 'https') !== false){
-									//echo '<blockquote class="imgur-embed-pub" lang="en" data-id="a/amuAPtr"><a href="//imgur.com/amuAPtr">Jesus saves</a></blockquote><script async src="//s.imgur.com/min/embed.js" charset="utf-8"></script>'; https://imgur.com/sJyThyf
-									$i = substr($data['video'], 18);
-									echo '<blockquote class="imgur-embed-pub" lang="en" data-id="';
-									echo $i;
-									echo '"><a href="';
-									echo $data['video'];
-									echo '"></a></blockquote><script async src="//s.imgur.com/min/embed.js" charset="utf-8"></script>';
-								}*/else{
-									echo $data['video'];
-								}
-							}
+							embed_video_notable($data['video']);
   
   //######################################################################VIDEO ABOVE
   

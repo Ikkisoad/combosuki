@@ -87,7 +87,7 @@ function embed_video($video){
 				}
 }
 
-function embed_video_notable($video){
+function embed_video_notable($video){ //Twitter, Youtube, Twitch clip, Nico Nico, Streamable, imgur
 	if($video != ''){
 								if (strpos($video, 'twitter') !== false && strpos($video, 'https') !== false) {
 									echo '<blockquote class="twitter-tweet" data-conversation="none" data-lang="en"><p lang="en" dir="ltr">
@@ -706,6 +706,20 @@ function verify_password($conn){
 			exit();
 		}
 	}	
+}
+
+function get_combogame($comboid, $conn){
+	$query = "	SELECT `game`.`idgame` as game FROM `combo` 
+JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter`
+JOIN `game` ON `game`.`idgame` = `character`.`game_idgame`
+WHERE `idcombo` = ?";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i", $comboid);
+	$result -> execute();
+	foreach($result -> get_result() as $lol){
+		return $lol['game'];
+	}	
+
 }
 
 ?>
