@@ -264,12 +264,17 @@ AND `character`.`game_idgame` = ? ";
 					
 					if(isset($_GET['combo'])){
 						if($_GET['combo'] != ''){
-							if($_GET['combolike'] == 1 || $_GET['combolike'] == 2){
-								$parameterValue .= '%';
-							}
-							$parameterValue .= $_GET['combo'];
-							if($_GET['combolike'] == 0 || $_GET['combolike'] == 2){
-								$parameterValue .= '%';
+							if(isset($_GET['combolike'])){
+								if($_GET['combolike'] == 1 || $_GET['combolike'] == 2){
+									$parameterValue .= '%';
+								}
+								$parameterValue .= $_GET['combo'];
+								if($_GET['combolike'] == 0 || $_GET['combolike'] == 2){
+									$parameterValue .= '%';
+								}
+							}else{
+								$parameterValue .= $_GET['combo'].'%';
+								
 							}
 							$query .= "AND `combo` LIKE ? ";
 							$parameter_type .= "s";

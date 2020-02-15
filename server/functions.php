@@ -414,8 +414,8 @@ function quick_search_form($gameid, $conn){
 							
 						entry_select(0,1, $conn);
 						
-						
-							//require "server/conexao.php";
+							echo '<p><textarea style="background-color: #474747; color:#999999;" name="combo" class="form-control" id="comboarea" rows="1" title="combo" placeholder="Starter"></textarea>';
+							echo '</p>';
 							
 							$query = "SELECT text_name,type,idgame_resources FROM `game_resources` WHERE game_idgame = ? AND primaryORsecundary = 1 ORDER BY game_resources.primaryORsecundary DESC,text_name;";
 							$result = $conn -> prepare($query);
