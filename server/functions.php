@@ -741,4 +741,8 @@ function get_gamepassword($gameid, $conn){
 	}
 }
 
+function get_combolink($comboid,$conn){
+	return 'http://combosuki.com/combo.php?idcombo='.$comboid;
+}
+
 ?>

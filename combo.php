@@ -187,8 +187,10 @@ WHERE `idcombo` = ? ";
 					echo 'Patch: '.$patch.'</button>';
 				}
 				if(1): ?>
+					
 					<button alignt="right" style="float: right;" class="btn btn-secondary" onclick="change_display()">Display Method</button>
-				
+					<button alignt="right" style="float: right;" class="btn btn-secondary" onclick="copytoclip('<?php echo get_combolink($id_combo,$conn); ?>')">Copy Combo URL</button>
+
 				<?php endif;
 				echo '</th>';
 				echo '</tr>';
@@ -312,6 +314,16 @@ WHERE `idcombo` = ? ";
 				var temp = document.getElementById("combo_line").innerHTML;
 				document.getElementById("combo_line").innerHTML = document.getElementById("combo_text").innerHTML;
 				document.getElementById("combo_text").innerHTML = temp;
+			}
+		</script>
+		<script>
+			function copytoclip(link) {
+				var dummy = document.createElement("textarea");
+				document.body.appendChild(dummy);
+				dummy.value = link;
+				dummy.select();
+				document.execCommand("copy");
+				document.body.removeChild(dummy);
 			}
 		</script>
 	    <!-- Bootstrap core JavaScript
