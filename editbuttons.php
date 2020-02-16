@@ -211,29 +211,6 @@
 		https://tutorialdeep.com/knowhow/show-form-on-button-click-jquery/
 		</script>
 		
-		<script> 
-		function moveNumbers(num) { 
-				var txt=document.getElementById("comboarea").value; 
-				txt=txt + num + " "; 
-				document.getElementById("comboarea").value=txt; 
-		}
-		function backspace(){
-			var txt=document.getElementById("comboarea").value;
-			if(txt.length == 0){return;}
-			if(txt[txt.length-1] == " ")txt = txt.substring(0, txt.length - 1);
-			while(txt[txt.length-1] != " " ){
-				if(txt.length == 1){
-					txt = "";
-					break;
-				}
-				txt = txt.substring(0, txt.length - 1);
-				if(txt.legth == 0){
-					break;
-				}
-			}
-			document.getElementById("comboarea").value=txt; 
-		}
-		</script>
 		<script>
 		function setImage(select,id){
 		  var image = document.getElementsByName("image-"+id)[0];

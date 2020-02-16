@@ -7,27 +7,27 @@
 		$_GET = array_map("strip_tags", $_GET);
 		verify_password($conn);
 		
-		$_POST['name'] = str_replace(' ', '', $_POST['name']);
+		if($_POST['action'] == 'Submit'){
 		
-		if($_POST['action'] == 'Update'){
-		
-			$query = "UPDATE `button` SET `name`=?,`png`=?,`order`=? WHERE `game_idgame` = ? AND `idbutton` = ?";
-			$result = $conn -> prepare($query);
-			//print_r($_POST);
-			$result -> bind_param("ssiii", $_POST['name'], $_POST['png'], $_POST['order'], $_GET['gameid'], $_POST['idbutton']);
-			$result -> execute();
-		}else if($_POST['action'] == 'Delete'){
-			$query = "DELETE FROM `button` WHERE `idbutton` = ? AND `game_idgame` = ?";
-			$result = $conn -> prepare($query);
-			//print_r($_POST);
-			$result -> bind_param("ii", $_POST['idbutton'], $_GET['gameid']);
-			$result -> execute();		
-			
-		}else if($_POST['action'] == 'Add'){
-			$query = "INSERT INTO `button`(`idbutton`, `name`, `png`, `game_idgame`, `order`) VALUES (NULL, ?, ?, ?, ?)";
-			$result = $conn -> prepare($query);
-			//print_r($_POST);
-			$result -> bind_param("ssii", $_POST['name'], $_POST['png'], $_GET['gameid'], $_POST['order']);
+			$query = "UPDATE `combo` SET `combo`= REPLACE(`combo`, ?, ?) WHERE ";
+			if($_POST['listingtype'] != '-' && $_POST['characterid'] != '-'){
+				$query .= "`character_idcharacter` = ? AND `type` = ?";
+				$result = $conn -> prepare($query);
+				$result -> bind_param("ssii", $_POST['replace'], $_POST['with'], $_POST['characterid'], $_POST['listingtype']);
+			}else if($_POST['characterid'] != '-'){
+				$query .= "`character_idcharacter` = ?";
+				$result = $conn -> prepare($query);
+				$result -> bind_param("ssi", $_POST['replace'], $_POST['with'], $_POST['characterid']);
+			}else if($_POST['listingtype'] != '-'){
+				$query .= "`type` = ?";
+				$result = $conn -> prepare($query);
+				$result -> bind_param("ssi", $_POST['replace'], $_POST['with'], $_POST['listingtype']);
+			}else{
+				$query = "UPDATE `combo` JOIN `character` ON `combo`.`character_idcharacter` = `character`.`idcharacter`
+JOIN `game` ON `game`.`idgame` = `character`.`game_idgame` SET `combo`= REPLACE(`combo`, ?, ?)  WHERE `game`.`idgame` = ?";
+				$result = $conn -> prepare($query);
+				$result -> bind_param("ssi", $_POST['replace'], $_POST['with'], $_GET['gameid']);
+			}
 			$result -> execute();
 		}
 	}
@@ -114,17 +114,18 @@
 						echo '<tr>';
 						echo '<th>Mass Edit</th';
 						echo '</tr>';
-						character_dropdown($conn);
-						entry_select(0,2,$conn);
+						
 						echo '<tr><td>';
-							echo '<form method="post" action="editbuttons.php?gameid='.$_GET['gameid'].'">';
-							echo '<div class="input-group"><textarea name="name" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Replace"></textarea>';
-
-							echo '<textarea name="name" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="With"></textarea>';
+							echo '<form method="post" action="editcombos.php?gameid='.$_GET['gameid'].'">';
+							character_dropdown($conn);
+							entry_select(0,2,$conn);
+							echo '<div class="input-group"><textarea name="replace" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Replace"></textarea>';
+							
+							echo '<textarea name="with" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="With"></textarea>';
 							echo '
   <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
   <div class="input-group-append" id="button-addon4">
-    <button type="submit" name="action" value="Add" class="btn btn-primary"';
+    <button type="submit" name="action" value="Submit" class="btn btn-primary"';
 							if(1):?>
 							onclick="return confirm('Are you sure you want to mass edit?');"
 							<?php
@@ -157,36 +158,6 @@
 		<script src="../../../../dist/js/bootstrap.min.js"></script>
 		<script>
 		https://tutorialdeep.com/knowhow/show-form-on-button-click-jquery/
-		</script>
-		
-		<script> 
-		function moveNumbers(num) { 
-				var txt=document.getElementById("comboarea").value; 
-				txt=txt + num + " "; 
-				document.getElementById("comboarea").value=txt; 
-		}
-		function backspace(){
-			var txt=document.getElementById("comboarea").value;
-			if(txt.length == 0){return;}
-			if(txt[txt.length-1] == " ")txt = txt.substring(0, txt.length - 1);
-			while(txt[txt.length-1] != " " ){
-				if(txt.length == 1){
-					txt = "";
-					break;
-				}
-				txt = txt.substring(0, txt.length - 1);
-				if(txt.legth == 0){
-					break;
-				}
-			}
-			document.getElementById("comboarea").value=txt; 
-		}
-		</script>
-		<script>
-		function setImage(select,id){
-		  var image = document.getElementsByName("image-"+id)[0];
-		  image.src = "img/buttons/"+select.options[select.selectedIndex].value+".png";
-		}
 		</script>
 		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 </html>

@@ -388,7 +388,7 @@ function entry_select($selected, $showall, $conn){ //Has to come before quick_se
 		if($selected == $lol['entryid'])echo ' selected ';
 		echo '>'.$lol['title'].'</option>';
 	}
-	if($showall)echo '<option value="-">Show All</option>';
+	if($showall == 1)echo '<option value="-">Show All</option>';
 	if($showall == 2)echo '<option value="-" selected>Every Entry</option>';
 	echo '</select></p>';
 }
