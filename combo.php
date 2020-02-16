@@ -39,7 +39,7 @@ WHERE `idcombo` = ? ";
 			$id_combo = $data['idcombo'];
 			//$combo = $data['combo'];
 			$combo = str_replace('->', '<br>', $data['combo']);
-			$combo_image = button_printing($data['game_idgame'], $combo, $conn);
+			$combo_image = button_printing($data['game_idgame'], $data['combo'], $conn);
 	
 		}
 		
