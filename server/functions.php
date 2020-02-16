@@ -376,7 +376,7 @@ function delete_combo($idcombo, $conn){
 	$result -> execute();	
 }
 
-function entry_select($selected, $showall, $conn){ //Has to come before quick_search_form
+function entry_select($selected, $showall, $conn){ //Has to come before quick_search_form showall = 1 -> Show All showall = 2 -> Every Entry
 	//require "server/conexao.php";
 	$query = "SELECT `entryid`, `title` FROM `game_entry` WHERE `gameid` = ? ORDER BY `order`,`title`;";
 	$result = $conn -> prepare($query);
@@ -389,7 +389,24 @@ function entry_select($selected, $showall, $conn){ //Has to come before quick_se
 		echo '>'.$lol['title'].'</option>';
 	}
 	if($showall)echo '<option value="-">Show All</option>';
+	if($showall == 2)echo '<option value="-" selected>Every Entry</option>';
 	echo '</select></p>';
+}
+
+function character_dropdown($conn){
+	$query = "SELECT `Name`,`idcharacter` FROM `character` WHERE game_idgame = ? ORDER BY name;";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i", $_GET['gameid']);
+	$result -> execute();
+		
+	echo '<p><select name="characterid" class="custom-select">';
+		
+	echo '<option value="-">Character</option>';
+	foreach($result -> get_result() as $character){
+		echo '<option value="'.$character['idcharacter'].'" ';
+		echo '>'.$character['Name'].'</option>';
+	}
+	echo '</select></p>'; 
 }
 
 function quick_search_form($gameid, $conn){
@@ -397,20 +414,8 @@ function quick_search_form($gameid, $conn){
 						
 						echo '<form class="form-inline" method="get" action="submit.php">
 					<input type="hidden" id="gameid" name="gameid" value="'.$_GET['gameid'].'">';
-							
-						$query = "SELECT `Name`,`idcharacter` FROM `character` WHERE game_idgame = ? ORDER BY name;";
-						$result = $conn -> prepare($query);
-						$result -> bind_param("i", $gameid);
-						$result -> execute();
-							
-						echo '<p><select name="characterid" class="custom-select">';
-							
-						echo '<option value="-">Character</option>';
-						foreach($result -> get_result() as $character){
-							echo '<option value="'.$character['idcharacter'].'" ';
-							echo '>'.$character['Name'].'</option>';
-						}
-						echo '</select></p>'; 
+						
+						character_dropdown($conn);
 							
 						entry_select(0,1, $conn);
 						
@@ -632,6 +637,11 @@ function edit_controls($gameid){
 							<form method="get" action="editentries.php">
 								<input type="hidden" name="gameid" value="'.$gameid.'">
 								<button class="btn btn-secondary">Entries</button>
+							</form>
+							
+							<form method="get" action="editcombos.php">
+								<input type="hidden" name="gameid" value="'.$gameid.'">
+								<button class="btn btn-secondary">Mass Edit (Combos)</button>
 							</form>
 						</div>';
 }

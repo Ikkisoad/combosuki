@@ -37,7 +37,8 @@ WHERE `idcombo` = ? ";
 			$character = $data['idcharacter'];
 			$name = $data['Name'];
 			$id_combo = $data['idcombo'];
-			$combo = $data['combo'];
+			//$combo = $data['combo'];
+			$combo = str_replace('->', '<br>', $data['combo']);
 			$combo_image = button_printing($data['game_idgame'], $combo, $conn);
 	
 		}
