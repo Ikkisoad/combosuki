@@ -175,19 +175,16 @@ WHERE `idcombo` = ? ";
 				
 				<?php
 				
-				if($patch != ''){
-					echo '<p><button class="btn btn-dark" disabled>';
-					echo 'Patch: '.$patch.'</button></p>';
-				}
-				
-							
 				echo '<p><table>';
 				echo '<tr>';
 				echo '<th>'; 
 				echo 'Entry ID: '.$id_combo.' / ';
 				echo $name;
 				print_listingtype($listing_type, $conn);
-				
+				if($patch != ''){
+					echo '<button class="btn btn-dark" style="float: right;" disabled>';
+					echo 'Patch: '.$patch.'</button>';
+				}
 				if(1): ?>
 					<button alignt="right" style="float: right;" class="btn btn-secondary" onclick="change_display()">Display Method</button>
 				
