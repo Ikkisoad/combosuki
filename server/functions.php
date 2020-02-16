@@ -710,7 +710,6 @@ function verify_password($conn){
 	$result -> bind_param("i", $_GET['gameid']);
 	$result -> execute();
 	foreach($result -> get_result() as $pass){
-	//	echo 'hi';
 		if($pass['globalPass'] != $_POST['gamePass'] && (!password_verify($_POST['gamePass'], $pass['modPass']) || $pass['complete'] == 2)){
 			header("Location: index.php");
 			exit();
@@ -730,6 +729,16 @@ WHERE `idcombo` = ?";
 		return $lol['game'];
 	}	
 
+}
+
+function get_gamepassword($gameid, $conn){
+	$query = "SELECT `globalPass` FROM `game` WHERE `idgame` = ?";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i", $gameid);
+	$result -> execute();
+	foreach($result -> get_result() as $lol){
+		return $lol['globalPass'];
+	}
 }
 
 ?>

@@ -6,13 +6,14 @@
 			$_GET = array_map("strip_tags", $_GET);
 			if($_POST['action'] != 'Search'){
 				if($_POST['submission_type'] == 1){
-					if($_POST['list_name'] == ''){                                           //This prevents '' lists from being created
+					if($_POST['list_name'] == '' || $_POST['gameid'] == 0){                                           //This prevents '' lists from being created
 						header("Location: list.php");
 						exit();	
 					}
-					$query = "INSERT INTO `list`(`list_name`, `game_idgame`, `password`) VALUES (?,?,?)";
+					$query = "INSERT INTO `list`(`list_name`, `game_idgame`, `password`, `type`) VALUES (?,?,?,?)";
 					$result = $conn -> prepare($query);
-					$result -> bind_param("sis", $_POST['list_name'], $_POST['gameid'], $_POST['listPass']);
+					$i = 1;
+					$result -> bind_param("sisi", $_POST['list_name'], $_POST['gameid'], $_POST['listPass'], $i);
 					$result -> execute();
 							
 					$listid = mysqli_insert_id($conn);
@@ -26,7 +27,15 @@
 						$result -> execute();
 						foreach($result -> get_result() as $lul){
 							$modPass = get_mod_password($lul['game_idgame'], $conn);
-							if($lul['password'] == $_POST['listPass'] || password_verify($_POST['listPass'], $modPass)){
+							if(password_verify($_POST['listPass'], $modPass)){
+								$query = "UPDATE `list` SET `type`=? WHERE `idlist` = ?";
+								$result = $conn -> prepare($query);
+								$i = 0;
+								$result -> bind_param("ii", $i, $_GET['listid']);
+								$result -> execute();
+							}
+							$gamepass = get_gamepassword($lul['game_idgame'], $conn);
+							if($lul['password'] == $_POST['listPass'] || $_POST['listPass'] == $gamepass){
 								$query = "DELETE FROM `combo_listing` WHERE `idlist` = ?";
 								$result = $conn -> prepare($query);
 								$result -> bind_param("i", $_GET['listid']);
@@ -57,12 +66,13 @@
 					$result -> bind_param("i",$_GET['listid']);
 					$result -> execute();
 					foreach($result -> get_result() as $lul){
+						$gamepass = get_gamepassword($lul['game_idgame'], $conn);
 						if($gameid != $lul['game_idgame'] && $lul['game_idgame'] != 0){
 							header("Location: list.php?listid=".$_GET['listid']."");
 							exit();
 						}
 						$modPass = get_mod_password($lul['game_idgame'], $conn);
-						if($lul['password'] == $_POST['listPass'] || password_verify($_POST['listPass'], $modPass)){
+						if($lul['password'] == $_POST['listPass'] || password_verify($_POST['listPass'], $modPass) || $_POST['listPass'] == $gamepass){
 							if($_POST['action'] == 'Submit'){
 								$query = "INSERT INTO `combo_listing`(`idcombo`, `idlist`, `comment`) VALUES (?,?,?)";
 								$result = $conn -> prepare($query);
@@ -275,7 +285,7 @@ WHERE `idlist` = ? ORDER BY `comment`, `combo`.`damage` DESC;";
 										echo '<h3>Listing</h3>
 					<p><form class="form-inline" method="post" action="list.php">
 							<input type="hidden" name="submission_type" value="1">
-							<div class="form-group mb-2"><input placeholder="List Name" style="background-color: #474747; color:#999999;" name="list_name" class="form-control" maxlength="45" rows="1" required></input></div>
+							<div class="form-group mb-2"><input placeholder="List Name" style="background-color: #474747; color:#999999;" name="list_name" class="form-control" maxlength="45" rows="1"></input></div>
 							<div class="form-group mb-2">';
 									
 										$query = "SELECT `idgame`, `name` FROM `game` WHERE `complete` > 0 ORDER BY `name`";
@@ -300,13 +310,13 @@ WHERE `idlist` = ? ORDER BY `comment`, `combo`.`damage` DESC;";
 										echo '</select>'; 
 										echo '</div>
 							<div class="form-group mb-2"><input placeholder="List Password" name="listPass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1"></input></div>
-							<div class="form-group mb-2"><button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Create List</button></div>
 							<div class="form-group mb-2"><button type="submit" name="action" value="Search" class="btn btn-info btn-block">Search</button></div>
+							<div class="form-group mb-2"><button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Create List</button></div>
 						</form></p>';
 										if(isset($_POST)){
 											if(isset($_POST['action'])){
 												if($_POST['action'] == 'Search'){
-														$query = "SELECT `idlist`, `list_name` FROM `list` WHERE `list_name` LIKE ? AND `game_idgame` = ?";
+														$query = "SELECT `idlist`, `list_name` FROM `list` WHERE `list_name` LIKE ? AND `game_idgame` = ? AND `list`.`type` != 0";
 														$result = $conn -> prepare($query);
 														$_POST['list_name'] = '%'.$_POST['list_name'].'%';
 														$result -> bind_param("si",$_POST['list_name'], $_POST['gameid']);
