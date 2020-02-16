@@ -197,8 +197,8 @@ WHERE `idcombo` = ? ";
 				
 					
 				if(!isset($_COOKIE['display'])){
-					echo $combo_image;
-					$_COOKIE['display'] = 1;
+					echo $combo;
+					$_COOKIE['display'] = 0;
 				}else if($_COOKIE['display']){
 					echo $combo_image;
 				}else{
