@@ -100,7 +100,6 @@
 <!doctype php>
 <html>
 	<head>
-	
 		<link rel="apple-touch-icon" sizes="57x57" href="img/apple-icon-57x57.png">
 		<link rel="apple-touch-icon" sizes="60x60" href="img/apple-icon-60x60.png">
 		<link rel="apple-touch-icon" sizes="72x72" href="img/apple-icon-72x72.png">
@@ -208,13 +207,15 @@
 									$_GET = array_map("strip_tags", $_GET);
 									
 									if(isset($_GET['listid'])){
-										$query = "SELECT list_name, name FROM `list` join game ON list.game_idgame = game.idgame where list.idlist = ?";
+										$query = "SELECT list_name, name, type FROM `list` join game ON list.game_idgame = game.idgame where list.idlist = ?";
 										$result = $conn -> prepare($query);
 										$result -> bind_param("i", $_GET['listid']);
 										$result -> execute();
 										foreach($result -> get_result() as $list){
-											echo '<h3 class="mt-3">'.$list['list_name'].'</h3>';
-											echo $list['name'];
+											echo '<h3 class="mt-3">'.$list['list_name'];
+											print_listglyph($list['type'], $conn);
+											echo '</h3>';
+											echo $list['name'].' list';
 										}
 										
 										echo '<p>
@@ -316,7 +317,7 @@ WHERE `idlist` = ? ORDER BY `comment`, `combo`.`damage` DESC;";
 										if(isset($_POST)){
 											if(isset($_POST['action'])){
 												if($_POST['action'] == 'Search'){
-														$query = "SELECT `idlist`, `list_name` FROM `list` WHERE `list_name` LIKE ? AND `game_idgame` = ? AND `list`.`type` != 0";
+														$query = "SELECT `idlist`, `list_name`, `type` FROM `list` WHERE `list_name` LIKE ? AND `game_idgame` = ? AND `list`.`type` != 0 ORDER BY `type` DESC, `list_name` LIMIT 0,50";
 														$result = $conn -> prepare($query);
 														$_POST['list_name'] = '%'.$_POST['list_name'].'%';
 														$result -> bind_param("si",$_POST['list_name'], $_POST['gameid']);
@@ -327,13 +328,15 @@ WHERE `idlist` = ? ORDER BY `comment`, `combo`.`damage` DESC;";
 														echo '</tr>';
 														foreach($result -> get_result() as $search){
 															if($search['list_name'] != ''){
-																echo '<tr><td><a  href="list.php?listid='.$search['idlist'].'">'.$search['list_name'].'</a></tr></td>';
+																echo '<tr><td><a  href="list.php?listid='.$search['idlist'].'">'.$search['list_name'].'</a>';
+																print_listglyph($search['type'], $conn);
+																echo '</tr></td>';
 															}
 														}
 													
 												}
 											}else{
-											$query = "SELECT `idlist`, `list_name` FROM `list` ORDER BY `idlist` DESC LIMIT 0,25";
+											$query = "SELECT `idlist`, `list_name`, `type` FROM `list` ORDER BY `idlist` DESC LIMIT 0,50";
 											$result = $conn -> prepare($query);
 											$result -> execute();
 											echo '<table id="myTable">';
@@ -342,7 +345,9 @@ WHERE `idlist` = ? ORDER BY `comment`, `combo`.`damage` DESC;";
 											echo '</tr>';
 											foreach($result -> get_result() as $search){
 												if($search['list_name'] != ''){
-													echo '<tr><td><a  href="list.php?listid='.$search['idlist'].'">'.$search['list_name'].'</a></tr></td>';
+													echo '<tr><td><a  href="list.php?listid='.$search['idlist'].'">'.$search['list_name'].'</a>';
+													print_listglyph($search['type'], $conn);
+													echo '</tr></td>';
 												}
 											}
 										}

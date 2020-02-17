@@ -643,6 +643,11 @@ function edit_controls($gameid){
 								<input type="hidden" name="gameid" value="'.$gameid.'">
 								<button class="btn btn-secondary">Mass Edit (Combos)</button>
 							</form>
+							
+							<form method="get" action="editlists.php">
+								<input type="hidden" name="gameid" value="'.$gameid.'">
+								<button class="btn btn-secondary">Lists</button>
+							</form>
 						</div>';
 }
 
@@ -743,6 +748,11 @@ function get_gamepassword($gameid, $conn){
 
 function get_combolink($comboid,$conn){
 	return 'http://combosuki.com/combo.php?idcombo='.$comboid;
+}
+
+function print_listglyph($type, $conn){
+	if($type == 2)echo ' <img src="img/buttons/vanish.png" height="35" name="image-579" data-toggle="tooltip" title="Verified List">';
+	if($type == 3)echo ' <img src="img/buttons/kicharge.png" height="35" name="image-579" data-toggle="tooltip" title="Moderated List">';
 }
 
 ?>
