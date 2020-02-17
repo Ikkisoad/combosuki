@@ -755,4 +755,15 @@ function print_listglyph($type, $conn){
 	if($type == 3)echo ' <img src="img/buttons/kicharge.png" height="35" name="image-579" data-toggle="tooltip" title="Moderated List">';
 }
 
+function meta_embedvideo($video){
+	if($video != '')echo '<meta property="og:type" content="video">';
+	if(strpos($video, 'youtu') !== false){
+		echo '<meta property="og:url" content="'.$video.'" />';
+	}else if(strpos($video, 'twitter') !== false && strpos($video, 'https') !== false){
+		echo '<meta property="og:url" content="'.$video.'" />';
+	}else{
+		echo '<meta property="og:image" content="http://combosuki.com/img/combosuki.png" />';
+	}
+}
+
 ?>

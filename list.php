@@ -203,15 +203,17 @@
 				<div class="body">					
 						
 								<?php 
-									header_buttons(1, 0, 'list.php');
+									
 									$_GET = array_map("strip_tags", $_GET);
 									
 									if(isset($_GET['listid'])){
-										$query = "SELECT list_name, name, type FROM `list` join game ON list.game_idgame = game.idgame where list.idlist = ?";
+										$query = "SELECT list_name, name, type, game_idgame FROM `list` join game ON list.game_idgame = game.idgame where list.idlist = ?";
 										$result = $conn -> prepare($query);
 										$result -> bind_param("i", $_GET['listid']);
 										$result -> execute();
 										foreach($result -> get_result() as $list){
+											$_GET['gameid'] = $list['game_idgame'];
+											header_buttons(2, 1, 'game.php');
 											echo '<h3 class="mt-3">'.$list['list_name'];
 											print_listglyph($list['type'], $conn);
 											echo '</h3>';
@@ -283,6 +285,7 @@ WHERE `idlist` = ? ORDER BY `comment`, `combo`.`damage` DESC;";
 							<div class="form-group mb-2"><button type="submit" name="action" value="Delete" class="btn btn-danger btn-block">Remove Combo</button></div>
 						</form></p>';
 									}else{
+										header_buttons(1, 0, 'list.php');
 										echo '<h3>Listing</h3>
 					<p><form class="form-inline" method="post" action="list.php">
 							<input type="hidden" name="submission_type" value="1">
