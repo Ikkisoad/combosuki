@@ -154,6 +154,15 @@
 							$result -> execute();
 							
 							if(!isset($_POST['type'])){
+								echo 'Order by:';
+								echo '<select name="Submitted" class="custom-select">';
+								echo '<option value="-">-</option>';
+								echo '<option value="0">Newest</option>';
+								echo '<option value="1">Oldest</option>';
+								echo '</select><p><br>';
+							}
+							
+							if(!isset($_POST['type'])){
 								echo 'The combo:';
 								echo '<select name="combolike" class="custom-select">';
 								echo '<option value="0">Starts with</option>'; // STARTS WITH HAS ENDS WITH IADA IADA

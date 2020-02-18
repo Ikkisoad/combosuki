@@ -452,8 +452,19 @@ AND `character`.`game_idgame` = ? ";
 							}
 						}
 					}
-					$query = $query . "ORDER BY damage DESC, idcombo, text_name  LIMIT ?, ?;";
-				//	echo $query;
+					if(isset($_GET['Submitted'])){
+						if($_GET['Submitted'] == '-'){
+							$query = $query . "ORDER BY damage DESC, idcombo, text_name  LIMIT ?, ?;";
+						}else if($_GET['Submitted'] == 1){
+							$query = $query . "ORDER BY `submited` ASC, damage DESC, idcombo, text_name  LIMIT ?, ?;";
+						}else{
+							$query = $query . "ORDER BY `submited` DESC, damage DESC, idcombo, text_name  LIMIT ?, ?;";
+						}
+					}else{
+						$query = $query . "ORDER BY damage DESC, idcombo, text_name  LIMIT ?, ?;";
+					}
+					
+					//echo $query;
 					$parameter_type .= "i";
 					$binded_parameters[$parameters_counter++] = $limit;
 					$parameter_type .= "i";
