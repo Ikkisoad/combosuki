@@ -453,17 +453,17 @@ AND `character`.`game_idgame` = ? ";
 						}
 					}
 					$query = $query . "ORDER BY damage DESC, idcombo, text_name  LIMIT ?, ?;";
-					echo $query;
+				//	echo $query;
 					$parameter_type .= "i";
 					$binded_parameters[$parameters_counter++] = $limit;
 					$parameter_type .= "i";
 					$binded_parameters[$parameters_counter++] = $offset;
 					
-					echo '<br>Binded params:';
-					print_r($binded_parameters);
-					echo '<br>Param Type:';
-					echo $parameter_type;
-					echo '<br>';
+					//echo '<br>Binded params:';
+				//	print_r($binded_parameters);
+				//	echo '<br>Param Type:';
+				//	echo $parameter_type;
+				//	echo '<br>';
 
 					echo '</tr>';
 					$parameterValue = array();
