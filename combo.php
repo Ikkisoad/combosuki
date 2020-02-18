@@ -48,6 +48,7 @@ WHERE `idcombo` = ? ";
 		$comment = $data['comments'];
 		$video = $data['video'];
 		$damage = $data['damage'];
+
 		$submited = new DateTime($data['submited']);
 		$author = $data['author'];
 		if($data['primaryORsecundary'] == 0){
@@ -67,6 +68,10 @@ WHERE `idcombo` = ? ";
 				array_push($primaryValue, $data['number_value']);
 			}
 		}
+	}
+	if(!isset($damage)){
+		header("Location: index.php");
+		exit();
 	}
 ?>
 <html>
