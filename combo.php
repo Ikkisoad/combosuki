@@ -19,7 +19,7 @@ LEFT JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharac
 LEFT JOIN `game_resources` ON `game_resources`.`idgame_resources` = `resources_values`.`game_resources_idgame_resources` 
 WHERE `idcombo` = ? ";
 	
-	$query = $query . "ORDER BY  `game_resources`.`primaryORsecundary` DESC, `idcombo`, `text_name`;";
+	$query = $query . "ORDER BY  `game_resources`.`primaryORsecundary` DESC, `idcombo`, `text_name`,`resources`.`idResources`;";
 	//echo $query;
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i",$_GET['idcombo']);

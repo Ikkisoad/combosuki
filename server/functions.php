@@ -682,6 +682,11 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 	if($buttons): ?>
 		<div class="btn-group" role="group" aria-label="Basic example">
 		
+			<form method="get" action="index.php">
+				<button class="btn btn-secondary">Combo好き</button>
+			</form>
+			
+			
 			<?php 
 				if($back){
 					echo '	<form method="get" action="'.$backDestination.'">';
@@ -690,7 +695,7 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 						echo '		<button class="btn btn-secondary">'.$backto.'</button>';
 					}else if($back == 2){
 						echo '	<input type="hidden" id="idcombo" name="idcombo" value="'.$_POST['idcombo'].'">';
-						echo '		<button class="btn btn-secondary">'.$backto.'</button>';
+						echo '		<button class="btn btn-secondary">Entry ID: '.$_POST['idcombo'].'</button>';
 					}else{
 						echo '		<button class="btn btn-secondary"> << back</button>';
 					}
@@ -700,9 +705,6 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 					
 				}			
 			?>
-			<form method="get" action="index.php">
-				<button class="btn btn-secondary">Combo好き</button>
-			</form>
 			
 			<form method="get" action="list.php">
 				<button class="btn btn-secondary">Listing</button>
