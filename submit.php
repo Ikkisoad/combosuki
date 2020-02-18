@@ -417,7 +417,7 @@ AND `character`.`game_idgame` = ? ";
 						}else if($resource['type'] == 3){
 							//print_r($resource);
 							//echo '<br>POST:';
-						//	print_r($_GET['Assist']);
+							//	print_r($_GET['Assist']);
 							//echo '<br>';
 							if(isset($_GET[$parameterValue])){
 								foreach($_GET[$parameterValue] as $eachDuplicate){
@@ -550,10 +550,19 @@ AND `character`.`game_idgame` = ? ";
 					
 					foreach ($_GET as $key => $entry){
 						if($entry != '-' && $entry != '' && $key != 'page'){
-							echo '&';
-							echo $key;
-							echo '=';
-							echo $entry;
+							if(is_scalar($entry)){
+								echo '&';
+								echo $key;
+								echo '=';
+								echo $entry;
+							}else{
+								foreach($entry as $arraykey => $arrayentry){
+									echo '&';
+									echo $key.'[]';
+									echo '=';
+									echo $arrayentry;
+								}
+							}
 						}
 					}
 					echo '" style="padding-right: 5px;">Previous </a>';
@@ -572,7 +581,7 @@ AND `character`.`game_idgame` = ? ";
 							}else{
 								foreach($entry as $arraykey => $arrayentry){
 									echo '&';
-									echo $key;
+									echo $key.'[]';
 									echo '=';
 									echo $arrayentry;
 								}
@@ -592,10 +601,19 @@ AND `character`.`game_idgame` = ? ";
 					
 					foreach ($_GET as $key => $entry){
 						if($entry != '-' && $entry != '' && $key != 'page'){
-							echo '&';
-							echo $key;
-							echo '=';
-							echo $entry;
+							if(is_scalar($entry)){
+								echo '&';
+								echo $key;
+								echo '=';
+								echo $entry;
+							}else{
+								foreach($entry as $arraykey => $arrayentry){
+									echo '&';
+									echo $key.'[]';
+									echo '=';
+									echo $arrayentry;
+								}
+							}
 						}
 					}
 					echo '" style="padding-right: 5px;">Previous </a>';
@@ -608,10 +626,19 @@ AND `character`.`game_idgame` = ? ";
 					echo $page + 1;
 					foreach ($_GET as $key => $entry){
 						if($entry != '-' && $entry != '' && $key != 'page'){
-							echo '&';
-							echo $key;
-							echo '=';
-							echo $entry;
+							if(is_scalar($entry)){
+								echo '&';
+								echo $key;
+								echo '=';
+								echo $entry;
+							}else{
+								foreach($entry as $arraykey => $arrayentry){
+									echo '&';
+									echo $key.'[]';
+									echo '=';
+									echo $arrayentry;
+								}
+							}
 						}
 						
 					}

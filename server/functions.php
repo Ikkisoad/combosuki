@@ -668,7 +668,7 @@ function edit_controls($gameid){
 							
 							<form method="get" action="editcombos.php">
 								<input type="hidden" name="gameid" value="'.$gameid.'">
-								<button class="btn btn-secondary">Mass Edit (Combos)</button>
+								<button class="btn btn-secondary">Mass Edit</button>
 							</form>
 							
 							<form method="get" action="editlists.php">
@@ -821,6 +821,19 @@ function strip_GETtags(){
 		}
 	}
 	
+}
+
+function verify_gameresource($resourceValueID, $conn){
+	$query = "SELECT `game_idgame` as idgame FROM `game_resources` 
+JOIN `resources_values` ON `game_resources`.`idgame_resources` = `resources_values`.`game_resources_idgame_resources`
+WHERE `resources_values`.`idResources_values` = ?";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i", $resourceValueID);
+	$result -> execute();
+	foreach($result -> get_result() as $game){
+		return $game['idgame'];
+	}
+	return 0;
 }
 
 ?>

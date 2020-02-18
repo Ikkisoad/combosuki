@@ -27,13 +27,11 @@
 				}
 				$query = "DELETE FROM `resources_values` WHERE `game_resources_idgame_resources` = ?";
 				$result = $conn -> prepare($query);
-				//print_r($_POST);
 				$result -> bind_param("i",$_POST['idresource']);
 				$result -> execute();
 				
 				$query = "DELETE FROM `game_resources` WHERE `idgame_resources` = ?";
 				$result = $conn -> prepare($query);
-				//print_r($_POST);
 				$result -> bind_param("i",$_POST['idresource']);
 				$result -> execute();
 			}else if($_POST['action'] == 'Add'){
@@ -180,7 +178,7 @@
 								
 								echo '<tr><td>';
 								echo '<form method="post" action="editresources.php?gameid='.$_GET['gameid'].'">';
-								echo '<div class="input-group"><textarea name="resourcevalue" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Resource Name">'.$lol['value'].'</textarea>';
+								echo '<div class="input-group"><button class="btn btn-secondary" disabled>ID:'.$lol['idResources_values'].'</button><textarea name="resourcevalue" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Resource Name">'.$lol['value'].'</textarea>';
 								//echo $lol['Name'];
 								echo '<input class="form-control" type="number" name="order" placeholder="Order" value="'.$lol['order'].'" step="any">';
 								echo '

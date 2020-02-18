@@ -29,6 +29,15 @@ JOIN `game` ON `game`.`idgame` = `character`.`game_idgame` SET `combo`= REPLACE(
 				$result -> bind_param("ssi", $_POST['replace'], $_POST['with'], $_GET['gameid']);
 			}
 			$result -> execute();
+		}else if($_POST['action'] == 'SubmitResource'){
+			if(!verify_gameresource($_POST['with'],$conn)){
+				header("Location: index.php");
+				exit();
+			}
+			$query = "UPDATE `resources` SET `Resources_values_idResources_values`= ? WHERE `Resources_values_idResources_values` = ?";
+			$result = $conn -> prepare($query);
+			$result -> bind_param("ii", $_POST['with'],$_POST['replace']);
+			$result -> execute();
 		}
 	}
 ?>
@@ -112,7 +121,7 @@ JOIN `game` ON `game`.`idgame` = `character`.`game_idgame` SET `combo`= REPLACE(
 						header_buttons(2, 1, 'game.php');
 						echo '<table id="myTable">';
 						echo '<tr>';
-						echo '<th>Mass Edit</th';
+						echo '<th>Mass Edit Combos</th';
 						echo '</tr>';
 						
 						echo '<tr><td>';
@@ -127,7 +136,34 @@ JOIN `game` ON `game`.`idgame` = `character`.`game_idgame` SET `combo`= REPLACE(
   <div class="input-group-append" id="button-addon4">
     <button type="submit" name="action" value="Submit" class="btn btn-primary"';
 							if(1):?>
-							onclick="return confirm('Are you sure you want to mass edit?');"
+							onclick="return confirm('Are you sure you want to mass edit combos?');"
+							<?php
+							endif;
+							echo '>Mass Edit</button>
+  </div>
+</div>';
+							echo '</td>';
+							echo '</form>';
+							echo '</tr>';
+						
+						echo '</table><br>';
+						
+						echo '<table id="myTable">';
+						echo '<tr>';
+						echo '<th>Mass Edit Resources</th';
+						echo '</tr>';
+						
+						echo '<tr><td>';
+							echo '<form method="post" action="editcombos.php?gameid='.$_GET['gameid'].'">';
+							echo '<div class="input-group"><textarea name="replace" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Replace Resource ID"></textarea>';
+							
+							echo '<textarea name="with" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="With Resource ID"></textarea>';
+							echo '
+  <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
+  <div class="input-group-append" id="button-addon4">
+    <button type="submit" name="action" value="SubmitResource" class="btn btn-primary"';
+							if(1):?>
+							onclick="return confirm('Are you sure you want to mass edit resources?');"
 							<?php
 							endif;
 							echo '>Mass Edit</button>
