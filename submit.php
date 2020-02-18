@@ -230,7 +230,7 @@
 					quick_search_form($_GET['gameid'], $conn);
 					
 					if(isset($_GET["page"])) { $page  = $_GET["page"]; } else { $page=0; };
-					$query = "SELECT COUNT(`idgame_resources`) as total FROM `game_resources` WHERE `game_idgame` = ? AND `primaryORsecundary` = 1";
+					$query = "SELECT sum(case when `game_resources`.`type` = 3 then 2 else 1 end) total FROM `game_resources` WHERE `game_idgame` = ? AND `primaryORsecundary` = 1";
 					
 					$result = $conn -> prepare($query);
 					$result -> bind_param("i",$_GET['gameid']);
