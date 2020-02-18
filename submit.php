@@ -225,7 +225,7 @@
 				if(!empty($_GET)){
 					strip_GETtags();
 					
-					header_buttons(2, 1, 'game.php');
+					header_buttons(2, 1, 'game.php', get_gamename($_GET['gameid'], $conn));
 					
 					quick_search_form($_GET['gameid'], $conn);
 					
