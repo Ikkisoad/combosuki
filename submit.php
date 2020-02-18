@@ -415,27 +415,55 @@ AND `character`.`game_idgame` = ? ";
 								}
 							}
 						}else if($resource['type'] == 3){
-							print_r($resource);
-							echo '<br>POST:';
-							print_r($_GET['Assist']);
-							echo '<br>';
+							//print_r($resource);
+							//echo '<br>POST:';
+						//	print_r($_GET['Assist']);
+							//echo '<br>';
 							if(isset($_GET[$parameterValue])){
-								if($_GET[$parameterValue] != '-' && $duplicatedResourceCounter == 2){
-									$query = $query . "AND idcombo IN (SELECT `combo_idcombo` FROM `resources` 
-WHERE `Resources_values_idResources_values` IN (?,?) GROUP BY `combo_idcombo`
-HAVING GROUP_CONCAT(DISTINCT `Resources_values_idResources_values` ORDER BY `Resources_values_idResources_values`) = '?,?')";
+								foreach($_GET[$parameterValue] as $eachDuplicate){
+									if($eachDuplicate != '-' && $duplicatedResourceCounter){
+										$query = $query . "AND idcombo IN (SELECT `combo_idcombo` FROM `resources` 
+	WHERE `Resources_values_idResources_values` IN (?,?) GROUP BY `combo_idcombo`
+	HAVING GROUP_CONCAT(DISTINCT `Resources_values_idResources_values` ORDER BY `Resources_values_idResources_values`) = ?) ";
+										$parameter_type .= "iis";
+										if($duplicated_firstValue >= $eachDuplicate){
+											$binded_parameters[$parameters_counter++] = $eachDuplicate;
+											$binded_parameters[$parameters_counter++] = $duplicated_firstValue;
+											$binded_parameters[$parameters_counter++] = $eachDuplicate.','.$duplicated_firstValue;
+											//$binded_parameters[$parameters_counter++] = $duplicated_firstValue;
+										}else{
+											$binded_parameters[$parameters_counter++] = $duplicated_firstValue;
+											$binded_parameters[$parameters_counter++] = $eachDuplicate;
+											$binded_parameters[$parameters_counter++] = $duplicated_firstValue.','.$eachDuplicate;
+											//$binded_parameters[$parameters_counter++] = $eachDuplicate;
+										}
+										$duplicatedResourceCounter = 0;
+									}else if($eachDuplicate != '-'){
+										$duplicated_firstValue = $eachDuplicate;
+										$duplicatedResourceCounter++;
+									}
+								}
+								if($duplicatedResourceCounter){
+									$query = $query . "AND idcombo IN (SELECT `combo_idcombo` FROM `resources` WHERE `Resources_values_idResources_values` = ?)";
 									$parameter_type .= "i";
-									$binded_parameters[$parameters_counter++] = $_GET[$parameterValue];
+									$binded_parameters[$parameters_counter++] = $duplicated_firstValue;
+									$duplicatedResourceCounter = 0;
 								}
 							}
 						}
 					}
 					$query = $query . "ORDER BY damage DESC, idcombo, text_name  LIMIT ?, ?;";
-					//echo $query;
+					echo $query;
 					$parameter_type .= "i";
 					$binded_parameters[$parameters_counter++] = $limit;
 					$parameter_type .= "i";
 					$binded_parameters[$parameters_counter++] = $offset;
+					
+					echo '<br>Binded params:';
+					print_r($binded_parameters);
+					echo '<br>Param Type:';
+					echo $parameter_type;
+					echo '<br>';
 
 					echo '</tr>';
 					$parameterValue = array();
