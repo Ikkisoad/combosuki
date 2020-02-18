@@ -492,14 +492,15 @@ AND `character`.`game_idgame` = ? ";
 							if($id_combo == -1){
 									echo '<tr>';
 							}else{
-								for($k; $k<sizeof($j); $k++){
-									echo '<td></td>';
-								}
+								//for($k; $k<sizeof($j); $k++){
+									//echo '<td></td>';
+								//}
 								
 									echo '</tr>';
 									echo '<tr>';
 							}
 							$k = 0;
+							$duplicatedCounter = 0;
 							$id_combo = $data['idcombo'];
 							echo '<td>';
 							if($data['comments'] != '' || $data['video'] != ''){
@@ -523,7 +524,7 @@ AND `character`.`game_idgame` = ? ";
 						//print_r($j);
 						//echo '<br>K:'.$k;
 						//echo '<br>DATA:<BR>';
-						//print_r($data);
+						//print_r($data); echo '<<<<<<<<<br><br>';
 						if($j[$k] == 1 || $j[$k] == 3){
 							echo		'<td>'.$data['value'].'</td>';
 							
@@ -532,8 +533,13 @@ AND `character`.`game_idgame` = ? ";
 						if($j[$k] == 2){
 							echo		'<td>'.$data['number_value'].'</td>';
 						}
-						
-						if($j[$k] != 3)$k++;
+						//echo '<br>K:'.$k;
+						if($j[$k] != 3 || $duplicatedCounter){
+							$k++;
+							$duplicatedCounter = 0;
+						}else{
+							$duplicatedCounter++;
+						}
 					}
 					
 						$i = $i / $num_rows;
