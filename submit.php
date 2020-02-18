@@ -4,8 +4,10 @@
 				include_once "server/functions.php";
 				if(!empty($_POST)){
 					
-					//print_r($_POST); echo ' -> first<br>';
-					$_POST = array_map("strip_tags", $_POST);
+				//	print_r($_POST); echo ' -> first<br>';
+					//$_POST = array_map("strip_tags", $_POST);
+					strip_POSTtags();
+				//		print_r($_POST); echo ' -> After strip tags<br>';
 					if($_POST['combo'] == ''){
 						header("Location: index.php");
 						exit();
@@ -96,6 +98,16 @@
 										$result -> bind_param("iid", $comboid, $id['idResources_values'], $_POST[$name]);
 										$result -> execute();
 										
+									}
+								}else if($resource['type'] == 3){
+									foreach($_POST[$name] as $duplicated_resource){
+										//echo $duplicated_resource;
+										$query = "INSERT INTO `resources`(`idResources`, `combo_idcombo`, `Resources_values_idResources_values`, `number_value`) 
+													VALUES (				NULL,					?		,							?			,		NULL)";
+										$result = $conn -> prepare($query);
+										
+										$result -> bind_param("ii", $comboid, $duplicated_resource);
+										$result -> execute();
 									}
 								}
 							}
@@ -211,7 +223,7 @@
 			
 			<?php
 				if(!empty($_GET)){
-					$_GET = array_map("strip_tags", $_GET);
+					strip_GETtags();
 					
 					header_buttons(2, 1, 'game.php');
 					
@@ -235,6 +247,7 @@
 					$i = 0;
 					$parameterValue = '';
 					$parameters_counter = 0;
+					$duplicatedResourceCounter = 0;
 					
 					$binded_parameters = array();
 					if(isset($_GET['listingtype'])){
@@ -370,6 +383,7 @@ AND `character`.`game_idgame` = ? ";
 					$k = 0;
 					//print_r($_GET);
 					foreach($resource_result -> get_result() as $resource){
+						//print_r($resource);
 						if($resource['primaryORsecundary'] == 1){
 							$j[$k++] = $resource['type'];
 							echo '<th onclick="sortTable('; echo $i++; 
@@ -377,6 +391,10 @@ AND `character`.`game_idgame` = ? ";
 									echo ',1';
 								}
 							echo ')">'; echo $resource['text_name']; echo '</th>';
+							if($resource['type'] == 3){
+								echo '<th onclick="sortTable('; echo $i++;
+								echo ')">'; echo $resource['text_name']; echo '</th>';
+							}
 						}
 						$parameterValue = str_replace(' ', '_', $resource['text_name']);
 						if($resource['type'] == 1){
@@ -393,6 +411,20 @@ AND `character`.`game_idgame` = ? ";
 								if($_GET[$parameterValue] != '-' && $_GET[$parameterValue] != ''){
 									$query = $query . "AND idcombo IN (SELECT resources.combo_idcombo FROM resources WHERE resources.number_value <= ? ) ";
 									$parameter_type .= "d";
+									$binded_parameters[$parameters_counter++] = $_GET[$parameterValue];
+								}
+							}
+						}else if($resource['type'] == 3){
+							print_r($resource);
+							echo '<br>POST:';
+							print_r($_GET['Assist']);
+							echo '<br>';
+							if(isset($_GET[$parameterValue])){
+								if($_GET[$parameterValue] != '-' && $duplicatedResourceCounter == 2){
+									$query = $query . "AND idcombo IN (SELECT `combo_idcombo` FROM `resources` 
+WHERE `Resources_values_idResources_values` IN (?,?) GROUP BY `combo_idcombo`
+HAVING GROUP_CONCAT(DISTINCT `Resources_values_idResources_values` ORDER BY `Resources_values_idResources_values`) = '?,?')";
+									$parameter_type .= "i";
 									$binded_parameters[$parameters_counter++] = $_GET[$parameterValue];
 								}
 							}
@@ -463,14 +495,20 @@ AND `character`.`game_idgame` = ? ";
 							echo '</td>';
 							echo		'<td>'.number_format($data['damage'],'0','','.').'</td>';
 						}
-						if($j[$k] == 1){
+						//echo '<br>J:<BR>';
+						//print_r($j);
+						//echo '<br>DATA:<BR>';
+						//print_r($data);
+						if($j[$k] == 1 || $j[$k] == 3){
 							echo		'<td>'.$data['value'].'</td>';
+							
 						}
 						
 						if($j[$k] == 2){
 							echo		'<td>'.$data['number_value'].'</td>';
 						}
-						$k++;
+						
+						if($j[$k] != 3)$k++;
 					}
 					
 						$i = $i / $num_rows;
@@ -498,10 +536,19 @@ AND `character`.`game_idgame` = ? ";
 					echo $page + 1;
 					foreach ($_GET as $key => $entry){
 						if($entry != '-' && $entry != '' && $key != 'page'){
-							echo '&';
-							echo $key;
-							echo '=';
-							echo $entry;
+							if(is_scalar($entry)){
+								echo '&';
+								echo $key;
+								echo '=';
+								echo $entry;
+							}else{
+								foreach($entry as $arraykey => $arrayentry){
+									echo '&';
+									echo $key;
+									echo '=';
+									echo $arrayentry;
+								}
+							}
 						}
 						
 					}

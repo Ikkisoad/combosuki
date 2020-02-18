@@ -301,6 +301,42 @@
 											echo '> </div> </p>';
 										}
 									}
+								}else if($resource['type'] == 3){
+									$duplicated = 0;
+									while($duplicated++ != 2){
+										echo '<div class="input-group mb-3">
+	  <div class="input-group-prepend">
+		<label class="input-group-text">'; 
+
+										echo $resource['text_name'].' '.$duplicated;echo'</label></div>  <select name="';
+										echo $resource['text_name'];
+										
+										echo '[]"class="custom-select input-small">';
+										$query = "SELECT idResources_values,value FROM `resources_values` WHERE `game_resources_idgame_resources` = ".$resource['idgame_resources']." ORDER BY resources_values.order, value;";
+										
+										$result = $conn -> prepare($query);
+										$result -> execute();
+										if(!isset($_POST['type']) || $lap){echo '<option value="-">-</option>';}
+										foreach($result -> get_result() as $resource_value){
+											echo '<option value="';
+											echo $resource_value['idResources_values'].'" ';
+											if(isset($_POST['type'])){
+												if($_POST['type'] == 2){
+													$name = str_replace(' ', '_', $resource['text_name']);
+													if(isset($_POST[$name])){
+														if($_POST[$name] == $resource_value['value']){
+															echo 'selected';
+															
+														}
+													}
+												}
+											}
+											echo '>';
+											echo $resource_value['value'];
+											echo '</option>';
+										}
+										echo '</select></div> ';
+									}
 								}
 							}
 							echo '</p><br>';

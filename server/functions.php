@@ -474,6 +474,33 @@ function quick_search_form($gameid, $conn){
 										echo '"step="any"' ;
 										echo '> </div> </p>';
 									}
+								}else if($resource['type'] == 3){
+								$duplicated_resource = 0;
+								while($duplicated_resource++ != 2){
+										echo '<div class="input-group mb-3">
+	  <div class="input-group-prepend">
+		<label class="input-group-text">'; 
+										echo '</label></div>  <select name="';
+										echo $resource['text_name'];
+										
+										echo '[]"class="custom-select input-small">';
+										
+										$query = "SELECT idResources_values,value FROM `resources_values` WHERE `game_resources_idgame_resources` = ".$resource['idgame_resources']." ORDER BY resources_values.order, value;";
+										$result = $conn -> prepare($query);
+										$result -> execute();
+										
+										echo '<option value="-">'.$resource['text_name'].'</option>';
+										
+										foreach($result -> get_result() as $resource_value){
+											echo '<option value="';
+											echo $resource_value['idResources_values'].'" ';
+											echo '>';
+											echo $resource_value['value'];
+											echo '</option>';
+										}
+										echo '</select></div> ';
+										
+									}
 								}
 							}
 							
@@ -764,6 +791,36 @@ function meta_embedvideo($video){
 	}else{
 		echo '<meta property="og:image" content="http://combosuki.com/img/combosuki.png" />';
 	}
+}
+
+function strip_POSTtags(){
+	foreach($_POST as $key => $each){
+		if(is_scalar($each)){
+		   //treat any scalar value as string and do stuff:
+		 //  echo $each.'<-->'.$key.'next>';
+		   $_POST[$key] = strip_tags($each);
+		}else{
+		   foreach($each as $key_array => $each_array){
+			   $_POST[$key][$key_array] = strip_tags($each_array);
+		   }
+		}
+	}
+	
+}
+
+function strip_GETtags(){
+	foreach($_GET as $key => $each){
+		if(is_scalar($each)){
+		   //treat any scalar value as string and do stuff:
+		 //  echo $each.'<-->'.$key.'next>';
+		   $_GET[$key] = strip_tags($each);
+		}else{
+		   foreach($each as $key_array => $each_array){
+			   $_GET[$key][$key_array] = strip_tags($each_array);
+		   }
+		}
+	}
+	
 }
 
 ?>

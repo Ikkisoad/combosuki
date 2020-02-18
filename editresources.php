@@ -247,6 +247,9 @@
 								<option value="2" ';
 								if($lol['type'] == 2)echo 'selected';
 								echo '>Number</option>
+								<option value="3" ';
+								if($lol['type'] == 3)echo 'selected';
+								echo '>Duplicated</option>
 								</select>';
 								echo '<select name="primaryORsecundary" class="custom-select">
 								<option value="1" ';
@@ -285,6 +288,7 @@
 								echo '>List</option>
 								<option value="2"';
 								echo '>Number</option>
+								<option value="3">Duplicated</option>
 								</select>';
 								echo '<select name="primaryorsecundary" class="custom-select">
 								<option value="1"';

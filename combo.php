@@ -50,14 +50,14 @@ WHERE `idcombo` = ? ";
 		$author = $data['author'];
 		if($data['primaryORsecundary'] == 0){
 				array_push($secondaryTitle,$data['text_name']);
-				if($data['type'] == 1){
+				if($data['type'] == 1 || $data['type'] == 3){
 					array_push($secondaryValue, $data['value']);
 				}else{
 					array_push($secondaryValue, $data['number_value']);
 				}
 		}else{
 			array_push($primaryTitle,$data['text_name']);
-			if($data['type'] == 1){
+			if($data['type'] == 1 || $data['type'] == 3){
 				array_push($primaryValue, $data['value']);
 			}else{
 				array_push($primaryValue, $data['number_value']);
