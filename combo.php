@@ -6,8 +6,10 @@
 	
 	$primaryTitle = array();
 	$primaryValue = array();
+	$primaryType = array();
 	$secondaryTitle = array();
 	$secondaryValue = array();
+	$secondaryType = array();
 
 	$query = "SELECT `idcombo`,`combo`,`damage`,`value`,`idResources_values`,`number_value`,`character`.`idcharacter`,`character`.`Name`, `video`, `game_resources`.`text_name`,`game_resources`.`type`, `combo`.`type` as listingtype, `combo`.`comments`,`game_resources`.`primaryORsecundary`, `character`.`game_idgame`, `resources_values`.`order`, `combo`.`submited`, `combo`.`patch`, `combo`.`author`
 FROM `combo` 
@@ -50,6 +52,7 @@ WHERE `idcombo` = ? ";
 		$author = $data['author'];
 		if($data['primaryORsecundary'] == 0){
 				array_push($secondaryTitle,$data['text_name']);
+				array_push($secondaryType,$data['type']);
 				if($data['type'] == 1 || $data['type'] == 3){
 					array_push($secondaryValue, $data['value']);
 				}else{
@@ -57,6 +60,7 @@ WHERE `idcombo` = ? ";
 				}
 		}else{
 			array_push($primaryTitle,$data['text_name']);
+			array_push($primaryType,$data['type']);
 			if($data['type'] == 1 || $data['type'] == 3){
 				array_push($primaryValue, $data['value']);
 			}else{
@@ -280,13 +284,20 @@ WHERE `idcombo` = ? ";
 						for($i = 0; $i<sizeof($primaryTitle); $i++){
 								echo '<input type="hidden" name="';
 								echo $primaryTitle[$i];
-								echo '" value="';
+								if($primaryType[$i] == 3){
+									echo '[]" value="';
+								}else{
+									echo '" value="';
+								}
 								echo $primaryValue[$i].'">';
 						}
 						for($i = 0; $i<sizeof($secondaryTitle); $i++){
 								echo '<input type="hidden" name="';
-								echo $secondaryTitle[$i];
-								echo '" value="';
+								if($secondaryType[$i] == 3){
+									echo '[]" value="';
+								}else{
+									echo '" value="';
+								}
 								echo $secondaryValue[$i].'">';
 						}
 						mysqli_close($conn);

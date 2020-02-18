@@ -3,8 +3,8 @@
 	include_once "server/functions.php";
 	include_once "server/conexao.php";
 	
-	$_POST = array_map("strip_tags", $_POST);
-	$_GET = array_map("strip_tags", $_GET);
+	strip_POSTtags();
+	strip_GETtags();
 ?>
 <html>
 	<head>
@@ -303,6 +303,7 @@
 									}
 								}else if($resource['type'] == 3){
 									$duplicated = 0;
+									//print_r($_POST['Assist']);
 									while($duplicated++ != 2){
 										echo '<div class="input-group mb-3">
 	  <div class="input-group-prepend">
@@ -324,7 +325,7 @@
 												if($_POST['type'] == 2){
 													$name = str_replace(' ', '_', $resource['text_name']);
 													if(isset($_POST[$name])){
-														if($_POST[$name] == $resource_value['value']){
+														if($_POST[$name][$duplicated-1] == $resource_value['value']){
 															echo 'selected';
 															
 														}

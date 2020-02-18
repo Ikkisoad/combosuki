@@ -513,11 +513,7 @@ AND `character`.`game_idgame` = ? ";
 							echo '<div id="'.$data['idcombo'].'" style="display: none;">';
 								echo $data['comments'];
   
-  //####################################################################VIDEO HERE
-  
 								embed_video_notable($data['video']);
-  
-  //######################################################################VIDEO ABOVE
   
 								echo '</div>';
 							echo '</td>';
@@ -525,6 +521,7 @@ AND `character`.`game_idgame` = ? ";
 						}
 						//echo '<br>J:<BR>';
 						//print_r($j);
+						//echo '<br>K:'.$k;
 						//echo '<br>DATA:<BR>';
 						//print_r($data);
 						if($j[$k] == 1 || $j[$k] == 3){
