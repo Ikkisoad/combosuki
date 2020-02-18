@@ -168,7 +168,7 @@ WHERE `game`.`idgame` = ?";
 		<main role="main">
 			<div class="container">
 				<div class="form-group">
-						<?php header_buttons(2, 1, 'game.php'); ?>
+						<?php header_buttons(2, 1, 'game.php',get_gamename($_GET['gameid'], $conn)); ?>
 						<form method="post" action="editgame.php?gameid=<?php echo $_GET['gameid']?>">
 					<?php
 						$query = "SELECT name,image, patch FROM game WHERE idgame = ?;";

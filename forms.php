@@ -85,12 +85,12 @@
 						<?php
 							if(isset($_POST['type'])){
 								if($_POST['type'] == 1){
-									header_buttons(2, 1, 'game.php');
+									header_buttons(2, 1, 'game.php',get_gamename($_GET['gameid'], $conn));
 								}else if($_POST['type'] == 2){
 									header_buttons(2, 2, 'combo.php');
 								}
 							}else{
-								header_buttons(2, 1, 'game.php');
+								header_buttons(2, 1, 'game.php',get_gamename($_GET['gameid'], $conn));
 							}
 						?>
 					<form method="<?php

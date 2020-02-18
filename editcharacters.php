@@ -126,7 +126,7 @@ WHERE `character`.`idcharacter` = ?";
 			<div class="container">
 				<div class="form-group">
 					<?php
-						header_buttons(2, 1, 'game.php');
+						header_buttons(2, 1, 'game.php', get_gamename($_GET['gameid'], $conn));
 						
 						require "server/conexao.php";
 						$query = "SELECT `idcharacter`, `Name` FROM `character` WHERE `game_idgame` = ? ORDER BY Name;";

@@ -93,7 +93,7 @@
 			</div>
 			
 			<div class="container">
-				<?php header_buttons(2, 0, 0); ?>
+				<?php header_buttons(2, 0, 0,get_gamename($_GET['gameid'], $conn)); ?>
 				
 				
 					<?php

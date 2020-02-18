@@ -105,7 +105,7 @@
 			<div class="container">
 				<div class="form-group">
 					<?php
-						header_buttons(2, 1, 'game.php');
+						header_buttons(2, 1, 'game.php', get_gamename($_GET['gameid'], $conn));
 						$query = "SELECT * FROM `link` WHERE `idGame` = ? ORDER BY `title`;";
 						$result = $conn -> prepare($query);
 						$result -> bind_param("i",$_GET['gameid']);

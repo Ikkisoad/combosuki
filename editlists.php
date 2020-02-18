@@ -125,7 +125,7 @@
 			<div class="container">
 				<div class="form-group">
 					<?php
-						header_buttons(2, 1, 'game.php');
+						header_buttons(2, 1, 'game.php', get_gamename($_GET['gameid'], $conn));
 						$query = "SELECT * FROM `list` WHERE `type` != 1 AND `game_idgame` = ? ORDER BY `type` DESC,`list_name`;";
 						$result = $conn -> prepare($query);
 						$result -> bind_param("i", $_GET['gameid']);

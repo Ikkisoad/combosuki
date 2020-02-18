@@ -160,7 +160,7 @@
 			<div class="container">
 				<div class="form-group">
 					<?php
-						header_buttons(2, 1, 'game.php');
+						header_buttons(2, 1, 'game.php', get_gamename($_GET['gameid'], $conn));
 						//$game = get_game($_GET['gameid']);
 						//print_r($game);
 						if($edit){

@@ -178,7 +178,7 @@ WHERE `idcombo` = ? ";
 			<div class="container">
 				<?php
 				$_GET['gameid'] = get_combogame($_GET['idcombo'], $conn);
-				header_buttons(2,1,'game.php');
+				header_buttons(2,1,'game.php',get_gamename($_GET['gameid'], $conn));
 				
 				?>			
 				

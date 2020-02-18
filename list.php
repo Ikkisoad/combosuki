@@ -213,7 +213,7 @@
 										$result -> execute();
 										foreach($result -> get_result() as $list){
 											$_GET['gameid'] = $list['game_idgame'];
-											header_buttons(2, 1, 'game.php');
+											header_buttons(2, 1, 'game.php',get_gamename($_GET['gameid'], $conn));
 											echo '<h3 class="mt-3">'.$list['list_name'];
 											print_listglyph($list['type'], $conn);
 											echo '</h3>';
@@ -285,7 +285,7 @@ WHERE `idlist` = ? ORDER BY `comment`, `combo`.`damage` DESC;";
 							<div class="form-group mb-2"><button type="submit" name="action" value="Delete" class="btn btn-danger btn-block">Remove Combo</button></div>
 						</form></p>';
 									}else{
-										header_buttons(1, 0, 'list.php');
+										header_buttons(1, 0, 'list.php',0);
 										echo '<h3>Listing</h3>
 					<p><form class="form-inline" method="post" action="list.php">
 							<input type="hidden" name="submission_type" value="1">

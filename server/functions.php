@@ -678,7 +678,7 @@ function edit_controls($gameid){
 						</div>';
 }
 
-function header_buttons($buttons, $back, $backDestination){ //Buttons=1 -> Home/Listing Buttons>1 -> Home/Listing/Submit/Search/Edit Game Back=1 -> Game Back=2 -> Combo
+function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1 -> Home/Listing Buttons>1 -> Home/Listing/Submit/Search/Edit Game Back=1 -> Game Back=2 -> Combo
 	if($buttons): ?>
 		<div class="btn-group" role="group" aria-label="Basic example">
 		
@@ -687,17 +687,21 @@ function header_buttons($buttons, $back, $backDestination){ //Buttons=1 -> Home/
 					echo '	<form method="get" action="'.$backDestination.'">';
 					if($back == 1){
 						echo '	<input type="hidden" id="gameid" name="gameid" value="'.$_GET['gameid'].'">';
+						echo '		<button class="btn btn-secondary">'.$backto.'</button>';
 					}else if($back == 2){
 						echo '	<input type="hidden" id="idcombo" name="idcombo" value="'.$_POST['idcombo'].'">';
+						echo '		<button class="btn btn-secondary">'.$backto.'</button>';
+					}else{
+						echo '		<button class="btn btn-secondary"> << back</button>';
 					}
 								
-					echo '		<button class="btn btn-secondary"> << back</button>
-							</form>';
+				//	echo '		<button class="btn btn-secondary"> << back</button>
+					echo '		</form>';
 					
 				}			
 			?>
 			<form method="get" action="index.php">
-				<button class="btn btn-secondary">Home</button>
+				<button class="btn btn-secondary">Combo好き</button>
 			</form>
 			
 			<form method="get" action="list.php">
@@ -834,6 +838,17 @@ WHERE `resources_values`.`idResources_values` = ?";
 		return $game['idgame'];
 	}
 	return 0;
+}
+
+function get_gamename($gameid, $conn){
+		$query = "SELECT `name` FROM `game` WHERE `idgame` = ?";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i", $gameid);
+	$result -> execute();
+	foreach($result -> get_result() as $lol){
+		return $lol['name'];
+	}	
+
 }
 
 ?>

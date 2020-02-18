@@ -115,7 +115,7 @@ include_once "server/conexao.php";
 			
 			<div class="container">
 				<?php
-					header_buttons(1, 0, 0);
+					header_buttons(1, 0, 0, 0);
 				?>
 				<div class="body">
 					
@@ -123,8 +123,10 @@ include_once "server/conexao.php";
 						if(!isset($_GET['about'])){
 							game_title($conn);
 						}else if($_GET['about'] == 1){
-							count_combos($conn);
 							
+							echo 'Created by: <a href="https://twitter.com/Ikkisoad" target="_blank" style="padding-right: 5px;">@Ikkisoad</a><br>';
+							
+							count_combos($conn);
 							
 							echo '<h2>About the application:</h2><p>This application started as a fun project in the end of 2018, and the main motivation to keep at it is to help out the FGC assemble their findings and sort out the best options with a determined set of resources.</p>';
 							echo 'Hopefully with this database we will be able to keep the best combos known, without losing them to endless feeds.';
@@ -188,7 +190,6 @@ include_once "server/conexao.php";
 		================================================== -->
 		<!-- Placed at the end of the document so the pages load faster -->
 		<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-		<script>window.jQuery || document.write('<script src="../../../../assets/js/vendor/jquery.min.js"><\/script>')</script>
 		<!-- <script src="../../../../assets/js/vendor/popper.min.js"></script> 
 		<script src="../../../../dist/js/bootstrap.min.js"></script> -->
 </html>
