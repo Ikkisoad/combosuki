@@ -98,15 +98,15 @@ WHERE `game`.`idgame` = ?";
 			exit();
 			
 		}else if($_POST['action'] == 'Lock'){
+			(get_gameComplete($conn)>0)?$i=2:$i=-1;
 			$query = "UPDATE `game` SET `complete`= ? WHERE `idgame` = ?";
 			$result = $conn -> prepare($query);
-			$i = 2;
 			$result -> bind_param("ii", $i,$_GET['gameid']);
 			$result -> execute();	
 		}else if($_POST['action'] == 'Unlock'){
+			(get_gameComplete($conn)>0)?$i=1:$i=0;
 			$query = "UPDATE `game` SET `complete`= ? WHERE `idgame` = ?";
 			$result = $conn -> prepare($query);
-			$i = 1;
 			$result -> bind_param("ii", $i,$_GET['gameid']);
 			$result -> execute();	
 		}

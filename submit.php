@@ -571,10 +571,12 @@ AND `character`.`game_idgame` = ? ";
 								echo $entry;
 							}else{
 								foreach($entry as $arraykey => $arrayentry){
-									echo '&';
-									echo $key.'[]';
-									echo '=';
-									echo $arrayentry;
+									if($arrayentry != '-'){
+										echo '&';
+										echo $key.'[]';
+										echo '=';
+										echo $arrayentry;
+									}
 								}
 							}
 						}
@@ -594,10 +596,12 @@ AND `character`.`game_idgame` = ? ";
 								echo $entry;
 							}else{
 								foreach($entry as $arraykey => $arrayentry){
-									echo '&';
-									echo $key.'[]';
-									echo '=';
-									echo $arrayentry;
+									if($arrayentry != '-'){
+										echo '&';
+										echo $key.'[]';
+										echo '=';
+										echo $arrayentry;
+									}
 								}
 							}
 						}
@@ -622,10 +626,12 @@ AND `character`.`game_idgame` = ? ";
 								echo $entry;
 							}else{
 								foreach($entry as $arraykey => $arrayentry){
-									echo '&';
-									echo $key.'[]';
-									echo '=';
-									echo $arrayentry;
+									if($arrayentry != '-'){
+										echo '&';
+										echo $key.'[]';
+										echo '=';
+										echo $arrayentry;
+									}
 								}
 							}
 						}
@@ -647,10 +653,12 @@ AND `character`.`game_idgame` = ? ";
 								echo $entry;
 							}else{
 								foreach($entry as $arraykey => $arrayentry){
-									echo '&';
-									echo $key.'[]';
-									echo '=';
-									echo $arrayentry;
+									if($arrayentry != '-'){
+										echo '&';
+										echo $key.'[]';
+										echo '=';
+										echo $arrayentry;
+									}
 								}
 							}
 						}

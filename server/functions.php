@@ -220,22 +220,6 @@ function combo_table($gameid, $conn){
 						echo '</table>';
 }
 
-function game_lock($conn){
-	$query = "SELECT complete FROM game WHERE idgame = ?";
-	$result = $conn -> prepare($query);
-	$result -> bind_param("i",$_GET['gameid']);
-	$result -> execute();
-	
-	foreach($result -> get_result() as $lol){
-		echo '<p><button type="submit" name="action" value="';
-		if($lol['complete'] == 1){
-			echo 'Lock" class="btn btn-success btn-block">Lock</button></p>';
-		}else{
-			echo 'Unlock" class="btn btn-warning btn-block">Unlock</button></p>';	
-		}
-	}
-}
-
 function game_title($conn){
 	//require "server/conexao.php";
 	$query = "SELECT idgame, name, image FROM game WHERE complete > 0 ORDER BY name;";
@@ -748,7 +732,7 @@ function verify_password($conn){
 	$result -> bind_param("i", $_GET['gameid']);
 	$result -> execute();
 	foreach($result -> get_result() as $pass){
-		if($pass['globalPass'] != $_POST['gamePass'] && (!password_verify($_POST['gamePass'], $pass['modPass']) || $pass['complete'] == 2)){
+		if($pass['globalPass'] != $_POST['gamePass'] && (!password_verify($_POST['gamePass'], $pass['modPass']) || $pass['complete'] == 2 || $pass['complete'] == -1)){
 			header("Location: index.php");
 			exit();
 		}
@@ -886,6 +870,26 @@ function addtoListForm(){
 			</div>
 		</form>
 	<?php endif;
+}
+
+function get_gameComplete($conn){
+	$query = "SELECT `complete` FROM `game` WHERE `idgame` = ?";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i", $_GET['gameid']);
+	$result -> execute();
+	foreach($result -> get_result() as $game){
+		return $game['complete'];
+	}
+}
+
+function game_lock($conn){
+	$complete = get_gameComplete($conn);
+	echo '<p><button type="submit" name="action" value="';
+	if($complete == 1 || $complete == 0){
+		echo 'Lock" class="btn btn-success btn-block">Lock</button></p>';
+	}else{
+		echo 'Unlock" class="btn btn-warning btn-block">Unlock</button></p>';	
+	}
 }
 
 ?>
