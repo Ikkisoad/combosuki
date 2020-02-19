@@ -3,16 +3,11 @@
 				include_once "server/conexao.php";
 				include_once "server/functions.php";
 				if(!empty($_POST)){
-					
-				//	print_r($_POST); echo ' -> first<br>';
-					//$_POST = array_map("strip_tags", $_POST);
 					strip_POSTtags();
-				//		print_r($_POST); echo ' -> After strip tags<br>';
 					if($_POST['combo'] == ''){
 						header("Location: index.php");
 						exit();
 					}
-					//print_r($_POST); echo ' -> second<br>';
 					if(!isset($_POST['idcombo'])){
 						$query = "INSERT INTO `combo`(`idcombo`, `combo`, `comments`, `video`, `user_iduser`, `character_idcharacter`, `submited`, `damage`, `type`, `patch`, `author`, `password`) 
 												VALUES (NULL,		?,		?,			?,	NULL,			?,						?, ?, ?, ?, ?, ?)";
@@ -20,17 +15,9 @@
 						$date = date("Y-m-d H:i:s");
 						$result -> bind_param("sssisdisss", $_POST['combo'], $_POST['comments'],$_POST['video'],$_POST['characterid'],$date, $_POST['damage'], $_POST['listingtype'], $_POST['patch'], $_POST['author'], $_POST['comboPass']);
 						$result -> execute();
-						
 						$comboid = mysqli_insert_id($conn);
-						
-						
-						//print_r($_POST);
-						
-						
 					}else{
-						
 						$comboid = $_POST['idcombo'];
-						
 						$query = "SELECT `password`, (SELECT game.globalPass FROM game WHERE game.idgame = ?) as gPass, (SELECT game.modPass FROM game WHERE game.idgame = ?) as mPass FROM `combo` WHERE `idcombo` = ?";
 						$result = $conn -> prepare($query);
 						$result -> bind_param("iii", $_POST['gameid'], $_POST['gameid'], $comboid);
@@ -41,34 +28,25 @@
 								exit();
 							}
 						}
-						
 						$query = "DELETE FROM `resources` WHERE `combo_idcombo` = ?";
 						$result = $conn -> prepare($query);
 						$result -> bind_param("i", $_POST['idcombo']);
 						$result -> execute();
-						
 						if($_POST['action'] == 'Submit'){
-						
 							$query = "UPDATE `combo` SET 
 							`combo`= ?,`comments`= ?,`video`= ?,`character_idcharacter`= ?, `damage`= ?,`type`= ?, `patch` = ?, `author`= ?
 							WHERE `idcombo` = ?";
 							$result = $conn -> prepare($query);
-							//print_r($_POST);
 							$result -> bind_param("sssidissi", $_POST['combo'], $_POST['comments'],$_POST['video'],$_POST['characterid'], $_POST['damage'], $_POST['listingtype'], $_POST['patch'], $_POST['author'], $comboid);
 							$result -> execute();
-						
 						}else{
-							
 							$query = "DELETE FROM `combo` WHERE `idcombo` = ?";
 							$result = $conn -> prepare($query);
 							$result -> bind_param("i", $comboid);
 							$result -> execute();
-							
 							header("Location: game.php?gameid=".$_POST['gameid']."");
 							exit();
-							
 						}
-						
 					}
 					$query = "SELECT text_name,type,idgame_resources FROM `game_resources` WHERE game_idgame = ".$_POST['gameid']." ORDER BY text_name;";
 					$result = $conn -> prepare($query);
@@ -80,32 +58,24 @@
 									$query = "INSERT INTO `resources`(`idResources`, `combo_idcombo`, `Resources_values_idResources_values`, `number_value`) 
 												VALUES (				NULL,					?		,							?			,		NULL)";
 									$result = $conn -> prepare($query);
-									
 									$result -> bind_param("ii", $comboid, $_POST[$name]);
 									$result -> execute();
 								}else if($resource['type'] == 2){
 									$query = "SELECT idResources_values FROM resources_values WHERE game_resources_idgame_resources = ".$resource['idgame_resources']."";
 									$result = $conn -> prepare($query);
 									$result -> execute();
-									
 									foreach($result -> get_result()	as $id){
-										
 										$query = "INSERT INTO `resources`(`idResources`, `combo_idcombo`, `Resources_values_idResources_values`, `number_value`) 
 													VALUES (				NULL,					?		,							?,		?)";
 										$result = $conn -> prepare($query);
-										//$name = str_replace(' ', '_', $resource['text_name']);
-										//print_r($_POST);
 										$result -> bind_param("iid", $comboid, $id['idResources_values'], $_POST[$name]);
 										$result -> execute();
-										
 									}
 								}else if($resource['type'] == 3){
 									foreach($_POST[$name] as $duplicated_resource){
-										//echo $duplicated_resource;
 										$query = "INSERT INTO `resources`(`idResources`, `combo_idcombo`, `Resources_values_idResources_values`, `number_value`) 
 													VALUES (				NULL,					?		,							?			,		NULL)";
 										$result = $conn -> prepare($query);
-										
 										$result -> bind_param("ii", $comboid, $duplicated_resource);
 										$result -> execute();
 									}
@@ -114,13 +84,8 @@
 						}
 						header("Location: combo.php?idcombo=".$comboid."");
 						exit();
-					//echo $comboid;
 				}
-			
-
 			?>
-
-
 <!doctype php>
 <html>
 	<head>
@@ -145,11 +110,9 @@
 	<meta name="msapplication-TileColor" content="#ffffff">
 	<meta name="msapplication-TileImage" content="img/ms-icon-144x144.png">
 	<meta name="theme-color" content="#ffffff">
-
-		<title>ComboSuki</title>
+	<title>ComboSuki</title>
     <!-- Bootstrap core CSS -->
-		<link href="css/bootstrap.min.css" rel="stylesheet">
-
+	<link href="css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom styles for this template -->
 		<link href="jumbotron.css" rel="stylesheet">
 		<style>
@@ -196,7 +159,6 @@
 				
 		</style> <!-- BACKGROUND COLOR-->
 	</head>
-	
 	<body>
 		<main role="main">
 			<div class="jumbotron">
@@ -219,23 +181,16 @@
 				</div>
 			</div>
 			<div class="container">
-			
-			
 			<?php
 				if(!empty($_GET)){
 					strip_GETtags();
-					
 					header_buttons(2, 1, 'game.php', get_gamename($_GET['gameid'], $conn));
-					
 					quick_search_form($_GET['gameid'], $conn);
-					
 					if(isset($_GET["page"])) { $page  = $_GET["page"]; } else { $page=0; };
 					$query = "SELECT sum(case when `game_resources`.`type` = 3 then 2 else 1 end) total FROM `game_resources` WHERE `game_idgame` = ? AND `primaryORsecundary` = 1";
-					
 					$result = $conn -> prepare($query);
 					$result -> bind_param("i",$_GET['gameid']);
 					$result -> execute();
-					
 					foreach($result -> get_result() as $each){
 						$num_rows = $each['total'];
 					}
@@ -245,7 +200,6 @@
 					$parameterValue = '';
 					$parameters_counter = 0;
 					$duplicatedResourceCounter = 0;
-					
 					$binded_parameters = array();
 					if(isset($_GET['listingtype'])){
 						echo '<h2>';
@@ -257,7 +211,6 @@
 					}
 					if(1):?>
 					<button alignt="right" style="float: right;" class="btn btn-secondary" onclick="copytoclip('<?php
-						//echo get_combolink($id_combo,$conn); 
 						echo 'https://combosuki.com/submit.php?page='.$page.build_GETbutton().'';
 					?>')">Copy Search URL</button>
 					<?php endif;
@@ -277,7 +230,6 @@ WHERE `game_resources`.`primaryORsecundary` = 1
 AND `character`.`game_idgame` = ? ";
 					$parameter_type = "i";
 					$binded_parameters[$parameters_counter++] = $_GET['gameid'];
-					
 					if(isset($_GET['combo'])){
 						if($_GET['combo'] != ''){
 							if(isset($_GET['combolike'])){
@@ -290,7 +242,6 @@ AND `character`.`game_idgame` = ? ";
 								}
 							}else{
 								$parameterValue .= $_GET['combo'].'%';
-								
 							}
 							$query .= "AND REPLACE(`combo`, ' ', '') LIKE REPLACE(?, ' ', '') ";
 							$parameter_type .= "s";
@@ -324,9 +275,7 @@ AND `character`.`game_idgame` = ? ";
 								}
 							}
 						}
-						
 					}
-					
 					if(isset($_GET['notcomments'])){
 						if($_GET['notcomments'] != ''){
 							$pieces = explode("#", $_GET['notcomments']);
@@ -340,9 +289,7 @@ AND `character`.`game_idgame` = ? ";
 								}
 							}
 						}
-						
 					}
-					
 					if(isset($_GET['video'])){
 						if($_GET['video'] != ''){
 							$parameterValue = '';
@@ -354,7 +301,6 @@ AND `character`.`game_idgame` = ? ";
 							$binded_parameters[$parameters_counter++] = $parameterValue;
 						}
 					}
-					
 					if(isset($_GET['author'])){
 						if($_GET['author'] != ''){
 							$parameterValue .= $_GET['author'];
@@ -363,7 +309,6 @@ AND `character`.`game_idgame` = ? ";
 							$binded_parameters[$parameters_counter++] = $parameterValue;
 						}
 					}
-					
 					if(isset($_GET['listingtype'])){
 						if($_GET['listingtype'] != '-'){
 							$query .= "AND `combo`.`type` = ? ";
@@ -384,9 +329,7 @@ AND `character`.`game_idgame` = ? ";
 					echo '<th onclick="sortTable('; echo $i++; echo ',1)">'; echo 'Damage</th>';
 					$j = array();
 					$k = 0;
-					//print_r($_GET);
 					foreach($resource_result -> get_result() as $resource){
-						//print_r($resource);
 						if($resource['primaryORsecundary'] == 1){
 							$j[$k++] = $resource['type'];
 							echo '<th onclick="sortTable('; echo $i++; 
@@ -418,10 +361,6 @@ AND `character`.`game_idgame` = ? ";
 								}
 							}
 						}else if($resource['type'] == 3){
-							//print_r($resource);
-							//echo '<br>POST:';
-							//	print_r($_GET['Assist']);
-							//echo '<br>';
 							if(isset($_GET[$parameterValue])){
 								foreach($_GET[$parameterValue] as $eachDuplicate){
 									if($eachDuplicate != '-' && $duplicatedResourceCounter){
@@ -433,7 +372,6 @@ AND `character`.`game_idgame` = ? ";
 											$binded_parameters[$parameters_counter++] = $eachDuplicate;
 											$binded_parameters[$parameters_counter++] = $duplicated_firstValue;
 											$binded_parameters[$parameters_counter++] = $eachDuplicate.','.$duplicated_firstValue;
-											//$binded_parameters[$parameters_counter++] = $duplicated_firstValue;
 										}else if($duplicated_firstValue < $eachDuplicate){
 											$query = $query . "AND idcombo IN (SELECT `combo_idcombo` FROM `resources` 
 	WHERE `Resources_values_idResources_values` IN (?,?) GROUP BY `combo_idcombo`
@@ -442,18 +380,13 @@ AND `character`.`game_idgame` = ? ";
 											$binded_parameters[$parameters_counter++] = $duplicated_firstValue;
 											$binded_parameters[$parameters_counter++] = $eachDuplicate;
 											$binded_parameters[$parameters_counter++] = $duplicated_firstValue.','.$eachDuplicate;
-											//$binded_parameters[$parameters_counter++] = $eachDuplicate;
 										}else if($duplicated_firstValue == $eachDuplicate){
 											$query = $query . "AND idcombo IN (SELECT `resources`.`combo_idcombo` FROM `resources` 
 											WHERE `Resources_values_idResources_values` = ? 
 											GROUP BY `resources`.`combo_idcombo`
 											HAVING COUNT(*)>1) ";
-										//	echo $query;
 											$parameter_type .= "i";
 											$binded_parameters[$parameters_counter++] = $duplicated_firstValue;
-											//$binded_parameters[$parameters_counter++] = $eachDuplicate;
-											//$binded_parameters[$parameters_counter++] = $duplicated_firstValue;
-											//$binded_parameters[$parameters_counter++] = $eachDuplicate;
 										}
 										$duplicatedResourceCounter = 0;
 									}else if($eachDuplicate != '-'){
@@ -481,53 +414,33 @@ AND `character`.`game_idgame` = ? ";
 					}else{
 						$query = $query . "ORDER BY damage DESC, idcombo, text_name  LIMIT ?, ?;";
 					}
-					
-					//echo $query;
 					$parameter_type .= "i";
 					$binded_parameters[$parameters_counter++] = $limit;
 					$parameter_type .= "i";
 					$binded_parameters[$parameters_counter++] = $offset;
-					
-					//echo '<br>Binded params:';
-				//	print_r($binded_parameters);
-				//	echo '<br>Param Type:';
-				//	echo $parameter_type;
-				//	echo '<br>';
-
 					echo '</tr>';
 					$parameterValue = array();
 					$parameterValue[] = & $parameter_type;
-					
 					for($i = 0; $i < $parameters_counter; $i++) {
 						$parameterValue[] = & $binded_parameters[$i];
 					}
-					
 					$result = $conn -> prepare($query);
-					
 					if($parameterValue[0] != ''){
-							
-							call_user_func_array(array($result, 'bind_param'), $parameterValue);
+						call_user_func_array(array($result, 'bind_param'), $parameterValue);
 					}
-				
 					$result -> execute();
-				
 					echo '<br>';
 					$id_combo = -1;
 					echo '<br>';
 					$i = 0;
 					foreach($result -> get_result() as $data){
-						//print_r($data); echo '<br>';
 						$i++;
 						if($id_combo != $data['idcombo']){
 							if($id_combo == -1){
-									echo '<tr>';
+								echo '<tr>';
 							}else{
-								//for($k; $k<sizeof($j); $k++){
-									//echo '<td></td>';
-								//}
-								
-									echo '</tr>';
-									echo '<tr>';
+								echo '</tr>';
+								echo '<tr>';
 							}
 							$k = 0;
 							$duplicatedCounter = 0;
@@ -539,22 +452,17 @@ AND `character`.`game_idgame` = ? ";
 								echo $data['Name'];
 							}
 							echo '</td>';
-							
 							echo		'<td style="min-width:400px"><a data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'" href="combo.php?idcombo='.$data['idcombo'].'">'.$data['combo'].'</a>';
 							echo '<div id="'.$data['idcombo'].'" style="display: none;">';
 								echo $data['comments'];
-  
 								embed_video_notable($data['video']);
-  
 								echo '</div>';
 							echo '</td>';
 							echo		'<td>'.number_format($data['damage'],'0','','.').'</td>';
 						}
 						if($j[$k] == 1 || $j[$k] == 3){
 							echo		'<td>'.$data['value'].'</td>';
-							
 						}
-						
 						if($j[$k] == 2){
 							echo		'<td>'.$data['number_value'].'</td>';
 						}
@@ -566,7 +474,6 @@ AND `character`.`game_idgame` = ? ";
 						}
 					}
 					$query = str_replace('`character`.`Name`,`game_resources`.`text_name`,`combo`.`character_idcharacter`,`idcombo`,`combo`,`damage`,`value`,`idResources_values`,`number_value`, `comments`, `video`','COUNT(*) as totalrows ',$query);
-					
 					if($page){
 						$query = str_replace('  LIMIT ?, ?','',$query);
 						$parameterValue[0]=substr($parameterValue[0],0,-2);
@@ -581,7 +488,6 @@ AND `character`.`game_idgame` = ? ";
 						$pages = $data['totalrows']/$offset;
 					}
 				}
-				
 					$count = 0;
 					$i = build_GETbutton();
 					while($count < $pages){
@@ -592,7 +498,6 @@ AND `character`.`game_idgame` = ? ";
 						}
 					}
 			?></table>
-			
 			<?php
 				$count = 0;
 				while($count < $pages){
@@ -605,7 +510,6 @@ AND `character`.`game_idgame` = ? ";
 				mysqli_close($conn);
 			 ?>
 		</div></main>
-		
 	</body>
 	    <!-- Bootstrap core JavaScript
 		================================================== -->

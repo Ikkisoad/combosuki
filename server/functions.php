@@ -85,7 +85,7 @@ function embed_video($video){
 				}
 }
 
-function embed_video_notable($video){ //Twitter, Youtube, Twitch clip, Nico Nico, Streamable, imgur
+function embed_video_notable($video){ //Twitter, Youtube, Twitch clip, Nico Nico, Streamable (RIP), imgur
 	if($video != ''){
 								if (strpos($video, 'twitter') !== false && strpos($video, 'https') !== false) {
 									echo '<blockquote class="twitter-tweet" data-conversation="none" data-lang="en"><p lang="en" dir="ltr">
@@ -951,6 +951,20 @@ function build_GETbutton(){
 		}
 	}
 	return $button;
+}
+
+function background(){
+	if(isset($_POST['color'])){
+		setcookie("color", $_POST['color'], time() + (10 * 365 * 24 * 60 * 60), "/"); // 86400 = 1 day
+	}
+	if(isset($_POST['display'])){
+		setcookie("display", $_POST['display'], time() + (10 * 365 * 24 * 60 * 60), "/"); // 86400 = 1 day
+	}
+	if(isset($_COOKIE['color'])){
+		echo 'bg/'.$_COOKIE["color"].'honeycomb.png';
+	}else{
+		echo 'dark-honeycomb.png';
+	}
 }
 
 ?>
