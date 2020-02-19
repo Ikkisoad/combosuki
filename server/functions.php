@@ -902,7 +902,7 @@ function game_lock($conn){
 	}
 }
 
-function build_pagebutton($page){
+function build_pagebutton($page){ //Use build_GETbutton instead, no need to rebuild the GET everytime.
 	$button = '<a href="submit.php?page=';
 					
 	$button .= $page;
@@ -928,6 +928,30 @@ function build_pagebutton($page){
 	}
 	$button .= '" style="padding-right: 5px;">'.$page.' </a>';
 	
+	return $button;
+}
+
+function build_GETbutton(){
+	$button = '';
+	foreach ($_GET as $key => $entry){
+		if($entry != '-' && $entry != '' && $key != 'page'){
+			if(is_scalar($entry)){
+				$button .= '&';
+				$button .= $key;
+				$button .= '=';
+				$button .= $entry;
+			}else{
+				foreach($entry as $arraykey => $arrayentry){
+					if($arrayentry != '-'){
+						$button .= '&';
+						$button .= $key.'[]';
+						$button .= '=';
+						$button .= $arrayentry;
+					}
+				}
+			}
+		}
+	}
 	return $button;
 }
 

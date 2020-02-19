@@ -577,24 +577,25 @@ AND `character`.`game_idgame` = ? ";
 				}
 				
 					$count = 0;
+					$i = build_GETbutton();
 					while($count < $pages){
 						if($count == $page){
 							echo '< '.$count++.' > ';
 						}else{
-							echo build_pagebutton($count++);
+							echo '<a href="submit.php?page='.$count.$i.'" style="padding-right: 5px;">'.$count++.' </a>';
 						}
 					}
 			?></table>
 			
 			<?php
 				$count = 0;
-					while($count < $pages){
-						if($count == $page){
-							echo '< '.$count++.' > ';
-						}else{
-							echo build_pagebutton($count++);
-						}
+				while($count < $pages){
+					if($count == $page){
+						echo '< '.$count++.' > ';
+					}else{
+						echo '<a href="submit.php?page='.$count.$i.'" style="padding-right: 5px;">'.$count++.' </a>';
 					}
+				}
 				mysqli_close($conn);
 			 ?>
 		</div></main>
