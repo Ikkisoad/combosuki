@@ -253,7 +253,7 @@ WHERE `idlist` = ? ORDER BY `comment`, `combo`.`damage` DESC;";
 								echo $data['Name'];
 							}
 							echo '</td><td style="min-width:400px">';
-							echo		'<a data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'" href="combo.php?idcombo='.$data['idcombo'].'">'.$data['combo'].'</a>';
+							echo		'<a data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'" href="combo.php?idcombo='.$data['idcombo'].'&listid='.$_GET['listid'].'">'.$data['combo'].'</a>';
 							echo '<div id="'.$data['idcombo'].'" style="display: none;">';
 							echo $data['comments'].'<br>';
   

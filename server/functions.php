@@ -672,6 +672,16 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 			
 			
 			<?php 
+				if(isset($_GET['listid'])){
+					echo '	<form method="get" action="list.php">';
+						echo '	<input type="hidden" id="listid" name="listid" value="'.$_GET['listid'].'">';
+						echo '		<button class="btn btn-secondary">List ID:'.$_GET['listid'].'</button>';
+								
+				//	echo '		<button class="btn btn-secondary"> << back</button>
+					echo '		</form>';
+					
+				}
+			
 				if($back){
 					echo '	<form method="get" action="'.$backDestination.'">';
 					if($back == 1){
