@@ -255,6 +255,12 @@
 					}else{
 						echo '<h2>Show All:</h2>';
 					}
+					if(1):?>
+					<button alignt="right" style="float: right;" class="btn btn-secondary" onclick="copytoclip('<?php
+						//echo get_combolink($id_combo,$conn); 
+						echo 'https://combosuki.com/submit.php?page='.$page.build_GETbutton().'';
+					?>')">Copy Search URL</button>
+					<?php endif;
 					echo '<table id="myTable">';
 					echo '<tr>';
 					$query = "SELECT text_name,type,idgame_resources,primaryORsecundary FROM `game_resources` WHERE game_idgame = ? ORDER BY text_name;";
@@ -679,4 +685,14 @@ AND `character`.`game_idgame` = ? ";
 			x.style.display = "none";
 		  }
 		}</script>
+		<script>
+			function copytoclip(link) {
+				var dummy = document.createElement("textarea");
+				document.body.appendChild(dummy);
+				dummy.value = link;
+				dummy.select();
+				document.execCommand("copy");
+				document.body.removeChild(dummy);
+			}
+		</script>
 </html>
