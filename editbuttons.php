@@ -163,7 +163,7 @@
 						
 						echo '<tr><td>';
 							echo '<form method="post" action="editbuttons.php?gameid='.$_GET['gameid'].'">';
-							echo '<div class="input-group"><textarea name="name" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Add Button"></textarea>';
+							echo '<div class="input-group"><textarea name="name" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Button Name"></textarea>';
 							//echo $lol['Name'];
 							$directory = "img/buttons";
 							$images = glob($directory . "/*.png");

@@ -853,4 +853,39 @@ function get_gamename($gameid, $conn){
 
 }
 
+function edit_listForm(){
+	echo '<h3 class="mt-3">Edit List</h3>
+	<p><form class="form-inline" method="post" action="list.php?listid='.$_GET['listid'].'">
+			<input type="hidden" name="submission_type" value="2">';
+			
+			echo '<div class="form-group mb-2"><input placeholder="Entry ID" style="background-color: #474747; color:#999999;" name="comboid" class="form-control" maxlength="45" rows="1"></input></div>
+			
+			<div class="form-group mb-2"><input placeholder="List Password" name="listPass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1"></input></div>
+			<div class="form-group mb-2"><input placeholder="Tag to order entry by" name="comment" maxlength="45" style="background-color: #474747; color:#999999;" class="form-control" rows="1"></input></div>
+			<div class="form-group mb-2"><button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Add Entry</button></div>
+			<div class="form-group mb-2"><button type="submit" name="action" value="Delete" class="btn btn-danger btn-block">Remove Entry</button></div>';
+			if(1): ?>
+				<div class="form-group mb-2"><button type="submit" name="action" value="DeleteList" class="btn btn-warning btn-block" onclick="return confirm('Are you sure you want to delete this list?');">Delete List</button></div>
+			<?php
+			endif;
+		echo '</form></p>';
+}
+
+function addtoListForm(){
+	if(1):?>
+		<form method="post" action="list.php">
+			<div class="input-group">
+				<input type="hidden" name="submission_type" value="2">
+				<input type="hidden" name="comboid" value="<?php echo $_GET['idcombo'] ?>">
+				<textarea name="idlist" maxlength="50" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="List ID"></textarea>
+				<input name="listPass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="List Password">
+				<input placeholder="Tag to order entry by" name="comment" maxlength="45" style="background-color: #474747; color:#999999;" class="form-control" rows="1">
+				<div class="input-group-append" id="button-addon4">
+					<button type="submit" name="action" value="Submit" class="btn btn-primary">Add to list</button>
+				</div>
+			</div>
+		</form>
+	<?php endif;
+}
+
 ?>

@@ -140,7 +140,7 @@
 							echo '<tr><td>';
 							echo '<form method="post" action="editlists.php?gameid='.$_GET['gameid'].'">';
 							echo '<div class="input-group"><button class="btn btn-secondary" disabled>ID:'.$lol['idlist'].'</button><textarea name="listname" maxlength="50" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="List Name">'.$lol['list_name'].'</textarea>';					
-							echo '<textarea name="listpass" maxlength="255" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="List Password"></textarea>';
+							echo '<input name="listpass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="List Password">';
 							echo '<select name="type" class="custom-select">
 									<option value="0">Flagged</option>
 									<option value="1">Normal</option>
@@ -174,7 +174,7 @@
 						echo '<tr><td>';
 							echo '<form method="post" action="editlists.php?gameid='.$_GET['gameid'].'">';
 							echo '<div class="input-group"><textarea name="idlist" maxlength="50" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="List ID"></textarea>';					
-							echo '<textarea name="listpass" maxlength="255" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="List Password"></textarea>';
+							echo '<input name="listpass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="List Password">';
 							echo '<select name="type" class="custom-select">
 									<option value="0">Flagged</option>
 									<option value="1" selected>Normal</option>

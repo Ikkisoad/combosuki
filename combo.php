@@ -279,7 +279,9 @@ WHERE `idcombo` = ? ";
 						echo '</td></tr>';
 					echo '</table></p>';
 				}
-			
+				//echo '<table><tr><td>';
+				 addtoListForm();
+				//echo '</td></tr></table>';
 			?>
 			<div class="btn-group" role="group">
 				

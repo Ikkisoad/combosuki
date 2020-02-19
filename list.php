@@ -53,6 +53,9 @@
 							}
 						}
 					}
+					
+					if(isset($_POST['idlist']))$_GET['listid'] = $_POST['idlist'];
+					
 					$query = "SELECT `character`.`game_idgame` FROM `combo` INNER JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` WHERE `combo`.`idcombo` = ?";
 					$result = $conn -> prepare($query);
 					$result -> bind_param("i",$_POST['comboid']);
@@ -269,21 +272,7 @@ WHERE `idlist` = ? ORDER BY `comment`, `combo`.`damage` DESC;";
 						}
 						echo '</table>';
 										
-										
-										echo '<h3 class="mt-3">Edit List</h3>
-					<p><form class="form-inline" method="post" action="list.php?listid='.$_GET['listid'].'">
-							<input type="hidden" name="submission_type" value="2">';
-							if(isset($_GET['listid'])): ?>
-								<div class="form-group mb-2"><button type="submit" name="action" value="DeleteList" class="btn btn-warning btn-block" onclick="return confirm('Are you sure you want to delete this list?');">Delete List</button></div>
-							<?php
-							endif;
-							echo '<div class="form-group mb-2"><input placeholder="Combo ID" style="background-color: #474747; color:#999999;" name="comboid" class="form-control" maxlength="45" rows="1"></input></div>
-							
-							<div class="form-group mb-2"><input placeholder="List Password" name="listPass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1"></input></div>
-							<div class="form-group mb-2"><input placeholder="Tag to order combo by" name="comment" maxlength="45" style="background-color: #474747; color:#999999;" class="form-control" rows="1"></input></div>
-							<div class="form-group mb-2"><button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Add Combo</button></div>
-							<div class="form-group mb-2"><button type="submit" name="action" value="Delete" class="btn btn-danger btn-block">Remove Combo</button></div>
-						</form></p>';
+						edit_listForm();
 									}else{
 										header_buttons(1, 0, 'list.php',0);
 										echo '<h3>Listing</h3>
