@@ -236,9 +236,6 @@
 					$result -> bind_param("i",$_GET['gameid']);
 					$result -> execute();
 					
-					/*$result = mysqli_query($conn, $query) or die ("Shit".mysqli_error($conn));
-					$i = mysqli_fetch_assoc($result);*/
-					
 					foreach($result -> get_result() as $each){
 						$num_rows = $each['total'];
 					}
@@ -505,8 +502,9 @@ AND `character`.`game_idgame` = ? ";
 							
 							call_user_func_array(array($result, 'bind_param'), $parameterValue);
 					}
+				
 					$result -> execute();
-					
+				
 					echo '<br>';
 					$id_combo = -1;
 					echo '<br>';
@@ -546,11 +544,6 @@ AND `character`.`game_idgame` = ? ";
 							echo '</td>';
 							echo		'<td>'.number_format($data['damage'],'0','','.').'</td>';
 						}
-						//echo '<br>J:<BR>';
-						//print_r($j);
-						//echo '<br>K:'.$k;
-						//echo '<br>DATA:<BR>';
-						//print_r($data); echo '<<<<<<<<<br><br>';
 						if($j[$k] == 1 || $j[$k] == 3){
 							echo		'<td>'.$data['value'].'</td>';
 							
@@ -559,7 +552,6 @@ AND `character`.`game_idgame` = ? ";
 						if($j[$k] == 2){
 							echo		'<td>'.$data['number_value'].'</td>';
 						}
-						//echo '<br>K:'.$k;
 						if($j[$k] != 3 || $duplicatedCounter){
 							$k++;
 							$duplicatedCounter = 0;
@@ -567,120 +559,42 @@ AND `character`.`game_idgame` = ? ";
 							$duplicatedCounter++;
 						}
 					}
+					$query = str_replace('`character`.`Name`,`game_resources`.`text_name`,`combo`.`character_idcharacter`,`idcombo`,`combo`,`damage`,`value`,`idResources_values`,`number_value`, `comments`, `video`','COUNT(*) as totalrows ',$query);
 					
-						$i = $i / $num_rows;
+					if($page){
+						$query = str_replace('  LIMIT ?, ?','',$query);
+						$parameterValue[0]=substr($parameterValue[0],0,-2);
+						$i = array_splice($parameterValue, -2);
+					}
+					if($parameterValue[0] != ''){
+						$result = $conn -> prepare($query);
+						call_user_func_array(array($result, 'bind_param'), $parameterValue);
+					}
+					$result -> execute();
+					foreach($result -> get_result() as $data){
+						$pages = $data['totalrows']/$offset;
+					}
 				}
-				 // calculate total pages with results
 				
-				if($page > 0){
-					echo '<a href="submit.php?page=';
-					
-						echo $page - 1;
-					
-					foreach ($_GET as $key => $entry){
-						if($entry != '-' && $entry != '' && $key != 'page'){
-							if(is_scalar($entry)){
-								echo '&';
-								echo $key;
-								echo '=';
-								echo $entry;
-							}else{
-								foreach($entry as $arraykey => $arrayentry){
-									if($arrayentry != '-'){
-										echo '&';
-										echo $key.'[]';
-										echo '=';
-										echo $arrayentry;
-									}
-								}
-							}
+					$count = 0;
+					while($count < $pages){
+						if($count == $page){
+							echo '< '.$count++.' > ';
+						}else{
+							echo build_pagebutton($count++);
 						}
 					}
-					echo '" style="padding-right: 5px;">Previous </a>';
-				}
-				if($i == 10 && $page > 0){echo '/ ';}
-				if($i == 10){
-					echo '<a href="submit.php?page=';
-					echo $page + 1;
-					foreach ($_GET as $key => $entry){
-						if($entry != '-' && $entry != '' && $key != 'page'){
-							if(is_scalar($entry)){
-								echo '&';
-								echo $key;
-								echo '=';
-								echo $entry;
-							}else{
-								foreach($entry as $arraykey => $arrayentry){
-									if($arrayentry != '-'){
-										echo '&';
-										echo $key.'[]';
-										echo '=';
-										echo $arrayentry;
-									}
-								}
-							}
-						}
-						
-					}
-					echo '" style="padding-right: 5px;">Next </a>';
-				}
 			?></table>
 			
 			<?php
-				if($page > 0){
-					echo '<a href="submit.php?page=';
-					
-						echo $page - 1;
-					
-					foreach ($_GET as $key => $entry){
-						if($entry != '-' && $entry != '' && $key != 'page'){
-							if(is_scalar($entry)){
-								echo '&';
-								echo $key;
-								echo '=';
-								echo $entry;
-							}else{
-								foreach($entry as $arraykey => $arrayentry){
-									if($arrayentry != '-'){
-										echo '&';
-										echo $key.'[]';
-										echo '=';
-										echo $arrayentry;
-									}
-								}
-							}
+				$count = 0;
+					while($count < $pages){
+						if($count == $page){
+							echo '< '.$count++.' > ';
+						}else{
+							echo build_pagebutton($count++);
 						}
 					}
-					echo '" style="padding-right: 5px;">Previous </a>';
-				}
-				if($i == 10 && $page > 0){echo '/ ';}
-			 ?>
-			 <?php
-				if($i == 10){
-					echo '<a href="submit.php?page=';
-					echo $page + 1;
-					foreach ($_GET as $key => $entry){
-						if($entry != '-' && $entry != '' && $key != 'page'){
-							if(is_scalar($entry)){
-								echo '&';
-								echo $key;
-								echo '=';
-								echo $entry;
-							}else{
-								foreach($entry as $arraykey => $arrayentry){
-									if($arrayentry != '-'){
-										echo '&';
-										echo $key.'[]';
-										echo '=';
-										echo $arrayentry;
-									}
-								}
-							}
-						}
-						
-					}
-					echo '" style="padding-right: 5px;">Next </a>';
-				}
 				mysqli_close($conn);
 			 ?>
 		</div></main>

@@ -902,4 +902,33 @@ function game_lock($conn){
 	}
 }
 
+function build_pagebutton($page){
+	$button = '<a href="submit.php?page=';
+					
+	$button .= $page;
+	
+	foreach ($_GET as $key => $entry){
+		if($entry != '-' && $entry != '' && $key != 'page'){
+			if(is_scalar($entry)){
+				$button .= '&';
+				$button .= $key;
+				$button .= '=';
+				$button .= $entry;
+			}else{
+				foreach($entry as $arraykey => $arrayentry){
+					if($arrayentry != '-'){
+						$button .= '&';
+						$button .= $key.'[]';
+						$button .= '=';
+						$button .= $arrayentry;
+					}
+				}
+			}
+		}
+	}
+	$button .= '" style="padding-right: 5px;">'.$page.' </a>';
+	
+	return $button;
+}
+
 ?>
