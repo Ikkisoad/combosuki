@@ -514,7 +514,7 @@ function button_printing($idgame, $dataCombo, $conn){
 	}
 	$combo_image = '<img class="img-fluid" alt="Responsive image" src=img/buttons/start.png>';
 		$buttonID;
-		
+		$buttonsName = array_map('strtolower', $buttonsName);
 		
 		$array = str_split($dataCombo);
 		$image = '';
@@ -522,10 +522,12 @@ function button_printing($idgame, $dataCombo, $conn){
 			
 				if(isset($char) && $char != ' '){
 					
-					$image .= $char;
+					$image .= strtolower($char);
 								
 				}else if($image != ''){
-					$buttonID = array_search($image,$buttonsName);
+					//$buttonID = array_search($image,$buttonsName);
+					$buttonID = array_search($image, $buttonsName);
+					//array_search(strtolower($image), array_map('strtolower', $buttonsName));
 					//echo $buttonID;
 					if($buttonID > -1){
 						if($image == '->'){$combo_image .= '<br>';}
@@ -855,7 +857,7 @@ function edit_listForm(){
 			echo '<div class="form-group mb-2"><input placeholder="Entry ID" style="background-color: #474747; color:#999999;" name="comboid" class="form-control" maxlength="45" rows="1"></input></div>
 			
 			<div class="form-group mb-2"><input placeholder="List Password" name="listPass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1"></input></div>
-			<div class="form-group mb-2"><input placeholder="Tag to order entry by" name="comment" maxlength="45" style="background-color: #474747; color:#999999;" class="form-control" rows="1"></input></div>
+			<div class="form-group mb-2"><input placeholder="Category" name="comment" maxlength="45" style="background-color: #474747; color:#999999;" class="form-control" rows="1"></input></div>
 			<div class="form-group mb-2"><button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Add Entry</button></div>
 			<div class="form-group mb-2"><button type="submit" name="action" value="Delete" class="btn btn-danger btn-block">Remove Entry</button></div>';
 			if(1): ?>
