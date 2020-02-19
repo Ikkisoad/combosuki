@@ -300,6 +300,7 @@ WHERE `idcombo` = ? ";
 						}
 						for($i = 0; $i<sizeof($secondaryTitle); $i++){
 								echo '<input type="hidden" name="';
+								echo $secondaryTitle[$i];
 								if($secondaryType[$i] == 3){
 									echo '[]" value="';
 								}else{
