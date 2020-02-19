@@ -422,19 +422,34 @@ AND `character`.`game_idgame` = ? ";
 							if(isset($_GET[$parameterValue])){
 								foreach($_GET[$parameterValue] as $eachDuplicate){
 									if($eachDuplicate != '-' && $duplicatedResourceCounter){
-										$query = $query . "AND idcombo IN (SELECT `combo_idcombo` FROM `resources` 
+										if($duplicated_firstValue > $eachDuplicate){
+											$query = $query . "AND idcombo IN (SELECT `combo_idcombo` FROM `resources` 
 	WHERE `Resources_values_idResources_values` IN (?,?) GROUP BY `combo_idcombo`
 	HAVING GROUP_CONCAT(DISTINCT `Resources_values_idResources_values` ORDER BY `Resources_values_idResources_values`) = ?) ";
-										$parameter_type .= "iis";
-										if($duplicated_firstValue >= $eachDuplicate){
+											$parameter_type .= "iis";
 											$binded_parameters[$parameters_counter++] = $eachDuplicate;
 											$binded_parameters[$parameters_counter++] = $duplicated_firstValue;
 											$binded_parameters[$parameters_counter++] = $eachDuplicate.','.$duplicated_firstValue;
 											//$binded_parameters[$parameters_counter++] = $duplicated_firstValue;
-										}else{
+										}else if($duplicated_firstValue < $eachDuplicate){
+											$query = $query . "AND idcombo IN (SELECT `combo_idcombo` FROM `resources` 
+	WHERE `Resources_values_idResources_values` IN (?,?) GROUP BY `combo_idcombo`
+	HAVING GROUP_CONCAT(DISTINCT `Resources_values_idResources_values` ORDER BY `Resources_values_idResources_values`) = ?) ";
+											$parameter_type .= "iis";
 											$binded_parameters[$parameters_counter++] = $duplicated_firstValue;
 											$binded_parameters[$parameters_counter++] = $eachDuplicate;
 											$binded_parameters[$parameters_counter++] = $duplicated_firstValue.','.$eachDuplicate;
+											//$binded_parameters[$parameters_counter++] = $eachDuplicate;
+										}else if($duplicated_firstValue == $eachDuplicate){
+											$query = $query . "AND idcombo IN (SELECT `resources`.`combo_idcombo` FROM `resources` 
+											WHERE `Resources_values_idResources_values` = ? 
+											GROUP BY `resources`.`combo_idcombo`
+											HAVING COUNT(*)>1) ";
+										//	echo $query;
+											$parameter_type .= "i";
+											$binded_parameters[$parameters_counter++] = $duplicated_firstValue;
+											//$binded_parameters[$parameters_counter++] = $eachDuplicate;
+											//$binded_parameters[$parameters_counter++] = $duplicated_firstValue;
 											//$binded_parameters[$parameters_counter++] = $eachDuplicate;
 										}
 										$duplicatedResourceCounter = 0;
