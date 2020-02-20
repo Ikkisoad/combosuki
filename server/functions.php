@@ -713,7 +713,7 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 
 			<form method="get" action="forms.php">
 				<button class="btn btn-secondary">Search</button>
-				<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+				<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 			</form>
 			
 			<form method="get" action="editgame.php">

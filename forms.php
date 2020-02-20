@@ -9,11 +9,11 @@
 <html>
 	<head>
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
-		<meta name="description" content="">
-		<meta name="Ikkisoad" content="">
-			<link rel="apple-touch-icon" sizes="57x57" href="img/apple-icon-57x57.png">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
+	<meta name="description" content="">
+	<meta name="Ikkisoad" content="">
+	<link rel="apple-touch-icon" sizes="57x57" href="img/apple-icon-57x57.png">
 	<link rel="apple-touch-icon" sizes="60x60" href="img/apple-icon-60x60.png">
 	<link rel="apple-touch-icon" sizes="72x72" href="img/apple-icon-72x72.png">
 	<link rel="apple-touch-icon" sizes="76x76" href="img/apple-icon-76x76.png">
@@ -31,13 +31,9 @@
 	<meta name="msapplication-TileImage" content="img/ms-icon-144x144.png">
 	<meta name="theme-color" content="#ffffff">
 
-		<title>Combo好き</title>
-    <!-- Bootstrap core CSS -->
-		<link href="css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Custom styles for this template 
-		<link href="jumbotron.css" rel="stylesheet"> -->
-		<style>
+	<title>Combo好き</title>
+	<link href="css/bootstrap.min.css" rel="stylesheet">
+	<style>
 			body{
 				background-color: #190000;
 				background: url("img/<?php
@@ -121,7 +117,7 @@
 						}
 						?>
 						
-						<input type="hidden" id="gameid" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+						<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 						<?php
 							//Could make a function out of this <>><><>><><><><><><>><><><><>>>><><><><>><><>><><><><>><><><><><><>
 							$query = "SELECT `Name`,`idcharacter` FROM `character` WHERE game_idgame = ? ORDER BY name;";
@@ -352,7 +348,7 @@
 							echo '</p><br>';
 						?>
 						<label>Comments:</label>
-						<textarea name="comments" style="background-color: #474747; color:#999999;" class="form-control" id="exampleFormControlTextarea1" title="trabalho" <?php if(!isset($_POST['type'])){echo 'placeholder="Use # to search for multiple variables in a comment - e.g. #universal #corner"';}else{
+						<textarea name="comments" style="background-color: #474747; color:#999999;" class="form-control" title="trabalho" <?php if(!isset($_POST['type'])){echo 'placeholder="Use # to search for multiple variables in a comment - e.g. #universal #corner"';}else{
 
 						echo 'placeholder="Comments like: Corner only, universal, etc... Are recommended to make it easier to search specific situations."';
 						}?>><?php 
@@ -368,7 +364,7 @@
 						<?php
 							if(!isset($_POST['type'])){
 								echo '<label>Comment does not have:</label>';
-								echo '<textarea name="notcomments" style="background-color: #474747; color:#999999;" class="form-control" id="exampleFormControlTextarea1" placeholder="Use # to add multiple variables - e.g. #universal #corner"></textarea>';
+								echo '<textarea name="notcomments" style="background-color: #474747; color:#999999;" class="form-control" placeholder="Use # to add multiple variables - e.g. #universal #corner"></textarea>';
 							}
 						
 						?>
@@ -422,20 +418,10 @@
 			</div>
 		</main>
 		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 	</body>
-	    <!-- Bootstrap core JavaScript
-		================================================== -->
-		<!-- Placed at the end of the document so the pages load faster -->
-		<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-		<script>window.jQuery || document.write('<script src="../../../../assets/js/vendor/jquery.min.js"><\/script>')</script>
-		<script src="../../../../assets/js/vendor/popper.min.js"></script>
-		<script src="../../../../dist/js/bootstrap.min.js"></script>
-		<script>
-		https://tutorialdeep.com/knowhow/show-form-on-button-click-jquery/
-		</script>
-		
+
 		<script> 
 		function moveNumbers(num) { 
 				var txt=document.getElementById("comboarea").value; 
