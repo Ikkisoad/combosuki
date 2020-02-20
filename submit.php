@@ -1,99 +1,98 @@
 <?php
-
-				include_once "server/conexao.php";
-				include_once "server/functions.php";
-				if(!empty($_POST)){
-					strip_POSTtags();
-					if($_POST['combo'] == ''){
-						header("Location: index.php");
-						exit();
-					}
-					if(!isset($_POST['idcombo'])){
-						$query = "INSERT INTO `combo`(`idcombo`, `combo`, `comments`, `video`, `user_iduser`, `character_idcharacter`, `submited`, `damage`, `type`, `patch`, `author`, `password`) 
-												VALUES (NULL,		?,		?,			?,	NULL,			?,						?, ?, ?, ?, ?, ?)";
-						$result = $conn -> prepare($query);
-						$date = date("Y-m-d H:i:s");
-						$result -> bind_param("sssisdisss", $_POST['combo'], $_POST['comments'],$_POST['video'],$_POST['characterid'],$date, $_POST['damage'], $_POST['listingtype'], $_POST['patch'], $_POST['author'], $_POST['comboPass']);
-						$result -> execute();
-						$comboid = mysqli_insert_id($conn);
-					}else{
-						$comboid = $_POST['idcombo'];
-						$query = "SELECT `password`, (SELECT game.globalPass FROM game WHERE game.idgame = ?) as gPass, (SELECT game.modPass FROM game WHERE game.idgame = ?) as mPass FROM `combo` WHERE `idcombo` = ?";
-						$result = $conn -> prepare($query);
-						$result -> bind_param("iii", $_POST['gameid'], $_POST['gameid'], $comboid);
-						$result -> execute();
-						foreach($result -> get_result() as $pass){
-							if($pass['password'] != $_POST['comboPass'] && $pass['gPass'] != $_POST['comboPass'] && !password_verify($_POST['comboPass'], $pass['mPass'])){
-								header("Location: combo.php?idcombo=".$comboid."");
-								exit();
-							}
-						}
-						$query = "DELETE FROM `resources` WHERE `combo_idcombo` = ?";
-						$result = $conn -> prepare($query);
-						$result -> bind_param("i", $_POST['idcombo']);
-						$result -> execute();
-						if($_POST['action'] == 'Submit'){
-							$query = "UPDATE `combo` SET 
-							`combo`= ?,`comments`= ?,`video`= ?,`character_idcharacter`= ?, `damage`= ?,`type`= ?, `patch` = ?, `author`= ?
-							WHERE `idcombo` = ?";
-							$result = $conn -> prepare($query);
-							$result -> bind_param("sssidissi", $_POST['combo'], $_POST['comments'],$_POST['video'],$_POST['characterid'], $_POST['damage'], $_POST['listingtype'], $_POST['patch'], $_POST['author'], $comboid);
-							$result -> execute();
-						}else{
-							$query = "DELETE FROM `combo` WHERE `idcombo` = ?";
-							$result = $conn -> prepare($query);
-							$result -> bind_param("i", $comboid);
-							$result -> execute();
-							header("Location: game.php?gameid=".$_POST['gameid']."");
-							exit();
-						}
-					}
-					$query = "SELECT text_name,type,idgame_resources FROM `game_resources` WHERE game_idgame = ".$_POST['gameid']." ORDER BY text_name;";
+	include_once "server/conexao.php";
+	include_once "server/functions.php";
+	if(!empty($_POST)){
+		strip_POSTtags();
+		if($_POST['combo'] == ''){
+			header("Location: index.php");
+			exit();
+		}
+		if(!isset($_POST['idcombo'])){
+			$query = "INSERT INTO `combo`(`idcombo`, `combo`, `comments`, `video`, `user_iduser`, `character_idcharacter`, `submited`, `damage`, `type`, `patch`, `author`, `password`) 
+									VALUES (NULL,		?,		?,			?,	NULL,			?,						?, ?, ?, ?, ?, ?)";
+			$result = $conn -> prepare($query);
+			$date = date("Y-m-d H:i:s");
+			$result -> bind_param("sssisdisss", $_POST['combo'], $_POST['comments'],$_POST['video'],$_POST['characterid'],$date, $_POST['damage'], $_POST['listingtype'], $_POST['patch'], $_POST['author'], $_POST['comboPass']);
+			$result -> execute();
+			$comboid = mysqli_insert_id($conn);
+		}else{
+			$comboid = $_POST['idcombo'];
+			$query = "SELECT `password`, (SELECT game.globalPass FROM game WHERE game.idgame = ?) as gPass, (SELECT game.modPass FROM game WHERE game.idgame = ?) as mPass FROM `combo` WHERE `idcombo` = ?";
+			$result = $conn -> prepare($query);
+			$result -> bind_param("iii", $_POST['gameid'], $_POST['gameid'], $comboid);
+			$result -> execute();
+			foreach($result -> get_result() as $pass){
+				if($pass['password'] != $_POST['comboPass'] && $pass['gPass'] != $_POST['comboPass'] && !password_verify($_POST['comboPass'], $pass['mPass'])){
+					header("Location: combo.php?idcombo=".$comboid."");
+					exit();
+				}
+			}
+			$query = "DELETE FROM `resources` WHERE `combo_idcombo` = ?";
+			$result = $conn -> prepare($query);
+			$result -> bind_param("i", $_POST['idcombo']);
+			$result -> execute();
+			if($_POST['action'] == 'Submit'){
+				$query = "UPDATE `combo` SET 
+				`combo`= ?,`comments`= ?,`video`= ?,`character_idcharacter`= ?, `damage`= ?,`type`= ?, `patch` = ?, `author`= ?
+				WHERE `idcombo` = ?";
+				$result = $conn -> prepare($query);
+				$result -> bind_param("sssidissi", $_POST['combo'], $_POST['comments'],$_POST['video'],$_POST['characterid'], $_POST['damage'], $_POST['listingtype'], $_POST['patch'], $_POST['author'], $comboid);
+				$result -> execute();
+			}else{
+				$query = "DELETE FROM `combo` WHERE `idcombo` = ?";
+				$result = $conn -> prepare($query);
+				$result -> bind_param("i", $comboid);
+				$result -> execute();
+				header("Location: game.php?gameid=".$_POST['gameid']."");
+				exit();
+			}
+		}
+		$query = "SELECT text_name,type,idgame_resources FROM `game_resources` WHERE game_idgame = ".$_POST['gameid']." ORDER BY text_name;";
+		$result = $conn -> prepare($query);
+		$result -> execute();
+		foreach($result -> get_result()	as $resource){
+			$name = str_replace(' ', '_', $resource['text_name']);
+			if($_POST[$name] != '-'){
+				if($resource['type'] == 1){
+					$query = "INSERT INTO `resources`(`idResources`, `combo_idcombo`, `Resources_values_idResources_values`, `number_value`) 
+								VALUES (				NULL,					?		,							?			,		NULL)";
+					$result = $conn -> prepare($query);
+					$result -> bind_param("ii", $comboid, $_POST[$name]);
+					$result -> execute();
+				}else if($resource['type'] == 2){
+					$query = "SELECT idResources_values FROM resources_values WHERE game_resources_idgame_resources = ".$resource['idgame_resources']."";
 					$result = $conn -> prepare($query);
 					$result -> execute();
-					foreach($result -> get_result()	as $resource){
-							$name = str_replace(' ', '_', $resource['text_name']);
-							if($_POST[$name] != '-'){
-								if($resource['type'] == 1){
-									$query = "INSERT INTO `resources`(`idResources`, `combo_idcombo`, `Resources_values_idResources_values`, `number_value`) 
-												VALUES (				NULL,					?		,							?			,		NULL)";
-									$result = $conn -> prepare($query);
-									$result -> bind_param("ii", $comboid, $_POST[$name]);
-									$result -> execute();
-								}else if($resource['type'] == 2){
-									$query = "SELECT idResources_values FROM resources_values WHERE game_resources_idgame_resources = ".$resource['idgame_resources']."";
-									$result = $conn -> prepare($query);
-									$result -> execute();
-									foreach($result -> get_result()	as $id){
-										$query = "INSERT INTO `resources`(`idResources`, `combo_idcombo`, `Resources_values_idResources_values`, `number_value`) 
-													VALUES (				NULL,					?		,							?,		?)";
-										$result = $conn -> prepare($query);
-										$result -> bind_param("iid", $comboid, $id['idResources_values'], $_POST[$name]);
-										$result -> execute();
-									}
-								}else if($resource['type'] == 3){
-									foreach($_POST[$name] as $duplicated_resource){
-										$query = "INSERT INTO `resources`(`idResources`, `combo_idcombo`, `Resources_values_idResources_values`, `number_value`) 
-													VALUES (				NULL,					?		,							?			,		NULL)";
-										$result = $conn -> prepare($query);
-										$result -> bind_param("ii", $comboid, $duplicated_resource);
-										$result -> execute();
-									}
-								}
-							}
-						}
-						header("Location: combo.php?idcombo=".$comboid."");
-						exit();
+					foreach($result -> get_result()	as $id){
+						$query = "INSERT INTO `resources`(`idResources`, `combo_idcombo`, `Resources_values_idResources_values`, `number_value`) 
+									VALUES (				NULL,					?		,							?,		?)";
+						$result = $conn -> prepare($query);
+						$result -> bind_param("iid", $comboid, $id['idResources_values'], $_POST[$name]);
+						$result -> execute();
+					}
+				}else if($resource['type'] == 3){
+					foreach($_POST[$name] as $duplicated_resource){
+						$query = "INSERT INTO `resources`(`idResources`, `combo_idcombo`, `Resources_values_idResources_values`, `number_value`) 
+									VALUES (				NULL,					?		,							?			,		NULL)";
+						$result = $conn -> prepare($query);
+						$result -> bind_param("ii", $comboid, $duplicated_resource);
+						$result -> execute();
+					}
 				}
-			?>
+			}
+		}
+		header("Location: combo.php?idcombo=".$comboid."");
+		exit();
+	}
+?>
 <!doctype php>
 <html>
 	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
-		<meta name="description" content="">
-		<meta name="Ikkisoad" content="">
-			<link rel="apple-touch-icon" sizes="57x57" href="img/apple-icon-57x57.png">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
+	<meta name="description" content="">
+	<meta name="Ikkisoad" content="">
+	<link rel="apple-touch-icon" sizes="57x57" href="img/apple-icon-57x57.png">
 	<link rel="apple-touch-icon" sizes="60x60" href="img/apple-icon-60x60.png">
 	<link rel="apple-touch-icon" sizes="72x72" href="img/apple-icon-72x72.png">
 	<link rel="apple-touch-icon" sizes="76x76" href="img/apple-icon-76x76.png">
@@ -110,44 +109,33 @@
 	<meta name="msapplication-TileColor" content="#ffffff">
 	<meta name="msapplication-TileImage" content="img/ms-icon-144x144.png">
 	<meta name="theme-color" content="#ffffff">
-	<title>ComboSuki</title>
+	<title>Combo好き</title>
     <!-- Bootstrap core CSS -->
 	<link href="css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom styles for this template -->
-		<link href="jumbotron.css" rel="stylesheet">
 		<style>
 		table {
 				border-spacing: 0;
 				width: 100%;
 				border: 1px solid #ddd;
 			}
-
 			th {
 				cursor: pointer;
 			}
-
 			th, td {
 				text-align: left;
 				padding: 16px;
 			}
-
 			tr:nth-child(even) {
 				background-color: #212121
 			}
-			
 			tr:nth-child(odd) {
 				background-color: #000000
 			}
-			
 			body{
 				background-color: #35340a;
 				color: white;
-				background: url("img/<?php
-				if(isset($_COOKIE['color'])){
-					echo 'bg/'.$_COOKIE["color"].'honeycomb.png';
-				}else{
-					echo 'dark-honeycomb.png';
-				}?>");
+				background: url("img/<?php background(); ?>");
 			}
 			.jumbotron{
 				max-height: 250px;
@@ -156,7 +144,6 @@
 			textare{
 				color: #000000;	
 			}
-				
 		</style> <!-- BACKGROUND COLOR-->
 	</head>
 	<body>
@@ -515,9 +502,6 @@ AND `character`.`game_idgame` = ? ";
 		================================================== -->
 		<!-- Placed at the end of the document so the pages load faster -->
 		<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-		<script>window.jQuery || document.write('<script src="../../../../assets/js/vendor/jquery.min.js"><\/script>')</script>
-		<script src="../../../../assets/js/vendor/popper.min.js"></script>
-		<script src="../../../../dist/js/bootstrap.min.js"></script>
 		<script>
 			function sortTable(n,isNumber) {
 			  var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
