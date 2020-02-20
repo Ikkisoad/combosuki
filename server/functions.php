@@ -969,4 +969,10 @@ function background(){
 	}
 }
 
+function copyLinktoclipboard($link){
+	if(1):?>
+	<button alignt="right" style="float: right;" class="btn btn-secondary" onclick="copytoclip('<?php echo $link; ?>')">Copy URL</button>
+	<?php endif;
+}
+
 ?>

@@ -222,9 +222,10 @@
 											echo '</h3>';
 											echo $list['name'].' list';
 										}
+										copyLinktoclipboard('https://combosuki.com/list.php?listid='.$_GET['listid']);
+										echo '<p>';
 										
-										echo '<p>
-					</p>';
+										echo '</p>';
 										
 										$query = "SELECT `combo_listing`.`idcombo`, `comment`, `combo`.`damage`, `character`.`Name`, `combo`.`combo`, `combo`.`comments`,`combo`.`video`,`combo`.`type` FROM `combo_listing` 
 INNER JOIN `combo` ON `combo`.`idcombo` = `combo_listing`.`idcombo` 
@@ -367,6 +368,16 @@ WHERE `idlist` = ? ORDER BY `comment`, `combo`.`damage` DESC;";
 				}else{
 					x.style.display = "none";
 				}
+			}
+		</script>
+		<script>
+			function copytoclip(link) {
+				var dummy = document.createElement("textarea");
+				document.body.appendChild(dummy);
+				dummy.value = link;
+				dummy.select();
+				document.execCommand("copy");
+				document.body.removeChild(dummy);
 			}
 		</script>
 </html>

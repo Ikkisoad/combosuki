@@ -163,8 +163,9 @@ WHERE `idcombo` = ? ";
 					}
 					if(1): ?>
 						<button alignt="right" style="float: right;" class="btn btn-secondary" onclick="change_display()">Display Method</button>
-						<button alignt="right" style="float: right;" class="btn btn-secondary" onclick="copytoclip('<?php echo get_combolink($id_combo,$conn); ?>')">Copy Entry URL</button>
+						
 					<?php endif;
+					copyLinktoclipboard(get_combolink($id_combo,$conn));
 					echo '</th>';
 					echo '</tr>';
 					echo '<tr>';
