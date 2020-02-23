@@ -388,8 +388,8 @@
 						?>
 						
 						<?php if(isset($_POST['type'])): ?>
-						<label for="exampleFormControlTextarea1">Combo Password:</label>
-						<input name="comboPass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" maxlength="255" placeholder="<?php
+						<label>Combo Password:</label>
+						<input name="comboPass" type="password" required maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" maxlength="255" placeholder="<?php
 						
 						if(isset($_POST['type'])){
 								if($_POST['type'] == 2){
