@@ -226,7 +226,7 @@ AND `character`.`game_idgame` = ? ";
 							}else{
 								$parameterValue .= $_GET['combo'].'%';
 							}
-							$query .= "AND REPLACE(`combo`, ' ', '') LIKE REPLACE(?, ' ', '') ";
+							$query .= "AND REPLACE(REPLACE(`combo`, ' ', ''),'>','') LIKE REPLACE(REPLACE(?, ' ', ''),'>','') ";
 							$parameter_type .= "s";
 							$binded_parameters[$parameters_counter++] = $parameterValue;
 						}
