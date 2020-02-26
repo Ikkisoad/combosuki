@@ -310,10 +310,18 @@ WHERE `idlist` = ? ORDER BY `comment`, `combo`.`damage` DESC;";
 										if(isset($_POST)){
 											if(isset($_POST['action'])){
 												if($_POST['action'] == 'Search'){
-														$query = "SELECT `idlist`, `list_name`, `type` FROM `list` WHERE `list_name` LIKE ? AND `game_idgame` = ? AND `list`.`type` != 0 ORDER BY `type` DESC, `list_name` LIMIT 0,50";
+														if($_POST['gameid']){
+															$query = "SELECT `idlist`, `list_name`, `type` FROM `list` WHERE `list_name` LIKE ? AND `game_idgame` = ? AND `list`.`type` != 0 ORDER BY `type` DESC, `list_name` LIMIT 0,50";
+														}else{
+															$query = "SELECT `idlist`, `list_name`, `type` FROM `list` WHERE `list_name` LIKE ? AND `list`.`type` != 0 ORDER BY `type` DESC, `list_name` LIMIT 0,50";
+														}
 														$result = $conn -> prepare($query);
 														$_POST['list_name'] = '%'.$_POST['list_name'].'%';
-														$result -> bind_param("si",$_POST['list_name'], $_POST['gameid']);
+														if($_POST['gameid']){
+															$result -> bind_param("si",$_POST['list_name'], $_POST['gameid']);
+														}else{
+															$result -> bind_param("s",$_POST['list_name']);
+														}
 														$result -> execute();
 														echo '<table id="myTable">';
 														echo '<tr>';
