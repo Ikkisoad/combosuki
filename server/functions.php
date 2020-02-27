@@ -849,6 +849,9 @@ function get_gamename($gameid, $conn){
 
 function edit_listForm(){
 	echo '<h3 class="mt-3">Edit List</h3>
+	<p>
+		<small>Use , to Add or Remove multiple entries from the list. (Eg.: 777,26 would add or remove entries 777 and 26 from the list.)</small>
+	</p>
 	<p><form class="form-inline" method="post" action="list.php?listid='.$_GET['listid'].'">
 			<input type="hidden" name="submission_type" value="2">';
 			
