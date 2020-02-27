@@ -6,7 +6,7 @@
 			$_GET = array_map("strip_tags", $_GET);
 			if($_POST['action'] != 'Search'){
 				if($_POST['submission_type'] == 1){
-					if($_POST['list_name'] == '' || $_POST['gameid'] == 0){                                           //This prevents '' lists from being created
+					if($_POST['list_name'] == '' || $_POST['gameid'] == 0){//This prevents '' lists from being created
 						header("Location: list.php");
 						exit();	
 					}
@@ -56,43 +56,7 @@
 					
 					if(isset($_POST['idlist']))$_GET['listid'] = $_POST['idlist'];
 					
-					$query = "SELECT `character`.`game_idgame` FROM `combo` INNER JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` WHERE `combo`.`idcombo` = ?";
-					$result = $conn -> prepare($query);
-					$result -> bind_param("i",$_POST['comboid']);
-					$result -> execute();
-					foreach($result -> get_result() as $lul){
-							$gameid = $lul['game_idgame'];
-					}
-					
-					$query = "SELECT `game_idgame`,`password` FROM `list` WHERE idlist = ?";
-					$result = $conn -> prepare($query);
-					$result -> bind_param("i",$_GET['listid']);
-					$result -> execute();
-					foreach($result -> get_result() as $lul){
-						$gamepass = get_gamepassword($lul['game_idgame'], $conn);
-						if($gameid != $lul['game_idgame'] && $lul['game_idgame'] != 0){
-							header("Location: list.php?listid=".$_GET['listid']."");
-							exit();
-						}
-						$modPass = get_mod_password($lul['game_idgame'], $conn);
-						if($lul['password'] == $_POST['listPass'] || password_verify($_POST['listPass'], $modPass) || $_POST['listPass'] == $gamepass){
-							if($_POST['action'] == 'Submit'){
-								$query = "INSERT INTO `combo_listing`(`idcombo`, `idlist`, `comment`) VALUES (?,?,?)";
-								$result = $conn -> prepare($query);
-								$result -> bind_param("iis", $_POST['comboid'], $_GET['listid'], $_POST['comment']);
-								$result -> execute();
-							}
-							if($_POST['action'] == 'Delete'){
-								$query = "DELETE FROM `combo_listing` WHERE `idcombo` = ? AND `idlist` = ?";
-								$result = $conn -> prepare($query);
-								$result -> bind_param("ii", $_POST['comboid'], $_GET['listid']);
-								$result -> execute();
-							}
-						}else{
-							header("Location: list.php?listid=".$_GET['listid']."");
-							exit();
-						}
-					}
+					alter_List($conn);
 					
 				}
 			}

@@ -975,4 +975,50 @@ function copyLinktoclipboard($link){
 	<?php endif;
 }
 
+function alter_List($conn){
+	
+	$ids = explode(",", $_POST['comboid']);
+	
+	for($i = 0; $i<sizeof($ids);$i++){
+		
+		$query = "SELECT `character`.`game_idgame` FROM `combo` INNER JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` WHERE `combo`.`idcombo` = ?";
+		$result = $conn -> prepare($query);
+		$result -> bind_param("i",$ids[$i]);
+		$result -> execute();
+		foreach($result -> get_result() as $lul){
+				$gameid = $lul['game_idgame'];
+		}
+		
+		$query = "SELECT `game_idgame`,`password` FROM `list` WHERE idlist = ?";
+		$result = $conn -> prepare($query);
+		$result -> bind_param("i",$_GET['listid']);
+		$result -> execute();
+		foreach($result -> get_result() as $lul){
+			$gamepass = get_gamepassword($lul['game_idgame'], $conn);
+			if($gameid != $lul['game_idgame'] && $lul['game_idgame'] != 0){
+				header("Location: list.php?listid=".$_GET['listid']."");
+				exit();
+			}
+			$modPass = get_mod_password($lul['game_idgame'], $conn);
+			if($lul['password'] == $_POST['listPass'] || password_verify($_POST['listPass'], $modPass) || $_POST['listPass'] == $gamepass){
+				if($_POST['action'] == 'Submit'){
+					$query = "INSERT INTO `combo_listing`(`idcombo`, `idlist`, `comment`) VALUES (?,?,?)";
+					$result = $conn -> prepare($query);
+					$result -> bind_param("iis", $ids[$i], $_GET['listid'], $_POST['comment']);
+					$result -> execute();
+				}
+				if($_POST['action'] == 'Delete'){
+					$query = "DELETE FROM `combo_listing` WHERE `idcombo` = ? AND `idlist` = ?";
+					$result = $conn -> prepare($query);
+					$result -> bind_param("ii", $ids[$i], $_GET['listid']);
+					$result -> execute();
+				}
+			}else{
+				header("Location: list.php?listid=".$_GET['listid']."");
+				exit();
+			}
+		}
+	}
+}
+
 ?>
