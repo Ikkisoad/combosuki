@@ -30,7 +30,7 @@ WHERE `idcombo` = ? ";
 			$character = $data['idcharacter'];
 			$name = $data['Name'];
 			$id_combo = $data['idcombo'];
-			$combo = str_replace('->', '<br>', $data['combo']);
+			$combo = $data['combo'];
 			$combo_image = button_printing($data['game_idgame'], $data['combo'], $conn);
 		}
 		$comment = $data['comments'];
@@ -171,12 +171,12 @@ WHERE `idcombo` = ? ";
 					echo '<tr>';
 					echo '<td id="combo_line">';
 					if(!isset($_COOKIE['display'])){
-						echo $combo;
+						echo str_replace('->', '<br>', $combo);;
 						$_COOKIE['display'] = 0;
 					}else if($_COOKIE['display']){
 						echo $combo_image;
 					}else{
-						echo $combo;
+						echo str_replace('->', '<br>', $combo);;
 					}
 					echo		'</td></table>';
 					if(!isset($damage)){ exit();}
@@ -219,7 +219,7 @@ WHERE `idcombo` = ? ";
 			<div id="combo_text" style="display: none;">
 				<?php 
 					if($_COOKIE['display']){
-						echo $combo;
+						echo str_replace('->', '<br>', $combo);;
 					}else{
 						echo $combo_image;
 					}
