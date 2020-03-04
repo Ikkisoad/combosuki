@@ -445,7 +445,7 @@ function quick_search_form($gameid, $conn){
 				<div class="input-group-prepend">
 				<span class="input-group-text">';
 				echo ' </div>
-				<input class="form-control" type="number" min="0" class="input-sm" name="';
+				<input class="form-control" type="number" min="-'.$resource_value['value'].'" class="input-sm" name="';
 				echo $resource['text_name'];
 				echo '" placeholder="'.$resource['text_name'].'"';
 				echo ' max="';
