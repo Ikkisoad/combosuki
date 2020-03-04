@@ -254,7 +254,13 @@ function game_title($conn){
 
 function game_text_only($conn){
 	//require "server/conexao.php";
-	$query = "SELECT idgame, name, image FROM game WHERE 1 ORDER BY name;";
+	$query = "SELECT idgame, `game`.`name`, COUNT(DISTINCT `combo`.`idcombo`) AS Entries
+FROM game 
+LEFT JOIN `character` ON `character`.`game_idgame` = `game`.`idgame`
+LEFT JOIN `combo` ON `combo`.`character_idcharacter` = `character`.`idcharacter`
+WHERE 1 
+GROUP BY `game`.`name`
+ORDER BY `game`.`name`";
 	$result = $conn -> prepare($query);
 	$result -> execute();
 	
@@ -264,7 +270,7 @@ function game_text_only($conn){
 		echo '<a style="margin-left:5em;" href=game.php?gameid=';
 		echo $gameid['idgame'];
 		echo '>';
-		echo $gameid['name'].'</a><br>';
+		echo $gameid['name'].' ('.$gameid['Entries'].')</a><br>';
 	}
 		
 }
@@ -874,10 +880,6 @@ function edit_listForm($conn){
 			
 			echo '<div class="form-group mb-2"><button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Add Entry</button></div>
 			<div class="form-group mb-2"><button type="submit" name="action" value="Delete" class="btn btn-danger btn-block">Remove Entry</button></div>';
-			if(1): ?>
-				<div class="form-group mb-2"><button type="submit" name="action" value="DeleteList" class="btn btn-warning btn-block" onclick="return confirm('Are you sure you want to delete this list?');">Delete List</button></div>
-			<?php
-			endif;
 		echo '</form></p>';
 }
 

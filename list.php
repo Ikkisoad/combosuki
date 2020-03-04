@@ -60,8 +60,19 @@
 					}
 					
 					if(isset($_POST['idlist']))$_GET['listid'] = $_POST['idlist'];
-					
-					alter_List($conn);
+					verify_ListPassword($conn);
+					if($_POST['action'] == 'UpdateList'){
+						if($_POST['listName'] == ''){
+							header("Location: list.php");
+							exit();
+						}
+						$query = "UPDATE `list` SET `list_name`= ? WHERE `idlist` = ?";
+						$result = $conn -> prepare($query);
+						$result -> bind_param("si", $_POST['listName'],$_GET['listid']);
+						$result -> execute();
+					}else{
+						alter_List($conn);
+					}
 					
 				}else if($_POST['submission_type'] == 3){
 					
@@ -77,10 +88,10 @@
 						$result = $conn -> prepare($query);
 						$result -> bind_param("i", $_POST['categoryid']);
 						$result -> execute();
-					}else if($_POST['action'] == 'UpdateCategory'){
-						$query = "UPDATE `list_category` SET `order`=? WHERE `idlist_category` = ?";
+					}else if($_POST['action'] == 'UpdateCategory' && $_POST['category'] != ''){
+						$query = "UPDATE `list_category` SET `title`=?,`order`=? WHERE `idlist_category` = ?";
 						$result = $conn -> prepare($query);
-						$result -> bind_param("ii", $_POST['order'],$_POST['categoryid']);
+						$result -> bind_param("sii", $_POST['category'],$_POST['order'],$_POST['categoryid']);
 						$result -> execute();
 			}
 				}
@@ -208,7 +219,21 @@
 											header_buttons(2, 1, 'game.php',get_gamename($_GET['gameid'], $conn));
 											echo '<h3 class="mt-3">'.$list['list_name'];
 											print_listglyph($list['type'], $conn);
+											
+											echo ' <button class="btn btn-dark" onclick="showDIV(0)"></button>';
 											echo '</h3>';
+											echo '<div id="0" style="display: none;">
+											<form method="post" action="list.php?listid='.$_GET['listid'].'">
+											<input type="hidden" name="submission_type" value="2">
+											<input type="hidden" name="idlist" value="'.$_GET['listid'].'">
+											<div class="input-group">
+											<textarea name="listName" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="List Name">'.$list['list_name'].'</textarea>
+											<input name="listPass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="List Password">
+											<div class="input-group-append" id="button-addon4">
+											<button type="submit" name="action" value="UpdateList" class="btn btn-primary">Update</button>
+											<button type="submit" name="action" value="DeleteList" class="btn btn-danger" onclick="return confirm();">Delete List</button>
+											</div>
+											</div></form></div>';
 											echo $list['name'].' list';
 										}
 										copyLinktoclipboard('https://combosuki.com/list.php?listid='.$_GET['listid']);
@@ -240,6 +265,7 @@ WHERE `idlist` = ? ORDER BY `list_category`.`order`, `list_category`.`title`,`co
 								<input type="hidden" name="submission_type" value="3">
 								<input type="hidden" name="categoryid" value="'.$data['idlist_category'].'">
 								<div class="input-group">
+								<textarea name="category" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Category Name">'.$data['title'].'</textarea>
 								<input class="form-control" type="number" name="order" placeholder="Order" value="'.$data['order'].'" step="any">
 								<input name="listPass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="List Password">
 								<div class="input-group-append" id="button-addon4">
