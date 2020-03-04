@@ -847,7 +847,7 @@ function get_gamename($gameid, $conn){
 
 }
 
-function edit_listForm(){
+function edit_listForm($conn){
 	echo '<h3 class="mt-3">Edit List</h3>
 	<p>
 		<small>Use , to Add or Remove multiple entries from the list. (Eg.: 777,26 would add or remove entries 777 and 26 from the list.)</small>
@@ -858,8 +858,21 @@ function edit_listForm(){
 			echo '<div class="form-group mb-2"><input placeholder="Entry ID" style="background-color: #474747; color:#999999;" name="comboid" class="form-control" maxlength="45" rows="1"></input></div>
 			
 			<div class="form-group mb-2"><input placeholder="List Password" name="listPass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1"></input></div>
-			<div class="form-group mb-2"><input placeholder="Category" name="comment" maxlength="45" style="background-color: #474747; color:#999999;" class="form-control" rows="1"></input></div>
-			<div class="form-group mb-2"><button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Add Entry</button></div>
+			<div class="form-group mb-2"><input placeholder="Category" name="comment" maxlength="45" style="background-color: #474747; color:#999999;" class="form-control" rows="1"></input></div>';
+			
+			$query = "SELECT `idlist_category`, `title` FROM `list_category` WHERE `list_idlist` = ? ORDER BY `list_category`.`order`,`list_category`.`title`;";
+			$result = $conn -> prepare($query);
+			$result -> bind_param("i", $_GET['listid']);
+			$result -> execute();
+			echo '<div class="form-group mb-2"><select name="categoryid" class="custom-select">';
+			echo '<option value="0">New Category</option>';
+			foreach($result -> get_result() as $category){
+				echo '<option value="'.$category['idlist_category'].'" ';
+				echo '>'.$category['title'].'</option>';
+			}
+			echo '</select></div>'; 
+			
+			echo '<div class="form-group mb-2"><button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Add Entry</button></div>
 			<div class="form-group mb-2"><button type="submit" name="action" value="Delete" class="btn btn-danger btn-block">Remove Entry</button></div>';
 			if(1): ?>
 				<div class="form-group mb-2"><button type="submit" name="action" value="DeleteList" class="btn btn-warning btn-block" onclick="return confirm('Are you sure you want to delete this list?');">Delete List</button></div>
@@ -978,10 +991,21 @@ function copyLinktoclipboard($link){
 	<?php endif;
 }
 
+function add_listCategory($conn){
+	if($_POST['comment'] != '' && $_POST['categoryid'] == 0){
+		$query = "INSERT INTO `list_category`(`idlist_category`, `title`, `list_idlist`, `order`) VALUES (NULL,?,?,0)";
+		$result = $conn -> prepare($query);
+		$result -> bind_param("si",$_POST['comment'],$_GET['listid']);
+		$result -> execute();//echo $query; print_r($_POST);
+		return mysqli_insert_id($conn);
+	}
+	return $_POST['categoryid'];
+}
+
 function alter_List($conn){
 	
 	$ids = explode(",", $_POST['comboid']);
-	
+	$category = add_listCategory($conn);
 	for($i = 0; $i<sizeof($ids);$i++){
 		
 		$query = "SELECT `character`.`game_idgame` FROM `combo` INNER JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` WHERE `combo`.`idcombo` = ?";
@@ -1005,9 +1029,9 @@ function alter_List($conn){
 			$modPass = get_mod_password($lul['game_idgame'], $conn);
 			if($lul['password'] == $_POST['listPass'] || password_verify($_POST['listPass'], $modPass) || $_POST['listPass'] == $gamepass){
 				if($_POST['action'] == 'Submit'){
-					$query = "INSERT INTO `combo_listing`(`idcombo`, `idlist`, `comment`) VALUES (?,?,?)";
+					$query = "INSERT INTO `combo_listing`(`idcombo`, `idlist`, `comment`, `list_category_idlist_category`) VALUES (?,?,NULL,?)";
 					$result = $conn -> prepare($query);
-					$result -> bind_param("iis", $ids[$i], $_GET['listid'], $_POST['comment']);
+					$result -> bind_param("iii", $ids[$i], $_GET['listid'], $category);
 					$result -> execute();
 				}
 				if($_POST['action'] == 'Delete'){
@@ -1020,6 +1044,22 @@ function alter_List($conn){
 				header("Location: list.php?listid=".$_GET['listid']."");
 				exit();
 			}
+		}
+	}
+}
+
+function verify_ListPassword($conn){
+	$query = "	SELECT `password`,`modPass`,`globalPass` FROM `list` 
+JOIN `game` ON `game`.`idgame` = `list`.`game_idgame`
+WHERE `idlist` = ?";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i",$_GET['listid']);
+	$result -> execute();
+	
+	foreach($result -> get_result() as $pass){
+		if($pass['globalPass'] != $_POST['listPass'] && !password_verify($_POST['listPass'], $pass['modPass']) && $pass['password'] != $_POST['listPass']){
+			header("Location: index.php");
+			exit();
 		}
 	}
 }

@@ -41,6 +41,11 @@
 								$result -> bind_param("i", $_GET['listid']);
 								$result -> execute();
 								
+								$query = "DELETE FROM `list_category` WHERE `list_idlist` = ?";
+								$result = $conn -> prepare($query);
+								$result -> bind_param("i", $_GET['listid']);
+								$result -> execute();
+								
 								$query = "DELETE FROM `list` WHERE `idlist` = ?";
 								$result = $conn -> prepare($query);
 								$result -> bind_param("i", $_GET['listid']);
@@ -58,6 +63,26 @@
 					
 					alter_List($conn);
 					
+				}else if($_POST['submission_type'] == 3){
+					
+					verify_ListPassword($conn);
+					
+					if($_POST['action'] == 'DeleteCategory'){
+						$query = "DELETE FROM `combo_listing` WHERE `list_category_idlist_category` = ?";
+						$result = $conn -> prepare($query);
+						$result -> bind_param("i", $_POST['categoryid']);
+						$result -> execute();
+						
+						$query = "DELETE FROM `list_category` WHERE `idlist_category` = ?";
+						$result = $conn -> prepare($query);
+						$result -> bind_param("i", $_POST['categoryid']);
+						$result -> execute();
+					}else if($_POST['action'] == 'UpdateCategory'){
+						$query = "UPDATE `list_category` SET `order`=? WHERE `idlist_category` = ?";
+						$result = $conn -> prepare($query);
+						$result -> bind_param("ii", $_POST['order'],$_POST['categoryid']);
+						$result -> execute();
+			}
 				}
 			}
 		}
@@ -191,25 +216,40 @@
 										
 										echo '</p>';
 										
-										$query = "SELECT `combo_listing`.`idcombo`, `comment`, `combo`.`damage`, `character`.`Name`, `combo`.`combo`, `combo`.`comments`,`combo`.`video`,`combo`.`type` FROM `combo_listing` 
+										$query = "SELECT `combo_listing`.`idcombo`, `combo`.`damage`, `character`.`Name`, `combo`.`combo`, `combo`.`comments`,`combo`.`video`,`combo`.`type`, `list_category`.`title`, `list_category`.`idlist_category`,`list_category`.`order` 
+FROM `combo_listing` 
 INNER JOIN `combo` ON `combo`.`idcombo` = `combo_listing`.`idcombo` 
 LEFT JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` 
-WHERE `idlist` = ? ORDER BY `comment`, `combo`.`damage` DESC;";
+LEFT JOIN `list_category` ON `list_category`.`idlist_category` = `combo_listing`.`list_category_idlist_category`
+WHERE `idlist` = ? ORDER BY `list_category`.`order`, `list_category`.`title`,`combo`.`damage` DESC;";
 										$result = $conn -> prepare($query);
 										$result -> bind_param("i", $_GET['listid']);
-										$result -> execute();
+										$result -> execute();//echo $query;
 										echo '<table id="myTable">';
 						echo '<tr>';
 						echo '<th>Character</th><th>Inputs</th><th>Damage</th><th>Type</th>';
 						echo '</tr>';
-						$comment = '';
+						$title = '';
 						
 						foreach($result -> get_result() as $data){
-							if($comment != $data['comment']){
+							if($title != $data['title']){
 								echo '</table>';
-								echo '<h2 class="mt-3">'.$data['comment'].'</h2>';
+								echo '<h2 class="mt-3">'.$data['title'].' <button class="btn btn-dark" onclick="showDIV(-'.$data['idlist_category'].')"></button></h2>';
+								echo '<div id="-'.$data['idlist_category'].'" style="display: none;">
+								<form method="post" action="list.php?listid='.$_GET['listid'].'">
+								<input type="hidden" name="submission_type" value="3">
+								<input type="hidden" name="categoryid" value="'.$data['idlist_category'].'">
+								<div class="input-group">
+								<input class="form-control" type="number" name="order" placeholder="Order" value="'.$data['order'].'" step="any">
+								<input name="listPass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="List Password">
+								<div class="input-group-append" id="button-addon4">
+								<input type="hidden" name="entryid" value="54">
+								<button type="submit" name="action" value="UpdateCategory" class="btn btn-primary">Update</button>
+								<button type="submit" name="action" value="DeleteCategory" class="btn btn-danger" onclick="return confirm();">Delete</button>
+								</div>
+								</div></form></div>';
 								echo '<table>';
-								$comment = $data['comment'];
+								$title = $data['title'];
 							}
 							echo '<tr><td data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'">';
 							if($data['comments'] != '' || $data['video'] != ''){
@@ -237,7 +277,7 @@ WHERE `idlist` = ? ORDER BY `comment`, `combo`.`damage` DESC;";
 						}
 						echo '</table>';
 										
-						edit_listForm();
+						edit_listForm($conn);
 									}else{
 										header_buttons(1, 0, 'list.php',0);
 										echo '<h3>Listing</h3>
