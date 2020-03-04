@@ -971,6 +971,47 @@ function build_GETbutton(){
 	return $button;
 }
 
+function build_buttonFromVariables($pTitle, $pType, $pID, $pValue, $sTitle, $sType, $sID, $sValue){
+	$button = '';
+	for ($i = 0; $i<sizeof($pTitle);$i++){
+		if($pType[$i] == 1){
+			$button .= '&';
+			$button .= $pTitle[$i];
+			$button .= '=';
+			$button .= $pID[$i];
+		}else if($pType[$i] == 3){
+			$button .= '&';
+			$button .= $pTitle[$i].'[]';
+			$button .= '=';
+			$button .= $pID[$i];
+		}else if($pType[$i] == 2){
+			$button .= '&';
+			$button .= $pTitle[$i];
+			$button .= '=';
+			$button .= $pValue[$i];
+		}
+	}
+	for ($i = 0; $i<sizeof($sTitle);$i++){
+		if($sType[$i] == 1){
+			$button .= '&';
+			$button .= $sTitle[$i];
+			$button .= '=';
+			$button .= $sID[$i];
+		}else if($sType[$i] == 3){
+			$button .= '&';
+			$button .= $sTitle[$i].'[]';
+			$button .= '=';
+			$button .= $sID[$i];
+		}else if($sType[$i] == 2){
+			$button .= '&';
+			$button .= $sTitle[$i];
+			$button .= '=';
+			$button .= $sValue[$i];
+		}
+	}
+	return $button;
+}
+
 function background(){
 	if(isset($_POST['color'])){
 		setcookie("color", $_POST['color'], time() + (10 * 365 * 24 * 60 * 60), "/"); // 86400 = 1 day

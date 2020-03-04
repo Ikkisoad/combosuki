@@ -6,9 +6,11 @@
 	$primaryTitle = array();
 	$primaryValue = array();
 	$primaryType = array();
+	$primaryID = array();
 	$secondaryTitle = array();
 	$secondaryValue = array();
 	$secondaryType = array();
+	$secondaryID = array();
 	$query = "SELECT `idcombo`,`combo`,`damage`,`value`,`idResources_values`,`number_value`,`character`.`idcharacter`,`character`.`Name`, `video`, `game_resources`.`text_name`,`game_resources`.`type`, `combo`.`type` as listingtype, `combo`.`comments`,`game_resources`.`primaryORsecundary`, `character`.`game_idgame`, `resources_values`.`order`, `combo`.`submited`, `combo`.`patch`, `combo`.`author`
 FROM `combo` 
 INNER JOIN `resources` ON `combo`.`idcombo` = `resources`.`combo_idcombo` 
@@ -41,6 +43,7 @@ WHERE `idcombo` = ? ";
 		if($data['primaryORsecundary'] == 0){
 				array_push($secondaryTitle,$data['text_name']);
 				array_push($secondaryType,$data['type']);
+				array_push($secondaryID,$data['idResources_values']);
 				if($data['type'] == 1 || $data['type'] == 3){
 					array_push($secondaryValue, $data['value']);
 				}else{
@@ -49,6 +52,7 @@ WHERE `idcombo` = ? ";
 		}else{
 			array_push($primaryTitle,$data['text_name']);
 			array_push($primaryType,$data['type']);
+			array_push($primaryID,$data['idResources_values']);
 			if($data['type'] == 1 || $data['type'] == 3){
 				array_push($primaryValue, $data['value']);
 			}else{
@@ -274,9 +278,13 @@ WHERE `idcombo` = ? ";
 					<input type="hidden" name="video" value="<?php echo $video; ?>">
 					<input type="hidden" name="author" value="<?php echo $author; ?>">
 					<button class="btn btn-primary">Edit</button>
-					<p>Submitted: <?php echo $submited->format('d-m-Y');?></p>
 				</form>
-			</div>
+				<form method="post" action="<?php echo 'submit.php?gameid='.$_GET['gameid'].'&characterid='.$character.'&listingtype='.$listing_type.build_buttonFromVariables($primaryTitle,$primaryType,$primaryID,$primaryValue,$secondaryTitle,$secondaryType,$secondaryID,$secondaryValue);?>">
+					<button class="btn btn-dark">Search same resources</button>
+				</form>
+				<form>
+					<button class="btn btn-info" disabled>Submitted: <?php echo $submited->format('d-m-Y');?></button>
+				</form>
 			</div>
 		</main>
 	</body>
