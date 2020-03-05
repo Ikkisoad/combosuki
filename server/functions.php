@@ -35,10 +35,10 @@ function embed_video($video){
 										</div>';*/
 										//$i = substr_replace($video, "/s", 22,0);
 											echo 'Please consider uploading your video to another platform, streamable Videos that are inactive for 3 months are deleted.<br>';
-											//echo '<div style="width: 100%; height: 0px; position: relative; padding-bottom: 56.250%;"><iframe src="';
+											echo '<div style="width: 100%; height: 0px; position: relative; padding-bottom: 56.250%;"><iframe src="';
 											echo $video;
-											//echo '" frameborder="0" width="100%" height="100%" allowfullscreen style="width: 100%; height: 100%; position: absolute;"></iframe></div>';
-											//echo 'Please consider uploading your video to another platform, streamable Videos that are inactive for 3 months are deleted.';
+											echo '" frameborder="0" width="100%" height="100%" allowfullscreen style="width: 100%; height: 100%; position: absolute;"></iframe></div>';
+											echo 'Please consider uploading your video to another platform, streamable Videos that are inactive for 3 months are deleted.';
 											
 											/*echo '<div style="width: 100%; height: 0px; position: relative; padding-bottom: 56.250%;"><iframe src="';
 											echo $streamable;
@@ -114,9 +114,9 @@ function embed_video_notable($video){ //Twitter, Youtube, Twitch clip, Nico Nico
 														echo '" allowfullscreen></iframe>
 													</div>';*/
 													//$i = substr_replace($data['video'], "/s", 22,0);
-									//echo '<div style="width: 100%; height: 0px; position: relative; padding-bottom: 56.250%;"><iframe src="';
-									echo '<br>'.$video;
-									//echo '" frameborder="0" width="100%" height="100%" allowfullscreen style="width: 100%; height: 100%; position: absolute;"></iframe></div>';
+									echo '<div style="width: 100%; height: 0px; position: relative; padding-bottom: 56.250%;"><iframe src="';
+									echo $video;
+									echo '" frameborder="0" width="100%" height="100%" allowfullscreen style="width: 100%; height: 100%; position: absolute;"></iframe></div>';
 									echo '<br>Please consider uploading your video to another platform, streamable Videos that are inactive for 3 months are deleted.';
 														
 														
