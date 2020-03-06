@@ -508,6 +508,7 @@ function button_printing($idgame, $dataCombo, $conn){
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i",$idgame);
 	$result -> execute();
+	//$size = '4%';
 	
 	$buttonsName = array();
 	$buttonsPNG = array();
@@ -517,45 +518,45 @@ function button_printing($idgame, $dataCombo, $conn){
 		array_push($buttonsPNG,$each['png']);
 	}
 	$combo_image = '<img class="img-fluid" alt="Responsive image" src=img/buttons/start.png>';
-		$buttonID;
-		$buttonsName = array_map('strtolower', $buttonsName);
+	$buttonID;
+	$buttonsName = array_map('strtolower', $buttonsName);
+	
+	$array = str_split($dataCombo);
+	$image = '';
+	foreach($array as $char){
 		
-		$array = str_split($dataCombo);
-		$image = '';
-		foreach($array as $char){
-			
-				if(isset($char) && $char != ' '){
-					
-					$image .= strtolower($char);
-								
-				}else if($image != ''){
-					//$buttonID = array_search($image,$buttonsName);
-					$buttonID = array_search($image, $buttonsName);
-					//array_search(strtolower($image), array_map('strtolower', $buttonsName));
-					//echo $buttonID;
-					if($buttonID > -1){
-						if($image == '->'){$combo_image .= '<br>';}
-						$combo_image .= '<img class="img-fluid" alt="Responsive image" src=img/buttons/';
-						$combo_image .= $buttonsPNG[$buttonID];
-						$combo_image .= '.png>';
-					}else{
-						$combo_image .= ' '.$image.' ';
-					}
-					$image = '';
+			if(isset($char) && $char != ' '){
+				
+				$image .= strtolower($char);
+							
+			}else if($image != ''){
+				//$buttonID = array_search($image,$buttonsName);
+				$buttonID = array_search($image, $buttonsName);
+				//array_search(strtolower($image), array_map('strtolower', $buttonsName));
+				//echo $buttonID;
+				if($buttonID > -1){
+					if($image == '->'){$combo_image .= '<br>';}
+					$combo_image .= '<img class="img-fluid" alt="Responsive image" src=img/buttons/';
+					$combo_image .= $buttonsPNG[$buttonID];
+					$combo_image .= '.png>';
+				}else{
+					$combo_image .= ' '.$image.' ';
 				}
-		}
-		if($image != ''){
-					$buttonID = array_search($image,$buttonsName);
-					//echo $buttonID;
-					if($buttonID > -1){
-						if($image == '->'){echo '<br>';}
-						$combo_image .= '<img class="img-fluid" alt="Responsive image" src=img/buttons/';
-						$combo_image .= $buttonsPNG[$buttonID];
-						$combo_image .= '.png>';
-					}else{
-						$combo_image .= ' '.$image.' ';
-					}
-		}	
+				$image = '';
+			}
+	}
+	if($image != ''){
+				$buttonID = array_search($image,$buttonsName);
+				//echo $buttonID;
+				if($buttonID > -1){
+					if($image == '->'){echo '<br>';}
+					$combo_image .= '<img class="img-fluid" alt="Responsive image" src=img/buttons/';
+					$combo_image .= $buttonsPNG[$buttonID];
+					$combo_image .= '.png>';
+				}else{
+					$combo_image .= ' '.$image.' ';
+				}
+	}	
 		
 	return $combo_image;
 }
@@ -784,8 +785,8 @@ function get_combolink($comboid,$conn){
 }
 
 function print_listglyph($type, $conn){
-	if($type == 2)echo ' <img src="img/buttons/vanish.png" height="35" name="image-579" data-toggle="tooltip" title="Verified List">';
-	if($type == 3)echo ' <img src="img/buttons/kicharge.png" height="35" name="image-579" data-toggle="tooltip" title="Moderated List">';
+	if($type == 2)echo ' <img src="img/misc/verified.png" height="13" name="image-579" data-toggle="tooltip" title="Verified List">';
+	if($type == 3)echo ' <img src="img/misc/mod.png" height="19" name="image-579" data-toggle="tooltip" title="Moderated List">';
 }
 
 function meta_embedvideo($video){
@@ -861,7 +862,7 @@ function edit_listForm($conn){
 	<p><form class="form-inline" method="post" action="list.php?listid='.$_GET['listid'].'">
 			<input type="hidden" name="submission_type" value="2">';
 			
-			echo '<div class="form-group mb-2"><input placeholder="Entry ID" style="background-color: #474747; color:#999999;" name="comboid" class="form-control" maxlength="45" rows="1"></input></div>
+			echo '<div class="form-group mb-2"><input placeholder="Entry ID" style="background-color: #474747; color:#999999;" name="comboid" class="form-control" rows="1"></input></div>
 			
 			<div class="form-group mb-2"><input placeholder="List Password" name="listPass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1"></input></div>
 			<div class="form-group mb-2"><input placeholder="Category" name="comment" maxlength="45" style="background-color: #474747; color:#999999;" class="form-control" rows="1"></input></div>';
