@@ -2,166 +2,101 @@
 
 function embed_video($video){
 	if($video != ''){
-					echo '<p><table>';
-							echo '<tr><td>';
-								echo 'Video:';
-							echo '</td></tr>';
-							echo '<tr><td>';
-					if (strpos($video, 'twitter') !== false && strpos($video, 'https') !== false) {
-						echo '<blockquote class="twitter-tweet" data-conversation="none" data-lang="en"><p lang="en" dir="ltr">
-						<a href="';
-						echo $video;
-						echo '"></a>
-					</blockquote>
-					<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>';
-					}else if (strpos($video, 'youtu') !== false) {
-						preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $video, $match);
-						$youtube_id = $match[1];
-						//print_r($match);
-						//echo '<br> URL: ';
-						//echo $youtube_id;
-						$whatIWant = substr($video, strpos($video, "=") + 1);    
-						//echo '<br>what I want:';
-						//echo $whatIWant;
-						echo '<div class="embed-responsive embed-responsive-16by9">
-						<iframe class="embed-responsive-item" src="https://www.youtube.com/embed/';
-						echo $youtube_id;
-						echo '?start=';echo $whatIWant; echo '" allowfullscreen></iframe></div>';
-					}else if(strpos($video, 'streamable') !== false && strpos($video, 'https') !== false){
-											/*echo '<div class="embed-responsive embed-responsive-16by9">
-											<iframe class="embed-responsive-item" src="';
-											echo $video;
-											echo '" allowfullscreen></iframe>
-										</div>';*/
-										//$i = substr_replace($video, "/s", 22,0);
-											echo 'Please consider uploading your video to another platform, streamable Videos that are inactive for 3 months are deleted.<br>';
-											echo '<div style="width: 100%; height: 0px; position: relative; padding-bottom: 56.250%;"><iframe src="';
-											echo $video;
-											echo '" frameborder="0" width="100%" height="100%" allowfullscreen style="width: 100%; height: 100%; position: absolute;"></iframe></div>';
-											echo 'Please consider uploading your video to another platform, streamable Videos that are inactive for 3 months are deleted.';
-											
-											/*echo '<div style="width: 100%; height: 0px; position: relative; padding-bottom: 56.250%;"><iframe src="';
-											echo $streamable;
-											
-											echo '" frameborder="0" width="100%" height="100%" allowfullscreen style="width: 100%; height: 100%; position: absolute;"></iframe></div>';*/
-											
-					}else if(strpos($video, 'twitch') !== false && strpos($video, 'clips') !== false && strpos($video, 'https') !== false){
-						$i = substr_replace($video, "embed?clip=", 24,0);
-						echo '<iframe
-							src="'.$i.'"
-							height="360"
-							width="640"
-							frameborder="0"
-							scrolling="no"
-							allowfullscreen="true">
-						</iframe>';
-						
-					}else if(strpos($video, 'imgur') !== false && strpos($video, 'https') !== false){
-						//echo '<blockquote class="imgur-embed-pub" lang="en" data-id="a/amuAPtr"><a href="//imgur.com/amuAPtr">Jesus saves</a></blockquote><script async src="//s.imgur.com/min/embed.js" charset="utf-8"></script>'; https://imgur.com/sJyThyf
-						$i = substr($video, 18);
-						echo '<blockquote class="imgur-embed-pub" lang="en" data-id="';
-						echo $i;
-						echo '"><a href="';
-						echo $video;
-						echo '"></a></blockquote><script async src="//s.imgur.com/min/embed.js" charset="utf-8"></script>';
-					}else if(strpos($video, 'nicovideo') !== false && strpos($video, 'https') !== false){
-						$i = substr($video, 12);
-						//echo $i;
-						echo '<script type="application/javascript" src="https://embed.'.$i.'/script?w=640&h=360"></script>';
-						
-					}else if(strpos($video, 'nico') !== false && strpos($video, 'https') !== false){
-						$i = substr($video, 16);
-						$i = substr_replace($i,'w=640&h=360&',11	,0);
-						$i = substr_replace($i,'/script',10	,0);
-						//echo $i;
-						echo '<script type="application/javascript" src="https://embed.nicovideo.jp/watch/'.$i.'"></script>';
-						
-					}else{
-						echo $video;	
-					}
-					
-					echo '</td></tr>';
-					echo '</table></p>';
-				}
+		echo '<p><table>';
+				echo '<tr><td>';
+					echo 'Video:';
+				echo '</td></tr>';
+				echo '<tr><td>';
+		embed_video_notable($video);
+		
+		echo '</td></tr>';
+		echo '</table></p>';
+	}
 }
 
-function embed_video_notable($video){ //Twitter, Youtube, Twitch clip, Nico Nico, Streamable (RIP), imgur
+function embed_video_notable($video){ //Twitter, Youtube, Twitch clip, Nico Nico, imgur
 	if($video != ''){
-								if (strpos($video, 'twitter') !== false && strpos($video, 'https') !== false) {
-									echo '<blockquote class="twitter-tweet" data-conversation="none" data-lang="en"><p lang="en" dir="ltr">
-									<a href="';
-									echo $video;
-									echo '"></a>
-								</blockquote>
-								<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>';
-								}else if (strpos($video, 'youtu') !== false) {
-									preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $video, $match);
-									$youtube_id = $match[1];
-									//print_r($match);
-									//echo '<br> URL: ';
-									//echo $youtube_id;
-									$whatIWant = substr($video, strpos($video, "=") + 1);    
-									//echo '<br>what I want:';
-									//echo $whatIWant;
-									echo '<div class="embed-responsive embed-responsive-16by9">
-									<iframe class="embed-responsive-item" src="https://www.youtube.com/embed/';
-									echo $youtube_id;
-									echo '?start=';echo $whatIWant; echo '" allowfullscreen></iframe></div>';
-								}else if(strpos($video, 'streamable') !== false && strpos($video, 'https') !== false){
-														/*echo '<div class="embed-responsive embed-responsive-16by9">
-														<iframe class="embed-responsive-item" src="';
-														echo $data['video'];
-														echo '" allowfullscreen></iframe>
-													</div>';*/
-													//$i = substr_replace($data['video'], "/s", 22,0);
-									echo '<div style="width: 100%; height: 0px; position: relative; padding-bottom: 56.250%;"><iframe src="';
-									echo $video;
-									echo '" frameborder="0" width="100%" height="100%" allowfullscreen style="width: 100%; height: 100%; position: absolute;"></iframe></div>';
-									echo '<br>Please consider uploading your video to another platform, streamable Videos that are inactive for 3 months are deleted.';
-														
-														
-														/*echo '<div style="width: 100%; height: 0px; position: relative; padding-bottom: 56.250%;"><iframe src="';
-														echo $streamable;
-														
-														echo '" frameborder="0" width="100%" height="100%" allowfullscreen style="width: 100%; height: 100%; position: absolute;"></iframe></div>';*/
-														
-								}else if(strpos($video, 'twitch') !== false && strpos($video, 'clips') !== false && strpos($video, 'https') !== false){
-									$i = substr_replace($video, "embed?autoplay=false&clip=", 24,0);
-									echo '<iframe
-										src="'.$i.'"
-										preload="none"
-										autoplay="false"
-										height="360"
-										width="640"
-										frameborder="0"
-										scrolling="no"
-										allowfullscreen="true">
-									</iframe>';
-									
-								}else if(strpos($video, 'imgur') !== false && strpos($video, 'https') !== false){
-									//echo '<blockquote class="imgur-embed-pub" lang="en" data-id="a/amuAPtr"><a href="//imgur.com/amuAPtr">Jesus saves</a></blockquote><script async src="//s.imgur.com/min/embed.js" charset="utf-8"></script>'; https://imgur.com/sJyThyf
-									$i = substr($video, 18);
-									echo '<blockquote class="imgur-embed-pub" lang="en" data-id="';
-									echo $i;
-									echo '"><a href="';
-									echo $video;
-									echo '"></a></blockquote><script async src="//s.imgur.com/min/embed.js" charset="utf-8"></script>';
-								}else if(strpos($video, 'nicovideo') !== false && strpos($video, 'https') !== false){
-									$i = substr($video, 12);
-									//echo $i;
-									echo '<script type="application/javascript" src="https://embed.'.$i.'/script?w=640&h=360"></script>';
-									
-								}else if(strpos($video, 'nico') !== false && strpos($video, 'https') !== false){
-									$i = substr($video, 16);
-									$i = substr_replace($i,'w=640&h=360&',11	,0);
-									$i = substr_replace($i,'/script',10	,0);
-									//echo $i;
-									echo '<script type="application/javascript" src="https://embed.nicovideo.jp/watch/'.$i.'"></script>';
-									
-								}else{
-									echo $video;	
-								}
-							}
+		if (strpos($video, 'twitter') !== false && strpos($video, 'https') !== false) {
+			echo '<blockquote class="twitter-tweet" data-conversation="none" data-lang="en"><p lang="en" dir="ltr">
+			<a href="';
+			echo $video;
+			echo '"></a>
+		</blockquote>
+		<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>';
+		}else if (strpos($video, 'youtu') !== false) {
+			preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $video, $match);
+			$youtube_id = $match[1];
+			//print_r($match);
+			//echo '<br> URL: ';
+			//echo $youtube_id;
+			$whatIWant = substr($video, strpos($video, "=") + 1);    
+			//echo '<br>what I want:';
+			//echo $whatIWant;
+			echo '<div class="embed-responsive embed-responsive-16by9">
+			<iframe class="embed-responsive-item" src="https://www.youtube.com/embed/';
+			echo $youtube_id;
+			echo '?start=';echo $whatIWant; echo '" allowfullscreen></iframe></div>';
+		}else if(strpos($video, 'streamable') !== false && strpos($video, 'https') !== false){
+								/*echo '<div class="embed-responsive embed-responsive-16by9">
+								<iframe class="embed-responsive-item" src="';
+								echo $data['video'];
+								echo '" allowfullscreen></iframe>
+							</div>';*/
+							//$i = substr_replace($data['video'], "/s", 22,0);
+			echo '<div style="width: 100%; height: 0px; position: relative; padding-bottom: 56.250%;"><iframe src="';
+			echo $video;
+			echo '" frameborder="0" width="100%" height="100%" allowfullscreen style="width: 100%; height: 100%; position: absolute;"></iframe></div>';
+			echo '<br>Please consider uploading your video to another platform, streamable Videos that are inactive for 3 months are deleted.';
+								
+								
+								/*echo '<div style="width: 100%; height: 0px; position: relative; padding-bottom: 56.250%;"><iframe src="';
+								echo $streamable;
+								
+								echo '" frameborder="0" width="100%" height="100%" allowfullscreen style="width: 100%; height: 100%; position: absolute;"></iframe></div>';*/
+								
+		}else if(strpos($video, 'twitch') !== false && strpos($video, 'clips') !== false && strpos($video, 'https') !== false){
+			$i = substr_replace($video, "embed?autoplay=false&clip=", 24,0);
+			echo '<iframe
+				src="'.$i.'"
+				preload="none"
+				autoplay="false"
+				height="360"
+				width="640"
+				frameborder="0"
+				scrolling="no"
+				allowfullscreen="true">
+			</iframe>';
+			
+		}else if(strpos($video, 'imgur') !== false && strpos($video, 'https') !== false){
+			//echo '<blockquote class="imgur-embed-pub" lang="en" data-id="a/amuAPtr"><a href="//imgur.com/amuAPtr">Jesus saves</a></blockquote><script async src="//s.imgur.com/min/embed.js" charset="utf-8"></script>'; https://imgur.com/sJyThyf
+			$i = substr($video, 18);
+			echo '<blockquote class="imgur-embed-pub" lang="en" data-id="';
+			echo $i;
+			echo '"><a href="';
+			echo $video;
+			echo '"></a></blockquote><script async src="//s.imgur.com/min/embed.js" charset="utf-8"></script>';
+		}else if(strpos($video, 'nicovideo') !== false && strpos($video, 'https') !== false){
+			$i = substr($video, 12);
+			//echo $i;
+			echo '<script type="application/javascript" src="https://embed.'.$i.'/script?w=640&h=360"></script>';
+			
+		}else if(strpos($video, 'nico') !== false && strpos($video, 'https') !== false){
+			$i = substr($video, 16);
+			$i = substr_replace($i,'w=640&h=360&',11	,0);
+			$i = substr_replace($i,'/script',10	,0);
+			//echo $i;
+			echo '<script type="application/javascript" src="https://embed.nicovideo.jp/watch/'.$i.'"></script>';
+			
+		}else if(strpos($video, 'gfycat') !== false && strpos($video, 'https') !== false){
+			$i = $video;
+			$i = substr_replace($i,'/ifr',18,0);
+			//echo $i;
+			echo '<div style="position:relative; padding-bottom:calc(56.40% + 44px)"><iframe src='.$i.' frameborder="0" scrolling="no" width="100%" height="100%" style="position:absolute;top:0;left:0;" allowfullscreen></iframe></div>';
+			
+		}else{
+			echo $video;	
+		}
+	}
 }
 
 function print_listingtype($listingtype, $conn){
