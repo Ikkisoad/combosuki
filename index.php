@@ -96,6 +96,7 @@ include_once "server/conexao.php";
 							count_combos($conn);
 							echo '<h2>About the application:</h2><p>This application started as a fun project in the end of 2018, and the main motivation to keep at it is to help out the FGC assemble their findings and sort out the best options with a determined set of resources.</p>';
 							echo 'Hopefully with this database we will be able to keep the best combos known, without losing them to endless feeds.';
+							echo '<br>2020 Server costs: $0 / $27';
 							echo '<br><br><form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
 							<input type="hidden" name="cmd" value="_s-xclick" />
 							<input type="hidden" name="hosted_button_id" value="JNX6A2HZETH5Y" />
