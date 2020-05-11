@@ -107,6 +107,8 @@
 						<p class="mt-3"><button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Submit</button></p>
 					</form>
 				</div>
+				<p>Game Password can be used to edit EVERYTHING related to the game entry, submissions, resources, buttons, characters, lists etc.</p>
+				<p>Game Password can not be changed by users, so please careful. If you somehow end up needing to change it, please contact me @Ikkisoad.</p>
 			</div>
 		</main>
 		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

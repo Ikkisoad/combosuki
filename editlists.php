@@ -202,6 +202,8 @@
 						edit_controls($_GET['gameid']);
 						mysqli_close($conn);
 					?>
+					<p>If someone tries to delete a list with moderator password the list will appear here as flagged.</p>
+					<p>Moderated lists have preference in searches and will always appear on top, followed by verified lists and then normal lists. Flagged lists do not show up.</p>
 				</div>
 			</div>
 		</main>

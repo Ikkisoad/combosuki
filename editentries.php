@@ -164,6 +164,7 @@
 						edit_controls($_GET['gameid']);
 						mysqli_close($conn);
 					?>
+					<p>Entry types are the way you categorize submissions, a few examples are: Combo, Blockstring, Okizeme...</p>
 				</div>
 			</div>
 		</main>

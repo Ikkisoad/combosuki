@@ -121,7 +121,7 @@ JOIN `game` ON `game`.`idgame` = `character`.`game_idgame` SET `combo`= REPLACE(
 						header_buttons(2, 1, 'game.php', get_gamename($_GET['gameid'], $conn));
 						echo '<table id="myTable">';
 						echo '<tr>';
-						echo '<th>Mass Edit Combos</th';
+						echo '<th>Mass Edit Submissions</th';
 						echo '</tr>';
 						
 						echo '<tr><td>';

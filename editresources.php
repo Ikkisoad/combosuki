@@ -310,6 +310,18 @@
 						edit_controls($_GET['gameid']);
 						mysqli_close($conn);
 					?>
+					<p>Any game needs at least ONE primary resource for it to work properly. (That includes searching/viewing submissions).<br>
+					Primary resources are the ones that always have to be listed along submissions, secundary are more specific resources that do not have to be on every entry.<br>
+					Currently there are three types of resources:<br>
+					1: List<br>
+					> A simple list of options, it should have at least one option to work properly.<br>
+					2: Number<br>
+					> In its options, number resources should have its max value.<br>
+					3: Duplicated<br>
+					> Created for use on games that have assists, duplicated resources will appear twice and it allows for searches to ignore the order of the assists.<br>
+					For example: Before a combo with assist A + B was considered different from combos with assist B + A. But with duplicated resource type A + B = B + A.<br>
+					<br>
+					Resources are what are used to do searches, so that is why you need at least one primary resource for the search to work.
 				</div>
 			</div>
 		</main>

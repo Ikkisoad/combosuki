@@ -193,6 +193,7 @@
 						edit_controls($_GET['gameid']);
 						mysqli_close($conn);
 					?>
+					<p>Buttons are used as shortcuts when creating a submission.<br>Button Name is what is typed on the text box when you click it.<br>You can also choose how the button looks and its order.<br>If you have any new image suggestion please send them over <a href="https://goo.gl/forms/6Q8dVlNbdOyTMA4h2" target="_blank">here</a>.</p>
 				</div>
 			</div>
 		</main>

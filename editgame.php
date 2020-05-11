@@ -223,6 +223,7 @@ WHERE `game`.`idgame` = ?";
 							edit_controls($_GET['gameid']);
 							mysqli_close($conn);
 						?>
+						<p>Moderation password can be changed anytime. And it can be used to edit anything about the game if it is unlocked, if the game is locked Moderation Password can only edit submissions and lists. <br>It can not edit data from this page.</p>
 				</div>
 			</div>
 		</main>
