@@ -144,7 +144,7 @@ include_once "server/conexao.php";
 			  <a href="index.php?about=3" style="padding-right: 5px;">Logs</a> | 
 			  <a href="https://docs.google.com/spreadsheets/d/1ac2nRBy0tTPz6k6heook5w8R7dDngutW8OkK5alhI7k/edit#gid=1066344564" target="_blank" style="padding-right: 5px;">FGC Discord Compendium </a> | 
 			  <a href="index.php?about=4" style="padding-right: 5px;">Preferences</a> | 
-			  <a href=" https://github.com/Ikkisoad/combosuki" style="padding-right: 5px;">GitHub</a> /
+			  <a href=" https://github.com/Ikkisoad/combosuki" target="_blank" style="padding-right: 5px;">GitHub</a> /
 		  </div>
 		</div>
 	</body>
