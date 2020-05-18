@@ -218,8 +218,7 @@
 											$_GET['gameid'] = $list['game_idgame'];
 											header_buttons(2, 1, 'game.php',get_gamename($_GET['gameid'], $conn));
 											echo '<h3 class="mt-3">'.$list['list_name'];
-											print_listglyph($list['type'], $conn);
-											
+											print_listglyph($list['type']);
 											echo ' <button class="btn btn-dark" onclick="showDIV(0)"></button>';
 											echo '</h3>';
 											echo '<div id="0" style="display: none;">
@@ -234,6 +233,7 @@
 											<button type="submit" name="action" value="DeleteList" class="btn btn-danger" onclick="return confirm();">Delete List</button>
 											</div>
 											</div></form></div>';
+											print_gameglyph($list['game_idgame'],$conn);
 											echo $list['name'].' list';
 										}
 										copyLinktoclipboard('https://combosuki.com/list.php?listid='.$_GET['listid']);
@@ -249,7 +249,7 @@ LEFT JOIN `list_category` ON `list_category`.`idlist_category` = `combo_listing`
 WHERE `idlist` = ? ORDER BY `list_category`.`order`, `list_category`.`title`,`combo`.`damage` DESC;";
 										$result = $conn -> prepare($query);
 										$result -> bind_param("i", $_GET['listid']);
-										$result -> execute();//echo $query;
+										$result -> execute();
 										echo '<table id="myTable">';
 						echo '<tr>';
 						echo '<th>Character</th><th>Inputs</th><th>Damage</th><th>Type</th>';
@@ -367,7 +367,7 @@ WHERE `idlist` = ? ORDER BY `list_category`.`order`, `list_category`.`title`,`co
 													
 												}
 											}else{
-											$query = "SELECT `idlist`, `list_name`, `type` FROM `list` ORDER BY `idlist` DESC LIMIT 0,50";
+											$query = "SELECT `idlist`, `list_name`, `type`,`game_idgame` FROM `list` ORDER BY `idlist` DESC LIMIT 0,50";
 											$result = $conn -> prepare($query);
 											$result -> execute();
 											echo '<table id="myTable">';
@@ -376,8 +376,10 @@ WHERE `idlist` = ? ORDER BY `list_category`.`order`, `list_category`.`title`,`co
 											echo '</tr>';
 											foreach($result -> get_result() as $search){
 												if($search['list_name'] != ''){
-													echo '<tr><td><a  href="list.php?listid='.$search['idlist'].'">'.$search['list_name'].'</a>';
-													print_listglyph($search['type'], $conn);
+													echo '<tr><td>';
+													print_gameglyph($search['game_idgame'],$conn);
+													echo '<a  href="list.php?listid='.$search['idlist'].'">'.$search['list_name'].'</a>';
+													print_listglyph($search['type']);
 													echo '</tr></td>';
 												}
 											}

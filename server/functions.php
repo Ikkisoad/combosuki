@@ -719,9 +719,19 @@ function get_combolink($comboid,$conn){
 	return 'http://combosuki.com/combo.php?idcombo='.$comboid;
 }
 
-function print_listglyph($type, $conn){
+function print_listglyph($type){
 	if($type == 2)echo ' <img src="img/misc/verified.png" height="13" name="image-579" data-toggle="tooltip" title="Verified List">';
 	if($type == 3)echo ' <img src="img/misc/mod.png" height="19" name="image-579" data-toggle="tooltip" title="Moderated List">';
+}
+
+function print_gameglyph($gameid, $conn){
+	$query = "SELECT `image`,`name` FROM `game` WHERE `idgame` = ?";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i", $gameid);
+	$result -> execute();
+	foreach($result -> get_result() as $lol){
+		echo ' <img src="'.$lol['image'].'" height="19" name="image-579" data-toggle="tooltip" title="'.$lol['name'].'">';
+	}
 }
 
 function meta_embedvideo($video){
