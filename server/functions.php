@@ -839,7 +839,7 @@ function addtoListForm(){
 				<input name="listPass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="List Password">
 				<input placeholder="Category" name="comment" maxlength="45" style="background-color: #474747; color:#999999;" class="form-control" rows="1">
 				<div class="input-group-append" id="button-addon4">
-					<button type="submit" name="action" value="Submit" class="btn btn-primary">Add to list</button>
+				<button type="submit" name="action" value="Submit" class="btn btn-primary">Add to list</button>
 				</div>
 			</div>
 		</form>

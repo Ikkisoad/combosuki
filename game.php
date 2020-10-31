@@ -1,6 +1,7 @@
 <!doctype php>
 <html>
 	<head>
+		<script data-ad-client="ca-pub-5026741930646917" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
 		<meta name="description" content="">
@@ -107,7 +108,7 @@
 					</p>
 					
 					<p>
-						<small>Click the character name to see comments/video if the combo has them.</small>
+						<small>Click the character name to see comments/video if the entry has them.</small>
 					</p>
 					
 					<?php
@@ -116,6 +117,17 @@
 						mysqli_close($conn);
 					?>
 					</p>
+					<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+					<!-- Horizontal AD Unit -->
+					<ins class="adsbygoogle"
+						 style="display:block"
+						 data-ad-client="ca-pub-5026741930646917"
+						 data-ad-slot="5901997200"
+						 data-ad-format="auto"
+						 data-full-width-responsive="true"></ins>
+					<script>
+						 (adsbygoogle = window.adsbygoogle || []).push({});
+					</script>
 			</div>
 		</main>
 	</body>
