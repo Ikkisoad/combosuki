@@ -1,6 +1,7 @@
 <!doctype php>
 <?php
 	include_once "server/conexao.php";
+	include_once "server/functions.php";
 	if(!empty($_POST)){
 	//	p
 		$_POST = array_map("strip_tags", $_POST);
@@ -109,6 +110,9 @@
 				</div>
 				<p>Game Password can be used to edit EVERYTHING related to the game entry, submissions, resources, buttons, characters, lists etc.</p>
 				<p>Game Password can not be changed by users, so please careful. If you somehow end up needing to change it, please contact me @Ikkisoad.</p>
+				<?php
+				embed_video_notable('https://youtu.be/59b63HqIz_g');
+				?>
 			</div>
 		</main>
 		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
