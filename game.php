@@ -99,6 +99,7 @@
 				
 					<?php
 						quick_search_form($_GET['gameid'], $conn);
+						print_game_description($_GET['gameid'], $conn);
 					?>
 				
 					<?php print_game_links($_GET['gameid'], $conn); ?>

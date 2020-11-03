@@ -565,6 +565,28 @@ function print_game_links($idgame, $conn){
 		echo '<a href="'.$lol['Link'].'" target="_blank">'.$lol['Title'].'</a> ▰ ';
 	}
 }
+function print_game_description($idgame, $conn){
+	//require "server/conexao.php";
+	$query = "SELECT `description` FROM `game` WHERE `idGame` = ?;";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i",$idgame);
+	$result -> execute();
+	foreach($result -> get_result()	as $lol){
+		//echo '<h3>Description: </h3>';
+		echo $lol['description'];
+	}
+}
+
+function print_game_notation($idgame, $conn){
+	//require "server/conexao.php";
+	$query = "SELECT `notation` FROM `game` WHERE `idGame` = ?;";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i",$idgame);
+	$result -> execute();
+	foreach($result -> get_result()	as $lol){
+		echo $lol['notation'];
+	}
+}
 
 function edit_controls($gameid){
 	echo '<div class="btn-group" role="group">
