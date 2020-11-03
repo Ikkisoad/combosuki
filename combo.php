@@ -240,7 +240,7 @@ WHERE `idcombo` = ? ";
 					echo '</td></tr>';
 					echo '</table></p>';
 				}
-				 addtoListForm();
+				//addtoListForm();
 			?>
 			<div class="btn-group" role="group">
 				<form method="post" action="forms.php?gameid=<?php if(isset($gameid)){echo $gameid;} ?>">
