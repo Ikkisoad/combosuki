@@ -903,6 +903,7 @@ function build_GETbutton(){
 				$button .= '&';
 				$button .= $key;
 				$button .= '=';
+				$entry = str_replace(' ','',$entry);
 				$button .= $entry;
 			}else{
 				foreach($entry as $arraykey => $arrayentry){
