@@ -772,10 +772,10 @@ function strip_POSTtags(){
 		if(is_scalar($each)){
 		   //treat any scalar value as string and do stuff:
 		 //  echo $each.'<-->'.$key.'next>';
-		   $_POST[$key] = strip_tags($each);
+		   $_POST[$key] = htmlentities(strip_tags($each),ENT_QUOTES);
 		}else{
 		   foreach($each as $key_array => $each_array){
-			   $_POST[$key][$key_array] = strip_tags($each_array);
+			   $_POST[$key][$key_array] = htmlentities(strip_tags($each_array),ENT_QUOTES);
 		   }
 		}
 	}
@@ -787,10 +787,10 @@ function strip_GETtags(){
 		if(is_scalar($each)){
 		   //treat any scalar value as string and do stuff:
 		 //  echo $each.'<-->'.$key.'next>';
-		   $_GET[$key] = strip_tags($each);
+		   $_GET[$key] = htmlentities(strip_tags($each),ENT_QUOTES);
 		}else{
 		   foreach($each as $key_array => $each_array){
-			   $_GET[$key][$key_array] = strip_tags($each_array);
+			   $_GET[$key][$key_array] = htmlentities(strip_tags($each_array),ENT_QUOTES);
 		   }
 		}
 	}
