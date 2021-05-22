@@ -204,7 +204,7 @@
 							
 							echo '<tr><td>';
 								echo '<form method="post" action="editresources.php?gameid='.$_GET['gameid'].'">';
-								echo '<div class="input-group"><textarea name="resourcevalue" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Resource Name"></textarea>';
+								echo '<div class="input-group"><textarea name="resourcevalue" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Resource Name" autofocus></textarea>';
 								//echo $lol['Name'];
 								echo '<input class="form-control" type="number" name="order" placeholder="Order" value="" step="any">';
 								echo '
@@ -279,7 +279,7 @@
 							
 							echo '<tr><td>';
 								echo '<form method="post" action="editresources.php?gameid='.$_GET['gameid'].'">';
-								echo '<div class="input-group"><textarea name="resource" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Resource Name"></textarea>';
+								echo '<div class="input-group"><textarea name="resource" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Resource Name" autofocus></textarea>';
 								//echo $lol['Name'];
 								echo '<select name="type" class="custom-select">
 								<option value="1"';

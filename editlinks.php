@@ -144,7 +144,7 @@
 						
 						echo '<tr><td>';
 							echo '<form method="post" action="editlinks.php?gameid='.$_GET['gameid'].'">';
-							echo '<div class="input-group"><textarea name="title" maxlength="50" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Link Title"></textarea>';					
+							echo '<div class="input-group"><textarea name="title" maxlength="50" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Link Title" autofocus></textarea>';					
 							echo '<textarea name="link" maxlength="255" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Link URL"></textarea>';
 							echo '
   <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">

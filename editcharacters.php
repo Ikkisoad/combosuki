@@ -167,7 +167,7 @@ WHERE `character`.`idcharacter` = ?";
 						
 						echo '<tr><td>';
 							echo '<form method="post" action="editcharacters.php?gameid='.$_GET['gameid'].'">';
-							echo '<div class="input-group"><textarea name="character" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Character Name"></textarea>';
+							echo '<div class="input-group"><textarea name="character" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Character Name" autofocus></textarea>';
 							//echo $lol['Name'];
 							echo '
   <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">

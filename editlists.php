@@ -173,7 +173,7 @@
 						
 						echo '<tr><td>';
 							echo '<form method="post" action="editlists.php?gameid='.$_GET['gameid'].'">';
-							echo '<div class="input-group"><textarea name="idlist" maxlength="50" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="List ID"></textarea>';					
+							echo '<div class="input-group"><textarea name="idlist" maxlength="50" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="List ID" autofocus></textarea>';					
 							echo '<input name="listpass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="List Password">';
 							echo '<select name="type" class="custom-select">
 									<option value="0">Flagged</option>
