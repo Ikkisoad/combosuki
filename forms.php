@@ -243,7 +243,7 @@
 									echo '<br><br>';
 									$lap++;
 								}
-								if($resource['type'] == 1){
+								if($resource['type'] == 1){ //List resource
 										//print_r($_POST);
 									echo '<div class="input-group mb-3">
   <div class="input-group-prepend">
@@ -277,7 +277,7 @@
 										echo '</option>';
 									}
 									echo '</select></div> ';
-								}else if($resource['type'] == 2){
+								}else if($resource['type'] == 2){//Number resource
 									
 									$query = "SELECT idResources_values,value FROM `resources_values` WHERE `game_resources_idgame_resources` = ?;";
 									$result = $conn -> prepare($query);
@@ -285,6 +285,17 @@
 									$result -> execute();
 									foreach($result -> get_result() as $resource_value){
 										if($resource['text_name'] != 'Damage'){
+											if(!isset($_POST['type'])){
+												echo '<p>	<div class="input-group mb-3">
+												<div class="input-group-prepend">
+												<label class="input-group-text">';
+												echo $resource['text_name'] . '</label></div>';
+												echo '<select name="';
+												echo $resource['text_name'].'compare';
+												echo '"class="custom-select input-small"><option value=0>less than</options><option value=1';
+												echo '>greater than</options><option value=2';
+												echo '>equal to</options></select></div></p>';
+											}
 											echo '<p>	<div class="input-group mb-3">
 							<div class="input-group-prepend">
 								<span class="input-group-text">';

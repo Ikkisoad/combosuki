@@ -335,13 +335,24 @@ AND `character`.`game_idgame` = ? ";
 									$binded_parameters[$parameters_counter++] = $_GET[$parameterValue];
 								}
 							}
-						}else if($resource['type'] == 2){
+						}else if($resource['type'] == 2){ //Number resource
 							if(isset($_GET[$parameterValue])){
 								if($_GET[$parameterValue] != '-' && $_GET[$parameterValue] != ''){
 									$query = $query . "AND idcombo IN (SELECT resources.combo_idcombo FROM resources 
 JOIN resources_values ON resources.Resources_values_idResources_values = resources_values.idResources_values
 JOIN game_resources ON resources_values.game_resources_idgame_resources = game_resources.idgame_resources
-WHERE resources.number_value <= ? and game_resources.idgame_resources = ".$resource['idgame_resources'].") ";
+WHERE resources.number_value";
+									$compare = $resource['text_name'];
+									$compare = str_replace(' ','_',$compare);
+									if(($_GET[$compare.'compare']) == 2){
+										$query = $query . "=";
+									}else if(($_GET[$compare.'compare']) == 1){
+										$query = $query . ">=";
+									}else{
+										$query = $query . "<=";
+									}
+									unset($compare);
+									$query = $query . "? and game_resources.idgame_resources = ".$resource['idgame_resources'].") ";
 									$parameter_type .= "d";
 									$binded_parameters[$parameters_counter++] = $_GET[$parameterValue];
 								}
