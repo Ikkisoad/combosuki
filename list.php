@@ -241,7 +241,7 @@
 										
 										echo '</p>';
 										
-										$query = "SELECT `combo_listing`.`idcombo`, `combo`.`damage`, `character`.`Name`, `combo`.`combo`, `combo`.`comments`,`combo`.`video`,`combo`.`type`, `list_category`.`title`, `list_category`.`idlist_category`,`list_category`.`order` 
+										$query = "SELECT `list_category`.`title`
 FROM `combo_listing` 
 INNER JOIN `combo` ON `combo`.`idcombo` = `combo_listing`.`idcombo` 
 LEFT JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` 
@@ -250,16 +250,33 @@ WHERE `idlist` = ? ORDER BY `list_category`.`order`, `list_category`.`title`,`co
 										$result = $conn -> prepare($query);
 										$result -> bind_param("i", $_GET['listid']);
 										$result -> execute();
+										$title = '';
+										echo '<table><tr><td>';
+										foreach($result -> get_result() as $data){
+											if($title != $data['title']){
+												echo '<li><a href="#'.$data['title'].'"><span>'.$data['title'].'</span></a></li>';
+												$title = $data['title'];
+											}
+										}
+										echo '</td></tr></table>';
 										echo '<table id="myTable">';
 						echo '<tr>';
 						echo '<th>Character</th><th>Inputs</th><th>Damage</th><th>Type</th>';
 						echo '</tr>';
 						$title = '';
-						
+						$query = "SELECT `combo_listing`.`idcombo`, `combo`.`damage`, `character`.`Name`, `combo`.`combo`, `combo`.`comments`,`combo`.`video`,`combo`.`type`, `list_category`.`title`, `list_category`.`idlist_category`,`list_category`.`order` 
+FROM `combo_listing` 
+INNER JOIN `combo` ON `combo`.`idcombo` = `combo_listing`.`idcombo` 
+LEFT JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` 
+LEFT JOIN `list_category` ON `list_category`.`idlist_category` = `combo_listing`.`list_category_idlist_category`
+WHERE `idlist` = ? ORDER BY `list_category`.`order`, `list_category`.`title`,`combo`.`damage` DESC;";
+						$result = $conn -> prepare($query);
+						$result -> bind_param("i", $_GET['listid']);
+						$result -> execute();
 						foreach($result -> get_result() as $data){
 							if($title != $data['title']){
 								echo '</table>';
-								echo '<h2 class="mt-3">'.$data['title'].' <button class="btn btn-dark" onclick="showDIV(-'.$data['idlist_category'].')"></button></h2>';
+								echo '<h2 class="mt-3"><span class="mw-headline" id="'.$data['title'].'">'.$data['title'].'</span> <button class="btn btn-dark" onclick="showDIV(-'.$data['idlist_category'].')"></button></h2>';
 								echo '<div id="-'.$data['idlist_category'].'" style="display: none;">
 								<form method="post" action="list.php?listid='.$_GET['listid'].'">
 								<input type="hidden" name="submission_type" value="3">
