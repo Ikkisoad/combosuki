@@ -732,7 +732,7 @@ function edit_controls($gameid){
 						</div>';
 }
 
-function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1 -> Home/Listing Buttons>1 -> Home/Listing/Submit/Search/Edit Game Back=1 -> Game Back=2 -> Combo
+function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1 -> Home/Lists Buttons>1 -> Home/Lists/Submit/Search/Edit Game Back=1 -> Game Back=2 -> Combo
 	if($buttons): ?>
 		<div class="btn-group" role="group" aria-label="Basic example">
 		
@@ -771,7 +771,7 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 			?>
 			
 			<form method="get" action="list.php">
-				<button class="btn btn-secondary">Listing</button>
+				<button class="btn btn-secondary">Lists</button>
 			</form>
 			
 			<?php if($buttons > 1): ?>
@@ -928,7 +928,7 @@ function get_gamename($gameid, $conn){
 }
 
 function edit_listForm($conn){
-	echo '<h3 class="mt-3">Edit List</h3>
+	echo '<h3 class="mt-3" id="edit">Edit List</h3>
 	<p>
 		<small>Use , to Add or Remove multiple entries from the list. (Eg.: 777,26 would add or remove entries 777 and 26 from the list.)</small>
 	</p>

@@ -246,19 +246,15 @@ FROM `combo_listing`
 INNER JOIN `combo` ON `combo`.`idcombo` = `combo_listing`.`idcombo` 
 LEFT JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` 
 LEFT JOIN `list_category` ON `list_category`.`idlist_category` = `combo_listing`.`list_category_idlist_category`
-WHERE `idlist` = ? ORDER BY `list_category`.`order`, `list_category`.`title`,`combo`.`damage` DESC;";
+WHERE `idlist` = ?  GROUP BY `list_category`.`title` ORDER BY `list_category`.`order`, `list_category`.`title`,`combo`.`damage` DESC;";
 										$result = $conn -> prepare($query);
 										$result -> bind_param("i", $_GET['listid']);
 										$result -> execute();
-										$title = '';
 										echo '<table><tr><td>';
 										foreach($result -> get_result() as $data){
-											if($title != $data['title']){
-												echo '<li><a href="#'.$data['title'].'"><span>'.$data['title'].'</span></a></li>';
-												$title = $data['title'];
-											}
+											echo '<li><a href="#'.$data['title'].'"><span>'.$data['title'].'</span></a></li>';
 										}
-										echo '</td></tr></table>';
+										echo '<li><a href="#edit"><span>Edit</span></a></li></td></tr></table>';
 										echo '<table id="myTable">';
 						echo '<tr>';
 						echo '<th>Character</th><th>Inputs</th><th>Damage</th><th>Type</th>';
