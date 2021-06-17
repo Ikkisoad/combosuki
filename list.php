@@ -303,7 +303,7 @@ WHERE `idlist` = ? ORDER BY `list_category`.`order`, `list_category`.`title`,`co
   
   //####################################################################VIDEO HERE
   
-							embed_video_notable($data['video']);
+							embed_video_on_demand($data['video'], $data['idcombo']);
   
   //######################################################################VIDEO ABOVE
   
@@ -414,14 +414,32 @@ WHERE `idlist` = ? ORDER BY `list_category`.`order`, `list_category`.`title`,`co
 		<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 		<script>window.jQuery || document.write('<script src="../../../../assets/js/vendor/jquery.min.js"><\/script>')</script>
 		<script>
+			function playVideo(video_id) {
+			  var video = document.getElementById(video_id);
+			  var src = video.dataset.src;
+
+			  video.src = src + '?autoplay=1';
+			}
+
+			function resetVideo(video_id) {
+			  var video = document.getElementById(video_id);
+			  var src = video.src.replace('?autoplay=1', '');
+
+			  video.src = '';
+			  video.dataset.src = src;
+			}
+
 			function showDIV(DIV_ID) {
 				var x = document.getElementById(DIV_ID);
 				if (x.style.display === "none") {
 					x.style.display = "block";
+					playVideo('v'+DIV_ID);
 				}else{
 					x.style.display = "none";
+					resetVideo('v'+DIV_ID);
 				}
 			}
+
 		</script>
 		<script>
 			function copytoclip(link) {

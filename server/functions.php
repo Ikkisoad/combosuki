@@ -99,7 +99,8 @@ function embed_video_notable($video){ //Twitter, Youtube, Twitch clip, Nico Nico
 	}
 }
 
-function embed_video_on_demand($video){ //Twitter, Youtube, Twitch clip, Nico Nico, imgur
+function embed_video_on_demand($video, $id){ //Twitter, Youtube, Twitch clip, Nico Nico, imgur
+	//Currently incomplite, only working with youtube and streamable.
 	if($video != ''){
 		if (strpos($video, 'twitter') !== false && strpos($video, 'https') !== false) {
 			echo '<blockquote class="twitter-tweet" data-conversation="none" data-lang="en"><p lang="en" dir="ltr">
@@ -118,9 +119,9 @@ function embed_video_on_demand($video){ //Twitter, Youtube, Twitch clip, Nico Ni
 			//echo '<br>what I want:';
 			//echo $whatIWant;
 			echo '<div class="embed-responsive embed-responsive-16by9">
-			<iframe class="embed-responsive-item" src="https://www.youtube.com/embed/';
+			<iframe id="v'.$id.'" class="embed-responsive-item" data-src="https://www.youtube.com/embed/';
 			echo $youtube_id;
-			echo '?start=';echo $whatIWant; echo '" allowfullscreen></iframe></div>';
+			echo '?start=';echo $whatIWant; echo '" src="about:blank" allowfullscreen></iframe></div>';
 		}else if(strpos($video, 'streamable') !== false && strpos($video, 'https') !== false){
 								/*echo '<div class="embed-responsive embed-responsive-16by9">
 								<iframe class="embed-responsive-item" src="';
@@ -128,9 +129,9 @@ function embed_video_on_demand($video){ //Twitter, Youtube, Twitch clip, Nico Ni
 								echo '" allowfullscreen></iframe>
 							</div>';*/
 							//$i = substr_replace($data['video'], "/s", 22,0);
-			echo '<div style="width: 100%; height: 0px; position: relative; padding-bottom: 56.250%;"><iframe src="';
+			echo '<div style="width: 100%; height: 0px; position: relative; padding-bottom: 56.250%;"><iframe id="v'.$id.'" data-src="';
 			echo $video;
-			echo '" frameborder="0" width="100%" height="100%" allowfullscreen style="width: 100%; height: 100%; position: absolute;"></iframe></div>';
+			echo '" frameborder="0" width="100%" height="100%" allowfullscreen style="width: 100%; height: 100%; position: absolute;" src="about:blank" ></iframe></div>';
 			echo '<br>Please consider uploading your video to another platform, streamable Videos that are inactive for 3 months are deleted.';
 								
 								

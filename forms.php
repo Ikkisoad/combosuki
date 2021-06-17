@@ -384,7 +384,7 @@
 						?>
 						
 						<label for="exampleFormControlTextarea1">Video:</label>
-						<textarea name="video" style="background-color: #474747; color:#999999;" class="form-control" id="exampleFormControlTextarea1" rows="1" maxlength="255" title="trabalho" placeholder="Currently supports youtube, niconico, twitter, imgur and twitch clips."><?php 
+						<textarea name="video" style="background-color: #474747; color:#999999;" class="form-control" id="exampleFormControlTextarea1" rows="1" maxlength="255" title="trabalho" placeholder="Currently supports youtube, niconico, twitter, imgur and Gfycat."><?php 
 							if(isset($_POST['type'])){
 								if($_POST['type'] == 2){
 									echo $_POST['video'];
