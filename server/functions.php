@@ -1173,4 +1173,17 @@ WHERE `idlist` = ?";
 	}
 }
 
+function pagination($numberOfPages, $getAtributes, $currentPage){
+	$count = 0;
+	echo '<nav><ul class="pagination pagination-sm flex-wrap">';
+	while($count < $numberOfPages){
+		if($count == $currentPage){
+			echo '<li class="page-item active"> <span class="page-link">'.$count++.' </span></li>';
+		}else{
+			echo ' <li class="page-item"><a class="page-link" href="submit.php?page='.$count.$getAtributes.'"">'.$count++.' </a></li>'; //style="padding-right: 5px;
+		}
+	}
+	echo'  </ul></nav>';
+}
+
 ?>
