@@ -5,6 +5,7 @@ include_once "server/conexao.php";
 ?>
 <html>
 	<head>
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
 		<link rel="apple-touch-icon" sizes="57x57" href="img/apple-icon-57x57.png">
 		<link rel="apple-touch-icon" sizes="60x60" href="img/apple-icon-60x60.png">
 		<link rel="apple-touch-icon" sizes="72x72" href="img/apple-icon-72x72.png">
@@ -134,10 +135,7 @@ include_once "server/conexao.php";
 			</div>
 		</main>
 		<div class="footer">
-		  <!-- <div style="text-align: right;">Created by: <a href="https://twitter.com/Ikkisoad" target="_blank">@Ikkisoad</a>   E-Mail: <a href="mailto:ikkisoad@combosuki.com">ikkisoad@combosuki.com</a></div>
-		  <div style="text-align: right;">Buttons designed by: <a href="https://twitter.com/Makaaaaai" target="_blank">@Makaaaaai</a></div> -->
 		  <div style="text-align: center;">
-			  <!-- <a href="https://goo.gl/forms/xzjGo1dQEGOTzZGT2" target="_blank">Request a new game   </a> -->
 			  \ <a href="addgame.php">Add game</a> | 
 			  <a href="index.php?about=1" style="padding-right: 5px;">About</a> | 
 			  <a href="index.php?about=2">Combo Guidelines </a> | 
@@ -147,6 +145,7 @@ include_once "server/conexao.php";
 			  <a href=" https://github.com/Ikkisoad/combosuki" target="_blank" style="padding-right: 5px;">GitHub</a> /
 		  </div>
 		</div>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
 	</body>
 	    <!-- Bootstrap core JavaScript
 		================================================== -->

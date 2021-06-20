@@ -211,20 +211,20 @@ function combo_table($gameid, $conn){
 						foreach($result -> get_result() as $data){
 							echo '<tr><td data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'">';
 							if($data['comments'] != '' || $data['video'] != ''){
-								echo '<button class="btn btn-dark" onclick="showDIV('.$data['idcombo'].')">'.$data['Name'].'</button>';
+								echo '<button class="btn btn-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapse'.$data['idcombo'].'"">'.$data['Name'].'</button>'; //onclick="showDIV('.$data['idcombo'].')
 							}else{
 								echo $data['Name'];
 							}
 							echo '</td><td style="min-width:400px">';
 							echo		'<a data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'" href="combo.php?idcombo='.$data['idcombo'].'">'.$data['combo'].'</a>';
-							echo '<div id="'.$data['idcombo'].'" style="display: none;">';
+							echo '<div class="collapse" id="collapse'.$data['idcombo'].'"><div class="card card-body p-3 mb-2 bg-transparent border border-5 border-dark">'; //style="display: none;"
 							echo $data['comments'].'<br>';
   
   //####################################################################VIDEO HERE
 							embed_video_notable($data['video']);
   //######################################################################VIDEO ABOVE
   
-							echo '</div>';
+							echo '</div></div>';
 							echo '</td><td>';
 							echo number_format($data['damage'],'0','','.');
 							echo '</td><td>';
