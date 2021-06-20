@@ -439,10 +439,8 @@ function quick_search_form($gameid, $conn){
 	foreach($result -> get_result()	as $resource){
 		$getName = str_replace(' ','_',$resource['text_name']);
 		if($resource['type'] == 1){ //List resource
-			echo '<div class="input-group mb-3">
-			<div class="input-group-prepend">
-			<label class="input-group-text">'; 
-			echo '</label></div>  <select name="';
+			echo '<div class="input-group mb-3">'; 
+			echo '<select name="';
 			echo $resource['text_name'];
 			echo '"class="custom-select input-small">';
 			$query = "SELECT idResources_values,value FROM `resources_values` WHERE `game_resources_idgame_resources` = ".$resource['idgame_resources']." ORDER BY resources_values.order, value;";
@@ -470,9 +468,7 @@ function quick_search_form($gameid, $conn){
 			foreach($result -> get_result() as $resource_value){
 				$compare = $resource['text_name'];
 				$compare = str_replace(' ','_',$compare);
-				echo '<p>	<div class="input-group mb-3">
-				<div class="input-group-prepend">
-				<label class="input-group-text"></label></div>';
+				echo '<p>	<div class="input-group mb-3">';
 				echo '<select name="';
 				echo $resource['text_name'].'compare';
 				echo '"class="custom-select input-small"><option value=0>less than</options><option value=1';
@@ -489,11 +485,8 @@ function quick_search_form($gameid, $conn){
 				}
 				unset($compare);
 				echo '>equal to</options></select></div>';
-				echo '<div class="input-group mb-3">
-				<div class="input-group-prepend">
-				<span class="input-group-text">';
-				echo ' </div>
-				<input class="form-control" type="number" min="-'.$resource_value['value'].'" class="input-sm" name="';
+				echo '<div class="input-group mb-3">';
+				echo '<input class="form-control" type="number" min="-'.$resource_value['value'].'" class="input-sm" name="';
 				echo $resource['text_name'];
 				echo '" placeholder="'.$resource['text_name'].'"';
 				echo ' max="';
@@ -507,10 +500,7 @@ function quick_search_form($gameid, $conn){
 		}else if($resource['type'] == 3){ //Duplicated Resource
 			$duplicated_resource = 0;
 			while($duplicated_resource++ != 2){
-				echo '<div class="input-group mb-3">
-				<div class="input-group-prepend">
-				<label class="input-group-text">
-				</label></div>  <select name="';
+				echo '<div class="input-group mb-3"><select name="';
 				echo $resource['text_name'];
 				echo '[]"class="custom-select input-small">';
 				$query = "SELECT idResources_values,value FROM `resources_values` WHERE `game_resources_idgame_resources` = ".$resource['idgame_resources']." ORDER BY resources_values.order, value;";
