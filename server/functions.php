@@ -1186,4 +1186,21 @@ function pagination($numberOfPages, $getAtributes, $currentPage){
 	echo'  </ul></nav>';
 }
 
+function list_categories($listid,$conn){
+	$query = "SELECT `list_category`.`title`
+FROM `combo_listing` 
+INNER JOIN `combo` ON `combo`.`idcombo` = `combo_listing`.`idcombo` 
+LEFT JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` 
+LEFT JOIN `list_category` ON `list_category`.`idlist_category` = `combo_listing`.`list_category_idlist_category`
+WHERE `idlist` = ?  GROUP BY `list_category`.`title` ORDER BY `list_category`.`order`, `list_category`.`title`,`combo`.`damage` DESC;";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i", $listid);
+	$result -> execute();
+	echo '<div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 280px;><ul class="list-unstyled mb-0 py-3 pt-md-1">
+			<li class="list-group-item bg-dark"><a href="#edit"><span>Edit</span></a></li>';
+	foreach($result -> get_result() as $data){
+		echo '<li class="list-group-item bg-dark"><a href="#'.$data['title'].'"><span>'.$data['title'].'</span></a></li>';
+	}
+	echo '</ul></div><div class="b-example-divider"></div>';
+}
 ?>
