@@ -216,8 +216,8 @@ function combo_table($gameid, $conn){
 								echo $data['Name'];
 							}
 							echo '</td><td style="min-width:400px">';
-							echo		'<a data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'" href="combo.php?idcombo='.$data['idcombo'].'">'.$data['combo'].'</a>';
-							echo '<div class="collapse" id="collapse'.$data['idcombo'].'"><div class="card card-body p-3 mb-2 bg-transparent border border-5 border-dark">'; //style="display: none;"
+							echo		'<a class="link-light" data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'" href="combo.php?idcombo='.$data['idcombo'].'">'.$data['combo'].'</a>';
+							echo '<div class="collapse" id="collapse'.$data['idcombo'].'"><div class="card card-body p-3 mb-2 bg-transparent border border-5 border-dark ">'; //style="display: none;"
 							echo $data['comments'].'<br>';
   
   //####################################################################VIDEO HERE

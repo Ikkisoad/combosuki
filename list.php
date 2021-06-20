@@ -103,6 +103,7 @@
 <!doctype php>
 <html>
 	<head>
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
 		<link rel="apple-touch-icon" sizes="57x57" href="img/apple-icon-57x57.png">
 		<link rel="apple-touch-icon" sizes="60x60" href="img/apple-icon-60x60.png">
 		<link rel="apple-touch-icon" sizes="72x72" href="img/apple-icon-72x72.png">
@@ -250,11 +251,12 @@ WHERE `idlist` = ?  GROUP BY `list_category`.`title` ORDER BY `list_category`.`o
 										$result = $conn -> prepare($query);
 										$result -> bind_param("i", $_GET['listid']);
 										$result -> execute();
-										echo '<table><tr><td>';
+										echo '<ul class="list-group">
+												<li class="list-group-item bg-dark"><a href="#edit"><span>Edit</span></a></li>';
 										foreach($result -> get_result() as $data){
-											echo '<li><a href="#'.$data['title'].'"><span>'.$data['title'].'</span></a></li>';
+											echo '<li class="list-group-item bg-dark"><a href="#'.$data['title'].'"><span>'.$data['title'].'</span></a></li>';
 										}
-										echo '<li><a href="#edit"><span>Edit</span></a></li></td></tr></table>';
+										echo '</ul>';
 										echo '<table id="myTable">';
 						echo '<tr>';
 						echo '<th>Character</th><th>Inputs</th><th>Damage</th><th>Type</th>';
@@ -407,6 +409,7 @@ WHERE `idlist` = ? ORDER BY `list_category`.`order`, `list_category`.`title`,`co
 				</div>
 			</div>
 		</main>
+		 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
 	</body>
 	    <!-- Bootstrap core JavaScript
 		================================================== -->
