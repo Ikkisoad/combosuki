@@ -56,39 +56,20 @@
 	
 	<body>
 		<main role="main">
-			<div class="jumbotron">
-				<div class="container">
-					<h1 class="display-3"></h1>
-						<p>
-							<a href="<?php
-									if(!empty($_GET)){
-										echo 'game.php?gameid=';
-										echo $_GET['gameid'];
-									}else{
-										echo 'index.php';	
-									}
-								?>"><img 
-								<?php
-									
-									game_image($_GET['gameid'], 200, $conn);
-								?>
-							</a>
-						</p>
-				</div>
-			</div>
+			<?php
+				jumbotron($conn,200);
+				if(isset($_POST['type'])){
+					if($_POST['type'] == 1){
+						header_buttons(2, 1, 'game.php',get_gamename($_GET['gameid'], $conn));
+					}else if($_POST['type'] == 2){
+						header_buttons(2, 2, 'combo.php', 69);
+					}
+				}else{
+					header_buttons(2, 1, 'game.php',get_gamename($_GET['gameid'], $conn));
+				}
+			?>
 			<div class="container">
 				<div class="form-group">
-						<?php
-							if(isset($_POST['type'])){
-								if($_POST['type'] == 1){
-									header_buttons(2, 1, 'game.php',get_gamename($_GET['gameid'], $conn));
-								}else if($_POST['type'] == 2){
-									header_buttons(2, 2, 'combo.php', get_gamename($_POST['idcombo'], $conn));
-								}
-							}else{
-								header_buttons(2, 1, 'game.php',get_gamename($_GET['gameid'], $conn));
-							}
-						?>
 					<form method="<?php
 						//print_r($_POST);
 						if(isset($_POST['type'])){

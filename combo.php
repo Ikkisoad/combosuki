@@ -130,31 +130,13 @@ WHERE `idcombo` = ? ";
 	</head>
 	<body>
 		<main role="main">
-			<div class="jumbotron">
-				<div class="container">
-					<h1 class="display-3"></h1>
-					<p>
-						<a href="
-							<?php
-								$query = "SELECT `character`.`game_idgame` FROM `character` INNER JOIN `combo` ON `character`.`idcharacter` = `combo`.`character_idcharacter` WHERE `combo`.`idcombo` = ?";
-								$result = $conn -> prepare($query);
-								$result -> bind_param("i",$_GET['idcombo']);
-								$result -> execute();
-								foreach($result -> get_result() as $data){
-									echo 'game.php?gameid=';
-									echo $data['game_idgame'].'">';
-									game_image($data['game_idgame'], 200, $conn);
-									$gameid = $data['game_idgame'];
-								}
-							?>
-						</a>
-					</p>
-				</div>
-			</div>
+			<?php 
+				$_GET['gameid'] = get_combogame($_GET['idcombo'], $conn);
+				jumbotron($conn,200);
+				header_buttons(2,1,'game.php',get_gamename($_GET['gameid'], $conn));
+			?>
 			<div class="container">
 				<?php
-					$_GET['gameid'] = get_combogame($_GET['idcombo'], $conn);
-					header_buttons(2,1,'game.php',get_gamename($_GET['gameid'], $conn));
 					echo '<p><table>';
 					echo '<tr>';
 					echo '<th>'; 
@@ -243,7 +225,7 @@ WHERE `idcombo` = ? ";
 				//addtoListForm();
 			?>
 			<div class="btn-group" role="group">
-				<form method="post" action="forms.php?gameid=<?php if(isset($gameid)){echo $gameid;} ?>">
+				<form method="post" action="forms.php?gameid=<?php echo $_GET['gameid']; ?>">
 					<?php
 						for($i = 0; $i<sizeof($primaryTitle); $i++){
 							echo '<input type="hidden" name="';

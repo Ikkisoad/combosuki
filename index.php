@@ -54,7 +54,6 @@ include_once "server/conexao.php";
 			  height: 100vh;
 			}
 			.jumbotron{
-				background: url("img/black-honeycomb.png");
 				max-height: 190px;
 				background-color: #000000;
 			}		
@@ -76,17 +75,12 @@ include_once "server/conexao.php";
 	
 	<body>
 		<main role="main">
-			<div class="jumbotron jumbotron-fluid">
-				<div class="container">
-					<h1 class="display-4"></h1>
-					<p class="lead">
-						<a href="index.php">
-							<img src="img/combosuki.png" align="middle" height="150" >
-						</a>
-					</p>
-				</div>
-			</div>
-			<?php header_buttons(1, 0, 0, 0);?>
+			<?php 
+			
+				jumbotron(1,150);
+				header_buttons(1, 0, 0, 0);
+			
+			?>
 			<div class="container">
 				<div class="body">
 					<?php

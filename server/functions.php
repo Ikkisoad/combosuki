@@ -242,13 +242,15 @@ function game_title($conn){
 	$query = "SELECT idgame, name, image FROM game WHERE complete > 0 ORDER BY name;";
 	$result = $conn -> prepare($query);
 	$result -> execute();
-	echo'<div class="row">';
+	echo'<div class="row row-cols-4">';
 	foreach($result -> get_result()	as $gameid){
-		echo '<div class="col-sm-3"><div class="card text-center w-100 p-3 h-100 bg-dark">';
-		echo '<img style="
+		echo '<div class="col"><div class="card text-center w-100 p-3 h-100 bg-dark">';
+		echo '<div class="card bg-danger text-center w-100 p-3 h-100"><img style="
+		max-height:200px;
+		max-width:200px;
 		height:auto;
 		width:auto;
-		" src="'.$gameid['image'].'" class="card-img-top bg-danger" alt="Responsive image"></img>';
+		" src="'.$gameid['image'].'" class="card-img-top bg-danger rounded mx-auto d-block" alt="Responsive image"></img></div>';
 		echo '<div class="card-body">';
 		echo '<a class="card-title text-white" ';
 		echo 'href="game.php?gameid=';
@@ -708,138 +710,97 @@ function edit_controls($gameid){
 
 function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1 -> Home/Lists Buttons>1 -> Home/Lists/Submit/Search/Edit Game Back=1 -> Game Back=2 -> Combo $backDestination == URL $backto == gameName
 	if($buttons): ?>
-	
-	
-	<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-		<a class="navbar-brand" href="index.php">
-		  <img src="img/favicon-32x32.png" alt="" width="30" height="24">
-		</a>
-	  <div class="container-fluid">
-		<a class="navbar-brand" href="index.php">Combo好き</a>
-		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-		  <span class="navbar-toggler-icon"></span>
-		</button>
-		<div class="collapse navbar-collapse" id="navbarSupportedContent">
-		  <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-			  <?php
-			  
-			  if($back){
-					echo '<li class="nav-item"><a class="nav-link active" aria-current="page" href="'.$backDestination.'?gameid='.$_GET['gameid'].'">';
-					if($back == 1){
-						echo $backto.'</a>';
-					}else if($back == 2){
-						echo '	<input type="hidden" name="idcombo" value="'.$_POST['idcombo'].'">';
-						echo '		<button class="btn btn-secondary">Entry ID: '.$_POST['idcombo'].'</button>';
-					}else{
-						echo '		<button class="btn btn-secondary"> << back</button>';
-					}
-								
-				//	echo '		<button class="btn btn-secondary"> << back</button>
-					echo '</li>';
-					
-				}
-			  if(!isset($_GET['gameid'])){
-				echo '<li class="nav-item">
-						  <a class="nav-link" href="index.php?about=1">About</a>
-						</li>';
-				echo '<li class="nav-item">
-						  <a class="nav-link" href="index.php?about=3">Logs</a>
-						</li>';
-				echo '<li class="nav-item">
-						  <a class="nav-link" href="https://github.com/Ikkisoad/combosuki" target="_blank">GitHub</a>
-						</li>';
-			  }
-			  ?>
-			<li class="nav-item">
-			  <a class="nav-link" href="list.php">Lists</a>
-			</li>
-			<li class="nav-item dropdown">
-			  <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-				...
-			  </a>
-			  <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-				<?php
-				
-					echo '<li><a class="dropdown-item" href="addgame.php">Add Game</a></li><li>
-					<hr class="dropdown-divider"></li>';
-					echo '<li><a class="dropdown-item" href="index.php?about=2">Combo Guidelines</a></li>';
-					echo '<li><a class="dropdown-item" href="https://srk.shib.live/w/Shoryuken_Wiki:Community_portal/Discords/Game" target="_blank">FGC Discord Compendium</a></li>';
-					echo '<li><a class="dropdown-item" href="index.php?about=4">Preferences</a></li>';
-				?>
-			  </ul>
-			</li>
-			<li class="nav-item">
-			  <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Created by @Ikkisoad</a>
-			</li>
-		  </ul>
-		  <form class="d-flex">
-			<input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-			<button class="btn btn-outline-success" type="submit">Search</button>
-		  </form>
-		</div>
-	  </div>
-	</nav>
-	
-	
-		<div class="btn-group" role="group" aria-label="Basic example">
-		
-			<form method="get" action="index.php">
-				<button class="btn btn-secondary">Combo好き</button>
-			</form>
-			
-			
-			<?php 
-				if(isset($_GET['listid'])){
-					echo '	<form method="get" action="list.php">';
-						echo '	<input type="hidden" name="listid" value="'.$_GET['listid'].'">';
-						echo '		<button class="btn btn-secondary">List ID:'.$_GET['listid'].'</button>';
-								
-				//	echo '		<button class="btn btn-secondary"> << back</button>
-					echo '		</form>';
-					
-				}
-			
-				if($back){
-					echo '	<form method="get" action="'.$backDestination.'">';
-					if($back == 1){
-						echo '	<input type="hidden" name="gameid" value="'.$_GET['gameid'].'">';
-						echo '		<button class="btn btn-secondary">'.$backto.'</button>';
-					}else if($back == 2){
-						echo '	<input type="hidden" name="idcombo" value="'.$_POST['idcombo'].'">';
-						echo '		<button class="btn btn-secondary">Entry ID: '.$_POST['idcombo'].'</button>';
-					}else{
-						echo '		<button class="btn btn-secondary"> << back</button>';
-					}
-								
-				//	echo '		<button class="btn btn-secondary"> << back</button>
-					echo '		</form>';
-					
-				}
-			?>
-			
-			<form method="get" action="list.php">
-				<button class="btn btn-secondary">Lists</button>
-			</form>
-			
-			<?php if($buttons > 1): ?>
-			
-			<form method="post" action="forms.php?gameid=<?php echo $_GET['gameid']; ?>">
-				<button class="btn btn-secondary">Submit</button>
-				<input type="hidden" id="type" name="type" value="1">
-			</form>
+		<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+			<a class="navbar-brand" href="index.php">
+				<img src="img/favicon-32x32.png" alt="" width="30" height="24">
+			</a>
+			<div class="container-fluid">
+				<a class="navbar-brand" href="index.php">Combo好き</a>
+				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarSupportedContent">
+					<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+						<?php
+							echo '<li class="nav-item">';
+							if($back){
+								echo '<a class="nav-link active" aria-current="page" href="'.$backDestination.'?gameid='.$_GET['gameid'].'">';
+								if($back == 1){
+									echo $backto.'</a>';
+								}else if($back == 2){
+									echo '	<input type="hidden" name="idcombo" value="'.$_POST['idcombo'].'">';
+									echo '		<button class="btn btn-secondary">Entry ID: '.$_POST['idcombo'].'</button>';
+								}else{
+									echo '		<button class="btn btn-secondary"> << back</button>';
+								}
+								echo '</li>';
 
-			<form method="get" action="forms.php">
-				<button class="btn btn-secondary">Search</button>
-				<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
-			</form>
-			
-			<form method="get" action="editgame.php">
-				<button class="btn btn-secondary">Edit Game</button>
-				<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
-			</form>
-			<?php endif; ?>
-		</div>
-	<?php
+							}
+							if(!isset($_GET['gameid'])){
+								echo '<li class="nav-item">
+										<a class="nav-link" href="index.php?about=1">About</a>
+									</li>';
+								echo '<li class="nav-item">
+										<a class="nav-link" href="index.php?about=3">Logs</a>
+									</li>';
+								echo '<li class="nav-item">
+										<a class="nav-link" href="https://github.com/Ikkisoad/combosuki" target="_blank">GitHub</a>
+									</li>';
+							}
+						?>
+						<li class="nav-item">
+							<a class="nav-link" href="list.php">Lists</a>
+						</li>
+
+						<li class="nav-item dropdown">
+							<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+							...
+							</a>
+							<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+								<?php
+
+									echo '<li><a class="dropdown-item" href="addgame.php">Add Game</a></li>
+										<li><hr class="dropdown-divider"></li>';
+									echo '<li><a class="dropdown-item" href="index.php?about=2">Combo Guidelines</a></li>';
+									echo '<li><a class="dropdown-item" href="https://srk.shib.live/w/Shoryuken_Wiki:Community_portal/Discords/Game" target="_blank">FGC Discord Compendium</a></li>';
+									echo '<li><a class="dropdown-item" href="index.php?about=4">Preferences</a></li>';
+								?>
+							</ul>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Created by @Ikkisoad</a>
+						</li>
+					</ul>
+					<?php
+						if(isset($_GET['listid'])){
+							echo '<li class="nav-item">
+								<form class="d-flex" method="get" action="list.php">';
+									echo '<input type="hidden" name="listid" value="'.$_GET['listid'].'">';
+									echo '<button class="btn btn-secondary">List ID:'.$_GET['listid'].'</button>';
+								echo '</form>
+								</li>';
+						}
+					?>
+					<?php if($buttons > 1): ?>
+						<form method="post" action="forms.php?gameid=<?php echo $_GET['gameid']; ?>">
+							<button class="btn btn-secondary">Submit</button>
+							<input type="hidden" id="type" name="type" value="1">
+						</form>
+
+						<form method="get" action="forms.php">
+							<button class="btn btn-secondary">Search</button>
+							<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+						</form>
+
+						<form method="get" action="editgame.php">
+							<button class="btn btn-secondary">Edit Game</button>
+							<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
+						</form>
+					<?php endif; ?>
+				</div>
+			</div>
+		</nav>
+		<?php
 	endif;
 }
 
@@ -964,7 +925,7 @@ WHERE `resources_values`.`idResources_values` = ?";
 }
 
 function get_gamename($gameid, $conn){
-		$query = "SELECT `name` FROM `game` WHERE `idgame` = ?";
+	$query = "SELECT `name` FROM `game` WHERE `idgame` = ?";
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i", $gameid);
 	$result -> execute();
@@ -1258,5 +1219,27 @@ WHERE `idlist` = ?  GROUP BY `list_category`.`title` ORDER BY `list_category`.`o
 		echo '<li class="list-group-item bg-dark"><a href="#'.$data['title'].'"><span>'.$data['title'].'</span></a></li>';
 	}
 	echo '</ul></div><div class="b-example-divider"></div>';
+}
+
+function jumbotron($conn, $imageHeight){
+	if(isset($_GET['gameid'])){
+		echo '
+			<div class="jumbotron jumbotron-fluid">
+				<div class="container">
+					<a href="index.php"><img ';
+						game_image($_GET['gameid'], $imageHeight, $conn);
+						echo '</a>
+				</div>
+			</div>';
+	}else{
+		echo '
+			<div class="jumbotron jumbotron-fluid">
+				<div class="container">
+					<a href="index.php">
+						<img src="img/combosuki.png" align="middle" height="'.$imageHeight.'" >
+					</a>
+				</div>
+			</div>';
+	}
 }
 ?>
