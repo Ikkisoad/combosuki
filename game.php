@@ -53,7 +53,7 @@
 				border: 1px solid #ddd;
 				
 			}
-
+			
 			th {
 				cursor: pointer;
 			}
@@ -93,7 +93,8 @@
 						</p>
 				</div>
 			</div>
-			<div class="container">
+			<div class="container">			
+			
 				<?php header_buttons(2, 0, 0,get_gamename($_GET['gameid'], $conn)); ?>
 				
 				

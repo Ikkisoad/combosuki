@@ -242,35 +242,21 @@ function game_title($conn){
 	$query = "SELECT idgame, name, image FROM game WHERE complete > 0 ORDER BY name;";
 	$result = $conn -> prepare($query);
 	$result -> execute();
-	
+	echo'<div class="row">';
 	foreach($result -> get_result()	as $gameid){
-		echo '<a style="margin-left:5em;" href=game.php?gameid=';
-		echo $gameid['idgame'];
-		echo '><img style="
-		max-height:150px;
-		max-width:150px;
+		echo '<div class="col-sm-3"><div class="card text-center w-100 p-3 h-100 bg-dark">';
+		echo '<img style="
 		height:auto;
 		width:auto;
-		" ';
-		if($gameid['image'] == ''){
-			echo 'src=img/games/';
-			echo $gameid['idgame'];
-			echo '.png height=100 alt="Responsive image"';
-			echo '></a>';
-		}else{
-			echo 'src=';
-			echo $gameid['image'];
-			echo ' height=100 alt="Responsive image"';
-			echo '></a>';
-		}
-		
-		/* TEXT ONLY
-		echo '<a style="margin-left:5em;" href=game.php?gameid=';
+		" src="'.$gameid['image'].'" class="card-img-top bg-danger" alt="Responsive image"></img>';
+		echo '<div class="card-body">';
+		echo '<a class="card-title text-white" ';
+		echo 'href="game.php?gameid=';
 		echo $gameid['idgame'];
-		echo '>';
-		echo $gameid['name'].'</a><br>';*/
+		echo '">'.$gameid['name'].'</a>';
+		echo '</div></div></div>';
 	}
-		
+	echo '</div>';	
 }
 
 function game_text_only($conn){
@@ -388,7 +374,7 @@ function entry_select($selected, $showall, $conn){ //Showall = 1 -> Show All sho
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i",$_GET['gameid']);
 	$result -> execute();
-	echo '<p><select name="listingtype" class="custom-select">';
+	echo '<div class="col-auto"><select name="listingtype" class="form-select">';
 	foreach($result -> get_result()	as $lol){
 		echo 	'<option value="'.$lol['entryid'].'"';
 		if($selected == $lol['entryid'])echo ' selected ';
@@ -399,7 +385,7 @@ function entry_select($selected, $showall, $conn){ //Showall = 1 -> Show All sho
 	}
 	if($showall == 1)echo '<option value="-">Show All</option>';
 	if($showall == 2)echo '<option value="-" selected>Every Entry</option>';
-	echo '</select></p>';
+	echo '</select></div>';
 }
 
 function character_dropdown($conn){
@@ -407,7 +393,7 @@ function character_dropdown($conn){
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i", $_GET['gameid']);
 	$result -> execute();
-	echo '<p><select name="characterid" class="custom-select">';
+	echo '<div class="col-auto"><select name="characterid" class="form-select">';
 	echo '<option value="-">Character</option>';
 	foreach($result -> get_result() as $character){
 		echo '<option value="'.$character['idcharacter'].'" ';
@@ -418,31 +404,30 @@ function character_dropdown($conn){
 		}
 		echo '>'.$character['Name'].'</option>';
 	}
-	echo '</select></p>'; 
+	echo '</select></div>'; 
 }
 
 function quick_search_form($gameid, $conn){
-	echo '<form class="form-inline" method="get" action="submit.php">
+	echo '<form class="form-control bg-dark" method="get" action="submit.php"><div class="row">
 	<input type="hidden" name="gameid" value="'.$_GET['gameid'].'">';
 	character_dropdown($conn);
 	entry_select(0,1, $conn);
-	echo '<p><textarea style="background-color: #474747; color:#999999;" name="combo" class="form-control" id="comboarea" rows="1" title="combo" placeholder="Starter">';
+	echo '<div class="col-auto"><textarea style="background-color: #474747; color:#999999;" name="combo" class="form-control" id="comboarea" rows="1" title="combo" placeholder="Starter">';
 	if(isset($_GET['combo'])){
 		echo $_GET['combo'];
 	}
-	echo '</textarea></p>';
+	echo '</textarea></div>';
 	$query = "SELECT text_name,type,idgame_resources FROM `game_resources` WHERE game_idgame = ? AND primaryORsecundary = 1 ORDER BY game_resources.primaryORsecundary DESC,text_name;";
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i", $gameid);
 	$result -> execute();
-	echo '<br><p>';
 	foreach($result -> get_result()	as $resource){
 		$getName = str_replace(' ','_',$resource['text_name']);
 		if($resource['type'] == 1){ //List resource
-			echo '<div class="input-group mb-3">'; 
+			echo '<div class="col-auto"><div class="input-group mb-3">'; 
 			echo '<select name="';
 			echo $resource['text_name'];
-			echo '"class="custom-select input-small">';
+			echo '"class="form-select input-small">';
 			$query = "SELECT idResources_values,value FROM `resources_values` WHERE `game_resources_idgame_resources` = ".$resource['idgame_resources']." ORDER BY resources_values.order, value;";
 			$result = $conn -> prepare($query);
 			$result -> execute();
@@ -459,7 +444,7 @@ function quick_search_form($gameid, $conn){
 				echo $resource_value['value'];
 				echo '</option>';
 			}
-			echo '</select></div> ';
+			echo '</select></div></div> ';
 		}else if($resource['type'] == 2){ //Number Resource
 			$query = "SELECT idResources_values,value FROM `resources_values` WHERE `game_resources_idgame_resources` = ?;";
 			$result = $conn -> prepare($query);
@@ -468,10 +453,10 @@ function quick_search_form($gameid, $conn){
 			foreach($result -> get_result() as $resource_value){
 				$compare = $resource['text_name'];
 				$compare = str_replace(' ','_',$compare);
-				echo '<p>	<div class="input-group mb-3">';
+				echo '<div class="col-auto">';
 				echo '<select name="';
 				echo $resource['text_name'].'compare';
-				echo '"class="custom-select input-small"><option value=0>less than</options><option value=1';
+				echo '"class="form-select input-small"><option value=0>less than</options><option value=1';
 				if(isset($_GET) && isset($_GET[$compare.'compare'])){
 					if($_GET[$compare.'compare'] == 1){
 						echo ' selected ';
@@ -485,8 +470,8 @@ function quick_search_form($gameid, $conn){
 				}
 				unset($compare);
 				echo '>equal to</options></select></div>';
-				echo '<div class="input-group mb-3">';
-				echo '<input class="form-control" type="number" min="-'.$resource_value['value'].'" class="input-sm" name="';
+				echo '<div class="col-auto">';
+				echo '<input class="form-control" type="number" min="-'.$resource_value['value'].'" name="';
 				echo $resource['text_name'];
 				echo '" placeholder="'.$resource['text_name'].'"';
 				echo ' max="';
@@ -495,14 +480,14 @@ function quick_search_form($gameid, $conn){
 				if(isset($_GET[$getName])){
 					echo ' value="'.$_GET[$getName].'" ';
 				}
-				echo '> </div> </p>';
+				echo '> </div>';
 			}
 		}else if($resource['type'] == 3){ //Duplicated Resource
 			$duplicated_resource = 0;
 			while($duplicated_resource++ != 2){
-				echo '<div class="input-group mb-3"><select name="';
+				echo '<div class="col-auto"><select name="';
 				echo $resource['text_name'];
-				echo '[]"class="custom-select input-small">';
+				echo '[]"class="form-select">';
 				$query = "SELECT idResources_values,value FROM `resources_values` WHERE `game_resources_idgame_resources` = ".$resource['idgame_resources']." ORDER BY resources_values.order, value;";
 				$result = $conn -> prepare($query);
 				$result -> execute();
@@ -523,14 +508,12 @@ function quick_search_form($gameid, $conn){
 			}
 		}
 	}
-
-	echo '</p><br>';
 	echo '
 
-	<div class="form-group mb-2">
+	<div class="col-sm-auto">
 	<button type="submit" class="btn btn-info mb-2">Quick Search</button>
 	</div>
-
+	</div>
 	</form>';
 }
 
