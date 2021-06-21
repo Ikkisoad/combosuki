@@ -456,7 +456,7 @@ function quick_search_form($gameid, $conn){
 				echo '<div class="col-auto">';
 				echo '<select name="';
 				echo $resource['text_name'].'compare';
-				echo '"class="form-select input-small"><option value=0>less than</options><option value=1';
+				echo '"class="form-select"><option value=0>less than</options><option value=1';
 				if(isset($_GET) && isset($_GET[$compare.'compare'])){
 					if($_GET[$compare.'compare'] == 1){
 						echo ' selected ';
@@ -706,8 +706,81 @@ function edit_controls($gameid){
 						</div>';
 }
 
-function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1 -> Home/Lists Buttons>1 -> Home/Lists/Submit/Search/Edit Game Back=1 -> Game Back=2 -> Combo
+function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1 -> Home/Lists Buttons>1 -> Home/Lists/Submit/Search/Edit Game Back=1 -> Game Back=2 -> Combo $backDestination == URL $backto == gameName
 	if($buttons): ?>
+	
+	
+	<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+		<a class="navbar-brand" href="index.php">
+		  <img src="img/favicon-32x32.png" alt="" width="30" height="24">
+		</a>
+	  <div class="container-fluid">
+		<a class="navbar-brand" href="index.php">Combo好き</a>
+		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+		  <span class="navbar-toggler-icon"></span>
+		</button>
+		<div class="collapse navbar-collapse" id="navbarSupportedContent">
+		  <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+			  <?php
+			  
+			  if($back){
+					echo '<li class="nav-item"><a class="nav-link active" aria-current="page" href="'.$backDestination.'?gameid='.$_GET['gameid'].'">';
+					if($back == 1){
+						echo $backto.'</a>';
+					}else if($back == 2){
+						echo '	<input type="hidden" name="idcombo" value="'.$_POST['idcombo'].'">';
+						echo '		<button class="btn btn-secondary">Entry ID: '.$_POST['idcombo'].'</button>';
+					}else{
+						echo '		<button class="btn btn-secondary"> << back</button>';
+					}
+								
+				//	echo '		<button class="btn btn-secondary"> << back</button>
+					echo '</li>';
+					
+				}
+			  if(!isset($_GET['gameid'])){
+				echo '<li class="nav-item">
+						  <a class="nav-link" href="index.php?about=1">About</a>
+						</li>';
+				echo '<li class="nav-item">
+						  <a class="nav-link" href="index.php?about=3">Logs</a>
+						</li>';
+				echo '<li class="nav-item">
+						  <a class="nav-link" href="https://github.com/Ikkisoad/combosuki" target="_blank">GitHub</a>
+						</li>';
+			  }
+			  ?>
+			<li class="nav-item">
+			  <a class="nav-link" href="list.php">Lists</a>
+			</li>
+			<li class="nav-item dropdown">
+			  <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+				...
+			  </a>
+			  <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+				<?php
+				
+					echo '<li><a class="dropdown-item" href="addgame.php">Add Game</a></li><li>
+					<hr class="dropdown-divider"></li>';
+					echo '<li><a class="dropdown-item" href="index.php?about=2">Combo Guidelines</a></li>';
+					echo '<li><a class="dropdown-item" href="https://srk.shib.live/w/Shoryuken_Wiki:Community_portal/Discords/Game" target="_blank">FGC Discord Compendium</a></li>';
+					echo '<li><a class="dropdown-item" href="index.php?about=4">Preferences</a></li>';
+				?>
+			  </ul>
+			</li>
+			<li class="nav-item">
+			  <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Created by @Ikkisoad</a>
+			</li>
+		  </ul>
+		  <form class="d-flex">
+			<input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+			<button class="btn btn-outline-success" type="submit">Search</button>
+		  </form>
+		</div>
+	  </div>
+	</nav>
+	
+	
 		<div class="btn-group" role="group" aria-label="Basic example">
 		
 			<form method="get" action="index.php">
@@ -741,7 +814,7 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 				//	echo '		<button class="btn btn-secondary"> << back</button>
 					echo '		</form>';
 					
-				}			
+				}
 			?>
 			
 			<form method="get" action="list.php">

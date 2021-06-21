@@ -75,19 +75,19 @@ include_once "server/conexao.php";
 	</head>
 	
 	<body>
-		<div class="jumbotron jumbotron-fluid">
-			<div class="container">
-				<h1 class="display-4"></h1>
-				<p class="lead">
-					<a href="index.php">
-						<img src="img/combosuki.png" align="middle" height="150" >
-					</a>
-				</p>
-			</div>
-		</div>
 		<main role="main">
+			<div class="jumbotron jumbotron-fluid">
+				<div class="container">
+					<h1 class="display-4"></h1>
+					<p class="lead">
+						<a href="index.php">
+							<img src="img/combosuki.png" align="middle" height="150" >
+						</a>
+					</p>
+				</div>
+			</div>
+			<?php header_buttons(1, 0, 0, 0);?>
 			<div class="container">
-				<?php header_buttons(1, 0, 0, 0);?>
 				<div class="body">
 					<?php
 						if(!isset($_GET['about'])){
@@ -134,17 +134,6 @@ include_once "server/conexao.php";
 				</div>
 			</div>
 		</main>
-		<div class="footer">
-		  <div style="text-align: center;">
-			  \ <a href="addgame.php">Add game</a> | 
-			  <a href="index.php?about=1" style="padding-right: 5px;">About</a> | 
-			  <a href="index.php?about=2">Combo Guidelines </a> | 
-			  <a href="index.php?about=3" style="padding-right: 5px;">Logs</a> | 
-			  <a href="https://docs.google.com/spreadsheets/d/1ac2nRBy0tTPz6k6heook5w8R7dDngutW8OkK5alhI7k/edit#gid=1066344564" target="_blank" style="padding-right: 5px;">FGC Discord Compendium </a> | 
-			  <a href="index.php?about=4" style="padding-right: 5px;">Preferences</a> | 
-			  <a href=" https://github.com/Ikkisoad/combosuki" target="_blank" style="padding-right: 5px;">GitHub</a> /
-		  </div>
-		</div>
 		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
 	</body>
 	    <!-- Bootstrap core JavaScript
