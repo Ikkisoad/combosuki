@@ -323,7 +323,7 @@ function count_combos($conn){
 	$result -> execute();
 	
 	foreach($result -> get_result()	as $combo_count){
-		echo 'Total submissions: ';
+		echo 'Submissions total: ';
 		echo $combo_count['total'];
 	}
 	
@@ -741,9 +741,6 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 										<a class="nav-link" href="index.php?about=1">About</a>
 									</li>';
 								echo '<li class="nav-item">
-										<a class="nav-link" href="index.php?about=3">Logs</a>
-									</li>';
-								echo '<li class="nav-item">
 										<a class="nav-link" href="https://github.com/Ikkisoad/combosuki" target="_blank">GitHub</a>
 									</li>';
 							}
@@ -763,7 +760,9 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 										<li><hr class="dropdown-divider"></li>';
 									echo '<li><a class="dropdown-item" href="index.php?about=2">Combo Guidelines</a></li>';
 									echo '<li><a class="dropdown-item" href="https://srk.shib.live/w/Shoryuken_Wiki:Community_portal/Discords/Game" target="_blank">FGC Discord Compendium</a></li>';
+									echo '<li><hr class="dropdown-divider"></li>';
 									echo '<li><a class="dropdown-item" href="index.php?about=4">Preferences</a></li>';
+									echo '<li><a class="dropdown-item" href="index.php?about=3">Logs</a></li>';
 								?>
 							</ul>
 						</li>
