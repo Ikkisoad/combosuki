@@ -12,12 +12,12 @@
 	$secondaryType = array();
 	$secondaryID = array();
 	$query = "SELECT `idcombo`,`combo`,`damage`,`value`,`idResources_values`,`number_value`,`character`.`idcharacter`,`character`.`Name`, `video`, `game_resources`.`text_name`,`game_resources`.`type`, `combo`.`type` as listingtype, `combo`.`comments`,`game_resources`.`primaryORsecundary`, `character`.`game_idgame`, `resources_values`.`order`, `combo`.`submited`, `combo`.`patch`, `combo`.`author`
-FROM `combo` 
-INNER JOIN `resources` ON `combo`.`idcombo` = `resources`.`combo_idcombo` 
-LEFT JOIN `resources_values` ON `resources_values`.`idResources_values` = `resources`.`Resources_values_idResources_values` 
-LEFT JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` 
-LEFT JOIN `game_resources` ON `game_resources`.`idgame_resources` = `resources_values`.`game_resources_idgame_resources` 
-WHERE `idcombo` = ? ";
+	FROM `combo` 
+	INNER JOIN `resources` ON `combo`.`idcombo` = `resources`.`combo_idcombo` 
+	LEFT JOIN `resources_values` ON `resources_values`.`idResources_values` = `resources`.`Resources_values_idResources_values` 
+	LEFT JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` 
+	LEFT JOIN `game_resources` ON `game_resources`.`idgame_resources` = `resources_values`.`game_resources_idgame_resources` 
+	WHERE `idcombo` = ? ";
 	$query = $query . "ORDER BY  `game_resources`.`primaryORsecundary` DESC, `idcombo`, `text_name`,`resources`.`idResources`;";
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i",$_GET['idcombo']);
@@ -41,14 +41,14 @@ WHERE `idcombo` = ? ";
 		$submited = new DateTime($data['submited']);
 		$author = $data['author'];
 		if($data['primaryORsecundary'] == 0){
-				array_push($secondaryTitle,$data['text_name']);
-				array_push($secondaryType,$data['type']);
-				array_push($secondaryID,$data['idResources_values']);
-				if($data['type'] == 1 || $data['type'] == 3){
-					array_push($secondaryValue, $data['value']);
-				}else{
-					array_push($secondaryValue, $data['number_value']);
-				}
+			array_push($secondaryTitle,$data['text_name']);
+			array_push($secondaryType,$data['type']);
+			array_push($secondaryID,$data['idResources_values']);
+			if($data['type'] == 1 || $data['type'] == 3){
+				array_push($secondaryValue, $data['value']);
+			}else{
+				array_push($secondaryValue, $data['number_value']);
+			}
 		}else{
 			array_push($primaryTitle,$data['text_name']);
 			array_push($primaryType,$data['type']);
@@ -69,30 +69,15 @@ WHERE `idcombo` = ? ";
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
-		<meta name="description" content="">
-		<meta name="Ikkisoad" content="">
-		<link rel="apple-touch-icon" sizes="57x57" href="img/apple-icon-57x57.png">
-		<link rel="apple-touch-icon" sizes="60x60" href="img/apple-icon-60x60.png">
-		<link rel="apple-touch-icon" sizes="72x72" href="img/apple-icon-72x72.png">
-		<link rel="apple-touch-icon" sizes="76x76" href="img/apple-icon-76x76.png">
-		<link rel="apple-touch-icon" sizes="114x114" href="img/apple-icon-114x114.png">
-		<link rel="apple-touch-icon" sizes="120x120" href="img/apple-icon-120x120.png">
-		<link rel="apple-touch-icon" sizes="144x144" href="img/apple-icon-144x144.png">
-		<link rel="apple-touch-icon" sizes="152x152" href="img/apple-icon-152x152.png">
-		<link rel="apple-touch-icon" sizes="180x180" href="img/apple-icon-180x180.png">
-		<link rel="icon" type="image/png" sizes="192x192"  href="img/android-icon-192x192.png">
 		<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
 		<link rel="icon" type="image/png" sizes="96x96" href="img/favicon-96x96.png">
 		<link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
-		<link rel="manifest" href="img/manifest.json">
-		<meta name="msapplication-TileColor" content="#ffffff">
-		<meta name="msapplication-TileImage" content="img/ms-icon-144x144.png">
-		
+
 		<meta property="og:title" content="<?php echo $name.' > '.$damage.' damage';?>" />
 		<meta property="og:description" content="<?php echo $combo;?>" />
 		<?php meta_embedvideo($video); ?>
 		<meta name="theme-color" content="#d94040" />
-		
+
 
 		<title>Combo好き</title>
 		<link href="css/bootstrap.min.css" rel="stylesheet">
@@ -112,7 +97,6 @@ WHERE `idcombo` = ? ";
 			tr:nth-child(odd) {
 				background-color: #000000
 			}
-				
 			body{
 				background-color: #35340a;
 				background: url("img/<?php background(); ?>");
@@ -136,91 +120,102 @@ WHERE `idcombo` = ? ";
 				header_buttons(2,1,'game.php',get_gamename($_GET['gameid'], $conn));
 			?>
 			<div class="container">
-				<?php
-					echo '<p><table>';
+			<?php
+				echo '<table>';
 					echo '<tr>';
-					echo '<th>'; 
-					echo 'Entry ID: '.$id_combo.' / ';
-					echo $name;
-					print_listingtype($listing_type, $conn);
-					if($patch != ''){
-						echo '<button class="btn btn-dark" style="float: right;" disabled>';
-						echo 'Patch: '.$patch.'</button>';
-					}
-					if(1): ?>
-						<button alignt="right" style="float: right;" class="btn btn-secondary" onclick="change_display()">Display Method</button>
-						
-					<?php endif;
-					copyLinktoclipboard(get_combolink($id_combo,$conn));
-					echo '</th>';
+						echo '<th>'; 
+							echo 'Entry ID: '.$id_combo.' / ';
+							echo $name;
+							print_listingtype($listing_type, $conn);
+							if($patch != ''){
+								echo '<button class="btn btn-dark" style="float: right;" disabled>';
+								echo 'Patch: '.$patch.'</button>';
+							}
+			?>
+							<button alignt="right" style="float: right;" class="btn btn-secondary" onclick="change_display()">Display Method</button>
+
+			<?php
+							copyLinktoclipboard(get_combolink($id_combo,$conn));
+							echo '</th>';
 					echo '</tr>';
+				echo '<tr>';
+					echo '
+					<td id="combo_line">';
+						if(!isset($_COOKIE['display'])){
+							echo str_replace('->', '<br>', $combo);;
+							$_COOKIE['display'] = 0;
+						}else if($_COOKIE['display']){
+							echo $combo_image;
+						}else{
+							echo str_replace('->', '<br>', $combo);;
+						}
+					echo '
+					</td>
+				</table>';
+				if(!isset($damage)){ exit();}
+				embed_video($video);
+				echo '</td></table>
+				<table>';
 					echo '<tr>';
-					echo '<td id="combo_line">';
-					if(!isset($_COOKIE['display'])){
-						echo str_replace('->', '<br>', $combo);;
-						$_COOKIE['display'] = 0;
-					}else if($_COOKIE['display']){
-						echo $combo_image;
-					}else{
-						echo str_replace('->', '<br>', $combo);;
-					}
-					echo		'</td></table>';
-					if(!isset($damage)){ exit();}
-					embed_video($video);
-					echo '</td></table><p><table>';
-					echo '<tr>';
-					echo '<th>Damage</th>';
-					for($i = 0; $i<sizeof($primaryTitle); $i++){
+						echo '<th>Damage</th>';
+						for($i = 0; $i<sizeof($primaryTitle); $i++){
 						echo '<th>';
-						echo $primaryTitle[$i];
+							echo $primaryTitle[$i];
 						echo '</th>';
-					}
-					echo '</tr><tr>';
+						}
+					echo '</tr>
+					<tr>';
 					echo '<td>'.number_format($damage,'0','','.').'</td>';
-					for($i = 0; $i<sizeof($primaryTitle); $i++){
-						echo '<td>';
-						echo $primaryValue[$i];
-						echo '</td>';
-					}
+						for($i = 0; $i<sizeof($primaryTitle); $i++){
+							echo '<td>';
+								echo $primaryValue[$i];
+							echo '</td>';
+						}
 					echo '</tr>';
-					echo '</table></p>';
-					if(sizeof($secondaryTitle)){
-					echo '</td></table><p><table>';
-					echo '<tr>';
-					for($i = 0; $i<sizeof($secondaryTitle); $i++){
-						echo '<th>';
-						echo $secondaryTitle[$i];
-						echo '</th>';
-					}
-					echo '</tr><tr>';
-					for($i = 0; $i<sizeof($secondaryTitle); $i++){
-						echo '<td>';
-						echo $secondaryValue[$i];
-						echo '</td>';
-					}
-					echo '</tr>';
-					echo '</table></p>';
-					}
-				?>
+				echo '</table>';
+				if(sizeof($secondaryTitle)){
+					echo '</td></table>
+						<table>';
+							echo '<tr>';
+								for($i = 0; $i<sizeof($secondaryTitle); $i++){
+									echo '<th>';
+										echo $secondaryTitle[$i];
+									echo '</th>';
+								}
+							echo '</tr>
+							<tr>';
+								for($i = 0; $i<sizeof($secondaryTitle); $i++){
+									echo '<td>';
+										echo $secondaryValue[$i];
+									echo '</td>';
+								}
+							echo '</tr>';
+					echo '</table>';
+				}
+			?>
 			<div id="combo_text" style="display: none;">
 				<?php 
-					if($_COOKIE['display']){
-						echo str_replace('->', '<br>', $combo);;
-					}else{
-						echo $combo_image;
-					}
+				if($_COOKIE['display']){
+					echo str_replace('->', '<br>', $combo);;
+				}else{
+					echo $combo_image;
+				}
 				?>
 			</div>
 			<?php
 				if($comment != ''){
-					echo '<p><table>';
-					echo '<tr><td>';
-					echo 'Comment:';
-					echo '</td></tr>';
-					echo '<tr><td>';
-					echo nl2br($comment);
-					echo '</td></tr>';
-					echo '</table></p>';
+					echo '<table>';
+						echo '<tr>
+							<td>';
+								echo 'Comment:';
+							echo '</td>
+						</tr>';
+						echo '<tr>
+							<td>';
+								echo nl2br($comment);
+							echo '</td>
+						</tr>';
+					echo '</table>';
 				}
 				//addtoListForm();
 			?>
@@ -270,28 +265,21 @@ WHERE `idcombo` = ? ";
 			</div>
 		</main>
 	</body>
-		<script>
-			function change_display(){
-				var temp = document.getElementById("combo_line").innerHTML;
-				document.getElementById("combo_line").innerHTML = document.getElementById("combo_text").innerHTML;
-				document.getElementById("combo_text").innerHTML = temp;
-			}
-		</script>
-		<script>
-			function copytoclip(link) {
-				var dummy = document.createElement("textarea");
-				document.body.appendChild(dummy);
-				dummy.value = link;
-				dummy.select();
-				document.execCommand("copy");
-				document.body.removeChild(dummy);
-			}
-		</script>
-	    <!-- Bootstrap core JavaScript
-		================================================== -->
-		<!-- Placed at the end of the document so the pages load faster -->
-		<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-		<!--<script>window.jQuery || document.write('<script src="../../../../assets/js/vendor/jquery.min.js"><\/script>')</script>-->
-		<!--<script src="../../../../assets/js/vendor/popper.min.js"></script>
-		<script src="../../../../dist/js/bootstrap.min.js"></script>-->
+	<script>
+		function change_display(){
+			var temp = document.getElementById("combo_line").innerHTML;
+			document.getElementById("combo_line").innerHTML = document.getElementById("combo_text").innerHTML;
+			document.getElementById("combo_text").innerHTML = temp;
+		}
+	</script>
+	<script>
+		function copytoclip(link) {
+			var dummy = document.createElement("textarea");
+			document.body.appendChild(dummy);
+			dummy.value = link;
+			dummy.select();
+			document.execCommand("copy");
+			document.body.removeChild(dummy);
+		}
+	</script>
 </html>
