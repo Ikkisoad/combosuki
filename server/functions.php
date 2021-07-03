@@ -1222,12 +1222,24 @@ WHERE `idlist` = ?  GROUP BY `list_category`.`title` ORDER BY `list_category`.`o
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i", $listid);
 	$result -> execute();
-	echo '<div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 280px;><ul class="list-unstyled mb-0 py-3 pt-md-1">
-			<li class="list-group-item bg-dark"><a href="#edit"><span>Edit</span></a></li>';
-	foreach($result -> get_result() as $data){
-		echo '<li class="list-group-item bg-dark"><a href="#'.$data['title'].'"><span>'.$data['title'].'</span></a></li>';
-	}
-	echo '</ul></div><div class="b-example-divider"></div>';
+	echo '
+	<aside class="bd-aside sticky-xl-top text-muted align-self-start mb-3 mb-xl-5 px-2">
+		<ul class="list-unstyled mb-0 py-3 pt-md-1">
+			<li class="list-group-item bg-dark"><a href="#edit"><span>Edit</span></a></li>'; /*
+  padding: 0;
+  width: 200px;
+  background-color: #f1f1f1;
+  position: fixed;
+  height: 100%;
+  overflow: auto;
+   style="width: 250px;  margin: 0;
+  */
+			foreach($result -> get_result() as $data){
+				echo '<li class="list-group-item bg-dark"><a href="#'.$data['title'].'"><span>'.$data['title'].'</span></a></li>';
+			}
+			echo '
+		</ul>
+	</aside>';
 }
 
 function jumbotron($conn, $imageHeight){

@@ -20,7 +20,7 @@ TO DO:
 	> Upload CSV file. X REJECTED
 	> Optimize the code, looks hella shitty.
 	> More data in game.php, eg.: Most damaging combo, combos/character, solo combos
-	> Replace combo substring: UPDATE `combo` SET `combo`.`combo` = REPLACE(`combo`, 'L M H S', 'SparkingBlast') WHERE `combo`.`combo` LIKE '%L M H S%' AND gameid = ?
+	> Replace combo substring: UPDATE `combo` SET `combo`.`combo` = REPLACE(`combo`, 'L M H S', 'SparkingBlast') WHERE `combo`.`combo` LIKE '%L M H S%' AND gameid = ? DONE
 	
 BROKE:
 
