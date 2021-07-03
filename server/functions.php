@@ -231,22 +231,27 @@ function game_title($conn){
 	$query = "SELECT idgame, name, image FROM game WHERE complete > 0 ORDER BY name;";
 	$result = $conn -> prepare($query);
 	$result -> execute();
-	echo'<div class="row row-cols-4">';
-	foreach($result -> get_result()	as $gameid){
-		echo '<div class="col"><div class="card text-center w-100 p-3 h-100 bg-dark">';
-		echo '<div class="card bg-danger text-center w-100 p-3 h-100"><img style="
-		max-height:200px;
-		max-width:200px;
-		height:auto;
-		width:auto;
-		" src="'.$gameid['image'].'" class="card-img-top bg-danger rounded mx-auto d-block" alt="Responsive image"></img></div>';
-		echo '<div class="card-body">';
-		echo '<a class="card-title text-white" ';
-		echo 'href="game.php?gameid=';
-		echo $gameid['idgame'];
-		echo '">'.$gameid['name'].'</a>';
-		echo '</div></div></div>';
-	}
+	echo'<div class="row">';
+		foreach($result -> get_result()	as $gameid){
+			echo '<div class="col">
+				<div class="card text-center w-100 p-3 h-100 bg-dark">';
+				echo '
+					<div class="card bg-danger text-center w-100 p-3 h-100"><img style="
+						max-height:200px;
+						max-width:200px;
+						height:auto;
+						width:auto;
+						" src="'.$gameid['image'].'" class="card-img-top bg-danger rounded mx-auto d-block" alt="Responsive image"></img></div>';
+						echo '<div class="card-body">';
+						echo '<a class="card-title text-white" ';
+						echo 'href="game.php?gameid=';
+						echo $gameid['idgame'];
+						echo '">'.$gameid['name'].'</a>';
+						echo '
+					</div>
+				</div>
+			</div>';
+		}
 	echo '</div>';	
 }
 
@@ -288,7 +293,7 @@ function game_image($gameid, $height, $conn){
 		}else{
 			echo '<img src=';
 			echo $gameimage['image'];
-			echo ' align="middle" height="'.$height.'" >';
+			echo ' align="bottom" height="'.$height.'" >';
 		}
 	}
 }
@@ -701,7 +706,7 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 	if($buttons): ?>
 		<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
 			<a class="navbar-brand" href="index.php">
-				<img src="img/favicon-32x32.png" alt="" width="30" height="24">
+				<img src="img/selo.png" style="margin-left:20px" width="30" height="30">
 			</a>
 			<div class="container-fluid">
 				<a class="navbar-brand" href="index.php">Combo好き</a>
@@ -761,13 +766,14 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 					</ul>
 					<?php
 						if(isset($_GET['listid'])){
-							echo '<li class="nav-item">
+							echo '<li class="nav-item" style="list-style-type: none;">
 								<form class="d-flex" method="get" action="list.php">';
 									echo '<input type="hidden" name="listid" value="'.$_GET['listid'].'">';
 									echo '<button class="btn btn-secondary">List ID:'.$_GET['listid'].'</button>';
 								echo '</form>
 								</li>';
 						}
+						
 					?>
 					<?php if($buttons > 1): ?>
 						<form method="post" action="forms.php?gameid=<?php echo $_GET['gameid']; ?>">
@@ -1086,17 +1092,32 @@ function build_buttonFromVariables($pTitle, $pType, $pID, $pValue, $sTitle, $sTy
 }
 
 function background(){
-	if(isset($_POST['color'])){
+	/*if(isset($_POST['color'])){
 		setcookie("color", $_POST['color'], time() + (10 * 365 * 24 * 60 * 60), "/"); // 86400 = 1 day
 	}
 	if(isset($_POST['display'])){
 		setcookie("display", $_POST['display'], time() + (10 * 365 * 24 * 60 * 60), "/"); // 86400 = 1 day
 	}
 	if(isset($_COOKIE['color'])){
-		echo 'bg/'.$_COOKIE["color"].'honeycomb.png';
+		//echo 'bg/'.$_COOKIE["color"].'honeycomb.png';
+		echo 'bg/bolinhas2.png),';
+		echo 'urd(bg/risco2.png';
 	}else{
 		echo 'dark-honeycomb.png';
-	}
+	}*/
+	echo '
+	body{
+		padding: 0;
+		margin: 0;
+		background-color: #920000;
+		color: white;
+		background-image: url(img/bg/bolinhas2.png), url(img/bg/risco2.png);
+		background-attachment: fixed;
+		background-position: center;
+		background-repeat: no-repeat;
+		background-size: cover;
+	}';
+
 }
 
 function copyLinktoclipboard($link){
@@ -1224,7 +1245,7 @@ function jumbotron($conn, $imageHeight){
 			<div class="jumbotron jumbotron-fluid">
 				<div class="container">
 					<a href="index.php">
-						<img src="img/combosuki.png" align="middle" height="'.$imageHeight.'" >
+						<img src="img/combosuki.png" style="margin-top: 20px;" height="'.$imageHeight.'" >
 					</a>
 				</div>
 			</div>';

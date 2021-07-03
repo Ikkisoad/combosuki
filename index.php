@@ -26,15 +26,9 @@
 
 		<link href="css/bootstrap.min.css" rel="stylesheet">
 		<style>
-			body{
-				padding: 0;
-				margin: 0;
-				background-color: #00190f;
-				background: url("img/<?php
+			<?php
 				background();
-				?>");
-				color: white;
-			}
+			?>
 			.container{
 				height: 100vh;
 			}
