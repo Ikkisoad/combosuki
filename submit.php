@@ -88,14 +88,13 @@
 <!doctype php>
 <html>
 	<head>
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
 		<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
 		<link rel="icon" type="image/png" sizes="96x96" href="img/favicon-96x96.png">
 		<link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
 		<meta name="msapplication-TileImage" content="img/ms-icon-144x144.png">
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
-
 		<meta property="og:title" content="Combo好き" />
 		<meta property="og:type" content="website" />
 		<meta property="og:image" content="http://combosuki.com/img/combosuki.png" />
@@ -103,13 +102,11 @@
 		<meta property="og:description" 
 		content="Community-fueled searchable environment that shares and perfects combos." />
 		<meta name="theme-color" content="#d94040" />
-
 		<meta name="description" content="Community-fueled searchable environment that shares and perfects combos.">
 		<title>Combo好き</title>
-
 		<link href="css/bootstrap.min.css" rel="stylesheet">
 		<style>
-		<?php
+			<?php
 				background();
 			?>
 			.jumbotron{
@@ -144,34 +141,18 @@
 				color: #000000;	
 			}
 			.img-responsive{width:100%;}
-		</style> <!-- BACKGROUND COLOR-->
+		</style>
 	</head>
 	<body>
 		<main role="main">
-			<div class="jumbotron">
-				<div class="container">
-					<h1 class="display-3"></h1>
-						<p>
-							<a href="<?php
-									if(!empty($_GET)){
-										echo 'game.php?gameid=';
-										echo $_GET['gameid'];
-									}else{
-										echo 'index.php';	
-									}
-								?>"> 
-								<?php
-									game_image($_GET['gameid'], 200, $conn);
-								?>
-							</a>
-						</p>
-				</div>
-			</div>
+			<?php 
+				jumbotron($conn,200);
+				header_buttons(2,1,'game.php',get_gamename($_GET['gameid'], $conn));
+			?>
 			<div class="container">
 			<?php
 				if(!empty($_GET)){
 					strip_GETtags();
-					header_buttons(2, 1, 'game.php', get_gamename($_GET['gameid'], $conn));
 					quick_search_form($_GET['gameid'], $conn);
 					if(isset($_GET["page"])) { $page  = $_GET["page"]; } else { $page=0; };
 					$query = "SELECT sum(case when `game_resources`.`type` = 3 then 2 else 1 end) total FROM `game_resources` WHERE `game_idgame` = ? AND `primaryORsecundary` = 1";
@@ -344,10 +325,14 @@ JOIN game_resources ON resources_values.game_resources_idgame_resources = game_r
 WHERE resources.number_value";
 									$compare = $resource['text_name'];
 									$compare = str_replace(' ','_',$compare);
-									if(($_GET[$compare.'compare']) == 2){
-										$query = $query . "=";
-									}else if(($_GET[$compare.'compare']) == 1){
-										$query = $query . ">=";
+									if(isset($_GET[$compare.'compare'])){
+										if(($_GET[$compare.'compare']) == 2){
+											$query = $query . "=";
+										}else if(($_GET[$compare.'compare']) == 1){
+											$query = $query . ">=";
+										}else{
+											$query = $query . "<=";
+										}
 									}else{
 										$query = $query . "<=";
 									}

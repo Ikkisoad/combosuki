@@ -716,19 +716,21 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 				<div class="collapse navbar-collapse" id="navbarSupportedContent">
 					<ul class="navbar-nav me-auto mb-2 mb-lg-0">
 						<?php
-							echo '<li class="nav-item">';
+							
 							if($back){
-								echo '<a class="nav-link active" aria-current="page" href="'.$backDestination.'?gameid='.$_GET['gameid'].'">';
 								if($back == 1){
-									echo $backto.'</a>';
+									echo '<li class="nav-item">';
+										echo '<a class="nav-link active" href="'.$backDestination.'?gameid='.$_GET['gameid'].'">';
+										echo $backto.'</a>';
+									echo '</li>';
 								}else if($back == 2){
-									echo '	<input type="hidden" name="idcombo" value="'.$_POST['idcombo'].'">';
-									echo '		<button class="btn btn-secondary">Entry ID: '.$_POST['idcombo'].'</button>';
-								}else{
-									echo '		<button class="btn btn-secondary"> << back</button>';
+									echo '<li class="nav-item">';
+										echo '<form method="get" action="combo.php">';
+											echo '	<input type="hidden" name="idcombo" value="'.$_POST['idcombo'].'">';
+											echo '	<button class="btn btn-secondary">Entry ID: '.$_POST['idcombo'].'</button>';
+										echo '</form>';
+									echo '</li>';
 								}
-								echo '</li>';
-
 							}
 							if(!isset($_GET['gameid'])){
 								echo '<li class="nav-item">

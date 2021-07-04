@@ -93,10 +93,10 @@
 							logs($conn);
 						}else if($_GET['about'] == 4){
 							echo '
-							<form method="post" action="index.php">Background Color:<p>';
+							<form method="post" action="index.php"><p>';
 							echo '
 								<p>
-								  <label for="color">Background color</label>
+								  <label for="color">Background color:</label>
 								  <input type="color" name="color" id="color" value="';
 								  if(isset($_COOKIE['color'])){
 									echo $_COOKIE['color'];
