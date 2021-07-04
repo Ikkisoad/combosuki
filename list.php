@@ -130,34 +130,15 @@
 		<style>
 			<?php
 				background();
+				table();
 			?>
+			
 			.container{
 				height: 100vh;
 			}
 			.jumbotron{
 				max-height: 190px;
 				background-color: #020202;
-			}		
-			table {
-				border-spacing: 0;
-				width: 100%;
-				border: 1px solid #ddd;
-			}
-
-			th, td {
-				text-align: left;
-				padding: 16px;
-			}
-
-			tr:nth-child(even) {
-				background-color: #212121
-			}
-
-			tr:nth-child(odd) {
-				background-color: #000000
-			}
-			textare{
-				color: #000000;	
 			}
 			.img-responsive{width:100%;}
 
@@ -281,7 +262,7 @@
 								edit_listForm($conn);
 							}else{
 								echo '<h3>Listing</h3>
-								<form class="form-inline" method="post" action="list.php">
+								<form class="form-control bg-dark text-white" method="post" action="list.php">
 									<input type="hidden" name="submission_type" value="1">
 									<div class="form-group mb-2"><input placeholder="List Name" style="background-color: #474747; color:#999999;" name="list_name" class="form-control" maxlength="45" rows="1"></input></div>
 									<div class="form-group mb-2">';
@@ -290,7 +271,7 @@
 										$result = $conn -> prepare($query);
 										$result -> execute();
 
-										echo '<select name="gameid" class="custom-select">';
+										echo '<select name="gameid" class="form-select">';
 
 										echo '<option value="0">Game</option>';
 										foreach($result -> get_result() as $game){
@@ -333,7 +314,7 @@
 											echo '</tr>';
 											foreach($result -> get_result() as $search){
 												if($search['list_name'] != ''){
-													echo '<tr><td><a  href="list.php?listid='.$search['idlist'].'">'.$search['list_name'].'</a>';
+													echo '<tr><td><a href="list.php?listid='.$search['idlist'].'">'.$search['list_name'].'</a>';
 													print_listglyph($search['type'], $conn);
 													echo '</tr></td>';
 												}
@@ -351,7 +332,7 @@
 											if($search['list_name'] != ''){
 												echo '<tr><td>';
 												print_gameglyph($search['game_idgame'],$conn);
-												echo '<a  href="list.php?listid='.$search['idlist'].'">'.$search['list_name'].'</a>';
+												echo '<a  class="link-light" href="list.php?listid='.$search['idlist'].'">'.$search['list_name'].'</a>';
 												print_listglyph($search['type']);
 												echo '</tr></td>';
 											}

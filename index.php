@@ -3,8 +3,9 @@
 	include_once "server/functions.php";
 	include_once "server/conexao.php";
 	strip_POSTtags();
+	set_cookies();
 	if(isset($_POST['color'])){
-		setcookie("color", $_POST['color'], time() + (10 * 365 * 24 * 60 * 60), "/"); // 86400 = 1 day
+		setcookie("color", str_replace('#','',$_POST['color']), time() + (10 * 365 * 24 * 60 * 60), "/"); // 86400 = 1 day
 	}
 	if(isset($_POST['display'])){
 		setcookie("display", $_POST['display'], time() + (10 * 365 * 24 * 60 * 60), "/"); // 86400 = 1 day
@@ -20,7 +21,6 @@
 		<meta name="msapplication-TileImage" content="img/ms-icon-144x144.png">
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
-
 		<meta property="og:title" content="Combo好き" />
 		<meta property="og:type" content="website" />
 		<meta property="og:image" content="http://combosuki.com/img/combosuki.png" />
@@ -93,24 +93,29 @@
 							logs($conn);
 						}else if($_GET['about'] == 4){
 							echo '
-							<form method="post" action="index.php"><p>';
-							echo '
-								<p>
-								  <label for="color">Background color:</label>
-								  <input type="color" name="color" id="color" value="';
-								  if(isset($_COOKIE['color'])){
-									echo $_COOKIE['color'];
-								  }else{
-									  echo '920000';
-								  }
-								  echo'">
-								</p>
-								</p>Display method:<p>
-								<select name="display" class="custom-select">
-									<option value="1">Image</option>
-									<option value="0">Text</option>
-								</select>
-								</p><button class="btn btn-secondary">Save</button>
+							<form method="post" class="form-control bg-dark text-white" action="index.php">';
+							echo '<div class="row">
+								<div class="col-auto">
+									  <label for="color">Background color:</label>
+									  <input type="color" name="color" id="color" value="';
+									  if(isset($_COOKIE['color'])){
+										echo $_COOKIE['color'];
+									  }else{
+										  echo '920000';
+									  }
+									  echo'">
+								</div>
+								<div class="col-auto">
+									  Display method:
+									<select name="display" class="form-select input-small">
+										<option value="1">Image</option>
+										<option value="0">Text</option>
+									</select>
+								</div>
+								<div class="col-auto">
+									<button class="btn btn-secondary">Save</button>
+								</div>
+								</div>
 							</form>';
 						}
 						mysqli_close($conn);

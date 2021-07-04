@@ -227,7 +227,6 @@ function combo_table($gameid, $conn){
 }
 
 function game_title($conn){
-	//require "server/conexao.php";
 	$query = "SELECT idgame, name, image FROM game WHERE complete > 0 ORDER BY name;";
 	$result = $conn -> prepare($query);
 	$result -> execute();
@@ -236,12 +235,20 @@ function game_title($conn){
 			echo '<div class="col">
 				<div class="card text-center w-100 p-3 h-100 bg-dark">';
 				echo '
-					<div class="card bg-danger text-center w-100 p-3 h-100"><img style="
+					<div class="card text-center w-100 p-3 h-100" style="background-color:';
+					echo $_COOKIE['color'];					
+					echo ';"><img style="
 						max-height:200px;
 						max-width:200px;
 						height:auto;
 						width:auto;
-						" src="'.$gameid['image'].'" class="card-img-top bg-danger rounded mx-auto d-block" alt="Responsive image"></img></div>';
+						align: center;
+						margin-top: 10px;
+						margin-bottom: 1px;
+						display: block;
+						margin-left: auto;
+						margin-right: auto;
+						" src="'.$gameid['image'].'" class="card-img-top rounded mx-auto d-block" alt="Responsive image"></img></div>';
 						echo '<div class="card-body">';
 						echo '<a class="card-title text-white" ';
 						echo 'href="game.php?gameid=';
@@ -1263,6 +1270,47 @@ function jumbotron($conn, $imageHeight){
 					</a>
 				</div>
 			</div>';
+	}
+}
+
+function table(){
+	echo '
+	table {
+		border-spacing: 0;
+		width: 100%;
+		border: 1px solid #ddd;
+	}
+
+	th, td {
+		text-align: left;
+		padding: 16px;
+	}
+
+	tr:nth-child(even) {';
+		if(isset($_COOKIE['color'])){
+			echo ' background-color:#'.$_COOKIE['color'].';';
+		}else{
+			echo '
+			background-color: #920000;';
+		}
+	echo '
+	}
+
+	tr:nth-child(odd) {
+		background-color: #';
+	//echo $_COOKIE['color'] - 0xC41F12;
+	echo '020202';
+	echo '}
+	textarea{
+		color: #000000;
+	}';
+}
+
+function set_cookies(){
+	if(!isset($_COOKIE['color'])){
+		setcookie("display", 0, time() + (10 * 365 * 24 * 60 * 60), "/");
+		$_COOKIE['color'] = dechex(0xC62114);
+		setcookie("color", dechex(0xC62114), time() + (10 * 365 * 24 * 60 * 60), "/"); // 86400 = 1 day
 	}
 }
 ?>
