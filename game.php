@@ -6,12 +6,12 @@
 <html>
 	<head>
 		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
-		<script data-ad-client="ca-pub-5026741930646917" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
 		<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
 		<link rel="icon" type="image/png" sizes="96x96" href="img/favicon-96x96.png">
 		<link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
+		<meta name="msapplication-TileImage" content="img/ms-icon-144x144.png">
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
 
 		<meta property="og:title" content="Combo好き" />
 		<meta property="og:type" content="website" />
@@ -23,21 +23,19 @@
 
 		<meta name="description" content="Community-fueled searchable environment that shares and perfects combos.">
 		<title>Combo好き</title>
-		<link href="css/bootstrap.min.css" rel="stylesheet"> 
 
+		<link href="css/bootstrap.min.css" rel="stylesheet">
 		<style>
-			body{
-				background-color: #35340a;
-				background: url("img/<?php
-				if(isset($_COOKIE['color'])){
-				echo 'bg/'.$_COOKIE["color"].'honeycomb.png';
-				}else{
-				echo 'dark-honeycomb.png';
-				}?>
-				");
-				color: white;
-			}
+			<?php
+				background();
+			?>
 			.jumbotron{
+				max-height: 190px;
+				background-color: #000000;
+			}
+			.container{
+				height: 100vh;
+			}{
 				max-height: 190px;
 				background-color: #000000;
 			}

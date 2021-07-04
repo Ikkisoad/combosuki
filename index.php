@@ -2,6 +2,14 @@
 <?php
 	include_once "server/functions.php";
 	include_once "server/conexao.php";
+	strip_POSTtags();
+	if(isset($_POST['color'])){
+		setcookie("color", $_POST['color'], time() + (10 * 365 * 24 * 60 * 60), "/"); // 86400 = 1 day
+	}
+	if(isset($_POST['display'])){
+		setcookie("display", $_POST['display'], time() + (10 * 365 * 24 * 60 * 60), "/"); // 86400 = 1 day
+		header("Refresh:0");
+	}
 ?>
 <html>
 	<head>
@@ -35,20 +43,7 @@
 			.jumbotron{
 				max-height: 190px;
 				background-color: #000000;
-			}		
-			.footer {
-				flex: 0 0 50px;
-				position: fixed;
-				left: 0;
-				bottom: 0;
-				width: 100%;
-				background-color: black;
-				color: white;
-				opacity: 0.9;
-
-				background: url("img/black-honeycomb.png");
 			}
-
 		</style>
 	</head>
 	<body>
@@ -100,18 +95,16 @@
 							echo '
 							<form method="post" action="index.php">Background Color:<p>';
 							echo '
-								<select name="color" class="custom-select">
-									<option value="4">Black</option>
-									<option value="8">Blue</option>
-									<option value="6">Cyan</option>
-									<option value="5">Gray</option>
-									<option value="0">Green</option>
-									<option value="3">Purple</option>
-									<option value="1">Red</option>
-									<option value="7">Orange</option>
-									<option value="9">White</option>
-									<option value="2">Yellow</option>
-								</select>
+								<p>
+								  <label for="color">Background color</label>
+								  <input type="color" name="color" id="color" value="';
+								  if(isset($_COOKIE['color'])){
+									echo $_COOKIE['color'];
+								  }else{
+									  echo '920000';
+								  }
+								  echo'">
+								</p>
 								</p>Display method:<p>
 								<select name="display" class="custom-select">
 									<option value="1">Image</option>

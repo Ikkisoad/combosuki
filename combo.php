@@ -2,7 +2,7 @@
 <?php
 	include_once "server/conexao.php";
 	include_once "server/functions.php";
-	$_GET = array_map("strip_tags", $_GET);
+	strip_GETtags();
 	$primaryTitle = array();
 	$primaryValue = array();
 	$primaryType = array();
@@ -67,25 +67,44 @@
 ?>
 <html>
 	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
 		<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
 		<link rel="icon" type="image/png" sizes="96x96" href="img/favicon-96x96.png">
 		<link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
-
-		<meta property="og:title" content="<?php echo $name.' > '.$damage.' damage';?>" />
-		<meta property="og:description" content="<?php echo $combo;?>" />
-		<?php meta_embedvideo($video); ?>
+		<meta name="msapplication-TileImage" content="img/ms-icon-144x144.png">
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
+		<meta property="og:title" content="Combo好き" />
+		<meta property="og:type" content="website" />
+		<meta property="og:image" content="http://combosuki.com/img/combosuki.png" />
+		<meta property="og:url" content="http://combosuki.com/index.php" />
+		<meta property="og:description" 
+		content="Community-fueled searchable environment that shares and perfects combos." />
 		<meta name="theme-color" content="#d94040" />
-
-
+		<meta name="description" content="Community-fueled searchable environment that shares and perfects combos.">
 		<title>Combo好き</title>
 		<link href="css/bootstrap.min.css" rel="stylesheet">
 		<style>
+			<?php
+				background();
+			?>
+			.jumbotron{
+				max-height: 190px;
+				background-color: #000000;
+			}
+			.container{
+				height: 100vh;
+			}{
+				max-height: 190px;
+				background-color: #000000;
+			}
 			table {
 				border-spacing: 0;
 				width: 100%;
 				border: 1px solid #ddd;
+			}
+			th {
+				cursor: pointer;
 			}
 			th, td {
 				text-align: left;
@@ -96,15 +115,6 @@
 			}
 			tr:nth-child(odd) {
 				background-color: #000000
-			}
-			body{
-				background-color: #35340a;
-				background: url("img/<?php background(); ?>");
-				color: white;
-			}
-			.jumbotron{
-				max-height: 250px;
-				background-color: #000000;
 			}
 			textare{
 				color: #000000;	
@@ -120,8 +130,9 @@
 				header_buttons(2,1,'game.php',get_gamename($_GET['gameid'], $conn));
 			?>
 			<div class="container">
-			<?php
-				echo '<table>';
+				<?php
+				echo '
+				<table>';
 					echo '<tr>';
 						echo '<th>'; 
 							echo 'Entry ID: '.$id_combo.' / ';
@@ -131,95 +142,94 @@
 								echo '<button class="btn btn-dark" style="float: right;" disabled>';
 								echo 'Patch: '.$patch.'</button>';
 							}
-			?>
+							?>
 							<button alignt="right" style="float: right;" class="btn btn-secondary" onclick="change_display()">Display Method</button>
 
-			<?php
+							<?php
 							copyLinktoclipboard(get_combolink($id_combo,$conn));
-							echo '</th>';
+						echo '</th>';
 					echo '</tr>';
-				echo '<tr>';
+					echo '<tr>';
+						echo '<td id="combo_line">';
+							if(!isset($_COOKIE['display'])){
+								echo str_replace('->', '<br>', $combo);;
+								$_COOKIE['display'] = 0;
+							}else if($_COOKIE['display']){
+								echo $combo_image;
+							}else{
+								echo str_replace('->', '<br>', $combo);;
+							}
+							echo '
+						</td>
+					</table>';
+					if(!isset($damage)){ exit();}
+					embed_video($video);
 					echo '
-					<td id="combo_line">';
-						if(!isset($_COOKIE['display'])){
-							echo str_replace('->', '<br>', $combo);;
-							$_COOKIE['display'] = 0;
-						}else if($_COOKIE['display']){
-							echo $combo_image;
-						}else{
-							echo str_replace('->', '<br>', $combo);;
-						}
-					echo '
-					</td>
-				</table>';
-				if(!isset($damage)){ exit();}
-				embed_video($video);
-				echo '</td></table>
+					<table>';
+							echo '<tr>';
+								echo '<th>Damage</th>';
+								for($i = 0; $i<sizeof($primaryTitle); $i++){
+									echo '<th>';
+										echo $primaryTitle[$i];
+									echo '</th>';
+								}
+						echo '</tr>
+						<tr>';
+							echo '<td>'.number_format($damage,'0','','.').'</td>';
+								for($i = 0; $i<sizeof($primaryTitle); $i++){
+									echo '<td>';
+									echo $primaryValue[$i];
+							echo '</td>';
+							}
+						echo '</tr>';
+					echo '</table>';
+				if(sizeof($secondaryTitle)){
+				echo '
 				<table>';
 					echo '<tr>';
-						echo '<th>Damage</th>';
-						for($i = 0; $i<sizeof($primaryTitle); $i++){
-						echo '<th>';
-							echo $primaryTitle[$i];
-						echo '</th>';
+						for($i = 0; $i<sizeof($secondaryTitle); $i++){
+							echo '<th>';
+								echo $secondaryTitle[$i];
+							echo '</th>';
 						}
 					echo '</tr>
 					<tr>';
-					echo '<td>'.number_format($damage,'0','','.').'</td>';
-						for($i = 0; $i<sizeof($primaryTitle); $i++){
+						for($i = 0; $i<sizeof($secondaryTitle); $i++){
 							echo '<td>';
-								echo $primaryValue[$i];
+								echo $secondaryValue[$i];
 							echo '</td>';
 						}
 					echo '</tr>';
 				echo '</table>';
-				if(sizeof($secondaryTitle)){
-					echo '</td></table>
-						<table>';
-							echo '<tr>';
-								for($i = 0; $i<sizeof($secondaryTitle); $i++){
-									echo '<th>';
-										echo $secondaryTitle[$i];
-									echo '</th>';
-								}
-							echo '</tr>
-							<tr>';
-								for($i = 0; $i<sizeof($secondaryTitle); $i++){
-									echo '<td>';
-										echo $secondaryValue[$i];
-									echo '</td>';
-								}
-							echo '</tr>';
-					echo '</table>';
-				}
-			?>
-			<div id="combo_text" style="display: none;">
-				<?php 
-				if($_COOKIE['display']){
-					echo str_replace('->', '<br>', $combo);;
-				}else{
-					echo $combo_image;
 				}
 				?>
-			</div>
-			<?php
-				if($comment != ''){
-					echo '<table>';
-						echo '<tr>
+				<div id="combo_text" style="display: none;">
+				<?php 
+					if($_COOKIE['display']){
+						echo str_replace('->', '<br>', $combo);;
+					}else{
+						echo $combo_image;
+					}
+				?>
+				</div>
+				<?php
+					if($comment != ''){
+						echo '<table>';
+							echo '<tr>
 							<td>';
-								echo 'Comment:';
+							echo 'Comment:';
 							echo '</td>
-						</tr>';
-						echo '<tr>
+							</tr>';
+							echo '<tr>
 							<td>';
-								echo nl2br($comment);
+							echo nl2br($comment);
 							echo '</td>
-						</tr>';
-					echo '</table>';
-				}
-				//addtoListForm();
-			?>
-			<div class="btn-group" role="group">
+							</tr>';
+						echo '</table>';
+					}
+					//addtoListForm();
+				?>
+				<div class="btn-group" role="group">
 				<form method="post" action="forms.php?gameid=<?php echo $_GET['gameid']; ?>">
 					<?php
 						for($i = 0; $i<sizeof($primaryTitle); $i++){
@@ -271,8 +281,8 @@
 			document.getElementById("combo_line").innerHTML = document.getElementById("combo_text").innerHTML;
 			document.getElementById("combo_text").innerHTML = temp;
 		}
-	</script>
-	<script>
+		</script>
+		<script>
 		function copytoclip(link) {
 			var dummy = document.createElement("textarea");
 			document.body.appendChild(dummy);

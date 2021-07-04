@@ -1092,13 +1092,7 @@ function build_buttonFromVariables($pTitle, $pType, $pID, $pValue, $sTitle, $sTy
 }
 
 function background(){
-	/*if(isset($_POST['color'])){
-		setcookie("color", $_POST['color'], time() + (10 * 365 * 24 * 60 * 60), "/"); // 86400 = 1 day
-	}
-	if(isset($_POST['display'])){
-		setcookie("display", $_POST['display'], time() + (10 * 365 * 24 * 60 * 60), "/"); // 86400 = 1 day
-	}
-	if(isset($_COOKIE['color'])){
+	/*if(isset($_COOKIE['color'])){
 		//echo 'bg/'.$_COOKIE["color"].'honeycomb.png';
 		echo 'bg/bolinhas2.png),';
 		echo 'urd(bg/risco2.png';
@@ -1108,8 +1102,14 @@ function background(){
 	echo '
 	body{
 		padding: 0;
-		margin: 0;
-		background-color: #920000;
+		margin: 0;';
+		if(isset($_COOKIE['color'])){
+			echo 'background-color:'.$_COOKIE['color'].';';
+		}else{
+			echo '
+			background-color: #920000;';
+		}
+		echo'
 		color: white;
 		background-image: url(img/bg/bolinhas2.png), url(img/bg/risco2.png);
 		background-attachment: fixed;
@@ -1247,7 +1247,7 @@ function jumbotron($conn, $imageHeight){
 		echo '
 			<div class="jumbotron jumbotron-fluid">
 				<div class="container">
-					<a href="index.php"><img ';
+					<a href="index.php"><img style="margin-top: 20px;" ';
 						game_image($_GET['gameid'], $imageHeight, $conn);
 						echo '</a>
 				</div>

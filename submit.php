@@ -89,33 +89,40 @@
 <html>
 	<head>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
-	<meta name="description" content="">
-	<meta name="Ikkisoad" content="">
-	<link rel="apple-touch-icon" sizes="57x57" href="img/apple-icon-57x57.png">
-	<link rel="apple-touch-icon" sizes="60x60" href="img/apple-icon-60x60.png">
-	<link rel="apple-touch-icon" sizes="72x72" href="img/apple-icon-72x72.png">
-	<link rel="apple-touch-icon" sizes="76x76" href="img/apple-icon-76x76.png">
-	<link rel="apple-touch-icon" sizes="114x114" href="img/apple-icon-114x114.png">
-	<link rel="apple-touch-icon" sizes="120x120" href="img/apple-icon-120x120.png">
-	<link rel="apple-touch-icon" sizes="144x144" href="img/apple-icon-144x144.png">
-	<link rel="apple-touch-icon" sizes="152x152" href="img/apple-icon-152x152.png">
-	<link rel="apple-touch-icon" sizes="180x180" href="img/apple-icon-180x180.png">
-	<link rel="icon" type="image/png" sizes="192x192"  href="img/android-icon-192x192.png">
-	<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
-	<link rel="icon" type="image/png" sizes="96x96" href="img/favicon-96x96.png">
-	<link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
-	<link rel="manifest" href="img/manifest.json">
-	<meta name="msapplication-TileColor" content="#ffffff">
-	<meta name="msapplication-TileImage" content="img/ms-icon-144x144.png">
-	<meta name="theme-color" content="#ffffff">
-	<title>Combo好き</title>
-    <!-- Bootstrap core CSS -->
-	<link href="css/bootstrap.min.css" rel="stylesheet">
-    <!-- Custom styles for this template -->
+		<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="96x96" href="img/favicon-96x96.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
+		<meta name="msapplication-TileImage" content="img/ms-icon-144x144.png">
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
+
+		<meta property="og:title" content="Combo好き" />
+		<meta property="og:type" content="website" />
+		<meta property="og:image" content="http://combosuki.com/img/combosuki.png" />
+		<meta property="og:url" content="http://combosuki.com/index.php" />
+		<meta property="og:description" 
+		content="Community-fueled searchable environment that shares and perfects combos." />
+		<meta name="theme-color" content="#d94040" />
+
+		<meta name="description" content="Community-fueled searchable environment that shares and perfects combos.">
+		<title>Combo好き</title>
+
+		<link href="css/bootstrap.min.css" rel="stylesheet">
 		<style>
-		table {
+		<?php
+				background();
+			?>
+			.jumbotron{
+				max-height: 190px;
+				background-color: #000000;
+			}
+			.container{
+				height: 100vh;
+			}{
+				max-height: 190px;
+				background-color: #000000;
+			}
+			table {
 				border-spacing: 0;
 				width: 100%;
 				border: 1px solid #ddd;
@@ -133,18 +140,10 @@
 			tr:nth-child(odd) {
 				background-color: #000000
 			}
-			body{
-				background-color: #35340a;
-				color: white;
-				background: url("img/<?php background(); ?>");
-			}
-			.jumbotron{
-				max-height: 250px;
-				background-color: #000000;
-			}
 			textare{
 				color: #000000;	
 			}
+			.img-responsive{width:100%;}
 		</style> <!-- BACKGROUND COLOR-->
 	</head>
 	<body>
