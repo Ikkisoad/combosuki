@@ -175,7 +175,6 @@ function embed_video_on_demand($video, $id){ //Twitter, Youtube, Twitch clip, Ni
 }
 
 function print_listingtype($listingtype, $conn){
-	//require "server/conexao.php";
 	$query = "SELECT `title` FROM `game_entry` WHERE `entryid` = ?;";
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i",$listingtype);
@@ -186,14 +185,13 @@ function print_listingtype($listingtype, $conn){
 }
 
 function combo_table($gameid, $conn){
-	//require "server/conexao.php";
 						$query = "SELECT idcombo,Name,combo,damage,type, comments, submited, video FROM `combo` INNER JOIN `character` ON `combo`.`character_idcharacter` = `character`.`idcharacter` WHERE `character`.`game_idgame` = ? ORDER BY submited DESC LIMIT 0,5";
 						$result = $conn -> prepare($query);
 						$result -> bind_param("i",$gameid);
 						$result -> execute();
 						
-						echo '<table id="myTable">';
-						echo '<tr>';
+						echo '<table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed">';
+						echo '<caption>Click the character name to see comments/video if the entry has them.</caption><tr>';
 						echo '<th onclick="sortTable(0)">Character</th><th onclick="sortTable(1)">Inputs</th><th onclick="sortTable(2,1)">Damage</th><th onclick="sortTable(3)">Type</th><th onclick="sortTable(4)">Submited</th>';
 						echo '</tr>';
 						
@@ -233,7 +231,7 @@ function game_title($conn){
 	echo'<div class="row">';
 		foreach($result -> get_result()	as $gameid){
 			echo '<div class="col">
-				<div class="card text-center w-100 p-3 h-100 bg-dark">';
+				<div class="card text-center w-100 p-3 h-100 combosuki-main-reversed">';
 				echo '
 					<div class="card text-center w-100 p-3 h-100" style="background-color:';
 					echo $_COOKIE['color'];					
@@ -273,15 +271,18 @@ GROUP BY `game`.`name`
 ORDER BY `game`.`name`";
 	$result = $conn -> prepare($query);
 	$result -> execute();
-	
-	foreach($result -> get_result()	as $gameid){
-		
-		//TEXT ONLY
-		echo '<a style="margin-left:5em;" href=game.php?gameid=';
-		echo $gameid['idgame'];
-		echo '>';
-		echo $gameid['name'].' ('.$gameid['Entries'].')</a><br>';
-	}
+	echo '<div class="container">
+		<div class="row combosuki-main-reversed rounded">';
+		foreach($result -> get_result()	as $gameid){
+			echo '<div class="col border-combosuki text-start">';
+				echo '<a class="link-light text text-nowrap" style="margin-left:5em;" href=game.php?gameid=';
+				echo $gameid['idgame'];
+				echo '>';
+				echo $gameid['name'].' ('.$gameid['Entries'].')</a>';
+			echo '</div>';
+		}
+	echo '</div>
+	</div>';
 		
 }
 
@@ -335,11 +336,12 @@ function logs($conn){
 	$query = "SELECT * FROM logs ORDER BY Date DESC;";
 	$result = $conn -> prepare($query);
 	$result -> execute();
-	
+	echo '<div class="combosuki-main-reversed">';
 	foreach($result -> get_result()	as $log){
 		echo $log['Date'].': ';
 		echo $log['Description'].'<br>';
 	}
+	echo '</div>';
 }
 
 function count_char($conn){
@@ -351,11 +353,15 @@ function count_char($conn){
 	$i = 1;
 	foreach($result -> get_result() as $data){
 		if($i){
-			echo '<p><h3> Total Entries </h3>';
+			echo '<p><h3> Entries per Character </h3>
+			<div class="combosuki-main-reversed">';
 			echo '▰';
 			$i--;
 		}
 		echo ' '.$data['Name'].': '.$data['amount'].' ▰ ';
+	}
+	if(!$i){
+		echo '</div>';
 	}
 }
 
@@ -711,7 +717,7 @@ function edit_controls($gameid){
 
 function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1 -> Home/Lists Buttons>1 -> Home/Lists/Submit/Search/Edit Game Back=1 -> Game Back=2 -> Combo $backDestination == URL $backto == gameName
 	if($buttons): ?>
-		<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+		<nav class="navbar navbar-expand-lg navbar-dark bg-combosuki-main-2">
 			<a class="navbar-brand" href="index.php">
 				<img src="img/selo.png" style="margin-left:20px" width="30" height="30">
 			</a>
@@ -744,6 +750,9 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 										<a class="nav-link" href="index.php?about=1">About</a>
 									</li>';
 								echo '<li class="nav-item">
+										<a class="nav-link" href="index.php?about=5">Games</a>
+									</li>';
+								echo '<li class="nav-item">
 										<a class="nav-link" href="https://github.com/Ikkisoad/combosuki" target="_blank">GitHub</a>
 									</li>';
 							}
@@ -751,7 +760,7 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 						<li class="nav-item">
 							<a class="nav-link" href="list.php">Lists</a>
 						</li>
-
+						
 						<li class="nav-item dropdown">
 							<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
 							...
@@ -786,17 +795,17 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 					?>
 					<?php if($buttons > 1): ?>
 						<form method="post" action="forms.php?gameid=<?php echo $_GET['gameid']; ?>">
-							<button class="btn btn-secondary">Submit</button>
+							<button class="btn btn-combosuki text-white">Submit</button>
 							<input type="hidden" id="type" name="type" value="1">
 						</form>
 
 						<form method="get" action="forms.php">
-							<button class="btn btn-secondary">Search</button>
+							<button class="btn btn-combosuki text-white">Search</button>
 							<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 						</form>
 
 						<form method="get" action="editgame.php">
-							<button class="btn btn-secondary">Edit Game</button>
+							<button class="btn btn-combosuki text-white">Edit Game</button>
 							<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 						</form>
 					<?php endif; ?>
@@ -1113,7 +1122,7 @@ function background(){
 		padding: 0;
 		margin: 0;';
 		if(isset($_COOKIE['color'])){
-			echo 'background-color:'.$_COOKIE['color'].';';
+			echo 'background-color:#'.$_COOKIE['color'].';';
 		}else{
 			echo '
 			background-color: #920000;';
@@ -1275,17 +1284,6 @@ function jumbotron($conn, $imageHeight){
 
 function table(){
 	echo '
-	table {
-		border-spacing: 0;
-		width: 100%;
-		border: 1px solid #ddd;
-	}
-
-	th, td {
-		text-align: left;
-		padding: 16px;
-	}
-
 	tr:nth-child(even) {';
 		if(isset($_COOKIE['color'])){
 			echo ' background-color:#'.$_COOKIE['color'].';';
@@ -1300,10 +1298,7 @@ function table(){
 		background-color: #';
 	//echo $_COOKIE['color'] - 0xC41F12;
 	echo '020202';
-	echo '}
-	textarea{
-		color: #000000;
-	}';
+	echo '}';
 }
 
 function set_cookies(){

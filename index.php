@@ -33,6 +33,7 @@
 		<title>Combo好き</title>
 
 		<link href="css/bootstrap.min.css" rel="stylesheet">
+		<link rel="stylesheet" href="css/combosuki.css">
 		<style>
 			<?php
 				background();
@@ -59,19 +60,37 @@
 							game_title($conn);
 						}else if($_GET['about'] == 1){
 							echo '
-							<div class="card border-dark mb-3 bg-dark">
+							<div class="card combosuki-main-reversed mb-3">
 								<div class="row g-0">
 									<div class="col-md-4">
-										<img src="img/pfp.jpg" alt="...">
+										<img src="img/ikki.jpg" alt="...">
 									</div>
 									<div class="col-md-8">
 										<div class="card-body">
-											<h5 class="card-title">Ikkisoad</h5>
+											<h5 class="card-title">Ikki</h5>
 											<p class="card-text">Creator of Combo好き.</p>
 											<p class="card-text">This application started as a fun project at the end of 2018, and the motivation to keep improving it is to help out the FGC assemble their findings and sort out the best options with specific sets of resources.</p>
 											<p class="card-text">Hopefully with this database we will be able to keep the best combos known, without losing them to endless feeds...</p>
 											<p class="card-text"><small class="text-muted">...</small></p>
 											<a href="https://twitter.com/Ikkisoad" class="card-link" target="_blank">@Ikkisoad</a>
+										</div>
+									</div>
+								</div>
+							</div>';
+							echo '
+							<div class="card combosuki-main-reversed mb-3">
+								<div class="row g-0">
+									<div class="col-md-4">
+										<img src="img/makai.jpg" alt="...">
+									</div>
+									<div class="col-md-8">
+										<div class="card-body">
+											<h5 class="card-title">Makai</h5>
+											<p class="card-text">Branding.</p>
+											<p class="card-text">Has literally nothing to say.</p>
+											<p class="card-text">Graphic Designer</p>
+											<p class="card-text"><small class="text-muted">...</small></p>
+											<a href="https://twitter.com/Makaai_" class="card-link" target="_blank">@Makaai_</a>
 										</div>
 									</div>
 								</div>
@@ -84,8 +103,6 @@
 								<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
 								<img alt="" border="0" src="https://www.paypal.com/en_BR/i/scr/pixel.gif" width="1" height="1" />
 							</form>';
-							echo '<h2>All Games</h2>';
-							game_text_only($conn);
 						}else if($_GET['about'] == 2){
 							echo '<img src="img/numpadNotationBlack.jpg">';
 						}else if($_GET['about'] == 3){
@@ -93,13 +110,13 @@
 							logs($conn);
 						}else if($_GET['about'] == 4){
 							echo '
-							<form method="post" class="form-control bg-dark text-white" action="index.php">';
+							<form method="post" class="form-control combosuki-main-reversed text-white" action="index.php">';
 							echo '<div class="row">
 								<div class="col-auto">
 									  <label for="color">Background color:</label>
 									  <input type="color" name="color" id="color" value="';
 									  if(isset($_COOKIE['color'])){
-										echo $_COOKIE['color'];
+										echo '#'.$_COOKIE['color'];
 									  }else{
 										  echo '920000';
 									  }
@@ -113,10 +130,13 @@
 									</select>
 								</div>
 								<div class="col-auto">
-									<button class="btn btn-secondary">Save</button>
+									<button class="btn btn-combosuki">Save</button>
 								</div>
 								</div>
 							</form>';
+						}else if($_GET['about'] == 5){
+							echo '<h2>Games</h2>';
+							game_text_only($conn);
 						}
 						mysqli_close($conn);
 					?>

@@ -84,23 +84,13 @@
 		<meta name="description" content="Community-fueled searchable environment that shares and perfects combos.">
 		<title>Combo好き</title>
 		<link href="css/bootstrap.min.css" rel="stylesheet">
+		<link rel="stylesheet" href="css/combosuki.css">
 		<style>
 			<?php
 				background();
 				table();
 			?>
-			.jumbotron{
-				max-height: 190px;
-				background-color: #000000;
-			}
-			.container{
-				height: 100vh;
-			}{
-				max-height: 190px;
-				background-color: #000000;
-			}
-			.img-responsive{width:100%;}
-		</style> <!-- BACKGROUND COLOR-->
+		</style>
 	</head>
 	<body>
 		<main role="main">

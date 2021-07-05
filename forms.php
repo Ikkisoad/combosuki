@@ -26,42 +26,11 @@
 		<meta name="description" content="Community-fueled searchable environment that shares and perfects combos.">
 		<title>Combo好き</title>
 		<link href="css/bootstrap.min.css" rel="stylesheet">
+		<link rel="stylesheet" href="css/combosuki.css">
 		<style>
 			<?php
 				background();
 			?>
-			.jumbotron{
-				max-height: 190px;
-				background-color: #000000;
-			}
-			.container{
-				height: 100vh;
-			}{
-				max-height: 190px;
-				background-color: #000000;
-			}
-			table {
-				border-spacing: 0;
-				width: 100%;
-				border: 1px solid #ddd;
-			}
-			th {
-				cursor: pointer;
-			}
-			th, td {
-				text-align: left;
-				padding: 16px;
-			}
-			tr:nth-child(even) {
-				background-color: #212121
-			}
-			tr:nth-child(odd) {
-				background-color: #000000
-			}
-			textare{
-				color: #000000;	
-			}
-			.img-responsive{width:100%;}
 		</style>
 	</head>
 	

@@ -123,26 +123,13 @@
 		<title>Combo好き</title>
 
 		<link href="css/bootstrap.min.css" rel="stylesheet">
-
-		<!-- Custom styles for this template -->
-		<!-- <link href="jumbotron.css" rel="stylesheet"> -->
-
+		<link rel="stylesheet" href="css/combosuki.css">
 		<style>
 			<?php
 				background();
 				table();
 			?>
-			
-			.container{
-				height: 100vh;
-			}
-			.jumbotron{
-				max-height: 190px;
-				background-color: #020202;
-			}
-			.img-responsive{width:100%;}
-
-		</style> <!-- BACKGROUND COLOR-->
+		</style> 
 	</head>
 
 	<body>
@@ -194,7 +181,7 @@
 									echo $list['name'].' list';
 								}
 								copyLinktoclipboard('https://combosuki.com/list.php?listid='.$_GET['listid']);
-								echo '<table id="myTable">';
+								echo '<table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed">';
 									echo '<tr>';
 										echo '<th>Character</th><th>Inputs</th><th>Damage</th><th>Type</th>';
 									echo '</tr>';
@@ -230,7 +217,7 @@
 												</div>
 											</form>
 										</div>';
-										echo '<table>';
+										echo '<table class="table table-hover align-middle caption-top combosuki-main-reversed">';
 										$title = $data['title'];
 									}
 									echo '<tr><td data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'">';
@@ -262,7 +249,7 @@
 								edit_listForm($conn);
 							}else{
 								echo '<h3>Listing</h3>
-								<form class="form-control bg-dark text-white" method="post" action="list.php">
+								<form class="form-control combosuki-main-reversed text-white" method="post" action="list.php">
 									<input type="hidden" name="submission_type" value="1">
 									<div class="form-group mb-2"><input placeholder="List Name" style="background-color: #474747; color:#999999;" name="list_name" class="form-control" maxlength="45" rows="1"></input></div>
 									<div class="form-group mb-2">';
@@ -308,7 +295,7 @@
 												$result -> bind_param("s",$_POST['list_name']);
 											}
 											$result -> execute();
-											echo '<table id="myTable">';
+											echo '<table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed">';
 											echo '<tr>';
 											echo '<th>List Name</th>';
 											echo '</tr>';
@@ -323,8 +310,8 @@
 									}else{
 										$query = "SELECT `idlist`, `list_name`, `type`,`game_idgame` FROM `list` ORDER BY `idlist` DESC LIMIT 0,50";
 										$result = $conn -> prepare($query);
+										echo '<table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed">';
 										$result -> execute();
-										echo '<table id="myTable">';
 										echo '<tr>';
 										echo '<th>List Name</th>';
 										echo '</tr>';

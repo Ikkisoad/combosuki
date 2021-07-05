@@ -1,0 +1,80 @@
+@charset "UTF-8";
+.combosuki-main{
+	background-color: #C62114;
+	border-style: solid;
+	border-width: 2px;
+	border-color: #020202;
+}
+.combosuki-main-reversed{
+	background-color: #020202;
+	border-style: solid;
+	border-width: 2px;
+	border-color: #C62114;
+}
+table {
+	border-spacing: 0;
+	width: 100%;
+}
+th, td {
+	text-align: left;
+	padding: 16px;
+}
+textarea{
+	color: #020202;
+}
+.textarea-combosuki-secondary-3{
+	color: #2E2E2E;
+}
+.jumbotron{
+	max-height: 190px;
+	background-color: #020202;
+}
+.container{
+	height: 100vh;
+}{
+	max-height: 190px;
+	background-color: #020202;
+}
+.img-responsive{width:100%;}
+
+.btn-combosuki{
+	color: white;
+	background-color:#920000;
+	border-style: solid;
+	border-width: 2px;
+	border-color: #FA591C;
+}
+
+.btn-combosuki:active {
+  background-color: #FA591C;
+}
+.border-combosuki-secondary-1{
+	border-style: solid;
+	border-width: 2px;
+	border-color: #920000;
+}
+.border-combosuki-secondary-2{
+	border-style: solid;
+	border-width: 2px;
+	border-color: #FA591C;
+}
+.border-combosuki-secondary-3{
+	border-style: solid;
+	border-width: 2px;
+	border-color: #2E2E2E;
+}
+.bg-combosuki-main-1{
+	background-color: #C62114;
+}
+.bg-combosuki-main-2{
+	background-color: #020202;
+}
+.bg-combosuki-secondary-1{
+	background-color: #920000;
+}
+.bg-combosuki-secondary-2{
+	background-color: #FA591C;
+}
+.bg-combosuki-secondary-3{
+	background-color: #2E2E2E;
+}
