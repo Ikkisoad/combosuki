@@ -225,7 +225,12 @@ function combo_table($gameid, $conn){
 }
 
 function game_title($conn){
-	$query = "SELECT idgame, name, image FROM game WHERE complete > 0 ORDER BY name;";
+	$query = "SELECT `subQuery`.`idgame`, `subQuery`.`name`, `subQuery`.`image` FROM (SELECT `game`.`idgame`, `game`.`name`, `game`.`image`, `game`.`complete` FROM `combo`
+INNER JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter`
+INNER JOIN `game` ON `game`.`idgame` = `character`.`game_idgame`
+WHERE `game`.`complete` > 0
+GROUP BY `game`.`idgame`
+ORDER BY COUNT(`combo`.`character_idcharacter`) DESC LIMIT 20) as subQuery ORDER BY subQuery.`name`;";
 	$result = $conn -> prepare($query);
 	$result -> execute();
 	echo'<div class="row">';
@@ -233,7 +238,7 @@ function game_title($conn){
 			echo '<div class="col">
 				<div class="card text-center w-100 p-3 h-100 combosuki-main-reversed">';
 				echo '
-					<div class="card text-center w-100 p-3 h-100" style="background-color:';
+					<div class="card text-center w-100 p-3 h-100" style="background-color:#';
 					echo $_COOKIE['color'];					
 					echo ';"><img style="
 						max-height:200px;
