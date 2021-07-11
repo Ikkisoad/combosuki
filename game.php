@@ -34,25 +34,31 @@
 		</style>
 	</head>
 	<body>
-		<main role="main">
-			<?php 
-				jumbotron($conn,100);
-				header_buttons(2, 0, 0,get_gamename($_GET['gameid'], $conn)); 
+		<?php 
+			jumbotron($conn,100);
+			header_buttons(2, 0, 0,get_gamename($_GET['gameid'], $conn)); 
+		?>
+		<div class="container-fluid">
+			<?php
+				quick_search_form($_GET['gameid'], $conn);
 			?>
-			<div class="container">			
-				<?php
-					quick_search_form($_GET['gameid'], $conn);
-					print_game_description($_GET['gameid'], $conn);
-					print_game_links($_GET['gameid'], $conn); 
-				?>
+			<div class="row">
+				<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+					<?php count_char($conn);?>
+				</nav>
 
-				<h2>Latest submissions</h2>
-
-				<?php
-					combo_table($_GET['gameid'],$conn);
-					count_char($conn);
-					mysqli_close($conn);
-				?>
+				<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4"><div class="chartjs-size-monitor"><div class="chartjs-size-monitor-expand"><div class=""></div></div><div class="chartjs-size-monitor-shrink"><div class=""></div></div></div>
+					<?php 
+						print_game_description($_GET['gameid'], $conn);
+						print_game_links($_GET['gameid'], $conn); 
+					?>
+					<h2>Latest submissions</h2>
+					<div class="table-responsive">
+						<table class="table table-striped table-sm">
+							<?php combo_table($_GET['gameid'],$conn); ?>
+						</table>
+					</div>
+				</main>
 				<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 				<!-- Horizontal AD Unit -->
 				<ins class="adsbygoogle"
@@ -62,10 +68,12 @@
 				data-ad-format="auto"
 				data-full-width-responsive="true"></ins>
 				<script>
-					(adsbygoogle = window.adsbygoogle || []).push({});
+				(adsbygoogle = window.adsbygoogle || []).push({});
 				</script>
+				<?php 
+				mysqli_close($conn);?>
 			</div>
-		</main>
+		</div>
 		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
 	</body>
 	<!-- Bootstrap core JavaScript

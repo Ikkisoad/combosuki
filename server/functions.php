@@ -190,7 +190,7 @@ function combo_table($gameid, $conn){
 						$result -> bind_param("i",$gameid);
 						$result -> execute();
 						
-						echo '<table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed">';
+						echo '<table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed text-white">';
 						echo '<caption>Click the character name to see comments/video if the entry has them.</caption><tr>';
 						echo '<th onclick="sortTable(0)">Character</th><th onclick="sortTable(1)">Inputs</th><th onclick="sortTable(2,1)">Damage</th><th onclick="sortTable(3)">Type</th><th onclick="sortTable(4)">Submited</th>';
 						echo '</tr>';
@@ -203,7 +203,13 @@ function combo_table($gameid, $conn){
 								echo $data['Name'];
 							}
 							echo '</td><td style="min-width:400px">';
-							echo		'<a class="link-light" data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'" href="combo.php?idcombo='.$data['idcombo'].'">'.$data['combo'].'</a>';
+							echo		'<text class="link-light" data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'" href="combo.php?idcombo='.$data['idcombo'].'">'.$data['combo'].'</text>';
+							echo '	<a href="combo.php?idcombo='.$data['idcombo'].'">
+										<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-up-right" viewBox="0 0 16 16">
+										  <path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"/>
+										  <path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/>
+										</svg>
+									</a>';
 							echo '<div class="collapse" id="collapse'.$data['idcombo'].'"><div class="card card-body p-3 mb-2 bg-transparent border border-5 border-dark ">'; //style="display: none;"
 							echo $data['comments'].'<br>';
   
@@ -359,12 +365,14 @@ function count_char($conn){
 	$i = 1;
 	foreach($result -> get_result() as $data){
 		if($i){
-			echo '<p><h3> Entries per Character </h3>
-			<div class="combosuki-main-reversed">';
-			echo '▰';
+			echo '<h3> Entries per Character </h3>
+			<div class="row text-center combosuki-main-reversed">';
 			$i--;
 		}
+		echo '<div class="col text-nowrap">';
+		echo '▰';
 		echo ' '.$data['Name'].': '.$data['amount'].' ▰ ';
+		echo '</div>';
 	}
 	if(!$i){
 		echo '</div>';
