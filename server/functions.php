@@ -240,17 +240,18 @@ ORDER BY COUNT(`combo`.`character_idcharacter`) DESC LIMIT 20) as subQuery ORDER
 				echo '
 					<div class="card text-center w-100 p-3 h-100" style="background-color:#';
 					echo $_COOKIE['color'];					
-					echo ';"><img style="
+					echo ';">
+					<span style=" display: inline-block;
+					height: 30%;
+					vertical-align: middle;"></span>
+						<img class="rounded mx-auto d-block" style="
 						max-height:200px;
 						max-width:200px;
 						height:auto;
 						width:auto;
 						align: center;
-						margin-top: 10px;
-						margin-bottom: 1px;
+						vertical-align: middle;
 						display: block;
-						margin-left: auto;
-						margin-right: auto;
 						" src="'.$gameid['image'].'" class="card-img-top rounded mx-auto d-block" alt="Responsive image"></img></div>';
 						echo '<div class="card-body">';
 						echo '<a class="card-title text-white" ';
