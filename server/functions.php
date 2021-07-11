@@ -1154,7 +1154,12 @@ function background(){
 
 function copyLinktoclipboard($link){
 	if(1):?>
-	<button alignt="right" style="float: right;" class="btn btn-secondary" onclick="copytoclip('<?php echo $link; ?>')">Copy URL</button>
+	<button alignt="right" style="float: right;" class="btn btn-secondary" onclick="copytoclip('<?php echo $link; ?>')">
+		Copy URL
+		<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-share" viewBox="0 0 16 16">
+		  <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5zm-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>
+		</svg>
+	</button>
 	<?php endif;
 }
 
@@ -1255,23 +1260,15 @@ WHERE `idlist` = ?  GROUP BY `list_category`.`title` ORDER BY `list_category`.`o
 	$result -> bind_param("i", $listid);
 	$result -> execute();
 	echo '
-	<aside class="bd-aside sticky-xl-top text-muted align-self-start mb-3 mb-xl-5 px-2">
+	<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse combosuki-main-reversed">
 		<ul class="list-unstyled mb-0 py-3 pt-md-1">
-			<li class="list-group-item bg-dark"><a href="#edit"><span>Edit</span></a></li>'; /*
-  padding: 0;
-  width: 200px;
-  background-color: #f1f1f1;
-  position: fixed;
-  height: 100%;
-  overflow: auto;
-   style="width: 250px;  margin: 0;
-  */
+			<li class="list-group-item bg-transparent "><a href="#edit"><span>Edit</span></a></li>';
 			foreach($result -> get_result() as $data){
-				echo '<li class="list-group-item bg-dark"><a href="#'.$data['title'].'"><span>'.$data['title'].'</span></a></li>';
+				echo '<li class="list-group-item bg-transparent "><a href="#'.$data['title'].'"><span>'.$data['title'].'</span></a></li>';
 			}
 			echo '
 		</ul>
-	</aside>';
+	</nav>';
 }
 
 function jumbotron($conn, $imageHeight){
@@ -1321,5 +1318,74 @@ function set_cookies(){
 		$_COOKIE['color'] = dechex(0xC62114);
 		setcookie("color", dechex(0xC62114), time() + (10 * 365 * 24 * 60 * 60), "/"); // 86400 = 1 day
 	}
+}
+
+function create_list_form($conn){
+	echo '<h3>Create List</h3>
+	<form class="form-control combosuki-main-reversed text-white" method="post" action="list.php">
+		<input type="hidden" name="submission_type" value="1">
+		<div class="form-group mb-2">
+			<input placeholder="List Name" style="background-color: #474747; color:#999999;" name="list_name" class="form-control" maxlength="45" rows="1"></input>
+		</div>
+		<div class="form-group mb-2">';
+
+			$query = "SELECT `idgame`, `name` FROM `game` WHERE `complete` > 0 ORDER BY `name`";
+			$result = $conn -> prepare($query);
+			$result -> execute();
+
+			echo '<select name="gameid" class="form-select">';
+
+			echo '<option value="0">Game</option>';
+			foreach($result -> get_result() as $game){
+			echo '<option value="'.$game['idgame'].'" ';
+			if(isset($_POST)){
+				if(isset($_POST['gameid'])){
+					if($_POST['gameid'] == $game['idgame']){
+						echo 'selected';
+					}
+				}
+			}
+			echo '>'.$game['name'].'</option>';
+			}
+
+			echo '</select>'; 
+		echo '</div>
+		<div class="form-group mb-2"><input placeholder="List Password" name="listPass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1"></input></div>
+		<div class="form-group mb-2"><button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Create List</button></div>
+	</form>';
+}
+
+function search_list_form($conn){
+	echo '<h3>Search List</h3>
+	<form class="form-control combosuki-main-reversed text-white" method="post" action="list.php">
+		<input type="hidden" name="submission_type" value="1">
+		<div class="form-group mb-2">
+			<input placeholder="List Name" style="background-color: #474747; color:#999999;" name="list_name" class="form-control" maxlength="45" rows="1"></input>
+		</div>
+		<div class="form-group mb-2">';
+
+			$query = "SELECT `idgame`, `name` FROM `game` WHERE `complete` > 0 ORDER BY `name`";
+			$result = $conn -> prepare($query);
+			$result -> execute();
+
+			echo '<select name="gameid" class="form-select">';
+
+			echo '<option value="0">Game</option>';
+			foreach($result -> get_result() as $game){
+			echo '<option value="'.$game['idgame'].'" ';
+			if(isset($_POST)){
+				if(isset($_POST['gameid'])){
+					if($_POST['gameid'] == $game['idgame']){
+						echo 'selected';
+					}
+				}
+			}
+			echo '>'.$game['name'].'</option>';
+			}
+
+			echo '</select>'; 
+		echo '</div>
+		<div class="form-group mb-2"><button type="submit" name="action" value="Search" class="btn btn-info btn-block">Search</button></div>
+	</form>';
 }
 ?>

@@ -138,203 +138,192 @@
 			header_buttons(1, 0, 0, 0);
 		?>
 
-		<main>
-			<?php
-				if(isset($_GET['listid']))list_categories($_GET['listid'],$conn);
-			?>
 			<div class="container-fluid">
-				<div class="container-xxl my-md-4 bd-layout">
-					<div class="body">
-						<div class="col">
-						<?php 
+				<div class="row">
+				<?php
 
-							$_GET = array_map("strip_tags", $_GET);
+					strip_GETtags();
 
-							if(isset($_GET['listid'])){
-								$query = "SELECT list_name, name, type, game_idgame FROM `list` join game ON list.game_idgame = game.idgame where list.idlist = ?";
-								$result = $conn -> prepare($query);
-								$result -> bind_param("i", $_GET['listid']);
-								$result -> execute();
-								foreach($result -> get_result() as $list){
-									$_GET['gameid'] = $list['game_idgame'];
-									//header_buttons(2, 1, 'game.php',get_gamename($_GET['gameid'], $conn));
-									echo '<h3 class="mt-3">'.$list['list_name'];
-										print_listglyph($list['type']);
-										echo ' <button class="btn btn-dark" onclick="showDIV(0)"></button>';
-									echo '</h3>';
-									echo '
-									<div id="0" style="display: none;">
-										<form method="post" action="list.php?listid='.$_GET['listid'].'">
-											<input type="hidden" name="submission_type" value="2">
-											<input type="hidden" name="idlist" value="'.$_GET['listid'].'">
-											<div class="input-group">
-												<textarea name="listName" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="List Name">'.$list['list_name'].'</textarea>
-												<input name="listPass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="List Password">
-												<div class="input-group-append" id="button-addon4">
-													<button type="submit" name="action" value="UpdateList" class="btn btn-primary">Update</button>
-													<button type="submit" name="action" value="DeleteList" class="btn btn-danger" onclick="return confirm();">Delete List</button>
-												</div>
+					if(isset($_GET['listid'])){
+						list_categories($_GET['listid'],$conn);
+						echo '<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4"><div class="chartjs-size-monitor"><div class="chartjs-size-monitor-expand"><div class=""></div></div><div class="chartjs-size-monitor-shrink"><div class=""></div></div></div>
+					';
+						$query = "SELECT list_name, name, type, game_idgame FROM `list` join game ON list.game_idgame = game.idgame where list.idlist = ?";
+						$result = $conn -> prepare($query);
+						$result -> bind_param("i", $_GET['listid']);
+						$result -> execute();
+						foreach($result -> get_result() as $list){
+							$_GET['gameid'] = $list['game_idgame'];
+							//header_buttons(2, 1, 'game.php',get_gamename($_GET['gameid'], $conn));
+							echo '<h3 class="mt-3">'.$list['list_name'];
+								print_listglyph($list['type']);
+								echo '
+								<button class="btn btn-dark" onclick="showDIV(0)">
+									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+									  <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+									  <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+									</svg>
+								</button>';
+							echo '</h3>';
+							echo '
+							<div id="0" style="display: none;">
+								<form method="post" action="list.php?listid='.$_GET['listid'].'">
+									<input type="hidden" name="submission_type" value="2">
+									<input type="hidden" name="idlist" value="'.$_GET['listid'].'">
+									<div class="input-group">
+										<textarea name="listName" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="List Name">'.$list['list_name'].'</textarea>
+										<input name="listPass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="List Password">
+										<div class="input-group-append" id="button-addon4">
+											<button type="submit" name="action" value="UpdateList" class="btn btn-primary">Update</button>
+											<button type="submit" name="action" value="DeleteList" class="btn btn-danger" onclick="return confirm();">Delete List</button>
+										</div>
+									</div>
+								</form>
+							</div>';
+							print_gameglyph($list['game_idgame'],$conn);
+							echo $list['name'].' list';
+						}
+						copyLinktoclipboard('https://combosuki.com/list.php?listid='.$_GET['listid']);
+						echo '<table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed text-white">';
+							echo '<tr>';
+								echo '<th>Character</th><th>Inputs</th><th>Damage</th><th>Type</th>';
+							echo '</tr>';
+							$title = '';
+							$query = "SELECT `combo_listing`.`idcombo`, `combo`.`damage`, `character`.`Name`, `combo`.`combo`, `combo`.`comments`,`combo`.`video`,`combo`.`type`, `list_category`.`title`, `list_category`.`idlist_category`,`list_category`.`order` 
+							FROM `combo_listing` 
+							INNER JOIN `combo` ON `combo`.`idcombo` = `combo_listing`.`idcombo` 
+							LEFT JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` 
+							LEFT JOIN `list_category` ON `list_category`.`idlist_category` = `combo_listing`.`list_category_idlist_category`
+							WHERE `idlist` = ? ORDER BY `list_category`.`order`, `list_category`.`title`,`combo`.`damage` DESC;";
+							$result = $conn -> prepare($query);
+							$result -> bind_param("i", $_GET['listid']);
+							$result -> execute();
+						echo '</table>';
+						foreach($result -> get_result() as $data){
+							if($title != $data['title']){
+								echo '</table>';
+								echo '<h2 class="mt-3"><span class="mw-headline" id="'.$data['title'].'">'.$data['title'].'</span>
+								<button class="btn btn-dark" onclick="showDIV(-'.$data['idlist_category'].')">
+									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+									  <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+									  <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+									</svg>
+								</button></h2>';
+								echo '
+								<div id="-'.$data['idlist_category'].'" style="display: none;">
+									<form method="post" action="list.php?listid='.$_GET['listid'].'">
+										<input type="hidden" name="submission_type" value="3">
+										<input type="hidden" name="categoryid" value="'.$data['idlist_category'].'">
+										<div class="input-group">
+											<textarea name="category" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Category Name">'.$data['title'].'</textarea>
+											<input class="form-control" type="number" name="order" placeholder="Order" value="'.$data['order'].'" step="any">
+											<input name="listPass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="List Password">
+											<div class="input-group-append" id="button-addon4">
+												<input type="hidden" name="entryid" value="54">
+												<button type="submit" name="action" value="UpdateCategory" class="btn btn-primary">Update</button>
+												<button type="submit" name="action" value="DeleteCategory" class="btn btn-danger" onclick="return confirm();">Delete</button>
 											</div>
-										</form>
-									</div>';
-									print_gameglyph($list['game_idgame'],$conn);
-									echo $list['name'].' list';
-								}
-								copyLinktoclipboard('https://combosuki.com/list.php?listid='.$_GET['listid']);
-								echo '<table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed">';
-									echo '<tr>';
-										echo '<th>Character</th><th>Inputs</th><th>Damage</th><th>Type</th>';
-									echo '</tr>';
-									$title = '';
-									$query = "SELECT `combo_listing`.`idcombo`, `combo`.`damage`, `character`.`Name`, `combo`.`combo`, `combo`.`comments`,`combo`.`video`,`combo`.`type`, `list_category`.`title`, `list_category`.`idlist_category`,`list_category`.`order` 
-									FROM `combo_listing` 
-									INNER JOIN `combo` ON `combo`.`idcombo` = `combo_listing`.`idcombo` 
-									LEFT JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` 
-									LEFT JOIN `list_category` ON `list_category`.`idlist_category` = `combo_listing`.`list_category_idlist_category`
-									WHERE `idlist` = ? ORDER BY `list_category`.`order`, `list_category`.`title`,`combo`.`damage` DESC;";
-									$result = $conn -> prepare($query);
-									$result -> bind_param("i", $_GET['listid']);
-									$result -> execute();
-								echo '</table>';
-								foreach($result -> get_result() as $data){
-									if($title != $data['title']){
-										echo '</table>';
-										echo '<h2 class="mt-3"><span class="mw-headline" id="'.$data['title'].'">'.$data['title'].'</span> <button class="btn btn-dark" onclick="showDIV(-'.$data['idlist_category'].')"></button></h2>';
-										echo '
-										<div id="-'.$data['idlist_category'].'" style="display: none;">
-											<form method="post" action="list.php?listid='.$_GET['listid'].'">
-												<input type="hidden" name="submission_type" value="3">
-												<input type="hidden" name="categoryid" value="'.$data['idlist_category'].'">
-												<div class="input-group">
-													<textarea name="category" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Category Name">'.$data['title'].'</textarea>
-													<input class="form-control" type="number" name="order" placeholder="Order" value="'.$data['order'].'" step="any">
-													<input name="listPass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="List Password">
-													<div class="input-group-append" id="button-addon4">
-														<input type="hidden" name="entryid" value="54">
-														<button type="submit" name="action" value="UpdateCategory" class="btn btn-primary">Update</button>
-														<button type="submit" name="action" value="DeleteCategory" class="btn btn-danger" onclick="return confirm();">Delete</button>
-													</div>
-												</div>
-											</form>
-										</div>';
-										echo '<table class="table table-hover align-middle caption-top combosuki-main-reversed">';
-										$title = $data['title'];
-									}
-									echo '<tr><td data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'">';
-									if($data['comments'] != '' || $data['video'] != ''){
-										echo '<button class="btn btn-dark" onclick="showDIV('.$data['idcombo'].')">'.$data['Name'].'</button>';
-									}else{
-										echo $data['Name'];
-									}
-									echo '</td><td style="min-width:400px">';
-									echo		'<a data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'" href="combo.php?idcombo='.$data['idcombo'].'&listid='.$_GET['listid'].'">'.$data['combo'].'</a>';
-									echo '<div id="'.$data['idcombo'].'" style="display: none;">';
-										echo $data['comments'].'<br>';
-
-										//####################################################################VIDEO HERE
-
-										embed_video_on_demand($data['video'], $data['idcombo']);
-
-										//######################################################################VIDEO ABOVE
-
-									echo '</div>';
-									echo '</td><td>';
-									echo number_format($data['damage'],'0','','.');
-									echo '</td><td>';
-									print_listingtype($data['type'], $conn);
-									echo '</td>';
-								}
-								echo '</table>';
-
-								edit_listForm($conn);
+										</div>
+									</form>
+								</div>';
+								echo '<table class="table table-hover align-middle caption-top combosuki-main-reversed  text-white">';
+								$title = $data['title'];
+							}
+							echo '<tr><td data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'">';
+							if($data['comments'] != '' || $data['video'] != ''){
+								echo '<button class="btn btn-dark" onclick="showDIV('.$data['idcombo'].')">'.$data['Name'].'</button>';
 							}else{
-								echo '<h3>Listing</h3>
-								<form class="form-control combosuki-main-reversed text-white" method="post" action="list.php">
-									<input type="hidden" name="submission_type" value="1">
-									<div class="form-group mb-2"><input placeholder="List Name" style="background-color: #474747; color:#999999;" name="list_name" class="form-control" maxlength="45" rows="1"></input></div>
-									<div class="form-group mb-2">';
+								echo $data['Name'];
+							}
+							echo '</td><td style="min-width:400px">';
+							echo		'<text data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'" href="combo.php?idcombo='.$data['idcombo'].'&listid='.$_GET['listid'].'">'.$data['combo'].'</text>';
+							echo '	<a href="combo.php?idcombo='.$data['idcombo'].'">
+										<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-up-right" viewBox="0 0 16 16">
+										  <path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"/>
+										  <path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/>
+										</svg>
+									</a>';
+							echo '<div id="'.$data['idcombo'].'" style="display: none;">';
+								echo $data['comments'].'<br>';
 
-										$query = "SELECT `idgame`, `name` FROM `game` WHERE `complete` > 0 ORDER BY `name`";
-										$result = $conn -> prepare($query);
-										$result -> execute();
+								//####################################################################VIDEO HERE
 
-										echo '<select name="gameid" class="form-select">';
+								embed_video_on_demand($data['video'], $data['idcombo']);
 
-										echo '<option value="0">Game</option>';
-										foreach($result -> get_result() as $game){
-										echo '<option value="'.$game['idgame'].'" ';
-										if(isset($_POST)){
-											if(isset($_POST['gameid'])){
-												if($_POST['gameid'] == $game['idgame']){
-													echo 'selected';
-												}
-											}
-										}
-										echo '>'.$game['name'].'</option>';
-										}
+								//######################################################################VIDEO ABOVE
 
-										echo '</select>'; 
-									echo '</div>
-									<div class="form-group mb-2"><input placeholder="List Password" name="listPass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1"></input></div>
-									<div class="form-group mb-2"><button type="submit" name="action" value="Search" class="btn btn-info btn-block">Search</button></div>
-									<div class="form-group mb-2"><button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Create List</button></div>
-								</form>';
-								if(isset($_POST)){
-									if(isset($_POST['action'])){
-										if($_POST['action'] == 'Search'){
-											if($_POST['gameid']){
-												$query = "SELECT `idlist`, `list_name`, `type` FROM `list` WHERE `list_name` LIKE ? AND `game_idgame` = ? AND `list`.`type` != 0 ORDER BY `type` DESC, `list_name` LIMIT 0,50";
-											}else{
-												$query = "SELECT `idlist`, `list_name`, `type` FROM `list` WHERE `list_name` LIKE ? AND `list`.`type` != 0 ORDER BY `type` DESC, `list_name` LIMIT 0,50";
-											}
-											$result = $conn -> prepare($query);
-											$_POST['list_name'] = '%'.$_POST['list_name'].'%';
-											if($_POST['gameid']){
-												$result -> bind_param("si",$_POST['list_name'], $_POST['gameid']);
-											}else{
-												$result -> bind_param("s",$_POST['list_name']);
-											}
-											$result -> execute();
-											echo '<table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed">';
-											echo '<tr>';
-											echo '<th>List Name</th>';
-											echo '</tr>';
-											foreach($result -> get_result() as $search){
-												if($search['list_name'] != ''){
-													echo '<tr><td><a href="list.php?listid='.$search['idlist'].'">'.$search['list_name'].'</a>';
-													print_listglyph($search['type'], $conn);
-													echo '</tr></td>';
-												}
-											}
-										}
+							echo '</div>';
+							echo '</td><td>';
+							echo number_format($data['damage'],'0','','.');
+							echo '</td><td>';
+							print_listingtype($data['type'], $conn);
+							echo '</td>';
+						}
+						echo '</table>';
+
+						edit_listForm($conn);
+						echo '</main>';
+					}else{
+						echo '<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">';
+						create_list_form($conn);
+						search_list_form($conn);
+						echo '</nav>';
+						echo '<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4"><div class="chartjs-size-monitor"><div class="chartjs-size-monitor-expand"><div class=""></div></div><div class="chartjs-size-monitor-shrink"><div class=""></div></div></div>
+					';
+						if(isset($_POST)){
+							if(isset($_POST['action'])){
+								if($_POST['action'] == 'Search'){
+									if($_POST['gameid']){
+										$query = "SELECT `idlist`, `list_name`, `type` FROM `list` WHERE `list_name` LIKE ? AND `game_idgame` = ? AND `list`.`type` != 0 ORDER BY `type` DESC, `list_name` LIMIT 0,50";
 									}else{
-										$query = "SELECT `idlist`, `list_name`, `type`,`game_idgame` FROM `list` ORDER BY `idlist` DESC LIMIT 0,50";
-										$result = $conn -> prepare($query);
-										echo '<table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed">';
-										$result -> execute();
-										echo '<tr>';
-										echo '<th>List Name</th>';
-										echo '</tr>';
-										foreach($result -> get_result() as $search){
-											if($search['list_name'] != ''){
-												echo '<tr><td>';
-												print_gameglyph($search['game_idgame'],$conn);
-												echo '<a  class="link-light" href="list.php?listid='.$search['idlist'].'">'.$search['list_name'].'</a>';
-												print_listglyph($search['type']);
-												echo '</tr></td>';
-											}
+										$query = "SELECT `idlist`, `list_name`, `type` FROM `list` WHERE `list_name` LIKE ? AND `list`.`type` != 0 ORDER BY `type` DESC, `list_name` LIMIT 0,50";
+									}
+									$result = $conn -> prepare($query);
+									$_POST['list_name'] = '%'.$_POST['list_name'].'%';
+									if($_POST['gameid']){
+										$result -> bind_param("si",$_POST['list_name'], $_POST['gameid']);
+									}else{
+										$result -> bind_param("s",$_POST['list_name']);
+									}
+									$result -> execute();
+									echo '<table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed text-white">';
+									echo '<tr>';
+									echo '<th>List Name</th>';
+									echo '</tr>';
+									foreach($result -> get_result() as $search){
+										if($search['list_name'] != ''){
+											echo '<tr><td><a href="list.php?listid='.$search['idlist'].'">'.$search['list_name'].'</a>';
+											print_listglyph($search['type'], $conn);
+											echo '</tr></td>';
 										}
+									}
+								}
+							}else{
+								$query = "SELECT `idlist`, `list_name`, `type`,`game_idgame` FROM `list` ORDER BY `idlist` DESC LIMIT 0,50";
+								$result = $conn -> prepare($query);
+								echo '<table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed">';
+								$result -> execute();
+								echo '<tr>';
+								echo '<th>List Name</th>';
+								echo '</tr>';
+								foreach($result -> get_result() as $search){
+									if($search['list_name'] != ''){
+										echo '<tr><td>';
+										print_gameglyph($search['game_idgame'],$conn);
+										echo '<a  class="link-light" href="list.php?listid='.$search['idlist'].'">'.$search['list_name'].'</a>';
+										print_listglyph($search['type']);
+										echo '</tr></td>';
 									}
 								}
 							}
+						}
+						echo '</main>';
+					}
 
-							mysqli_close($conn);
-						?>
-						</div>
-					</div>
+					mysqli_close($conn);
+				?>
 				</div>
 			</div>
-		</main>
 		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
 	</body>
 	<!-- Bootstrap core JavaScript
