@@ -55,7 +55,7 @@
 					<h2>Latest submissions</h2>
 					<div class="table-responsive">
 						<table class="table table-striped table-sm">
-							<?php combo_table($_GET['gameid'],$conn,"SELECT idcombo,Name,combo,damage,type, comments, submited, video FROM `combo` INNER JOIN `character` ON `combo`.`character_idcharacter` = `character`.`idcharacter` WHERE `character`.`game_idgame` = ? ORDER BY submited DESC LIMIT 0,5"); ?>
+							<?php combo_table($_GET['gameid'],$conn); ?>
 						</table>
 					</div>
 				</main>

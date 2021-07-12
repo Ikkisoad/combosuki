@@ -16,6 +16,7 @@
 		<meta name="msapplication-TileImage" content="img/ms-icon-144x144.png">
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
+
 		<meta property="og:title" content="Combo好き" />
 		<meta property="og:type" content="website" />
 		<meta property="og:image" content="http://combosuki.com/img/combosuki.png" />
@@ -23,25 +24,27 @@
 		<meta property="og:description" 
 		content="Community-fueled searchable environment that shares and perfects combos." />
 		<meta name="theme-color" content="#d94040" />
+
 		<meta name="description" content="Community-fueled searchable environment that shares and perfects combos.">
 		<title>Combo好き</title>
+
 		<link href="css/bootstrap.min.css" rel="stylesheet">
 		<link rel="stylesheet" href="css/combosuki.css">
 		<style>
 			<?php
 				background();
+				table();
 			?>
 		</style>
 	</head>
 	
 	<body>
-		<main role="main">
 			<?php
 				jumbotron($conn,200);
 				if(isset($_POST['type'])){
-					if($_POST['type'] == 1){
+					if($_POST['type'] == 1){ //Submit
 						header_buttons(2, 1, 'game.php',get_gamename($_GET['gameid'], $conn));
-					}else if($_POST['type'] == 2){
+					}else if($_POST['type'] == 2){ //Edit
 						header_buttons(2, 2, 'combo.php', 69);
 					}
 				}else{
@@ -63,12 +66,11 @@
 					<?php
 						
 						if(!isset($_POST['type'])){
-									echo '<p><button type="submit" class="btn btn-info btn-block">Search</button></p>';
-								
+							echo '<button type="submit" class="btn btn-info btn-block">Search</button>';
 						}
 						//print_r($_POST);
 						if(isset($_POST['type'])){
-							if($_POST['type'] == 2){
+							if($_POST['type'] == 2){ //Edit
 								entry_select($_POST['listingtype'], 0, $conn);
 							}else{
 								entry_select(0,0, $conn);
@@ -86,14 +88,18 @@
 							$result -> bind_param("i", $_GET['gameid']);
 							$result -> execute();
 							
-							?><label>Character: </label>
+							?>
+							<div class="input-group mb-3">
+								<div class="input-group-prepend">
+									<label class="input-group-text">Character:</label>
+								</div>
 							<?php
-							echo '<p><select name="characterid" class="custom-select">';
+							echo '<select name="characterid" class="form-select">';
 							if(!isset($_POST['type'])){echo '<option value="-">-</option>';}
 							foreach($result -> get_result() as $character){
 								echo '<option value="'.$character['idcharacter'].'" ';
 								if(isset($_POST['type'])){
-									if($_POST['type'] == 2){
+									if($_POST['type'] == 2){ //Edit
 										if($character['idcharacter'] == $_POST['characterid']){
 											echo 'selected';
 										}
@@ -101,8 +107,8 @@
 								}
 								echo '>'.$character['Name'].'</option>';
 							}
-							echo '</select></p>';
-							
+							echo '</select>';
+							echo '</div>';
 							//Could make a function out of this <>><><>><><><><><><>><><><><>>>><><><><>><><>><><><><>><><><><><><>
 							
 							$query = "SELECT name,png,game_idgame FROM `button` WHERE game_idgame = ? ORDER BY game_idgame, `order`, idbutton";
@@ -111,21 +117,31 @@
 							$result -> execute();
 							
 							if(!isset($_POST['type'])){
-								echo 'Order by:';
-								echo '<select name="Submitted" class="custom-select">';
-								echo '<option value="-">-</option>';
-								echo '<option value="0">Newest</option>';
-								echo '<option value="1">Oldest</option>';
-								echo '</select><p><br>';
-							}
-							
-							if(!isset($_POST['type'])){
-								echo 'The combo:';
-								echo '<select name="combolike" class="custom-select">';
-								echo '<option value="0">Starts with</option>'; // STARTS WITH HAS ENDS WITH IADA IADA
-								echo '<option value="2">Has </option>';
-								echo '<option value="1">Ends with</option>';
-								echo '</select><p><br>';
+								echo '
+								<div class="input-group mb-3">
+									<div class="input-group-prepend">
+										<label class="input-group-text">Order By:</label>
+									</div>';
+									echo '<select name="Submitted" class="form-select">';
+										echo '<option value="-">-</option>';
+										echo '<option value="0">Newest</option>';
+										echo '<option value="1">Oldest</option>';
+									echo '</select>';
+								echo '
+								</div>';
+								echo '
+								<div class="input-group mb-3">
+									<div class="input-group-prepend">
+										<label class="input-group-text">The Combo:</label>
+									</div>';
+									echo '<select name="combolike" class="form-select">';
+										echo '<option value="0">Starts with</option>';
+										echo '<option value="2">Has </option>';
+										echo '<option value="1">Ends with</option>';
+										echo '<option value="3">Does not have</option>';
+									echo '</select>';
+									echo '
+								</div>';
 							}
 							
 							foreach($result -> get_result()	as $button){
@@ -391,7 +407,6 @@
 					</form>
 				</div>
 			</div>
-		</main>
 		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
 	</body>
 

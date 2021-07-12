@@ -147,11 +147,12 @@
 								echo '<h2>';
 								print_listingtype($_GET['listingtype'], $conn);
 								if($_GET['listingtype'] == '-')echo 'Show All';
-								echo '</h2>';
+								
 							}else{
-								echo '<h2>Show All:</h2>';
+								echo '<h2>Show All:';
 							}
 							copyLinktoclipboard('https://combosuki.com/submit.php?page='.$page.build_GETbutton().'');
+							echo '</h2>';
 						echo '</div>';
 					echo '</div>';
 					echo '<div class="table-responsive"><table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed text-white">';
