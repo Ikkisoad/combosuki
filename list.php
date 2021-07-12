@@ -180,10 +180,15 @@
 									</div>
 								</form>
 							</div>';
-							print_gameglyph($list['game_idgame'],$conn);
-							echo $list['name'].' list';
+							echo '<div class="row">';
+								echo '<div class="col">';
+									print_gameglyph($list['game_idgame'],$conn);
+									echo $list['name'].' list';
+									copyLinktoclipboard('https://combosuki.com/list.php?listid='.$_GET['listid']);
+								echo '</div>';
+							echo '</div>';
 						}
-						copyLinktoclipboard('https://combosuki.com/list.php?listid='.$_GET['listid']);
+						echo '<div class="row"><div class="table-responsive">';
 						echo '<table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed text-white">';
 							echo '<tr>';
 								echo '<th>Character</th><th>Inputs</th><th>Damage</th><th>Type</th>';
@@ -262,7 +267,7 @@
 							echo '</td>';
 						}
 						echo '</table>';
-
+						echo '</div></div>';
 						edit_listForm($conn);
 						echo '</main>';
 					}else{

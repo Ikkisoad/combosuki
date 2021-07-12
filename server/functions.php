@@ -2,7 +2,7 @@
 
 function embed_video($video){
 	if($video != ''){
-		echo '<table>';
+		echo '<table class="table table-hover align-middle combosuki-main-reversed text-white">';
 			echo '<tr>
 				<td>';
 					echo 'Video:';
@@ -183,8 +183,8 @@ function print_listingtype($listingtype, $conn){
 	}
 }
 
-function combo_table($gameid, $conn){
-						$query = "SELECT idcombo,Name,combo,damage,type, comments, submited, video FROM `combo` INNER JOIN `character` ON `combo`.`character_idcharacter` = `character`.`idcharacter` WHERE `character`.`game_idgame` = ? ORDER BY submited DESC LIMIT 0,5";
+function combo_table($gameid, $conn, $query){
+						//$query = "SELECT idcombo,Name,combo,damage,type, comments, submited, video FROM `combo` INNER JOIN `character` ON `combo`.`character_idcharacter` = `character`.`idcharacter` WHERE `character`.`game_idgame` = ? ORDER BY submited DESC LIMIT 0,5";
 						$result = $conn -> prepare($query);
 						$result -> bind_param("i",$gameid);
 						$result -> execute();
@@ -1261,9 +1261,11 @@ function pagination($numberOfPages, $getAtributes, $currentPage){
 	echo '<nav><ul class="pagination pagination-sm flex-wrap">';
 	while($count < $numberOfPages){
 		if($count == $currentPage){
-			echo '<li class="page-item active"> <span class="page-link">'.$count++.' </span></li>';
+			//echo '<li class="page-item active"> <span class="page-link">'.$count++.' </span></li>';
+			echo '<li class="page-item active combosuki-main"> <span class="page-link">'.$count++.' </span></li>';
 		}else{
-			echo ' <li class="page-item"><a class="page-link" href="submit.php?page='.$count.$getAtributes.'"">'.$count++.' </a></li>'; //style="padding-right: 5px;
+			//echo ' <li class="page-item"><a class="page-link" href="submit.php?page='.$count.$getAtributes.'"">'.$count++.' </a></li>'; //style="padding-right: 5px;
+			echo ' <li class="combosuki-main-reversed"><a class="page-link" href="submit.php?page='.$count.$getAtributes.'"">'.$count++.' </a></li>';
 		}
 	}
 	echo'  </ul></nav>';

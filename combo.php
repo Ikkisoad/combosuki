@@ -102,7 +102,7 @@
 			<div class="container">
 				<?php
 				echo '
-				<table>';
+				<table class="table table-hover align-middle combosuki-main-reversed text-white">';
 					echo '<tr>';
 						echo '<th>'; 
 							echo 'Entry ID: '.$id_combo.' / ';
@@ -135,7 +135,7 @@
 					if(!isset($damage)){ exit();}
 					embed_video($video);
 					echo '
-					<table>';
+					<table class="table table-hover align-middle combosuki-main-reversed text-white">';
 							echo '<tr>';
 								echo '<th>Damage</th>';
 								for($i = 0; $i<sizeof($primaryTitle); $i++){
@@ -155,7 +155,7 @@
 					echo '</table>';
 				if(sizeof($secondaryTitle)){
 				echo '
-				<table>';
+				<table class="table table-hover align-middle combosuki-main-reversed text-white">';
 					echo '<tr>';
 						for($i = 0; $i<sizeof($secondaryTitle); $i++){
 							echo '<th>';
@@ -184,7 +184,7 @@
 				</div>
 				<?php
 					if($comment != ''){
-						echo '<table>';
+						echo '<table class="table table-hover align-middle combosuki-main-reversed text-white">';
 							echo '<tr>
 							<td>';
 							echo 'Comment:';

@@ -102,46 +102,18 @@
 		<meta property="og:description" 
 		content="Community-fueled searchable environment that shares and perfects combos." />
 		<meta name="theme-color" content="#d94040" />
+
 		<meta name="description" content="Community-fueled searchable environment that shares and perfects combos.">
 		<title>Combo好き</title>
+
 		<link href="css/bootstrap.min.css" rel="stylesheet">
+		<link rel="stylesheet" href="css/combosuki.css">
 		<style>
 			<?php
 				background();
+				table();
 			?>
-			.jumbotron{
-				max-height: 190px;
-				background-color: #000000;
-			}
-			.container{
-				height: 100vh;
-			}{
-				max-height: 190px;
-				background-color: #000000;
-			}
-			table {
-				border-spacing: 0;
-				width: 100%;
-				border: 1px solid #ddd;
-			}
-			th {
-				cursor: pointer;
-			}
-			th, td {
-				text-align: left;
-				padding: 16px;
-			}
-			tr:nth-child(even) {
-				background-color: #212121
-			}
-			tr:nth-child(odd) {
-				background-color: #000000
-			}
-			textare{
-				color: #000000;	
-			}
-			.img-responsive{width:100%;}
-		</style>
+		</style> 
 	</head>
 	<body>
 		<main role="main">
@@ -169,16 +141,20 @@
 					$parameters_counter = 0;
 					$duplicatedResourceCounter = 0;
 					$binded_parameters = array();
-					if(isset($_GET['listingtype'])){
-						echo '<h2>';
-						print_listingtype($_GET['listingtype'], $conn);
-						if($_GET['listingtype'] == '-')echo 'Show All';
-						echo '</h2>';
-					}else{
-						echo '<h2>Show All:</h2>';
-					}
-					copyLinktoclipboard('https://combosuki.com/submit.php?page='.$page.build_GETbutton().'');
-					echo '<table id="myTable">';
+					echo '<div class="row">';
+						echo '<div class="col">';
+							if(isset($_GET['listingtype'])){
+								echo '<h2>';
+								print_listingtype($_GET['listingtype'], $conn);
+								if($_GET['listingtype'] == '-')echo 'Show All';
+								echo '</h2>';
+							}else{
+								echo '<h2>Show All:</h2>';
+							}
+							copyLinktoclipboard('https://combosuki.com/submit.php?page='.$page.build_GETbutton().'');
+						echo '</div>';
+					echo '</div>';
+					echo '<div class="table-responsive"><table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed text-white">';
 					echo '<tr>';
 					$query = "SELECT text_name,type,idgame_resources,primaryORsecundary FROM `game_resources` WHERE game_idgame = ? ORDER BY text_name;";
 					$resource_result = $conn -> prepare($query);
@@ -437,7 +413,7 @@ WHERE resources.number_value";
 							echo		'<td style="min-width:400px"><a data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'" href="combo.php?idcombo='.$data['idcombo'].'">'.$data['combo'].'</a>';
 							echo '<div id="'.$data['idcombo'].'" style="display: none;">';
 								echo $data['comments'];
-								embed_video_notable($data['video']);
+								embed_video_on_demand($data['video'], $data['idcombo']);
 								echo '</div>';
 							echo '</td>';
 							echo		'<td>'.number_format($data['damage'],'0','','.').'</td>';
@@ -470,8 +446,7 @@ WHERE resources.number_value";
 						$pages = $data['totalrows']/$offset;
 					}
 				}
-				pagination($pages,build_GETbutton(),$page);
-			?></table><br>
+			?></table></div>
 			<?php
 				pagination($pages,build_GETbutton(),$page);
 				mysqli_close($conn);
@@ -546,14 +521,32 @@ WHERE resources.number_value";
 			}
 		</script>
 		<script>
+		function playVideo(video_id) {
+			var video = document.getElementById(video_id);
+			var src = video.dataset.src;
+
+			video.src = src + '?autoplay=1';
+		}
+
+		function resetVideo(video_id) {
+			var video = document.getElementById(video_id);
+			var src = video.src.replace('?autoplay=1', '');
+
+			video.src = '';
+			video.dataset.src = src;
+		}
+
 		function showDIV(DIV_ID) {
-		  var x = document.getElementById(DIV_ID);
-		  if (x.style.display === "none") {
-			x.style.display = "block";
-		  } else {
-			x.style.display = "none";
-		  }
-		}</script>
+			var x = document.getElementById(DIV_ID);
+			if (x.style.display === "none") {
+				x.style.display = "block";
+				playVideo('v'+DIV_ID);
+			}else{
+				x.style.display = "none";
+				resetVideo('v'+DIV_ID);
+			}
+		}
+		</script>
 		<script>
 			function copytoclip(link) {
 				var dummy = document.createElement("textarea");
