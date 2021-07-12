@@ -144,13 +144,5 @@
 				}
 			}
 		}
-		function showDIV(DIV_ID) {
-			var x = document.getElementById(DIV_ID);
-			if (x.style.display === "none") {
-				x.style.display = "block";
-			}else{
-				x.style.display = "none";
-			}
-		}
 	</script>
 </html>

@@ -19,6 +19,7 @@ function embed_video($video){
 
 function embed_video_notable($video){ //Twitter, Youtube, Twitch clip, Nico Nico, imgur
 	if($video != ''){
+		echo '<div class="card card-body p-3 mb-2 bg-dark border border-5 border-dark">';
 		if (strpos($video, 'twitter') !== false && strpos($video, 'https') !== false) {
 			echo '<blockquote class="twitter-tweet" data-conversation="none" data-lang="en"><p lang="en" dir="ltr">
 				<a href="';
@@ -85,12 +86,14 @@ function embed_video_notable($video){ //Twitter, Youtube, Twitch clip, Nico Nico
 		}else{
 			echo $video;	
 		}
+		echo '</div>';
 	}
 }
 
 function embed_video_on_demand($video, $id){ //Twitter, Youtube, Twitch clip, Nico Nico, imgur
 	//Currently incomplite, only working with youtube and streamable.
 	if($video != ''){
+		echo '<div class="card card-body p-3 mb-2 bg-dark border border-5 border-dark ">';
 		if (strpos($video, 'twitter') !== false && strpos($video, 'https') !== false) {
 			echo '<blockquote class="twitter-tweet" data-conversation="none" data-lang="en"><p lang="en" dir="ltr">
 			<a href="';
@@ -101,13 +104,8 @@ function embed_video_on_demand($video, $id){ //Twitter, Youtube, Twitch clip, Ni
 		}else if (strpos($video, 'youtu') !== false) {
 			preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $video, $match);
 			$youtube_id = $match[1];
-			//print_r($match);
-			//echo '<br> URL: ';
-			//echo $youtube_id;
-			$whatIWant = substr($video, strpos($video, "=") + 1);    
-			//echo '<br>what I want:';
-			//echo $whatIWant;
-			echo '<div class="embed-responsive embed-responsive-16by9">
+			$whatIWant = substr($video, strpos($video, "=") + 1);
+			echo '<div class="ratio ratio-16x9">
 			<iframe id="v'.$id.'" class="embed-responsive-item" data-src="https://www.youtube.com/embed/';
 			echo $youtube_id;
 			echo '?start=';echo $whatIWant; echo '" src="about:blank" allowfullscreen></iframe></div>';
@@ -171,6 +169,7 @@ function embed_video_on_demand($video, $id){ //Twitter, Youtube, Twitch clip, Ni
 		}else{
 			echo $video;	
 		}
+		echo '</div>';
 	}
 }
 
@@ -210,7 +209,7 @@ function combo_table($gameid, $conn){
 										  <path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/>
 										</svg>
 									</a>';
-							echo '<div class="collapse" id="collapse'.$data['idcombo'].'"><div class="card card-body p-3 mb-2 bg-transparent border border-5 border-dark ">'; //style="display: none;"
+							echo '<div class="collapse" id="collapse'.$data['idcombo'].'">'; //style="display: none;"
 							echo $data['comments'].'<br>';
   
   //####################################################################VIDEO HERE
@@ -962,33 +961,47 @@ function get_gamename($gameid, $conn){
 }
 
 function edit_listForm($conn){
-	echo '<h3 class="mt-3" id="edit">Edit List</h3>
-	<p>
+	echo '
+	<div class="row combosuki-main-reversed">
+		<h3 class="mt-3" id="edit">Edit List</h3>
 		<small>Use , to Add or Remove multiple entries from the list. (Eg.: 777,26 would add or remove entries 777 and 26 from the list.)</small>
-	</p>
-	<p><form class="form-inline" method="post" action="list.php?listid='.$_GET['listid'].'">
+
+		<form class="form-inline" method="post" action="list.php?listid='.$_GET['listid'].'">
 			<input type="hidden" name="submission_type" value="2">';
-			
-			echo '<div class="form-group mb-2"><input placeholder="Entry ID" style="background-color: #474747; color:#999999;" name="comboid" class="form-control" rows="1"></input></div>
-			
-			<div class="form-group mb-2"><input placeholder="List Password" name="listPass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1"></input></div>
-			<div class="form-group mb-2"><input placeholder="Category" name="comment" maxlength="45" style="background-color: #474747; color:#999999;" class="form-control" rows="1"></input></div>';
-			
+
+			echo '
+			<div class="form-group mb-2">
+				<input placeholder="Entry ID" style="background-color: #474747; color:#999999;" name="comboid" class="form-control" rows="1"></input>
+			</div>
+
+			<div class="form-group mb-2">
+				<input placeholder="List Password" name="listPass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1"></input>
+			</div>
+			<div class="form-group mb-2">
+				<input placeholder="Category" name="comment" maxlength="45" style="background-color: #474747; color:#999999;" class="form-control" rows="1"></input>
+			</div>';
+
 			$query = "SELECT `idlist_category`, `title` FROM `list_category` WHERE `list_idlist` = ? ORDER BY `list_category`.`order`,`list_category`.`title`;";
 			$result = $conn -> prepare($query);
 			$result -> bind_param("i", $_GET['listid']);
 			$result -> execute();
-			echo '<div class="form-group mb-2"><select name="categoryid" class="custom-select">';
-			echo '<option value="0">New Category</option>';
-			foreach($result -> get_result() as $category){
-				echo '<option value="'.$category['idlist_category'].'" ';
-				echo '>'.$category['title'].'</option>';
-			}
-			echo '</select></div>'; 
-			
+			echo '
+			<div class="form-group mb-2">
+				<select name="categoryid" class="form-select">';
+					echo '
+					<option value="0">New Category</option>';
+					foreach($result -> get_result() as $category){
+						echo '<option value="'.$category['idlist_category'].'" ';
+						echo '>'.$category['title'].'</option>';
+					}
+				echo '</select>
+			</div>'; 
+
 			echo '<div class="form-group mb-2"><button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Add Entry</button></div>
 			<div class="form-group mb-2"><button type="submit" name="action" value="Delete" class="btn btn-danger btn-block">Remove Entry</button></div>';
-		echo '</form></p>';
+			echo '
+		</form>
+	</div>';
 }
 
 function addtoListForm(){
