@@ -43,7 +43,7 @@
 				quick_search_form($_GET['gameid'], $conn);
 			?>
 			<div class="row">
-				<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+				<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar show collapse">
 					<?php count_char($conn);?>
 				</nav>
 

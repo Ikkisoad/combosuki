@@ -232,6 +232,7 @@
 							echo '<tr><td data-toggle="tooltip" data-placement="bottom" title="'.$data['comments'].'">';
 							if($data['comments'] != '' || $data['video'] != ''){
 								echo '<button class="btn btn-dark" onclick="showDIV('.$data['idcombo'].')">'.$data['Name'].'</button>';
+								//echo '<button class="btn btn-dark" type="button" data-bs-toggle="collapse" onclick="showDIV('.$data['idcombo'].')" data-bs-target="#collapse'.$data['idcombo'].'"">'.$data['Name'].'</button>';
 							}else{
 								echo $data['Name'];
 							}
@@ -244,6 +245,7 @@
 										</svg>
 									</a>';
 							echo '<div id="'.$data['idcombo'].'" style="display: none;">';
+							//echo '<div class="collapse" id="collapse'.$data['idcombo'].'">';
 								echo $data['comments'].'<br>';
 
 								//####################################################################VIDEO HERE

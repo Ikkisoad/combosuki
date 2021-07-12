@@ -962,23 +962,25 @@ function get_gamename($gameid, $conn){
 
 function edit_listForm($conn){
 	echo '
-	<div class="row combosuki-main-reversed">
+	<div class="row combosuki-main-reversed gap-1">
 		<h3 class="mt-3" id="edit">Edit List</h3>
 		<small>Use , to Add or Remove multiple entries from the list. (Eg.: 777,26 would add or remove entries 777 and 26 from the list.)</small>
 
-		<form class="form-inline" method="post" action="list.php?listid='.$_GET['listid'].'">
+		<form class="form-inline gap-3" method="post" action="list.php?listid='.$_GET['listid'].'">
 			<input type="hidden" name="submission_type" value="2">';
 
 			echo '
-			<div class="form-group mb-2">
-				<input placeholder="Entry ID" style="background-color: #474747; color:#999999;" name="comboid" class="form-control" rows="1"></input>
-			</div>
+			<div class="row">
+				<div class="col">
+					<input placeholder="Entry ID" style="background-color: #474747; color:#999999; min-width:150px;" name="comboid" class="form-control" rows="1"></input>
+				</div>
 
-			<div class="form-group mb-2">
-				<input placeholder="List Password" name="listPass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1"></input>
-			</div>
-			<div class="form-group mb-2">
-				<input placeholder="Category" name="comment" maxlength="45" style="background-color: #474747; color:#999999;" class="form-control" rows="1"></input>
+				<div class="col">
+					<input placeholder="List Password" name="listPass" type="password" maxlength="16" style="background-color: #474747; color:#999999; min-width:150px;" class="form-control" rows="1"></input>
+				</div>
+				<div class="col">
+					<input placeholder="Category" name="comment" maxlength="45" style="background-color: #474747; color:#999999; min-width:150px;" class="form-control" rows="1"></input>
+				</div>
 			</div>';
 
 			$query = "SELECT `idlist_category`, `title` FROM `list_category` WHERE `list_idlist` = ? ORDER BY `list_category`.`order`,`list_category`.`title`;";
@@ -997,8 +999,13 @@ function edit_listForm($conn){
 				echo '</select>
 			</div>'; 
 
-			echo '<div class="form-group mb-2"><button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Add Entry</button></div>
-			<div class="form-group mb-2"><button type="submit" name="action" value="Delete" class="btn btn-danger btn-block">Remove Entry</button></div>';
+			echo '
+			<div class="row align-center">
+				<div class="col">
+					<button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Add Entry</button>
+					<button type="submit" name="action" value="Delete" class="btn btn-danger btn-block">Remove Entry</button>
+				</div>
+			</div>';
 			echo '
 		</form>
 	</div>';
@@ -1273,7 +1280,7 @@ WHERE `idlist` = ?  GROUP BY `list_category`.`title` ORDER BY `list_category`.`o
 	$result -> bind_param("i", $listid);
 	$result -> execute();
 	echo '
-	<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse combosuki-main-reversed">
+	<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar show collapse combosuki-main-reversed">
 		<ul class="list-unstyled mb-0 py-3 pt-md-1">
 			<li class="list-group-item bg-transparent "><a href="#edit"><span>Edit</span></a></li>';
 			foreach($result -> get_result() as $data){
