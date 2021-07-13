@@ -396,18 +396,22 @@ function entry_select($selected, $showall, $conn){ //Showall = 1 -> Show All sho
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i",$_GET['gameid']);
 	$result -> execute();
-	echo '<div class="col-auto"><select name="listingtype" class="form-select">';
-	foreach($result -> get_result()	as $lol){
-		echo 	'<option value="'.$lol['entryid'].'"';
-		if($selected == $lol['entryid'])echo ' selected ';
-		if(isset($_GET['listingtype']) && $selected == 0){
-				if($_GET['listingtype'] == $lol['entryid'])echo ' selected ';
-		}
-		echo '>'.$lol['title'].'</option>';
-	}
-	if($showall == 1)echo '<option value="-">Show All</option>';
-	if($showall == 2)echo '<option value="-" selected>Every Entry</option>';
-	echo '</select></div>';
+	echo '
+	<div class="col-auto">
+		<select name="listingtype" class="form-select">';
+			foreach($result -> get_result()	as $lol){
+				echo 	'<option value="'.$lol['entryid'].'"';
+				if($selected == $lol['entryid'])echo ' selected ';
+				if(isset($_GET['listingtype']) && $selected == 0){
+						if($_GET['listingtype'] == $lol['entryid'])echo ' selected ';
+				}
+				echo '>'.$lol['title'].'</option>';
+			}
+			if($showall == 1)echo '<option value="-">Show All</option>';
+			if($showall == 2)echo '<option value="-" selected>Every Entry</option>';
+			echo '
+		</select>
+	</div>';
 }
 
 function character_dropdown($conn){
@@ -691,49 +695,51 @@ function print_game_notation($idgame, $conn){
 }
 
 function edit_controls($gameid){
-	echo '<div class="btn-group" role="group">
-							<form method="get" action="editcharacters.php">
-								<button class="btn btn-secondary">Characters</button>
-								<input type="hidden" name="gameid" value="'.$gameid.'">
-							</form>
-							<form method="get" action="editbuttons.php">
-							<input type="hidden" name="gameid" value="'.$gameid.'">
-								<button class="btn btn-secondary">Buttons</button>
-							</form>
+	echo '<div class="btn-group">
+			<form method="get" action="editcharacters.php">
+				<button class="btn btn-secondary">Characters</button>
+				<input type="hidden" name="gameid" value="'.$gameid.'">
+			</form>
+			<form method="get" action="editbuttons.php">
+			<input type="hidden" name="gameid" value="'.$gameid.'">
+				<button class="btn btn-secondary">Buttons</button>
+			</form>
 
-							<form method="get" action="editresources.php">
-							<input type="hidden" name="gameid" value="'.$gameid.'">
-								<button class="btn btn-secondary">Resources</button>
-							</form>
-							
-							<form method="get" action="editlinks.php">
-								<input type="hidden" name="gameid" value="'.$gameid.'">
-								<button class="btn btn-secondary">Links</button>
-							</form>
-							
-							<form method="get" action="editentries.php">
-								<input type="hidden" name="gameid" value="'.$gameid.'">
-								<button class="btn btn-secondary">Entries</button>
-							</form>
-							
-							<form method="get" action="editcombos.php">
-								<input type="hidden" name="gameid" value="'.$gameid.'">
-								<button class="btn btn-secondary">Mass Edit</button>
-							</form>
-							
-							<form method="get" action="editlists.php">
-								<input type="hidden" name="gameid" value="'.$gameid.'">
-								<button class="btn btn-secondary">Lists</button>
-							</form>
-						</div>';
+			<form method="get" action="editresources.php">
+			<input type="hidden" name="gameid" value="'.$gameid.'">
+				<button class="btn btn-secondary">Resources</button>
+			</form>
+			
+			<form method="get" action="editlinks.php">
+				<input type="hidden" name="gameid" value="'.$gameid.'">
+				<button class="btn btn-secondary">Links</button>
+			</form>
+			
+			<form method="get" action="editentries.php">
+				<input type="hidden" name="gameid" value="'.$gameid.'">
+				<button class="btn btn-secondary">Entries</button>
+			</form>
+			
+			<form method="get" action="editcombos.php">
+				<input type="hidden" name="gameid" value="'.$gameid.'">
+				<button class="btn btn-secondary">Mass Edit</button>
+			</form>
+			
+			<form method="get" action="editlists.php">
+				<input type="hidden" name="gameid" value="'.$gameid.'">
+				<button class="btn btn-secondary">Lists</button>
+			</form>
+		</div>';
 }
 
 function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1 -> Home/Lists Buttons>1 -> Home/Lists/Submit/Search/Edit Game Back=1 -> Game Back=2 -> Combo $backDestination == URL $backto == gameName
 	if($buttons): ?>
 		<nav class="navbar navbar-expand-lg navbar-dark bg-combosuki-main-2">
+			<?php if($back == 1):?>
 			<a class="navbar-brand" href="index.php">
 				<img src="img/selo.png" style="margin-left:20px" width="30" height="30">
 			</a>
+			<?php endif;?>
 			<div class="container-fluid">
 				<a class="navbar-brand" href="index.php">Combo好き</a>
 				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -791,9 +797,9 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 								?>
 							</ul>
 						</li>
-						<li class="nav-item">
+						<!--<li class="nav-item">
 							<a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Created by @Ikkisoad</a>
-						</li>
+						</li>-->
 					</ul>
 					<?php
 						if(isset($_GET['listid'])){
@@ -1040,11 +1046,11 @@ function get_gameComplete($conn){
 
 function game_lock($conn){
 	$complete = get_gameComplete($conn);
-	echo '<p><button type="submit" name="action" value="';
+	echo '<button type="submit" name="action" value="';
 	if($complete == 1 || $complete == 0){
-		echo 'Lock" class="btn btn-success btn-block">Lock</button></p>';
+		echo 'Lock" class="btn btn-success btn-block">Lock</button>';
 	}else{
-		echo 'Unlock" class="btn btn-warning btn-block">Unlock</button></p>';	
+		echo 'Unlock" class="btn btn-warning btn-block">Unlock</button>';	
 	}
 }
 

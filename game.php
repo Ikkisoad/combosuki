@@ -36,7 +36,8 @@
 	<body>
 		<?php 
 			jumbotron($conn,100);
-			header_buttons(2, 0, 0,get_gamename($_GET['gameid'], $conn)); 
+			//header_buttons(2, 0, 0,get_gamename($_GET['gameid'], $conn));
+			header_buttons(2,1,'game.php',get_gamename($_GET['gameid'], $conn));
 		?>
 		<div class="container-fluid">
 			<?php

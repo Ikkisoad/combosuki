@@ -114,131 +114,110 @@ WHERE `game`.`idgame` = ?";
 ?>
 <html>
 	<head>
-	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
-	<meta name="description" content="">
-	<meta name="Ikkisoad" content="">
-	<link rel="apple-touch-icon" sizes="57x57" href="img/apple-icon-57x57.png">
-	<link rel="apple-touch-icon" sizes="60x60" href="img/apple-icon-60x60.png">
-	<link rel="apple-touch-icon" sizes="72x72" href="img/apple-icon-72x72.png">
-	<link rel="apple-touch-icon" sizes="76x76" href="img/apple-icon-76x76.png">
-	<link rel="apple-touch-icon" sizes="114x114" href="img/apple-icon-114x114.png">
-	<link rel="apple-touch-icon" sizes="120x120" href="img/apple-icon-120x120.png">
-	<link rel="apple-touch-icon" sizes="144x144" href="img/apple-icon-144x144.png">
-	<link rel="apple-touch-icon" sizes="152x152" href="img/apple-icon-152x152.png">
-	<link rel="apple-touch-icon" sizes="180x180" href="img/apple-icon-180x180.png">
-	<link rel="icon" type="image/png" sizes="192x192"  href="img/android-icon-192x192.png">
-	<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
-	<link rel="icon" type="image/png" sizes="96x96" href="img/favicon-96x96.png">
-	<link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
-	<link rel="manifest" href="img/manifest.json">
-	<meta name="msapplication-TileColor" content="#ffffff">
-	<meta name="msapplication-TileImage" content="img/ms-icon-144x144.png">
-	<meta name="theme-color" content="#ffffff">
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+		<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="96x96" href="img/favicon-96x96.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
+		<meta name="msapplication-TileImage" content="img/ms-icon-144x144.png">
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
 
+		<meta property="og:title" content="Combo好き" />
+		<meta property="og:type" content="website" />
+		<meta property="og:image" content="http://combosuki.com/img/combosuki.png" />
+		<meta property="og:url" content="http://combosuki.com/index.php" />
+		<meta property="og:description" 
+		content="Community-fueled searchable environment that shares and perfects combos." />
+		<meta name="theme-color" content="#d94040" />
+
+		<meta name="description" content="Community-fueled searchable environment that shares and perfects combos.">
 		<title>Combo好き</title>
-    <!-- Bootstrap core CSS -->
-		<link href="css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Custom styles for this template 
-		<link href="jumbotron.css" rel="stylesheet"> -->
+		<link href="css/bootstrap.min.css" rel="stylesheet">
+		<link rel="stylesheet" href="css/combosuki.css">
 		<style>
-			body{
-				background-color: #190000;
-				background: url("img/<?php
-				if(isset($_COOKIE['color'])){
-					echo 'bg/'.$_COOKIE["color"].'honeycomb.png';
-				}else{
-					echo 'dark-honeycomb.png';
-				}?>");
-				color: white;
-			}
-			.jumbotron{
-				max-height: 250px;
-				background-color: #000000;
-			}
-			textare{
-				color: #000000;	
-			}
-		</style> <!-- BACKGROUND COLOR-->
+			<?php
+				background();
+				table();
+			?>
+		</style>
 	</head>
 	
 	<body>
-		<main role="main">
+		<?php header_buttons(2, 1, 'game.php',get_gamename($_GET['gameid'], $conn)); ?>
 			<div class="container">
-				<div class="form-group">
-						<?php header_buttons(2, 1, 'game.php',get_gamename($_GET['gameid'], $conn)); ?>
-						<form method="post" action="editgame.php?gameid=<?php echo $_GET['gameid']?>">
-					<?php
-						$query = "SELECT name,image, patch, description, notation FROM game WHERE idgame = ?;";
-						$result = $conn -> prepare($query);
-						$result -> bind_param("i",$_GET['gameid']);
-						$result -> execute();
-						
-						foreach($result -> get_result()	as $lol){
-							echo '<div class="input-group mb-3">
-								<div class="input-group-prepend">
-									<span class="input-group-text">Title:
-								</span></div>
-								<input type="text" name="title" class="form-control" value="'.$lol['name'].'">
-							</div>';
-							echo '<div class="input-group mb-3">
-								<div class="input-group-prepend">
-									<span class="input-group-text">Current Version:
-								</span></div>
-								<input type="text" maxlength="10" name="patch" class="form-control" value="'.$lol['patch'].'">
-							</div>';
-							echo '<div class="input-group mb-3">
-								<div class="input-group-prepend">
-									<span class="input-group-text">Image:
-								</span></div>
-								<input type="text" name="image" class="form-control" value="'.$lol['image'].'">
-							</div>';
-							game_image($_GET['gameid'],250, $conn);
-							echo '<div class="input-group mb-3">
-								<div class="input-group-prepend">
-									<span class="input-group-text">Description:
-								</span></div>
-								<textarea style="background-color: #474747; color:#999999;" name="description" class="form-control" id="description" rows="1" maxlength="255" title="description" placeholder="255 bytes brief description of the game page.">'.$lol['description'].'</textarea>
-							</div>';
-							echo '<div class="input-group mb-3">
-								<div class="input-group-prepend">
-									<span class="input-group-text">Notation Guidelines:
-								</span></div>
-								<textarea style="background-color: #474747; color:#999999;" name="notation" class="form-control" id="notation" rows="1" maxlength="950" title="notation" placeholder="1000 bytes guideline about combo notation.">'.$lol['notation'].'</textarea>
-							</div>';
-							echo '<div class="input-group mb-3">
-								<div class="input-group-prepend">
-									<span class="input-group-text">Moderation Password:
-								</span></div>
-								<input type="password" maxlength="16" name="modPass" class="form-control">
-							</div>';
-							echo '<div class="input-group mb-3">
-								<div class="input-group-prepend">
-									<span class="input-group-text">Game Password:
-								</span></div>
-								<input type="password" maxlength="16" name="password" class="form-control">
-							</div>';
+					<div class="form-group">
 							
-						}
-						
-						
-					?>
-					
-						<p><button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Update</button></p>
-						<p><button type="submit" name="action" value="Delete" class="btn btn-danger btn-block" onclick="return confirm('Are you sure you want to delete this game?');">Delete</button></p>
-						<?php game_lock($conn); ?>
-						</form>
-						
+							<form method="post" action="editgame.php?gameid=<?php echo $_GET['gameid']?>">
 						<?php
-							edit_controls($_GET['gameid']);
-							mysqli_close($conn);
+							$query = "SELECT name,image, patch, description, notation FROM game WHERE idgame = ?;";
+							$result = $conn -> prepare($query);
+							$result -> bind_param("i",$_GET['gameid']);
+							$result -> execute();
+							
+							foreach($result -> get_result()	as $lol){
+								echo '<div class="input-group mb-3">
+									<div class="input-group-prepend">
+										<span class="input-group-text">Title:
+									</span></div>
+									<input type="text" name="title" class="form-control" value="'.$lol['name'].'">
+								</div>';
+								echo '<div class="input-group mb-3">
+									<div class="input-group-prepend">
+										<span class="input-group-text">Current Version:
+									</span></div>
+									<input type="text" maxlength="10" name="patch" class="form-control" value="'.$lol['patch'].'">
+								</div>';
+								echo '<div class="input-group mb-3">
+									<div class="input-group-prepend">
+										<span class="input-group-text">Image:
+									</span></div>
+									<input type="text" name="image" class="form-control" value="'.$lol['image'].'">
+								</div>';
+								game_image($_GET['gameid'],250, $conn);
+								echo '<div class="input-group mb-3">
+									<div class="input-group-prepend">
+										<span class="input-group-text">Description:
+									</span></div>
+									<textarea style="background-color: #474747; color:#999999;" name="description" class="form-control" id="description" rows="1" maxlength="255" title="description" placeholder="255 bytes brief description of the game page.">'.$lol['description'].'</textarea>
+								</div>';
+								echo '<div class="input-group mb-3">
+									<div class="input-group-prepend">
+										<span class="input-group-text">Notation Guidelines:
+									</span></div>
+									<textarea style="background-color: #474747; color:#999999;" name="notation" class="form-control" id="notation" rows="1" maxlength="950" title="notation" placeholder="1000 bytes guideline about combo notation.">'.$lol['notation'].'</textarea>
+								</div>';
+								echo '<div class="input-group mb-3">
+									<div class="input-group-prepend">
+										<span class="input-group-text">Moderation Password:
+									</span></div>
+									<input type="password" maxlength="16" name="modPass" class="form-control">
+								</div>';
+								echo '<div class="input-group mb-3">
+									<div class="input-group-prepend">
+										<span class="input-group-text">Game Password:
+									</span></div>
+									<input type="password" maxlength="16" name="password" class="form-control">
+								</div>';
+								
+							}
+							
+							
 						?>
-						<p>Moderation password can be changed anytime. And it can be used to edit anything about the game if it is unlocked, if the game is locked Moderation Password can only edit submissions and lists. <br>It can not edit data from this page.</p>
-				</div>
+							<div class="btn-group">
+								<button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Update</button>
+								<button type="submit" name="action" value="Delete" class="btn btn-danger btn-block" onclick="return confirm('Are you sure you want to delete this game?');">Delete</button>
+								<?php game_lock($conn); ?>
+							</div>
+							</form>
+							
+							<?php
+								edit_controls($_GET['gameid']);
+								mysqli_close($conn);
+							?>
+							<p>Moderation password can be changed anytime. And it can be used to edit anything about the game if it is unlocked, if the game is locked Moderation Password can only edit submissions and lists. <br>It can not edit data from this page.</p>
+					</div>
 			</div>
-		</main>
 		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
