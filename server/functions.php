@@ -797,9 +797,9 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 								?>
 							</ul>
 						</li>
-						<!--<li class="nav-item">
-							<a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Created by @Ikkisoad</a>
-						</li>-->
+						<li class="nav-item">
+							<a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">We just did a big update, so some things may be broken? Sorry about that.</a>
+						</li>
 					</ul>
 					<?php
 						if(isset($_GET['listid'])){
@@ -1415,5 +1415,31 @@ function search_list_form($conn){
 		echo '</div>
 		<div class="form-group mb-2"><button type="submit" name="action" value="Search" class="btn btn-info btn-block">Search</button></div>
 	</form>';
+}
+
+function game_lists($conn){
+	$query = "SELECT idlist, list_name FROM `list` WHERE `type` = 3 AND `game_idgame` = ? ORDER BY `type` DESC,`list_name`;";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i", $_GET['gameid']);
+	$result -> execute();
+	$i = 1;
+	foreach($result -> get_result()	as $lol){
+		if($i){
+			echo '<h1>Lists</h1>';
+			echo '<div class="row text-center combosuki-main-reversed">';
+			$i--;
+		}
+			
+		echo '<div class="col">';
+		echo '<text href="list.php?listid='.$lol['idlist'].'">'.$lol['list_name'].'</text>';
+		echo '	<a href="list.php?listid='.$lol['idlist'].'">
+			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-up-right" viewBox="0 0 16 16">
+			  <path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"/>
+			  <path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/>
+			</svg>
+		</a>';
+		echo '</div>';
+	
+	}
 }
 ?>

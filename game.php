@@ -56,9 +56,15 @@
 					<h2>Latest submissions</h2>
 					<div class="table-responsive">
 						<table class="table table-striped table-sm">
-							<?php combo_table($_GET['gameid'],$conn); ?>
+							<?php 
+								combo_table($_GET['gameid'],$conn);
+							?>
 						</table>
 					</div>
+					
+						<?php
+							game_lists($conn);
+						?>
 				</main>
 				<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 				<!-- Horizontal AD Unit -->
