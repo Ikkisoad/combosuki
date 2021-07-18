@@ -105,8 +105,12 @@ JOIN `game` ON `game`.`idgame` = `character`.`game_idgame` SET `combo`= REPLACE(
 							echo '</form>';
 							echo '</tr>';
 						
-						echo '</table><br>';
-						
+						echo '</table>';
+						?>
+						<h3> How does this work? </h3>
+						Select a character and a type of entry. Then on the "Replace" box type what you want to replace, "qcf" for example. And then on "With" type what "qcf" should be replaced with, we will got with "236".
+						Type the game password and then submit, now every entry of the character and type of entry you selected will have qcf replaced with 236.
+						<?php
 						echo '<table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed text-white">';
 						echo '<tr>';
 						echo '<th>Mass Edit Resources</th';
@@ -132,8 +136,13 @@ JOIN `game` ON `game`.`idgame` = `character`.`game_idgame` SET `combo`= REPLACE(
 							echo '</form>';
 							echo '</tr>';
 						
-						echo '</table><br>';
+						echo '</table>';
+						?>
+						<h3> How does this work? </h3>
+						Just like the example above, type the ID of the resource you want to be replaced on the "Replace" box, and the ID of the resource you want to replace in the "With" box.
+						You can check their IDs on the Edit Resources page.<br>
 						
+						<?php
 						edit_controls($_GET['gameid']);
 						mysqli_close($conn);
 					?>
