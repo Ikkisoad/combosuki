@@ -798,7 +798,7 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 							</ul>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">We just did a big update, so some things may be broken? Sorry about that.</a>
+							<a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">We just did a big update, so some things may be broken? Sorry about that. Ctrl+F5.</a>
 						</li>
 					</ul>
 					<?php

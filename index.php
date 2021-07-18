@@ -62,7 +62,7 @@
 						<div class="card combosuki-main-reversed mb-3">
 							<div class="row g-0">
 								<div class="col-md-4">
-									<img src="img/ikki.jpg" alt="...">
+									<img src="img/Ikki.jpg" alt="...">
 								</div>
 								<div class="col-md-8">
 									<div class="card-body">
@@ -80,7 +80,7 @@
 						<div class="card combosuki-main-reversed mb-3">
 							<div class="row g-0">
 								<div class="col-md-4">
-									<img src="img/makai.jpg" alt="...">
+									<img src="img/Makai.jpg" alt="...">
 								</div>
 								<div class="col-md-8">
 									<div class="card-body">
