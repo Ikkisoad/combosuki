@@ -174,17 +174,19 @@ AND `character`.`game_idgame` = ? ";
 					if(isset($_GET['combo'])){
 						if($_GET['combo'] != ''){
 							if(isset($_GET['combolike'])){
-								if($_GET['combolike'] == 1 || $_GET['combolike'] == 2){
+								if($_GET['combolike'] == 1 || $_GET['combolike'] == 2 || $_GET['combolike'] == 3){
 									$parameterValue .= '%';
 								}
 								$parameterValue .= $_GET['combo'];
-								if($_GET['combolike'] == 0 || $_GET['combolike'] == 2){
+								if($_GET['combolike'] == 0 || $_GET['combolike'] == 2 || $_GET['combolike'] == 3){
 									$parameterValue .= '%';
 								}
 							}else{
 								$parameterValue .= $_GET['combo'].'%';
 							}
-							$query .= "AND REPLACE(REPLACE(`combo`, ' ', ''),'>','') LIKE REPLACE(REPLACE(?, ' ', ''),'>','') ";
+							$query .= "AND REPLACE(REPLACE(`combo`, ' ', ''),'>','')";
+							if($_GET['combolike'] == 3){ $query .= " NOT ";}
+							$query .= "LIKE REPLACE(REPLACE(?, ' ', ''),'>','') ";
 							$parameter_type .= "s";
 							$binded_parameters[$parameters_counter++] = $parameterValue;
 						}
