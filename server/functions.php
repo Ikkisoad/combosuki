@@ -240,7 +240,7 @@ ORDER BY COUNT(`combo`.`character_idcharacter`) DESC LIMIT 20) as subQuery ORDER
 	$result -> execute();
 	echo'<div class="row">';
 		foreach($result -> get_result()	as $gameid){
-			echo '<div class="col">
+			echo '<div class="col my-3">
 				<div class="card text-center w-100 p-3 h-100 combosuki-main-reversed">';
 				echo '
 					<div class="card text-center w-100 p-3 h-100" style="background-color:#';
@@ -1150,13 +1150,6 @@ function build_buttonFromVariables($pTitle, $pType, $pID, $pValue, $sTitle, $sTy
 }
 
 function background(){
-	/*if(isset($_COOKIE['color'])){
-		//echo 'bg/'.$_COOKIE["color"].'honeycomb.png';
-		echo 'bg/bolinhas2.png),';
-		echo 'urd(bg/risco2.png';
-	}else{
-		echo 'dark-honeycomb.png';
-	}*/
 	echo '
 	body{
 		padding: 0;
@@ -1317,7 +1310,7 @@ function jumbotron($conn, $imageHeight){
 						<img src="img/combosuki.png" style="margin-top: 20px;" height="'.$imageHeight.'" >
 					</a>
 				</div>
-			</div>';
+			</div>'; //<img src="img/selo.png" style="max-height:200; margin-left:200px;">
 	}
 }
 

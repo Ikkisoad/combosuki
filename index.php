@@ -52,7 +52,7 @@
 			jumbotron(1,150);
 			header_buttons(1, 0, 0, 0);
 		?>
-		<div class="container">
+		<div class="container my-3">
 			<div class="body">
 				<?php
 					if(!isset($_GET['about'])){
