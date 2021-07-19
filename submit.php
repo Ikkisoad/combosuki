@@ -121,7 +121,7 @@
 				jumbotron($conn,200);
 				header_buttons(2,1,'game.php',get_gamename($_GET['gameid'], $conn));
 			?>
-			<div class="container">
+			<div class="container-fluid my-3">
 			<?php
 				if(!empty($_GET)){
 					strip_GETtags();

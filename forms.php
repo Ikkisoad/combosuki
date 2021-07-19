@@ -51,7 +51,7 @@
 					header_buttons(2, 1, 'game.php',get_gamename($_GET['gameid'], $conn));
 				}
 			?>
-			<div class="container-fluid">
+			<div class="container-fluid my-3">
 					<div class="form-group">
 						<form method="<?php
 							//print_r($_POST);
@@ -177,7 +177,7 @@
 								echo '<a href="https://goo.gl/forms/6Q8dVlNbdOyTMA4h2" target="_blank"> Is something missing?</a>';
 							}
 							?>
-							<div class="row">
+							<div class="row my-3">
 							<div class="col">
 							<div class="input-group mb-3">
 								<div class="input-group-prepend">
@@ -413,7 +413,7 @@
 							</div>
 							</div>
 							<div class="row">
-							<div class="col">
+							<div class="col my-3">
 							<div class="d-grid gap-2">
 							<?php 
 								if(isset($_POST['type'])){

@@ -62,7 +62,7 @@
 	
 	<body>
 		<?php header_buttons(2, 1, 'game.php', get_gamename($_GET['gameid'], $conn));?>
-			<div class="container">
+			<div class="container-fluid my-3">
 				<div class="form-group">
 					<?php
 						
