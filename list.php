@@ -138,7 +138,7 @@
 			header_buttons(1, 0, 0, 0);
 		?>
 
-			<div class="container-fluid">
+			<div class="container-fluid my-3">
 				<div class="row">
 				<?php
 

@@ -576,7 +576,7 @@ function button_printing($idgame, $dataCombo, $conn){
 				//array_search(strtolower($image), array_map('strtolower', $buttonsName));
 				//echo $buttonID;
 				if($buttonID > -1){
-					if($image == '->'){$combo_image .= '<br>';}
+					if($image == '\n'){$combo_image .= '<br>';}
 					$combo_image .= '<img class="img-fluid" alt="Responsive image" src=img/buttons/';
 					$combo_image .= $buttonsPNG[$buttonID];
 					$combo_image .= '.png>';

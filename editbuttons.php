@@ -152,7 +152,12 @@
 						edit_controls($_GET['gameid']);
 						mysqli_close($conn);
 					?>
-					<p>Buttons are used as shortcuts when creating a submission.<br>Button Name is what is typed on the text box when you click it.<br>You can also choose how the button looks and its order.<br>If you have any new image suggestion please send them over <a href="https://goo.gl/forms/6Q8dVlNbdOyTMA4h2" target="_blank">here</a>.</p>
+					<p>Buttons are used as shortcuts when creating a submission.
+						<br>Button Name is what is typed on the text box when you click it.
+						<br>You can also choose how the button looks and its order.
+						<br>If you have any new image suggestion please send them over <a href="https://goo.gl/forms/6Q8dVlNbdOyTMA4h2" target="_blank">here</a>.
+						<br>Use \n for a newline.
+					</p>
 				</div>
 			</div>
 		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

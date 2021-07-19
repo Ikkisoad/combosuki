@@ -39,7 +39,7 @@
 			//header_buttons(2, 0, 0,get_gamename($_GET['gameid'], $conn));
 			header_buttons(2,1,'game.php',get_gamename($_GET['gameid'], $conn));
 		?>
-		<div class="container-fluid">
+		<div class="container-fluid my-3">
 			<?php
 				quick_search_form($_GET['gameid'], $conn);
 			?>
