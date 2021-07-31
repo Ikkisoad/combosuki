@@ -74,13 +74,13 @@
 		<meta name="msapplication-TileImage" content="img/ms-icon-144x144.png">
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
-		<meta property="og:title" content="Combo好き" />
+		<meta property="og:title" content="<?php echo $name.' > '.$damage.' damage';?>" />
+		<meta property="og:description" content="<?php echo $combo;?>" />
+		<?php meta_embedvideo($video); ?>
 		<meta property="og:type" content="website" />
 		<meta property="og:image" content="http://combosuki.com/img/combosuki.png" />
 		<meta property="og:url" content="http://combosuki.com/index.php" />
-		<meta property="og:description" 
-		content="Community-fueled searchable environment that shares and perfects combos." />
-		<meta name="theme-color" content="#d94040" />
+		<meta name="theme-color" content="#C62114" />
 		<meta name="description" content="Community-fueled searchable environment that shares and perfects combos.">
 		<title>Combo好き</title>
 		<link href="css/bootstrap.min.css" rel="stylesheet">

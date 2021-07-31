@@ -128,7 +128,7 @@ WHERE `game`.`idgame` = ?";
 		<meta property="og:url" content="http://combosuki.com/index.php" />
 		<meta property="og:description" 
 		content="Community-fueled searchable environment that shares and perfects combos." />
-		<meta name="theme-color" content="#d94040" />
+		<meta name="theme-color" content="#C62114" />
 
 		<meta name="description" content="Community-fueled searchable environment that shares and perfects combos.">
 		<title>Combo好き</title>

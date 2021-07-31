@@ -397,7 +397,7 @@ function entry_select($selected, $showall, $conn){ //Showall = 1 -> Show All sho
 	$result -> bind_param("i",$_GET['gameid']);
 	$result -> execute();
 	echo '
-	<div class="col-auto">
+	<div class="col-auto my-1">
 		<select name="listingtype" class="form-select">';
 			foreach($result -> get_result()	as $lol){
 				echo 	'<option value="'.$lol['entryid'].'"';
@@ -419,7 +419,7 @@ function character_dropdown($conn){
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i", $_GET['gameid']);
 	$result -> execute();
-	echo '<div class="col-auto"><select name="characterid" class="form-select">';
+	echo '<div class="col-auto my-1"><select name="characterid" class="form-select">';
 	echo '<option value="-">Character</option>';
 	foreach($result -> get_result() as $character){
 		echo '<option value="'.$character['idcharacter'].'" ';
@@ -438,7 +438,7 @@ function quick_search_form($gameid, $conn){
 	<input type="hidden" name="gameid" value="'.$_GET['gameid'].'">';
 	character_dropdown($conn);
 	entry_select(0,1, $conn);
-	echo '<div class="col-auto"><textarea style="background-color: #474747; color:#999999;" name="combo" class="form-control" id="comboarea" rows="1" title="combo" placeholder="Starter">';
+	echo '<div class="col-auto my-1"><textarea style="background-color: #474747; color:#999999;" name="combo" class="form-control" id="comboarea" rows="1" title="combo" placeholder="Starter">';
 	if(isset($_GET['combo'])){
 		echo $_GET['combo'];
 	}
@@ -450,7 +450,7 @@ function quick_search_form($gameid, $conn){
 	foreach($result -> get_result()	as $resource){
 		$getName = str_replace(' ','_',$resource['text_name']);
 		if($resource['type'] == 1){ //List resource
-			echo '<div class="col-auto"><div class="input-group mb-3">'; 
+			echo '<div class="col-auto my-1"><div class="input-group mb-3">'; 
 			echo '<select name="';
 			echo $resource['text_name'];
 			echo '"class="form-select input-small">';
@@ -479,7 +479,7 @@ function quick_search_form($gameid, $conn){
 			foreach($result -> get_result() as $resource_value){
 				$compare = $resource['text_name'];
 				$compare = str_replace(' ','_',$compare);
-				echo '<div class="col-auto">';
+				echo '<div class="col-auto my-1">';
 				echo '<select name="';
 				echo $resource['text_name'].'compare';
 				echo '"class="form-select"><option value=0>less than</options><option value=1';
@@ -496,7 +496,7 @@ function quick_search_form($gameid, $conn){
 				}
 				unset($compare);
 				echo '>equal to</options></select></div>';
-				echo '<div class="col-auto">';
+				echo '<div class="col-auto my-1">';
 				echo '<input class="form-control" type="number" min="-'.$resource_value['value'].'" name="';
 				echo $resource['text_name'];
 				echo '" placeholder="'.$resource['text_name'].'"';
@@ -511,7 +511,7 @@ function quick_search_form($gameid, $conn){
 		}else if($resource['type'] == 3){ //Duplicated Resource
 			$duplicated_resource = 0;
 			while($duplicated_resource++ != 2){
-				echo '<div class="col-auto"><select name="';
+				echo '<div class="col-auto my-1"><select name="';
 				echo $resource['text_name'];
 				echo '[]"class="form-select">';
 				$query = "SELECT idResources_values,value FROM `resources_values` WHERE `game_resources_idgame_resources` = ".$resource['idgame_resources']." ORDER BY resources_values.order, value;";
@@ -536,7 +536,7 @@ function quick_search_form($gameid, $conn){
 	}
 	echo '
 
-	<div class="col-sm-auto">
+	<div class="col-sm-auto my-1">
 	<button type="submit" class="btn btn-info mb-2">Quick Search</button>
 	</div>
 	</div>
@@ -905,8 +905,21 @@ function meta_embedvideo($video){
 	if($video != '')echo '<meta property="og:type" content="video">';
 	if(strpos($video, 'youtu') !== false){
 		echo '<meta property="og:url" content="'.$video.'" />';
+		echo '
+		<meta property="og:url" content="'.$video.'" />
+		<meta property="og:video"              content="'.$video.'" />
+		<meta property="og:video:secure_url"   content="'.$video.'" />
+		<meta property="og:video:type"         content="video/mp4" />
+		<meta property="og:video:width"        content="720" />
+		<meta property="og:video:height"       content="480" />';
 	}else if(strpos($video, 'twitter') !== false && strpos($video, 'https') !== false){
 		echo '<meta property="og:url" content="'.$video.'" />';
+		echo '  <meta name="twitter:card" content="player" />
+    <meta name="twitter:title" content="'.$video.'" />
+	<meta name="twitter:player:width" content="720" />
+    <meta name="twitter:player:height" content="480" />
+    <meta name="twitter:player:stream" content="'.$video.'" />
+    <meta name="twitter:player:stream:content_type" content="video/mp4"/> ';
 	}else{
 		echo '<meta property="og:image" content="http://combosuki.com/img/combosuki.png" />';
 	}
