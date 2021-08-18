@@ -83,6 +83,14 @@ function embed_video_notable($video){ //Twitter, Youtube, Twitch clip, Nico Nico
 			//echo $i;
 			echo '<div style="position:relative; padding-bottom:calc(56.40% + 44px)"><iframe src='.$i.' frameborder="0" scrolling="no" width="100%" height="100%" style="position:absolute;top:0;left:0;" allowfullscreen></iframe></div>';
 			
+		}else if(strpos($video, 'medal') !== false && strpos($video, 'https') !== false){
+			echo '<iframe 
+				width="640" 
+				height="360" 
+				style="border: none;" 
+				src="https://medal.tv/clip/4c3chtYbzBC5C/vp9xpf1rY"
+				allowfullscreen></iframe>';
+			
 		}else{
 			echo $video;	
 		}
@@ -165,6 +173,15 @@ function embed_video_on_demand($video, $id){ //Twitter, Youtube, Twitch clip, Ni
 			$i = substr_replace($i,'/ifr',18,0);
 			//echo $i;
 			echo '<div style="position:relative; padding-bottom:calc(56.40% + 44px)"><iframe src='.$i.' frameborder="0" scrolling="no" width="100%" height="100%" style="position:absolute;top:0;left:0;" allowfullscreen></iframe></div>';
+			
+		}else if(strpos($video, 'medal') !== false && strpos($video, 'https') !== false){
+			echo '<iframe 
+				id="v'.$id.'"
+				width="640" 
+				height="360" 
+				style="border: none;" 
+				data-src="https://medal.tv/clip/4c3chtYbzBC5C/vp9xpf1rY"
+				allowfullscreen></iframe>';
 			
 		}else{
 			echo $video;	
