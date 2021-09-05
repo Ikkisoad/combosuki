@@ -88,7 +88,7 @@ function embed_video_notable($video){ //Twitter, Youtube, Twitch clip, Nico Nico
 				width="640" 
 				height="360" 
 				style="border: none;" 
-				src="https://medal.tv/clip/4c3chtYbzBC5C/vp9xpf1rY"
+				src="'.$video.'"
 				allowfullscreen></iframe>';
 			
 		}else{
@@ -180,7 +180,7 @@ function embed_video_on_demand($video, $id){ //Twitter, Youtube, Twitch clip, Ni
 				width="640" 
 				height="360" 
 				style="border: none;" 
-				data-src="https://medal.tv/clip/4c3chtYbzBC5C/vp9xpf1rY"
+				data-src="'.$video.'"
 				allowfullscreen></iframe>';
 			
 		}else{
