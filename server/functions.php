@@ -74,16 +74,15 @@ function embed_video_notable($video){ //Twitter, Youtube, Twitch clip, Nico Nico
 			$i = substr($video, 16);
 			$i = substr_replace($i,'w=640&h=360&',11	,0);
 			$i = substr_replace($i,'/script',10	,0);
-			//echo $i;
 			echo '<script type="application/javascript" src="https://embed.nicovideo.jp/watch/'.$i.'"></script>';
 			
 		}else if(strpos($video, 'gfycat') !== false && strpos($video, 'https') !== false){
 			$i = $video;
 			$i = substr_replace($i,'/ifr',18,0);
-			//echo $i;
 			echo '<div style="position:relative; padding-bottom:calc(56.40% + 44px)"><iframe src='.$i.' frameborder="0" scrolling="no" width="100%" height="100%" style="position:absolute;top:0;left:0;" allowfullscreen></iframe></div>';
 			
 		}else if(strpos($video, 'medal') !== false && strpos($video, 'https') !== false){
+			$video = str_replace('/clips/','/clip/',$video);
 			echo '<iframe 
 				width="640" 
 				height="360" 
@@ -175,6 +174,7 @@ function embed_video_on_demand($video, $id){ //Twitter, Youtube, Twitch clip, Ni
 			echo '<div style="position:relative; padding-bottom:calc(56.40% + 44px)"><iframe src='.$i.' frameborder="0" scrolling="no" width="100%" height="100%" style="position:absolute;top:0;left:0;" allowfullscreen></iframe></div>';
 			
 		}else if(strpos($video, 'medal') !== false && strpos($video, 'https') !== false){
+			$video = str_replace('/clips/','/clip/',$video);
 			echo '<iframe 
 				id="v'.$id.'"
 				width="640" 
