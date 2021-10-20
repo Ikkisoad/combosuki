@@ -217,7 +217,11 @@
 								}else{
 									echo '" value="';
 								}
-								echo $primaryValue[$i].'">';
+								if($primaryType[$i] == 2){
+									echo $primaryValue[$i].'">';
+								}else{
+									echo $primaryID[$i].'">';
+								}
 							}
 							for($i = 0; $i<sizeof($secondaryTitle); $i++){
 								echo '<input type="hidden" name="';
@@ -227,7 +231,11 @@
 								}else{
 									echo '" value="';
 								}
-								echo $secondaryValue[$i].'">';
+								if($secondaryType[$i] == 2){
+									echo $secondaryValue[$i].'">';
+								}else{
+									echo $secondaryID[$i].'">';
+								}
 							}
 							mysqli_close($conn);
 						?>

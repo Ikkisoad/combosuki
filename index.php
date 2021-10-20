@@ -102,6 +102,19 @@
 							<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
 							<img alt="" border="0" src="https://www.paypal.com/en_BR/i/scr/pixel.gif" width="1" height="1" />
 						</form>';
+						
+						echo '
+									<h2>Similar websites</h2>
+										<a href="https://combotier.com/" class="card-link" target="_blank">Combotier</a>
+										<a href="https://www.kombatakademy.com/" class="card-link" target="_blank">Kombat Academy</a>';
+						echo '
+						<h2>Other FGC websites</h2>
+							<a href="https://glossary.infil.net/" class="card-link" target="_blank">The Fighting Game Glossary</a>
+							<a href="http://www.dustloop.com/" class="card-link" target="_blank">Dustloop wiki</a>
+							<a href="https://wiki.gbl.gg/" class="card-link" target="_blank">Mizuumi wiki</a>
+							<a href="https://www.dreamcancel.com/" class="card-link" target="_blank">Dream Cancel wiki</a>
+							<a href="https://srk.shib.live/w/Main_Page" class="card-link" target="_blank">Shoryuken wiki</a>
+							<a href="https://fgcombo.com/" class="card-link" target="_blank">FGCombo</a>';
 					}else if($_GET['about'] == 2){ //Combo Guidelines
 						echo '<img src="img/numpadNotationBlack.jpg">';
 					}else if($_GET['about'] == 3){ //Logs

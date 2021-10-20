@@ -251,7 +251,7 @@
 												if($_POST['type'] == 2){
 													$name = str_replace(' ', '_', $resource['text_name']);
 													if(isset($_POST[$name])){
-														if($_POST[$name] == $resource_value['value']){
+														if($_POST[$name] == $resource_value['idResources_values']){
 															echo 'selected';
 															
 														}
@@ -334,7 +334,7 @@
 																if($_POST['type'] == 2){
 																	$name = str_replace(' ', '_', $resource['text_name']);
 																	if(isset($_POST[$name])){
-																		if($_POST[$name][$duplicated-1] == $resource_value['value']){
+																		if($_POST[$name][$duplicated-1] == $resource_value['idResources_values']){
 																		echo 'selected';
 																		}
 																	}
