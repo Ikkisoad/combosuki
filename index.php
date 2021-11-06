@@ -114,7 +114,8 @@
 							<a href="https://wiki.gbl.gg/" class="card-link" target="_blank">Mizuumi wiki</a>
 							<a href="https://www.dreamcancel.com/" class="card-link" target="_blank">Dream Cancel wiki</a>
 							<a href="https://srk.shib.live/w/Main_Page" class="card-link" target="_blank">Shoryuken wiki</a>
-							<a href="https://fgcombo.com/" class="card-link" target="_blank">FGCombo</a>';
+							<a href="https://fgcombo.com/" class="card-link" target="_blank">FGCombo</a>
+							<a href="https://www.top8er.com/" class="card-link" target="_blank">Top8er</a>';
 					}else if($_GET['about'] == 2){ //Combo Guidelines
 						echo '<img src="img/numpadNotationBlack.jpg">';
 					}else if($_GET['about'] == 3){ //Logs
