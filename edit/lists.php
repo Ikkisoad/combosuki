@@ -1,7 +1,7 @@
 <!doctype php>
 <?php
-	include_once "server/conexao.php";
-	include_once "server/functions.php";
+	$URLDepth = '../';
+	require_once "../server/initialize.php";
 	if(!empty($_POST)){
 		$_POST = array_map("strip_tags", $_POST);
 		$_GET = array_map("strip_tags", $_GET);

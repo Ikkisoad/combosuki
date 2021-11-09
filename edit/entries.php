@@ -1,30 +1,31 @@
 <!doctype php>
 <?php
-	include_once "server/conexao.php";
-	include_once "server/functions.php";
+	$URLDepth = '../';
+	require_once "../server/initialize.php";
 	if(!empty($_POST)){
 		$_POST = array_map("strip_tags", $_POST);
 		$_GET = array_map("strip_tags", $_GET);
-		//print_r($_POST);
 		verify_password($conn);
 		
 		if($_POST['action'] == 'Update'){
-			$query = "UPDATE `link` SET `Title`=?,`Link`=? WHERE `idLink` = ?";
+		
+			$query = "UPDATE `game_entry` SET `title`= ?, `order` = ? WHERE `entryid` = ?";
 			$result = $conn -> prepare($query);
-			$result -> bind_param("ssi", $_POST['title'], $_POST['link'], $_POST['idLink']);
+			$result -> bind_param("sii", $_POST['entry'], $_POST['order'], $_POST['entryid']);
 			$result -> execute();
 		}else if($_POST['action'] == 'Delete'){
-			$query = "DELETE FROM `link` WHERE `idLink` = ?";
+			
+			$query = "DELETE FROM `game_entry` WHERE `entryid` = ?";
 			$result = $conn -> prepare($query);
-			//print_r($_POST);
-			$result -> bind_param("i", $_POST['idLink']);
-			$result -> execute();
-		}else if($_POST['action'] == 'Add'){
-			$query = "INSERT INTO `link`(`idLink`, `idGame`, `Title`, `Link`) VALUES (NULL, ?, ?, ?)";
-			$result = $conn -> prepare($query);
-			$result -> bind_param("iss", $_GET['gameid'], $_POST['title'], $_POST['link']);
+			$result -> bind_param("i", $_POST['entryid']);
 			$result -> execute();
 			
+			
+		}else if($_POST['action'] == 'Add'){
+			$query = "INSERT INTO `game_entry`(`entryid`, `title`, `gameid`, `order`) VALUES (NULL, ?, ?, ?)";
+			$result = $conn -> prepare($query);
+			$result -> bind_param("sii", $_POST['entry'], $_GET['gameid'], $_POST['order']);
+			$result -> execute();
 		}
 	}
 ?>
@@ -64,32 +65,31 @@
 			<div class="container-fluid my-3">
 				<div class="form-group">
 					<?php
-						
-						$query = "SELECT * FROM `link` WHERE `idGame` = ? ORDER BY `title`;";
+						$query = "SELECT `entryid`, `title`, `order` FROM `game_entry` WHERE `gameid` = ? ORDER BY `order`,`title`";
 						$result = $conn -> prepare($query);
 						$result -> bind_param("i",$_GET['gameid']);
 						$result -> execute();
 						//print_r($result);
 						
 						//$game -> get_result()
-						echo '<table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed text-white">';
+						echo '<table class="table table-hover align-middle caption-top combosuki-main-reversed text-white">';
 						echo '<tr>';
-						echo '<th>Link</th';
+						echo '<th>Entry</th>';
 						echo '</tr>';
 						foreach($result -> get_result()	as $lol){
 							
 							echo '<tr><td>';
-							echo '<form method="post" action="editlinks.php?gameid='.$_GET['gameid'].'">';
-							echo '<div class="input-group"><textarea name="title" maxlength="50" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Link Title">'.$lol['Title'].'</textarea>';					
-							echo '<textarea name="link" maxlength="255" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Link URL">'.$lol['Link'].'</textarea>';
+							echo '<form method="post" action="editentries.php?gameid='.$_GET['gameid'].'">';
+							echo '<div class="input-group"><textarea name="entry" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Entry Title">'.$lol['title'].'</textarea>';
+							echo '<input class="form-control" type="number" name="order" placeholder="Order" value="'.$lol['order'].'" step="any">';
 							echo '
   <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
   <div class="input-group-append" id="button-addon4">
-  <input type="hidden" name="idLink" value="'.$lol['idLink'].'">
+  <input type="hidden" name="entryid" value="'.$lol['entryid'].'">
     <button type="submit" name="action" value="Update" class="btn btn-primary">Update</button>
     <button type="submit" name="action" value="Delete" class="btn btn-danger" ';
 							if(1):?>
-							onclick="return confirm('Are you sure you want to delete this link?');"
+							onclick="return confirm('Are you sure you want to delete this entry?');"
 							<?php
 							endif;
 							echo ' >Delete</button>
@@ -102,9 +102,9 @@
 						}
 						
 						echo '<tr><td>';
-							echo '<form method="post" action="editlinks.php?gameid='.$_GET['gameid'].'">';
-							echo '<div class="input-group"><textarea name="title" maxlength="50" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Link Title" autofocus></textarea>';					
-							echo '<textarea name="link" maxlength="255" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Link URL"></textarea>';
+							echo '<form method="post" action="editentries.php?gameid='.$_GET['gameid'].'">';
+							echo '<div class="input-group"><textarea name="entry" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Entry Name" autofocus></textarea>';
+							echo '<input class="form-control" type="number" name="order" placeholder="Order" value="" step="any">';
 							echo '
   <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
   <div class="input-group-append" id="button-addon4">
@@ -120,6 +120,7 @@
 						edit_controls($_GET['gameid']);
 						mysqli_close($conn);
 					?>
+					<p>Entry types are the way you categorize submissions, a few examples are: Combo, Blockstring, Okizeme...</p>
 				</div>
 			</div>
 		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

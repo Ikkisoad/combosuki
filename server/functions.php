@@ -713,36 +713,36 @@ function print_game_notation($idgame, $conn){
 
 function edit_controls($gameid){
 	echo '<div class="btn-group">
-			<form method="get" action="editcharacters.php">
+			<form method="get" action="characters.php">
 				<button class="btn btn-secondary">Characters</button>
 				<input type="hidden" name="gameid" value="'.$gameid.'">
 			</form>
-			<form method="get" action="editbuttons.php">
+			<form method="get" action="buttons.php">
 			<input type="hidden" name="gameid" value="'.$gameid.'">
 				<button class="btn btn-secondary">Buttons</button>
 			</form>
 
-			<form method="get" action="editresources.php">
+			<form method="get" action="resources.php">
 			<input type="hidden" name="gameid" value="'.$gameid.'">
 				<button class="btn btn-secondary">Resources</button>
 			</form>
 			
-			<form method="get" action="editlinks.php">
+			<form method="get" action="links.php">
 				<input type="hidden" name="gameid" value="'.$gameid.'">
 				<button class="btn btn-secondary">Links</button>
 			</form>
 			
-			<form method="get" action="editentries.php">
+			<form method="get" action="entries.php">
 				<input type="hidden" name="gameid" value="'.$gameid.'">
 				<button class="btn btn-secondary">Entries</button>
 			</form>
 			
-			<form method="get" action="editcombos.php">
+			<form method="get" action="combos.php">
 				<input type="hidden" name="gameid" value="'.$gameid.'">
 				<button class="btn btn-secondary">Mass Edit</button>
 			</form>
 			
-			<form method="get" action="editlists.php">
+			<form method="get" action="lists.php">
 				<input type="hidden" name="gameid" value="'.$gameid.'">
 				<button class="btn btn-secondary">Lists</button>
 			</form>
@@ -750,6 +750,7 @@ function edit_controls($gameid){
 }
 
 function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1 -> Home/Lists Buttons>1 -> Home/Lists/Submit/Search/Edit Game Back=1 -> Game Back=2 -> Combo $backDestination == URL $backto == gameName
+	global $URLDepth;
 	if($buttons): ?>
 		<nav class="navbar navbar-expand-lg navbar-dark bg-combosuki-main-2">
 			<?php if($back == 1):?>
@@ -758,7 +759,7 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 			</a>
 			<?php endif;?>
 			<div class="container-fluid">
-				<a class="navbar-brand" href="index.php">Combo好き</a>
+				<a class="navbar-brand" href="<?php echo $URLDepth?>index.php">Combo好き</a>
 				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
 					<span class="navbar-toggler-icon"></span>
 				</button>
@@ -830,17 +831,17 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 						
 					?>
 					<?php if($buttons > 1): ?>
-						<form method="post" action="forms.php?gameid=<?php echo $_GET['gameid']; ?>">
+						<form method="post" action="<?php echo $URLDepth?>forms.php?gameid=<?php echo $_GET['gameid']; ?>">
 							<button class="btn btn-combosuki text-white">Submit</button>
 							<input type="hidden" id="type" name="type" value="1">
 						</form>
 
-						<form method="get" action="forms.php">
+						<form method="get" action="<?php echo $URLDepth?>forms.php">
 							<button class="btn btn-combosuki text-white">Search</button>
 							<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 						</form>
 
-						<form method="get" action="editgame.php">
+						<form method="get" action="<?php echo $URLDepth === '' ? 'edit/' : '';?>game.php">
 							<button class="btn btn-combosuki text-white">Edit Game</button>
 							<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 						</form>
@@ -1464,5 +1465,13 @@ function game_lists($conn){
 		echo '</div>';
 	
 	}
+}
+
+function getCSS(){
+	global $URLDepth;
+	?>
+	<link href="<?php echo $URLDepth; ?>css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="<?php echo $URLDepth; ?>css/combosuki.css">
+	<?php
 }
 ?>
