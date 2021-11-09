@@ -1,0 +1,437 @@
+<html>
+	<head>
+		<style>
+			body {
+			  background-color: #000000;
+			  color: #ffffff;
+			}
+		</style>
+	</head>
+	<body>
+		<p><h1>
+		Marvel vs Capcom 2 Randomizer
+		</h1><small>ratio table by J.Wong</small>
+
+		</p>
+		<button onclick="newTeam()">new team</button> <button onclick="ratioTeam()">ratio team</button>
+		<span>
+		Ratio max 
+		</span><input type=number id="ratio" value=7>
+		<h2 id="title"></h2>
+		<h2 id="team"></h2>
+
+		<img id="portrait0" src="" style="width:100px">|
+		<img id="portrait1" src="" style="width:100px">|
+		<img id="portrait2" src="" style="width:100px">
+
+		<h2 id="ratios"></h2>
+		Colors
+		<h2 id="colors"></h2>
+
+		<h2 id="test"></h2>
+
+		<small>randomizer by @Ikkisoad</small>
+
+	</body>
+	
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script>
+		function ratioTeam() {
+		  var ratio = document.getElementById("ratio").value;
+		  var team = [-1, -1, -1];
+		  var assist = [randomAssist(), randomAssist(), randomAssist()];
+		  var random = -1;
+		  var tries = 1000;
+		  var count = 0;
+		  document.getElementById("title").innerHTML = "Ratio Team";
+		  characters.sort();
+		  for (var i = 0; i < 3; i++) {
+			while (random == team[0] || random == team[1] || random == team[2]) {
+			  random = randomEl(characters);
+			  if (characters[random].Ratio > ratio) {
+				random = -1;
+			  } else {
+				ratio -= characters[random].Ratio;
+			  }
+			  if (ratio == 0) random == 55;
+			  count++;
+			  if (count == tries) return;
+			}
+			if (team[0] == -1) {
+			  team[0] = random;
+			} else if (team[1] == -1) {
+			  team[1] = random;
+			} else {
+			  team[2] = random;
+			}
+		  }
+
+		  document.getElementById("team").innerHTML = characters[team[0]].C.toString() + " " + assist[0] + " + " + characters[team[1]].C.toString() + " " + assist[1] + " + " + characters[team[2]].C.toString() + " " + assist[2];
+		  document.getElementById("ratios").innerHTML = characters[team[0]].Ratio + " + " + characters[team[1]].Ratio + " + " + characters[team[2]].Ratio + " = " + (characters[team[0]].Ratio + characters[team[1]].Ratio + characters[team[2]].Ratio);
+		  randomColors();
+
+		  printPortrait("portrait0", team[0]);
+		  printPortrait("portrait1", team[1]);
+		  printPortrait("portrait2", team[2]);
+		}
+
+		function newTeam() {
+		  var team = [-1, -1, -1];
+		  var assist = [randomAssist(), randomAssist(), randomAssist()];
+		  var random = -1;
+		  document.getElementById("title").innerHTML = "New Team";
+		  characters.sort();
+		  for (var i = 0; i < 3; i++) {
+			while (random == team[0] || random == team[1]) {
+			  random = randomEl(characters);
+			}
+			if (team[0] == -1) {
+			  team[0] = random;
+			} else if (team[1] == -1) {
+			  team[1] = random;
+			} else {
+			  team[2] = random;
+			}
+		  }
+
+		  document.getElementById("team").innerHTML = characters[team[0]].C.toString() + " " + assist[0] + " + " + characters[team[1]].C.toString() + " " + assist[1] + " + " + characters[team[2]].C.toString() + " " + assist[2];
+		  document.getElementById("ratios").innerHTML = characters[team[0]].Ratio + " + " + characters[team[1]].Ratio + " + " + characters[team[2]].Ratio + " = " + (characters[team[0]].Ratio + characters[team[1]].Ratio + characters[team[2]].Ratio);
+		  randomColors();
+
+		  printPortrait("portrait0", team[0]);
+		  printPortrait("portrait1", team[1]);
+		  printPortrait("portrait2", team[2]);
+		}
+
+		function randomColors() {
+
+		  document.getElementById("colors").innerHTML = "";
+		  for (var i = 0; i < 3; i++) {
+			switch (Math.floor(Math.random() * 6)) {
+			  case 0:
+				document.getElementById("colors").innerHTML += "LP ";
+				break;
+			  case 1:
+				document.getElementById("colors").innerHTML += "HP ";
+				break;
+			  case 2:
+				document.getElementById("colors").innerHTML += "A1 ";
+				break;
+			  case 3:
+				document.getElementById("colors").innerHTML += "LK ";
+				break;
+			  case 4:
+				document.getElementById("colors").innerHTML += "HK ";
+				break;
+			  case 5:
+				document.getElementById("colors").innerHTML += "A2 ";
+				break;
+			}
+		  }
+		}
+
+		function randomEl(list) {
+		  var i = Math.floor(Math.random() * list.length);
+		  return i;
+		}
+
+		function printPortrait(image, id) {
+		  document.getElementById(image).src = characters[id].img;
+		}
+
+		function randomAssist() {
+		  switch (Math.floor(Math.random() * 3)) {
+			case 0:
+			  return "α";
+			case 1:
+			  return "β";
+			case 2:
+			  return "γ";
+		  }
+		}
+
+		var characters = [{
+			C: "Sentinel",
+			Ratio: 5,
+			img: "https://srk.shib.live/images/0/00/Portrait_MVC2_Sentinel.png"
+		  },
+		  {
+			C: "Magneto",
+			Ratio: 5,
+			img: "https://srk.shib.live/images/f/fa/Portrait_MVC2_Magneto.png"
+		  },
+		  {
+			C: "Storm",
+			Ratio: 5,
+			img: "https://srk.shib.live/images/3/31/Portrait_MVC2_Storm.png"
+		  },
+		  {
+			C: "Cable",
+			Ratio: 5,
+			img: "https://srk.shib.live/images/0/0b/Portrait_MVC2_Cable.png"
+		  },
+		  {
+			C: "Iron Man",
+			Ratio: 5,
+			img: "https://srk.shib.live/images/9/9b/Portrait_MVC2_Iron_Man.png"
+		  },
+		  {
+			C: "Spiral",
+			Ratio: 5,
+			img: "https://srk.shib.live/images/6/6e/Portrait_MVC2_Spiral.png"
+		  },
+		  {
+			C: "Strider",
+			Ratio: 4,
+			img: "https://srk.shib.live/images/a/a6/Portrait_MVC2_Strider.png"
+		  },
+		  {
+			C: "War Machine",
+			Ratio: 4,
+			img: "https://srk.shib.live/images/8/89/Portrait_MVC2_War_Machine.png"
+		  },
+		  {
+			C: "Doctor Doom",
+			Ratio: 4,
+			img: "https://srk.shib.live/images/7/72/Portrait_MVC2_DrDoom.png"
+		  },
+		  {
+			C: "Cyclops",
+			Ratio: 4,
+			img: "https://srk.shib.live/images/a/a9/Portrait_MVC2_Cyclops.png"
+		  },
+		  {
+			C: "Captain Commando",
+			Ratio: 4,
+			img: "https://srk.shib.live/images/7/77/Portrait_MVC2_CaptCommando.png"
+		  },
+		  {
+			C: "Psylocke",
+			Ratio: 4,
+			img: "https://srk.shib.live/images/3/35/Portrait_MVC2_Psylocke.png"
+		  },
+		  {
+			C: "Cammy",
+			Ratio: 4,
+			img: "https://srk.shib.live/images/9/97/Portrait_MVC2_Cammy.png"
+		  },
+		  {
+			C: "Dhalsim",
+			Ratio: 4,
+			img: "https://srk.shib.live/images/c/cc/Portrait_MVC2_Dhalsim.png"
+		  },
+		  {
+			C: "Blackheart",
+			Ratio: 4,
+			img: "https://srk.shib.live/images/1/16/Portrait_MVC2_Blackheart.png"
+		  },
+		  {
+			C: "Tron Bonne",
+			Ratio: 4,
+			img: "https://srk.shib.live/images/c/cc/Portrait_MVC2_Tron_Bonne.png"
+		  },
+		  {
+			C: "Ruby Heart",
+			Ratio: 3,
+			img: "https://srk.shib.live/images/f/f2/Portrait_MVC2_Ruby_Heart.png"
+		  },
+		  {
+			C: "Colossus",
+			Ratio: 3,
+			img: "https://srk.shib.live/images/0/0a/Portrait_MVC2_Colossus.png"
+		  },
+		  {
+			C: "Omega Red",
+			Ratio: 3,
+			img: "https://srk.shib.live/images/c/c8/Portrait_MVC2_Omega_Red.png"
+		  },
+		  {
+			C: "Rogue",
+			Ratio: 3,
+			img: "https://srk.shib.live/images/1/17/Portrait_MVC2_Rogue.png"
+		  },
+		  {
+			C: "Silver Samurai",
+			Ratio: 3,
+			img: "https://srk.shib.live/images/1/19/Portrait_MVC2_Silver_Samurai.png"
+		  },
+		  {
+			C: "Iceman",
+			Ratio: 3,
+			img: "https://srk.shib.live/images/0/06/Portrait_MVC2_Iceman.png"
+		  },
+		  {
+			C: "Jill",
+			Ratio: 3,
+			img: "https://srk.shib.live/images/b/b4/Portrait_MVC2_Jill_Valentine.png"
+		  },
+		  {
+			C: "Mega Man",
+			Ratio: 3,
+			img: "https://srk.shib.live/images/5/56/Portrait_MVC2_Mega_Man.png"
+		  },
+		  {
+			C: "Guile",
+			Ratio: 3,
+			img: "https://srk.shib.live/images/e/ed/Portrait_MVC2_Guile.png"
+		  },
+		  {
+			C: "Juggernaut",
+			Ratio: 3,
+			img: "https://srk.shib.live/images/7/79/Portrait_MVC2_Juggernaut.png"
+		  },
+		  {
+			C: "Gambit",
+			Ratio: 2,
+			img: "https://srk.shib.live/images/5/59/Portrait_MVC2_Gambit.png"
+		  },
+		  {
+			C: "Ken",
+			Ratio: 2,
+			img: "https://srk.shib.live/images/d/d4/Portrait_MVC2_Ken.png"
+		  },
+		  {
+			C: "Akuma",
+			Ratio: 2,
+			img: "https://srk.shib.live/images/4/41/Portrait_MVC2_Akuma.png"
+		  },
+		  {
+			C: "Ryu",
+			Ratio: 2,
+			img: "https://srk.shib.live/images/e/e5/Portrait_MVC2_Ryu.png"
+		  },
+		  {
+			C: "Anakaris",
+			Ratio: 2,
+			img: "https://srk.shib.live/images/3/33/Portrait_MVC2_Anakaris.png"
+		  },
+		  {
+			C: "Sonson",
+			Ratio: 2,
+			img: "https://srk.shib.live/images/7/75/Portrait_MVC2_Sonson.png"
+		  },
+		  {
+			C: "Zangief",
+			Ratio: 2,
+			img: "https://srk.shib.live/images/0/04/Portrait_MVC2_Zangief.png"
+		  },
+		  {
+			C: "Morrigan",
+			Ratio: 2,
+			img: "https://srk.shib.live/images/0/08/Portrait_MVC2_Morrigan.png"
+		  },
+		  {
+			C: "Sabretooth",
+			Ratio: 2,
+			img: "https://srk.shib.live/images/e/e2/Portrait_MVC2_Sabertooth.png"
+		  },
+		  {
+			C: "Spiderman",
+			Ratio: 2,
+			img: "https://srk.shib.live/images/4/44/Portrait_MVC2_Spider-Man.png"
+		  },
+		  {
+			C: "Hulk",
+			Ratio: 2,
+			img: "https://srk.shib.live/images/7/72/Portrait_MVC2_Hulk.png"
+		  },
+		  {
+			C: "Charlie",
+			Ratio: 2,
+			img: "https://srk.shib.live/images/b/b7/Portrait_MVC2_Charlie.png"
+		  },
+		  {
+			C: "Sakura",
+			Ratio: 2,
+			img: "https://srk.shib.live/images/b/bd/Portrait_MVC2_Sakura.png"
+		  },
+		  {
+			C: "Marrow",
+			Ratio: 2,
+			img: "https://srk.shib.live/images/9/9b/Portrait_MVC2_Marrow.png"
+		  },
+		  {
+			C: "Venom",
+			Ratio: 2,
+			img: "https://srk.shib.live/images/4/45/Portrait_MVC2_Venom.png"
+		  },
+		  {
+			C: "Felicia",
+			Ratio: 2,
+			img: "https://srk.shib.live/images/2/2a/Portrait_MVC2_Felicia.png"
+		  },
+		  {
+			C: "B.B. Hood",
+			Ratio: 2,
+			img: "https://srk.shib.live/images/c/cb/Portrait_MVC2_BBHood.png"
+		  },
+		  {
+			C: "Jin",
+			Ratio: 2,
+			img: "https://srk.shib.live/images/2/24/Portrait_MVC2_Jin_Saotome.png"
+		  },
+		  {
+			C: "M. Bison",
+			Ratio: 2,
+			img: "https://srk.shib.live/images/b/bc/Portrait_MVC2_M._Bison.png"
+		  },
+		  {
+			C: "Thanos",
+			Ratio: 2,
+			img: "https://srk.shib.live/images/a/a0/Portrait_MVC2_Thanos.png"
+		  },
+		  {
+			C: "Dan",
+			Ratio: 1,
+			img: "https://srk.shib.live/images/7/7e/Portrait_MVC2_Dan.png"
+		  },
+		  {
+			C: "Kobun/Servbot",
+			Ratio: 1,
+			img: "https://srk.shib.live/images/3/39/Portrait_MVC2_Servbot.png"
+		  },
+		  {
+			C: "Hayato",
+			Ratio: 1,
+			img: "https://srk.shib.live/images/a/a2/Portrait_MVC2_Hayato.png"
+		  },
+		  {
+			C: "Amingo",
+			Ratio: 1,
+			img: "https://srk.shib.live/images/9/90/Portrait_MVC2_Amingo.png"
+		  },
+		  {
+			C: "Shuma-Gorath",
+			Ratio: 1,
+			img: "https://srk.shib.live/images/d/d5/Portrait_MVC2_Shuma-Gorath.png"
+		  },
+		  {
+			C: "Captain America",
+			Ratio: 1,
+			img: "https://srk.shib.live/images/2/2f/Portrait_MVC2_CaptAmerica.png"
+		  },
+		  {
+			C: "Chun-Li",
+			Ratio: 1,
+			img: "https://srk.shib.live/images/f/f8/Portrait_MVC2_Chun-Li.png"
+		  },
+		  {
+			C: "Wolverine - Claw",
+			Ratio: 1,
+			img: "https://srk.shib.live/images/9/98/Portrait_MVC2_Wolverine_Adamantium.png"
+		  },
+		  {
+			C: "Wolverine - Bone",
+			Ratio: 1,
+			img: "https://srk.shib.live/images/2/2e/Portrait_MVC2_Wolverine_Bone.png"
+		  },
+		  {
+			C: "Roll",
+			Ratio: 0,
+			img: "https://srk.shib.live/images/e/e4/Portrait_MVC2_Roll.png"
+		  }
+		];
+
+		$('button').click();
+
+	</script>

@@ -1,0 +1,413 @@
+<html>
+	<head>
+		<style>
+			body {
+			  background-color: #000000;
+			  color: #ffffff;
+			}
+		</style>
+	</head>
+	<body>
+		<input type="checkbox" id="Annie" checked> Annie
+		<input type="checkbox" id="Beowulf" checked> Beowulf
+		<input type="checkbox" id="BigBand" checked> Big Band
+		<input type="checkbox" id="Cerebella" checked> Cerebella
+		<input type="checkbox" id="Double" checked> Double
+		<input type="checkbox" id="Eliza" checked> Eliza
+		<input type="checkbox" id="Filia" checked> Filia
+		<input type="checkbox" id="Fukua" checked> Fukua
+		<input type="checkbox" id="MsFortune" checked> Ms Fortune
+		<input type="checkbox" id="Painwheel" checked> Painwheel
+		<input type="checkbox" id="Parasoul" checked> Parasoul
+		<input type="checkbox" id="Peacock" checked> Peacock
+		<input type="checkbox" id="RoboFortune" checked> Robo-Fortune
+		<input type="checkbox" id="Squigly" checked> Squigly
+		<input type="checkbox" id="Umbrella" checked> Umbrella
+		<input type="checkbox" id="Valentine" checked> Valentine
+		<form>
+		  <select id="char1">
+			<option value="14">Annie</option>
+			<option value="13">Beowulf</option>
+			<option value="11">Big Band</option>
+			<option value="2">Cerebella</option>
+			<option value="10">Double</option>
+			<option value="9">Eliza</option>
+			<option value="6">Filia</option>
+			<option value="12">Fukua</option>
+			<option value="3">Ms Fortune</option>
+			<option value="4">Painwheel</option>
+			<option value="8">Parasoul</option>
+			<option value="7">Peacock</option>
+			<option value="0">Robo-Fortune</option>
+			<option value="5">Squigly</option>
+			<option value="15">Umbrella</option>
+			<option value="1">Valentine</option>
+			<option value="-1" selected>Random</option>
+		  </select>
+		</form>
+		<form>
+		  <select id="char2">
+			<option value="14">Annie</option>
+			<option value="13">Beowulf</option>
+			<option value="11">Big Band</option>
+			<option value="2">Cerebella</option>
+			<option value="10">Double</option>
+			<option value="9">Eliza</option>
+			<option value="6">Filia</option>
+			<option value="12">Fukua</option>
+			<option value="3">Ms Fortune</option>
+			<option value="4">Painwheel</option>
+			<option value="8">Parasoul</option>
+			<option value="7">Peacock</option>
+			<option value="0">Robo-Fortune</option>
+			<option value="5">Squigly</option>
+			<option value="15">Umbrella</option>
+			<option value="1">Valentine</option>
+			<option value="-1" selected>Random</option>
+		  </select>
+		</form>
+		<form>
+		  <select id="char3">
+			<option value="14">Annie</option>
+			<option value="13">Beowulf</option>
+			<option value="11">Big Band</option>
+			<option value="2">Cerebella</option>
+			<option value="10">Double</option>
+			<option value="9">Eliza</option>
+			<option value="6">Filia</option>
+			<option value="12">Fukua</option>
+			<option value="3">Ms Fortune</option>
+			<option value="4">Painwheel</option>
+			<option value="8">Parasoul</option>
+			<option value="7">Peacock</option>
+			<option value="0">Robo-Fortune</option>
+			<option value="5">Squigly</option>
+			<option value="15">Umbrella</option>
+			<option value="1">Valentine</option>
+			<option value="-1" selected>Random</option>
+		  </select>
+		</form>
+		<button>new team</button>
+		<h2 id="nm">
+		</h2>
+		<h2 id="c1"></h2>
+		<h2 id="test"></h2>
+		Colors
+		<img id="image1" src="" style="width:100px">|
+		<img id="image2" src="" style="width:100px">|
+		<img id="image3" src="" style="width:100px">
+	</body>
+	
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script>
+	$('button').click(function() {
+	  var counter = -1;
+	  var char1 = -1;
+	  var char2 = -1;
+	  var color = -1;
+	  var image1 = "image1";
+	  var image2 = "image2";
+	  var image3 = "image3";
+	  var roster = [];
+	  fillRoster(roster);
+	  if (roster.length < 3) {
+		document.getElementById("nm").innerHTML = "Please select at least 3 characters.";
+		return;
+	  }
+	  var character = [document.getElementById("char1").value, document.getElementById("char2").value, document.getElementById("char3").value];
+	  document.getElementById("c1").innerHTML = "";
+	  document.getElementById("nm").innerHTML = "";
+	  while (counter++ < 2) {
+		if (character[counter] == -1) {
+		  character[counter] = roster[Math.floor(Math.random() * roster.length)];
+		}
+		while (character[counter] == char1 || character[counter] == char2) {
+		  character[counter] = roster[Math.floor(Math.random() * roster.length)];
+		}
+		if (char1 == -1) {
+		  char1 = character[counter];
+		} else {
+		  char2 = character[counter];
+		}
+		//  document.getElementById("nm").innerHTML += character[counter]+" ";
+		switch (parseInt(character[counter])) {
+		  case 0:
+			document.getElementById("c1").innerHTML += "<br>>Robo-Fortune: " + randomEl(RoboFortune);
+			color = Math.floor(Math.random() * 31);
+			break;
+		  case 1:
+			document.getElementById("c1").innerHTML += "<br>>Valentine: " + randomEl(Valentine);
+			color = Math.floor(Math.random() * 30);
+			break;
+		  case 2:
+			document.getElementById("c1").innerHTML += "<br>>Cerebella: " + randomEl(Cerebella);
+			color = Math.floor(Math.random() * 28);
+			break;
+		  case 3:
+			document.getElementById("c1").innerHTML += "<br>>Ms Fortune: " + randomEl(MsFortune);
+			color = Math.floor(Math.random() * 28);
+			break;
+		  case 4:
+			document.getElementById("c1").innerHTML += "<br>>Painwheel: " + randomEl(Painwheel);
+			color = Math.floor(Math.random() * 28);
+			break;
+		  case 5:
+			document.getElementById("c1").innerHTML += "<br>>Squigly: " + randomEl(Squigly);
+			color = Math.floor(Math.random() * 31);
+			break;
+		  case 6:
+			document.getElementById("c1").innerHTML += "<br>>Filia: " + randomEl(Filia);
+			color = Math.floor(Math.random() * 29);
+			break;
+		  case 7:
+			document.getElementById("c1").innerHTML += "<br>>Peacock: " + randomEl(Peacock);
+			color = Math.floor(Math.random() * 28);
+			break;
+		  case 8:
+			document.getElementById("c1").innerHTML += "<br>>Parasoul: " + randomEl(Parasoul);
+			color = Math.floor(Math.random() * 28);
+			break;
+		  case 9:
+			document.getElementById("c1").innerHTML += "<br>>Eliza: " + randomEl(Eliza);
+			color = Math.floor(Math.random() * 32);
+			break;
+		  case 10:
+			document.getElementById("c1").innerHTML += "<br>>Double: " + randomEl(Double);
+			color = Math.floor(Math.random() * 28);
+			break;
+		  case 11:
+			document.getElementById("c1").innerHTML += "<br>>Big Band: " + randomEl(BigBand);
+			color = Math.floor(Math.random() * 29);
+			break;
+		  case 12:
+			document.getElementById("c1").innerHTML += "<br>>Fukua: " + randomEl(Fukua);
+			color = Math.floor(Math.random() * 29);
+			break;
+		  case 13:
+			document.getElementById("c1").innerHTML += "<br>>Beowulf: " + randomEl(Beowulf);
+			color = Math.floor(Math.random() * 28);
+			break;
+		  case 14:
+			document.getElementById("c1").innerHTML += "<br>>Annie: " + randomEl(Annie);
+			color = Math.floor(Math.random() * 31);
+			break;
+		  case 15:
+			document.getElementById("c1").innerHTML += "<br>>Umbrella: " + randomEl(Umbrella);
+			color = Math.floor(Math.random() * 31);
+			break;
+		}
+		switch (counter) {
+		  case 0:
+			PrintColor(color, image1);
+			break;
+		  case 1:
+			PrintColor(color, image2);
+			break;
+		  case 2:
+			PrintColor(color, image3);
+			break;
+		}
+
+	  }
+	  //document.getElementById("nm").innerHTML = character;
+	  //$('h2').text(Math.floor(Math.random()*14));
+	  //  $('h2').text('Val: '+randomEl(Valentine)+' Bella: '+randomEl(Cerebella)+' Robo: '+randomEl(RoboFortune));
+
+	});
+
+	function PrintColor(number, image) {
+	  switch (number) {
+		case 1:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/0/04/SGColor1.png';
+		  break;
+		case 2:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/9/9c/SGColor2.png';
+		  break;
+		case 3:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/a/a7/SGColor3.png';
+		  break;
+		case 4:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/5/5f/SGColor4.png';
+		  break;
+		case 5:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/a/af/SGColor5.png';
+		  break;
+		case 6:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/5/58/SGColor6.png';
+		  break;
+		case 7:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/4/4e/SGColor7.png';
+		  break;
+		case 8:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/5/53/SGColor8.png';
+		  break;
+		case 9:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/f/fb/SGColor9.png';
+		  break;
+		case 10:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/8/80/SGColor10.png';
+		  break;
+		case 11:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/f/fc/SGColor11.png';
+		  break;
+		case 12:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/f/f0/SGColor12.png';
+		  break;
+		case 13:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/f/f2/SGColor13.png';
+		  break;
+		case 14:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/2/26/SGColor14.png';
+		  break;
+		case 15:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/3/3f/SGColor15.png';
+		  break;
+		case 16:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/c/c8/SGColor16.png';
+		  break;
+		case 17:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/c/c1/SGColor17.png';
+		  break;
+		case 18:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/f/fb/SGColor18.png';
+		  break;
+		case 19:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/4/4f/SGColor19.png';
+		  break;
+		case 20:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/5/55/SGColor20.png';
+		  break;
+		case 21:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/e/e2/SGColor21.png';
+		  break;
+		case 22:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/d/d2/SGColor22.png';
+		  break;
+		case 23:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/3/3b/SGColor23.png';
+		  break;
+		case 24:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/6/64/SGColor24.png';
+		  break;
+		case 25:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/7/74/SGColor25.png';
+		  break;
+		case 26:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/8/86/SGColor26.png';
+		  break;
+		case 27:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/6/60/SGColor27.png';
+		  break;
+		case 28:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/d/d0/SGColor28.png';
+		  break;
+		case 29:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/2/29/SGColor29.png';
+		  break;
+		case 30:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/f/f5/SGColor30.png';
+		  break;
+		case 31:
+		  document.getElementById(image).src = 'https://wiki.gbl.gg/images/d/df/SGColor31.png';
+		  break;
+	  }
+	}
+
+	function randomEl(list) {
+	  var i = Math.floor(Math.random() * list.length);
+	  return list[i];
+	}
+
+	function selectElementContents(el) {
+	  var range = document.createRange();
+	  range.selectNodeContents(el);
+	  var sel = window.getSelection();
+	  sel.removeAllRanges();
+	  sel.addRange(range);
+	}
+
+	function fillRoster(roster) {
+	  if (document.getElementById("Annie").checked == true) {
+		roster.push(14);
+	  }
+	  if (document.getElementById("Beowulf").checked == true) {
+		roster.push(13);
+	  }
+	  if (document.getElementById("BigBand").checked == true) {
+		roster.push(11);
+	  }
+	  if (document.getElementById("Cerebella").checked == true) {
+		roster.push(2);
+	  }
+	  if (document.getElementById("Double").checked == true) {
+		roster.push(10);
+	  }
+	  if (document.getElementById("Eliza").checked == true) {
+		roster.push(9);
+	  }
+	  if (document.getElementById("Filia").checked == true) {
+		roster.push(6);
+	  }
+	  if (document.getElementById("Fukua").checked == true) {
+		roster.push(12);
+	  }
+	  if (document.getElementById("MsFortune").checked == true) {
+		roster.push(3);
+	  }
+	  if (document.getElementById("Painwheel").checked == true) {
+		roster.push(4);
+	  }
+	  if (document.getElementById("Parasoul").checked == true) {
+		roster.push(8);
+	  }
+	  if (document.getElementById("Peacock").checked == true) {
+		roster.push(7);
+	  }
+	  if (document.getElementById("RoboFortune").checked == true) {
+		roster.push(0);
+	  }
+	  if (document.getElementById("Squigly").checked == true) {
+		roster.push(5);
+	  }
+	  if (document.getElementById("Umbrella").checked == true) {
+		roster.push(15);
+	  }
+	  if (document.getElementById("Valentine").checked == true) {
+		roster.push(1);
+	  }
+	}
+
+	var Annie = ["s.LP - Ceres", "s.MP - Main Sequence", "s.HP - Binary System", "s.LK - Kuiper Belt", "s.MK - Cassiopeian Gambit", "s.HK - Liftoff", "c.LP - Sedna", "c.MP - Meathook Galaxy", "c.HP - Retrograde Slice", "c.LK - Boötes Void", "c.MK - Hobble Telescope", "c.HK - Big Dipper","f.MP - Andromeda","f.HP - Luminous Supergiant", "Crescent Cut (L) (236LP)", "Crescent Cut (M) (236MP)", "Crescent Cut (H) (236HP)", "North Knuckle (L) (214LP)", "North Knuckle (M) (214MP)", "North Knuckle(H) (214HP)", "Destruction Pillar (L) (623LP)", "Destruction Pillar (M) (623MP)", "Destruction Pillar (H) (623HP)", "Sagan's Paradox (Throw)","Sagan's Paradox (Back Throw)", "Dash (PP)", "Backdash (4PP)", "Reflection Nebula (Taunt) (Start)"];
+
+	var Beowulf = ["s.LP - Cheap Pop", "s.MP - Pipe Bomb", "s.HP - Hurting Hammer", "s.LK - Low Town", "s.MK - Wulf Kick", "s.HK - Lone Boot", "c.LP - Wulf Paw", "c.MP - Potato", "c.HP - Nosebleed Seat", "c.LK - Trepak Attack", "c.MK - Ankle Lace", "c.HK - Geatish Leg Sweep", "Hurting Hurl (L) (236LP)", "Hurting Hurl (M) (236MP)", "Hurting Hurl (H) (236HP)", "Wulf Blitzer (L) (236LK)", "Wulf Blitzer (M) (236MK)", "Wulf Blitzer (H) (236HK)", "Wulf Shoot (236LK+LP)", "Clinch Up (Throw) ", "Clinch Up (Back Throw) ", "Dash (PP)", "Backdash (4PP)", "Aroo Ready? (Taunt)"];
+
+	var BigBand = ["s.LP - Honky Tonk", "s.MP - Free Form", "s.HP - Air Mail Special", "s.LK - Hot Socks", "s.MK - Pneumatic Slide", "s.HK - Kick Stand", "c.LP - Ring-a-Ding", "c.MP - Glissando", "c.HP - Overblow", "c.LK - Sharp Note", "c.MK - Bass Drop", "c.HK - Low Rank", "Beat Extend (L) (623LP)", "Beat Extend (M) (623MP)", "Beat Extend (H) (623HP)", "Brass Knuckles (L) (46PK)", "Brass Knuckles (M) (46MP)", "Brass Knuckles (H) (46HP)", "Take the 'A' Train (L) (46LK)", "Take the 'A' Train (M) (46MK)", "Take the 'A' Train (H) (46HK)", "Giant Step (L) (214LK)", "Giant Step (M) (214MK)", "Giant Step (H) (214HK)", "Heavy Toll (Throw)", "Heavy Toll (Back Throw)", "Dash (PP)", "Backdash (4PP)", "Bagpipe Blues (Taunt) (Start)"];
+
+	var Cerebella = ["s.LP - Tune Up", "s.MP - Medici Shakedown", "s.HP - Tent Stake Hammer", "s.LK - Point Cut", "s.MK - Cugine Kick", "s.HK - Adagio Swing", "c.LP - Kneecapper", "c.MP - Enforcer Elbow", "c.HP - Boost-iere", "c.LK - Diamond Scratch", "c.MK - Loop de Loop", "c.HK - Medici Legbreaker", "s.F + HP - Titan Knuckle", "Lock'n'Load (L) (236LP)", "Lock'n'Load (M) (236MP)", "Lock'n'Load (H) (236HP)", "Run Stop (46LP+LK)", "Kanchou (46MK+MP)", "Battle Butt (46HK+HP)", "Tumbling Run (46K)", "Diamond Deflector (623LP)", "Devil Horns (623MP)", "Cerecopter (623HP)", "Merry Go-Rilla (214LK+LP)", "Diamond Drop (236LK+LP)", "Excellebella (623LK+LP)", "Cere-rana (Throw)", "Cere-rana (Back Throw)", "Dash (PP)", "Backdash (4PP)", "Medici Muscle (Taunt) (Start)"];
+
+	var Double = ["s.LP - Standing Jab", "s.MP - Strong Pie", "s.HP - Fugazi Knuckle", "s.LK - Substitute Short", "s.MK - Too Forward", "s.HK - Impawster", "c.LP - Crouching Jab", "c.MP - Elbow Emulator", "c.HP - Double Drawn Weave", "c.LK - Stamp", "c.MK - Cliché", "c.HK - Sweeping Generalization", "Flesh Step (214K)", "Luger Replica (L) (236LP)", "Luger Replica (M) (236MP)", "Luger Replica (H) (236HP)", "Hornet Bomber (L) (623LK)", "Hornet Bomber (M) (623MK)", "Hornet Bomber (H) (623HK)", "Cilia Slide (4LK+HK)", "Godhand (Throw)", "Godhand (Back Throw)", "Dash (PP)", "Backdash (4PP)", "Defiling maggots... (Taunt) (Start)"];
+
+	var Eliza = ["s.LP - Wadjab", "s.MP - Siren Serpopards", "s.HP - Sirocco Storm", "s.LK - Sandal Wedge", "s.MK - Chaos Banish", "s.HK - Solar Arc", "c.LP - Nemes Set", "c.MP - Middle of the Sphynx", "c.HP - Isis Wings", "c.LK - Bast's Cuff", "c.MK - Sobek Slide", "c.HK - Solar Barge", "Upper Khat (L) (623LP)", "Upper Khat (M) (623MP)", "Upper Khat (H) (623HP)", "Osiris Spiral (L) (214LK)", "Osiris Spiral (M) (214MK)", "Osiris Spiral (H) (214HK)", "Throne of Isis (236LK)", "Dive of Horus (236MK)", "Weight of Anubis (236HK)", "Warrior's Khopesh (214LP)", "Butcher's Blade (214MP)", "Carpenter's Axe (214HP)", "Lower Domain (Throw)", "Lower Domain (Back Throw)", "Dash (PP)", "Backdash (4PP)", "Keep young and beautiful! (Taunt) (Start)"];
+
+	var Filia = ["s.LP - Snip Snip", "s.MP - Thinning Shears", "s.HP - Chompadour", "s.LK - Knee High", "s.MK - Leg Warmer", "s.HK - Samson Boot", "c.LP - Comb Under", "c.MP - Ariel Rave", "c.HP - Queue Sting", "c.LK - Ankle Sock", "c.MK - French Twist", "c.HK - Tread of Hair", "Ringlet Spike (L) (236LP)", "Ringlet Spike (M) (236MP)", "Ringlet Spike (H) (236HP)", "Ringlet Psych (623K)", "Updo (L) (623LP)", "Updo (M) (236MP)", "Updo (H) (236HP)", "Hairball (L) (214LK)", "Hairball (M) (214MK)", "Hairball (H) (214HK)", "Samson Cuddle (Throw)", "Samson Cuddle (Back Throw)", "Dash (PP)", "Backdash (4PP)", "Born With It (Taunt) (Start)"];
+
+	var Fukua = ["s.LP - Standing Jab", "s.MP - Thinning Shears", "s.HP - Chompadour", "s.LK - Knee High", "s.MK - Fukua sets mode +k", "s.HK - Shamone Boot", "c.LP - Crouching Jab", "c.MP - Ariel Rave", "c.HP - Queue Sting", "c.LK - Ankle Sock", "c.MK - French Twist", "c.HK - Tread of Hair", "Love Dart (L) (236LP)", "Love Dart (M) (236MP)", "Love Dart (H) (236HP)", "Forever a Clone (L) (214LK)", "Forever a Clone (M) (214MK)", "Forever a Clone (H) (214HK)", "Platonic Drillationship (L) (236LK)", "Platonic Drillationship (M) (236MK)", "Platonic Drillationship (H) (236HK)", "Tender Embrace (236LK+LP)", "Inevitable Snuggle (214LK+LP)", "Shamone Cuddle (Throw)", "Shamone Cuddle (Back Throw)", "Dash (PP)", "Backdash (4PP)", "Breakdown (Taunt) (Start)"];
+
+	var MsFortune = ["s.LP - Neko Pun-ch", "s.MP - Facepalm", "s.HP - Ears Pierced", "s.LK - Flip Flop", "s.MK - One-Two Punisher", "s.HK - Wheel of Fortune", "c.LP - Toy Touch", "c.MP - Hand In Hand", "c.HP - High Brow", "c.LK - Knees and Toes", "c.MK - Nail Clipper", "c.HK - Kitt n' Spin", "Cat Scratch (L) (236LP)", "Cat Scratch (M) (236MP)", "Cat Scratch (H) (236HP)", "El Gato (214K)", "Cat Slide (236K)", "Be Headed (214P)", "Fiber Upper (L) (623LK)", "Fiber Upper (M) (623MK)", "Fiber Upper (H) (623HK)", "Headbutt (2/4/5/6HP)", "Zoom! (1/3HP)", "Apotemnophobia (Throw)", "Apotemnophobia (Back Throw)", "Dash (PP)", "Backdash (4PP)", "Nyaaawn (Taunt) (Start)"];
+
+	var Painwheel = ["s.LP - Enmity Nail", "s.MP - Revulsion Shank", "s.HP - Fury Sledge", "s.LK - Puncture", "s.MK - Warp Spasm", "s.HK - Fracture", "c.LP - Lacerate", "c.MP - Cruel Lily", "c.HP - Animosity Barbs", "c.LK - Pierce", "c.MK - Disfigure", "c.HK - Malice Clover", "f.HP - Ratchet Poppy (6HP)", "Flight (214K)", "Gae Bolga Stinger (L) (236LP)", "Gae Bolga Stinger (M) (236MP)", "Gae Bolga Stinger (H) (236HP)", "Buer Reaper (L) (236LK)", "Buer Reaper (M) (236MK)", "Buer Reaper (H) (236HK)", "Pinion Dash (L) (22LK)", "Pinion Dash (M) (22MK)", "Pinion Dash (H) (22HK)", "Vice Crush / Hatred Piston (Throw)","Vice Crush / Hatred Piston (Back Throw)", "Dash (PP)", "Backdash (4PP)", "SMILE (Taunt) (Start)"];
+
+	var Parasoul = ["s.LP - Touché", "s.MP - Coup d'arrêt", "s.HP - Arc de Feu", "s.LK - Persistence", "s.MK - Queen's Gambit", "s.HK - Elegance", "c.LP - Garde", "c.MP - Coup Double", "c.HP - Prominence", "c.LK - Virtue", "c.MK - Beauty", "c.HK - Honesty", "s.F + LP - Pistol Whip (6LP)", "s.F + MP - Coulé (6MP)", "s.F + HP - Lunge (6HP)", "s.B + HK - Forbearance (4HK)", "Napalm Toss (L) (214LK)", "Napalm Toss (M) (214MK)", "Napalm Toss (H) (214HK)", "Napalm Shot (L) (46LP)", "Napalm Shot (M) (46MP)", "Napalm Shot (H) (46HP)", "Napalm Trigger (28LK)", "Napalm Quake (28MK)", "Napalm Pillar (28HK)", "Egret Call (46LK)", "Egret Dive (46MK)", "Egret Charge (46HK)", "Napalm Trap (Throw)", "Napalm Trap (Back Throw)", "Dash (PP)", "Backdash (4PP)", "Bâillement (Taunt) (Start)"];
+
+	var Peacock = ["s.LP - Poke!", "s.MP - Pie Splat", "s.HP - Screwball Cannonball", "s.LK - Pop Eye", "s.MK - Springboard Panic", "s.HK - Kick the Football, Peacock", "c.LP - Sruff n'Puff", "c.MP - Eyes of Tomorrow", "c.HP - Red Hot Buckshot", "c.LK - Curb Your Shoe", "c.MK - Ant Wasted", "c.HK - Banjo Trouble", "Bang! (L) (236LP)", "BANG! (M) (236MP)", "Bang, bang, bang! (H) (236HP)", "George's Day Out (236LK)", "Boxcar George (236MK)", "George at the Air Show (236HK)", "Shadow of Impending Doom (L) (214LP)", "Shadow of Impending Doom (M) (214MP)", "Shadow of Impending Doom (H) (214HP)", "The Hole Idea (L) (214LK)", "The Hole Idea (M) (214MK)", "The Hole Idea (H) (214HK)", "Burlap Beatdown (Throw)", "Burlap Beatdown (Back Throw)", "Dash (PP)", "Backdash (4PP)", "Hi Hi Birdie (Taunt) (Start)"];
+
+	var RoboFortune = ["s.LP - Catcher Tongue", "s.MP - Flex Capacitor", "s.HP - Collimating Saw", "s.LK - HF Quartz Blade", "s.MK - Overclawk", "s.HK - Device Driver", "c.LP - Hearing Blade", "c.MP - Gain Medium", "c.HP - Grounding Pound", "c.LK - LF Quartz Blade", "c.MK - Scroll Heel", "c.HK - Launch Headrone", "Theonite Beam (L) (236LP)", "Theonite Beam (M) (236MP)", "Theonite Beam (H) (236HP)", "Headrone RAM (214LK)", "Headrone Impact (214MK)", "Headrone Salvo (214HK)", "Danger! (L) (236LK)", "Danger! (M) (236MK)", "Danger! (H) (236HK)", "Blast Processor (Throw)", "Blast Processor (Back Throw)", "Dash (PP)", "Backdash (4PP)", "Really Talks! (Taunt) (Start)"];
+
+	var Squigly = ["s.LP - Lich Slap", "s.MP - Piercing Gaze", "s.HP - Bune Knuckle", "s.LK - Croisé", "s.MK - Death Drop", "s.HK - Dust to Dust", "c.LP - Tail Light", "c.MP - Serpent Spear", "c.HP - Cremation", "c.LK - Écart", "c.MK - En Pointe", "c.HK - Dance of Salome", "f.HP - Ashes to Ashes (6HP)", "Liver Mortis (236LP)", "Center Stage (236MP)", "Drag 'n' Bite (236HP)", "Draugen Punch (623P)", "Arpeggio (236LK)", "The Silver Chord (236MK)", "Tremolo (236HK)", "Pass Away (Throw)", "Pass Away (Back Throw)", "Dash (PP)", "Backdash (4PP)", "Snake Charmer (Taunt) (Start)"];
+
+	var Umbrella = ["s.LP - Lips Stick", "s.MP - Skewer Spewer", "s.HP - Grand Slam", "s.LK - Cupkick", "s.MK - Shin Dig", "s.HK - Rough Housing", "c.LP - Mlem", "c.MP - Tongue Lash", "c.HP - Salt Lick", "c.LK - Rain Boot", "c.MK - Puddle Stomp", "c.HK - See You Next Fall", "f.LP - TIght Squeeze", "f.HP - Cliff Hanger", "Salt Grinder (L) (26LP)","Tongue Twister (46LK+LP)", "Appetizer (Throw)", "Appetizer (Back Throw)", "Dash (PP)", "Backdash (4PP)", " (Taunt) (Start)"];
+
+	var Valentine = ["s.LP - Check-Up", "s.MP - Transfemoral Amputation", "s.HP - Thoracotomy", "s.LK - Shin Splint", "s.MK - Chishibuki Juuji", "s.HK - IV Naginata", "c.LP - Knee-jerk Hammer", "c.MP - Venesection", "c.HP - Skyward Strike", "c.LK - Gedan Juuji", "c.MK - Kakushi Caliper", "c.HK - Kiri Barai", "Dead Cross (L) (236LP)", "Dead Cross (M) (236MP)", "Dead Cross (H) (236HP)", "Vial Hazard: Type A (214LP)", "Vial Hazard: Type B (214MP)", "Vial Hazard: Type C (214HP)", "Savage Bypass (L) (236LK)", "Savage Bypass (M) (236MK)", "Savage Bypass (H) (236HK)", "Mortuary Drop (214LK+LP)", "Anesthesia (Throw)", "Anesthesia (Back Throw)", "Dash (PP)", "Backdash (4PP)", "Chocoglycemia (Taunt) (Start)"];
+
+	$('button').click();
+	</script>
