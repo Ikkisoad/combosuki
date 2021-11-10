@@ -754,8 +754,8 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 	if($buttons): ?>
 		<nav class="navbar navbar-expand-lg navbar-dark bg-combosuki-main-2">
 			<?php if($back == 1):?>
-			<a class="navbar-brand" href="index.php">
-				<img src="img/selo.png" style="margin-left:20px" width="30" height="30">
+			<a class="navbar-brand" href="<?php echo $URLDepth; ?>index.php">
+				<img src="<?php echo $URLDepth; ?>img/selo.png" style="margin-left:20px" width="30" height="30">
 			</a>
 			<?php endif;?>
 			<div class="container-fluid">
@@ -795,7 +795,7 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 							}
 						?>
 						<li class="nav-item">
-							<a class="nav-link" href="list.php">Lists</a>
+							<a class="nav-link" href="<?php echo $URLDepth; ?>list.php">Lists</a>
 						</li>
 						
 						<li class="nav-item dropdown">
@@ -805,7 +805,7 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 							<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
 								<?php
 
-									echo '<li><a class="dropdown-item" href="addgame.php">Add Game</a></li>
+									echo '<li><a class="dropdown-item" href="'.$URLDepth.'addgame.php">Add Game</a></li>
 										<li><hr class="dropdown-divider"></li>';
 									echo '<li><a class="dropdown-item" href="index.php?about=2">Combo Guidelines</a></li>';
 									echo '<li><a class="dropdown-item" href="https://srk.shib.live/w/Shoryuken_Wiki:Community_portal/Discords/Game" target="_blank">FGC Discord Compendium</a></li>';
