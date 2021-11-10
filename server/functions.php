@@ -246,7 +246,8 @@ function combo_table($gameid, $conn){
 						echo '</table>';
 }
 
-function game_title($conn){
+function game_title($flImageCard){
+	global $conn;
 	$query = "SELECT `subQuery`.`idgame`, `subQuery`.`name`, `subQuery`.`image` FROM (SELECT `game`.`idgame`, `game`.`name`, `game`.`image`, `game`.`complete` FROM `combo`
 INNER JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter`
 INNER JOIN `game` ON `game`.`idgame` = `character`.`game_idgame`
@@ -259,6 +260,7 @@ ORDER BY COUNT(`combo`.`character_idcharacter`) DESC LIMIT 20) as subQuery ORDER
 		foreach($result -> get_result()	as $gameid){
 			echo '<div class="col my-3">
 				<div class="card text-center w-100 p-3 h-100 combosuki-main-reversed">';
+				if($flImageCard){
 				echo '
 					<div class="card text-center w-100 p-3 h-100" style="background-color:#';
 					echo $_COOKIE['color'];					
@@ -275,8 +277,11 @@ ORDER BY COUNT(`combo`.`character_idcharacter`) DESC LIMIT 20) as subQuery ORDER
 						vertical-align: middle;
 						display: block;
 						" src="'.$gameid['image'].'" class="card-img-top rounded mx-auto d-block" alt="Responsive image"></img></div>';
+				}
 						echo '<div class="card-body">';
-						echo '<a class="card-title text-white" ';
+						echo '<a class="card-title text ';
+						echo !$flImageCard ? 'text-nowrap ' : '';
+						echo 'text-white " ';
 						echo 'href="game.php?gameid=';
 						echo $gameid['idgame'];
 						echo '">'.$gameid['name'].'</a>';

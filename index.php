@@ -55,7 +55,7 @@
 			<div class="body">
 				<?php
 					if(!isset($_GET['about'])){
-						game_title($conn);
+						game_title(1);
 					}else if($_GET['about'] == 1){ //About
 						echo '
 						<div class="card combosuki-main-reversed mb-3">
@@ -162,6 +162,7 @@
 						</form>';
 					}else if($_GET['about'] == 5){ //Games
 						echo '<h2>Games</h2>';
+						game_title(0);
 						game_text_only($conn);
 					}
 					mysqli_close($conn);
