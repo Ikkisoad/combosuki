@@ -1,30 +1,33 @@
 <!doctype php>
 <?php
-	$URLDepth = '../';
-	require_once "../server/initialize.php";
+	$URLDepth = '../../';
+	require_once "../../server/initialize.php";
 	if(!empty($_POST)){
 		$_POST = array_map("strip_tags", $_POST);
 		$_GET = array_map("strip_tags", $_GET);
 		verify_password($conn);
 		
+		$_POST['name'] = str_replace(' ', '', $_POST['name']);
+		
 		if($_POST['action'] == 'Update'){
 		
-			$query = "UPDATE `game_entry` SET `title`= ?, `order` = ? WHERE `entryid` = ?";
+			$query = "UPDATE `button` SET `name`=?,`png`=?,`order`=? WHERE `game_idgame` = ? AND `idbutton` = ?";
 			$result = $conn -> prepare($query);
-			$result -> bind_param("sii", $_POST['entry'], $_POST['order'], $_POST['entryid']);
+			//print_r($_POST);
+			$result -> bind_param("ssiii", $_POST['name'], $_POST['png'], $_POST['order'], $_GET['gameid'], $_POST['idbutton']);
 			$result -> execute();
 		}else if($_POST['action'] == 'Delete'){
-			
-			$query = "DELETE FROM `game_entry` WHERE `entryid` = ?";
+			$query = "DELETE FROM `button` WHERE `idbutton` = ? AND `game_idgame` = ?";
 			$result = $conn -> prepare($query);
-			$result -> bind_param("i", $_POST['entryid']);
-			$result -> execute();
-			
+			//print_r($_POST);
+			$result -> bind_param("ii", $_POST['idbutton'], $_GET['gameid']);
+			$result -> execute();		
 			
 		}else if($_POST['action'] == 'Add'){
-			$query = "INSERT INTO `game_entry`(`entryid`, `title`, `gameid`, `order`) VALUES (NULL, ?, ?, ?)";
+			$query = "INSERT INTO `button`(`idbutton`, `name`, `png`, `game_idgame`, `order`) VALUES (NULL, ?, ?, ?, ?)";
 			$result = $conn -> prepare($query);
-			$result -> bind_param("sii", $_POST['entry'], $_GET['gameid'], $_POST['order']);
+			//print_r($_POST);
+			$result -> bind_param("ssii", $_POST['name'], $_POST['png'], $_GET['gameid'], $_POST['order']);
 			$result -> execute();
 		}
 	}
@@ -49,6 +52,7 @@
 
 		<meta name="description" content="Community-fueled searchable environment that shares and perfects combos.">
 		<title>Combo好き</title>
+
 		<?php getCSS(); ?>
 
 		<style>
@@ -64,31 +68,47 @@
 			<div class="container-fluid my-3">
 				<div class="form-group">
 					<?php
-						$query = "SELECT `entryid`, `title`, `order` FROM `game_entry` WHERE `gameid` = ? ORDER BY `order`,`title`";
+					
+						$query = "SELECT `idbutton`, `name`, `png`, `order` FROM `button` WHERE `game_idgame` = ? ORDER BY `order`, `name`;";
 						$result = $conn -> prepare($query);
 						$result -> bind_param("i",$_GET['gameid']);
 						$result -> execute();
 						//print_r($result);
 						
 						//$game -> get_result()
-						echo '<table class="table table-hover align-middle caption-top combosuki-main-reversed text-white">';
+						echo '<table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed text-white">';
 						echo '<tr>';
-						echo '<th>Entry</th>';
+						echo '<th>Button</th';
 						echo '</tr>';
 						foreach($result -> get_result()	as $lol){
 							
 							echo '<tr><td>';
-							echo '<form method="post" action="entries.php?gameid='.$_GET['gameid'].'">';
-							echo '<div class="input-group"><textarea name="entry" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Entry Title">'.$lol['title'].'</textarea>';
+							echo '<form method="post" action="buttons.php?gameid='.$_GET['gameid'].'">';
+							echo '<div class="input-group"><textarea name="name" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Character Name">'.$lol['name'].'</textarea>';
+							$directory = "img/buttons";
+							$images = glob($directory . "/*.png");
+							echo '<select name="png" class="custom-select" onchange="setImage(this,'.$lol['idbutton'].');">';
+							foreach($images as $image){
+								$image = str_replace("img/buttons/", "", $image);
+								$image = str_replace(".png", "", $image);
+								echo '<option value="'.$image.'"';
+								if($image == $lol['png']){
+									echo 'selected';
+								}
+								echo '>';
+								echo $image.'</option>';
+							}
+							echo '</select>';
+							echo '<img src=img/buttons/'.$lol['png'].'.png height=35 name="image-'.$lol['idbutton'].'"></img>';
 							echo '<input class="form-control" type="number" name="order" placeholder="Order" value="'.$lol['order'].'" step="any">';
 							echo '
   <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
   <div class="input-group-append" id="button-addon4">
-  <input type="hidden" name="entryid" value="'.$lol['entryid'].'">
+  <input type="hidden" name="idbutton" value="'.$lol['idbutton'].'">
     <button type="submit" name="action" value="Update" class="btn btn-primary">Update</button>
     <button type="submit" name="action" value="Delete" class="btn btn-danger" ';
 							if(1):?>
-							onclick="return confirm('Are you sure you want to delete this entry?');"
+							onclick="return confirm('Are you sure you want to delete this button?');"
 							<?php
 							endif;
 							echo ' >Delete</button>
@@ -101,8 +121,21 @@
 						}
 						
 						echo '<tr><td>';
-							echo '<form method="post" action="entries.php?gameid='.$_GET['gameid'].'">';
-							echo '<div class="input-group"><textarea name="entry" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Entry Name" autofocus></textarea>';
+							echo '<form method="post" action="buttons.php?gameid='.$_GET['gameid'].'">';
+							echo '<div class="input-group"><textarea name="name" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Button Name" autofocus></textarea>';
+							//echo $lol['Name'];
+							$directory = "img/buttons";
+							$images = glob($directory . "/*.png");
+							echo '<select name="png" class="custom-select" onchange="setImage(this,0);">';
+							foreach($images as $image){
+								$image = str_replace("img/buttons/", "", $image);
+								$image = str_replace(".png", "", $image);
+								echo '<option value="'.$image.'"';
+								echo '>';
+								echo $image.'</option>';
+							}
+							echo '</select>';
+							echo '<img src="img/buttons/+.png" height="35" name="image-0" /> ';
 							echo '<input class="form-control" type="number" name="order" placeholder="Order" value="" step="any">';
 							echo '
   <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
@@ -119,7 +152,12 @@
 						edit_controls($_GET['gameid']);
 						mysqli_close($conn);
 					?>
-					<p>Entry types are the way you categorize submissions, a few examples are: Combo, Blockstring, Okizeme...</p>
+					<p>Buttons are used as shortcuts when creating a submission.
+						<br>Button Name is what is typed on the text box when you click it.
+						<br>You can also choose how the button looks and its order.
+						<br>If you have any new image suggestion please send them over <a href="https://goo.gl/forms/6Q8dVlNbdOyTMA4h2" target="_blank">here</a>.
+						<br>Use \n for a newline.
+					</p>
 				</div>
 			</div>
 		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
@@ -137,27 +175,10 @@
 		https://tutorialdeep.com/knowhow/show-form-on-button-click-jquery/
 		</script>
 		
-		<script> 
-		function moveNumbers(num) { 
-				var txt=document.getElementById("comboarea").value; 
-				txt=txt + num + " "; 
-				document.getElementById("comboarea").value=txt; 
-		}
-		function backspace(){
-			var txt=document.getElementById("comboarea").value;
-			if(txt.length == 0){return;}
-			if(txt[txt.length-1] == " ")txt = txt.substring(0, txt.length - 1);
-			while(txt[txt.length-1] != " " ){
-				if(txt.length == 1){
-					txt = "";
-					break;
-				}
-				txt = txt.substring(0, txt.length - 1);
-				if(txt.legth == 0){
-					break;
-				}
-			}
-			document.getElementById("comboarea").value=txt; 
+		<script>
+		function setImage(select,id){
+		  var image = document.getElementsByName("image-"+id)[0];
+		  image.src = "img/buttons/"+select.options[select.selectedIndex].value+".png";
 		}
 		</script>
 		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>

@@ -1,42 +1,30 @@
 <!doctype php>
 <?php
-	$URLDepth = '../';
-	require_once "../server/initialize.php";
+	$URLDepth = '../../';
+	require_once "../../server/initialize.php";
 	if(!empty($_POST)){
 		$_POST = array_map("strip_tags", $_POST);
 		$_GET = array_map("strip_tags", $_GET);
+		//print_r($_POST);
 		verify_password();
 		
-		if($_POST['action'] == 'Submit'){
-		
-			$query = "UPDATE `combo` SET `combo`= REPLACE(`combo`, ?, ?) WHERE ";
-			if($_POST['listingtype'] != '-' && $_POST['characterid'] != '-'){
-				$query .= "`character_idcharacter` = ? AND `type` = ?";
-				$result = $conn -> prepare($query);
-				$result -> bind_param("ssii", $_POST['replace'], $_POST['with'], $_POST['characterid'], $_POST['listingtype']);
-			}else if($_POST['characterid'] != '-'){
-				$query .= "`character_idcharacter` = ?";
-				$result = $conn -> prepare($query);
-				$result -> bind_param("ssi", $_POST['replace'], $_POST['with'], $_POST['characterid']);
-			}else if($_POST['listingtype'] != '-'){
-				$query .= "`type` = ?";
-				$result = $conn -> prepare($query);
-				$result -> bind_param("ssi", $_POST['replace'], $_POST['with'], $_POST['listingtype']);
-			}else{
-				$query = "UPDATE `combo` JOIN `character` ON `combo`.`character_idcharacter` = `character`.`idcharacter`
-JOIN `game` ON `game`.`idgame` = `character`.`game_idgame` SET `combo`= REPLACE(`combo`, ?, ?)  WHERE `game`.`idgame` = ?";
-				$result = $conn -> prepare($query);
-				$result -> bind_param("ssi", $_POST['replace'], $_POST['with'], $_GET['gameid']);
-			}
-			$result -> execute();
-		}else if($_POST['action'] == 'SubmitResource'){
-			if(!verify_gameresource($_POST['with'],$conn)){
-				redictIndex();
-			}
-			$query = "UPDATE `resources` SET `Resources_values_idResources_values`= ? WHERE `Resources_values_idResources_values` = ?";
+		if($_POST['action'] == 'Update'){
+			$query = "UPDATE `link` SET `Title`=?,`Link`=? WHERE `idLink` = ?";
 			$result = $conn -> prepare($query);
-			$result -> bind_param("ii", $_POST['with'],$_POST['replace']);
+			$result -> bind_param("ssi", $_POST['title'], $_POST['link'], $_POST['idLink']);
 			$result -> execute();
+		}else if($_POST['action'] == 'Delete'){
+			$query = "DELETE FROM `link` WHERE `idLink` = ?";
+			$result = $conn -> prepare($query);
+			//print_r($_POST);
+			$result -> bind_param("i", $_POST['idLink']);
+			$result -> execute();
+		}else if($_POST['action'] == 'Add'){
+			$query = "INSERT INTO `link`(`idLink`, `idGame`, `Title`, `Link`) VALUES (NULL, ?, ?, ?)";
+			$result = $conn -> prepare($query);
+			$result -> bind_param("iss", $_GET['gameid'], $_POST['title'], $_POST['link']);
+			$result -> execute();
+			
 		}
 	}
 ?>
@@ -76,77 +64,63 @@ JOIN `game` ON `game`.`idgame` = `character`.`game_idgame` SET `combo`= REPLACE(
 				<div class="form-group">
 					<?php
 						
+						$query = "SELECT * FROM `link` WHERE `idGame` = ? ORDER BY `title`;";
+						$result = $conn -> prepare($query);
+						$result -> bind_param("i",$_GET['gameid']);
+						$result -> execute();
+						//print_r($result);
+						
+						//$game -> get_result()
 						echo '<table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed text-white">';
 						echo '<tr>';
-						echo '<th>Mass Edit Submissions</th';
+						echo '<th>Link</th';
 						echo '</tr>';
-						
-						echo '<tr><td>';
-							echo '<form method="post" action="mass.php?gameid='.$_GET['gameid'].'">';
-							character_dropdown($conn);
-							entry_select(0,2,$conn);
-							echo '<div class="input-group"><textarea name="replace" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Replace"></textarea>';
+						foreach($result -> get_result()	as $lol){
 							
-							echo '<textarea name="with" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="With"></textarea>';
+							echo '<tr><td>';
+							echo '<form method="post" action="links.php?gameid='.$_GET['gameid'].'">';
+							echo '<div class="input-group"><textarea name="title" maxlength="50" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Link Title">'.$lol['Title'].'</textarea>';					
+							echo '<textarea name="link" maxlength="255" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Link URL">'.$lol['Link'].'</textarea>';
 							echo '
   <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
   <div class="input-group-append" id="button-addon4">
-    <button type="submit" name="action" value="Submit" class="btn btn-primary"';
+  <input type="hidden" name="idLink" value="'.$lol['idLink'].'">
+    <button type="submit" name="action" value="Update" class="btn btn-primary">Update</button>
+    <button type="submit" name="action" value="Delete" class="btn btn-danger" ';
 							if(1):?>
-							onclick="return confirm('Are you sure you want to mass edit combos?');"
+							onclick="return confirm('Are you sure you want to delete this link?');"
 							<?php
 							endif;
-							echo '>Mass Edit</button>
+							echo ' >Delete</button>
   </div>
 </div>';
 							echo '</td>';
 							echo '</form>';
 							echo '</tr>';
 						
-						echo '</table>';
-						?>
-						<h3> How does this work? </h3>
-						Select a character and a type of entry. Then on the "Replace" box type what you want to replace, "qcf" for example. And then on "With" type what "qcf" should be replaced with, we will got with "236".
-						Type the game password and then submit, now every entry of the character and type of entry you selected will have qcf replaced with 236.
-						<?php
-						echo '<table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed text-white">';
-						echo '<tr>';
-						echo '<th>Mass Edit Resources</th';
-						echo '</tr>';
+						}
 						
 						echo '<tr><td>';
-							echo '<form method="post" action="mass.php?gameid='.$_GET['gameid'].'">';
-							echo '<div class="input-group"><textarea name="replace" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Replace Resource ID"></textarea>';
-							
-							echo '<textarea name="with" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="With Resource ID"></textarea>';
+							echo '<form method="post" action="links.php?gameid='.$_GET['gameid'].'">';
+							echo '<div class="input-group"><textarea name="title" maxlength="50" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Link Title" autofocus></textarea>';					
+							echo '<textarea name="link" maxlength="255" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Link URL"></textarea>';
 							echo '
   <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
   <div class="input-group-append" id="button-addon4">
-    <button type="submit" name="action" value="SubmitResource" class="btn btn-primary"';
-							if(1):?>
-							onclick="return confirm('Are you sure you want to mass edit resources?');"
-							<?php
-							endif;
-							echo '>Mass Edit</button>
+    <button type="submit" name="action" value="Add" class="btn btn-primary">Add</button>
   </div>
 </div>';
 							echo '</td>';
 							echo '</form>';
 							echo '</tr>';
 						
-						echo '</table>';
-						?>
-						<h3> How does this work? </h3>
-						Just like the example above, type the ID of the resource you want to be replaced on the "Replace" box, and the ID of the resource you want to replace in the "With" box.
-						You can check their IDs on the Edit Resources page.<br>
+						echo '</table><br>';
 						
-						<?php
 						edit_controls($_GET['gameid']);
 						mysqli_close($conn);
 					?>
 				</div>
 			</div>
-		
 		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
@@ -160,6 +134,30 @@ JOIN `game` ON `game`.`idgame` = `character`.`game_idgame` SET `combo`= REPLACE(
 		<script src="../../../../dist/js/bootstrap.min.js"></script>
 		<script>
 		https://tutorialdeep.com/knowhow/show-form-on-button-click-jquery/
+		</script>
+		
+		<script> 
+		function moveNumbers(num) { 
+				var txt=document.getElementById("comboarea").value; 
+				txt=txt + num + " "; 
+				document.getElementById("comboarea").value=txt; 
+		}
+		function backspace(){
+			var txt=document.getElementById("comboarea").value;
+			if(txt.length == 0){return;}
+			if(txt[txt.length-1] == " ")txt = txt.substring(0, txt.length - 1);
+			while(txt[txt.length-1] != " " ){
+				if(txt.length == 1){
+					txt = "";
+					break;
+				}
+				txt = txt.substring(0, txt.length - 1);
+				if(txt.legth == 0){
+					break;
+				}
+			}
+			document.getElementById("comboarea").value=txt; 
+		}
 		</script>
 		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 </html>

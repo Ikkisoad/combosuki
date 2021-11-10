@@ -1,50 +1,30 @@
 <!doctype php>
 <?php
-	$URLDepth = '../';
-	require_once "../server/initialize.php";
+	$URLDepth = '../../';
+	require_once "../../server/initialize.php";
 	if(!empty($_POST)){
 		$_POST = array_map("strip_tags", $_POST);
 		$_GET = array_map("strip_tags", $_GET);
-		//print_r($_POST);
-		verify_password();
+		verify_password($conn);
 		
 		if($_POST['action'] == 'Update'){
 		
-			$query = "UPDATE `character` SET `Name`=? WHERE `idcharacter` = ?";
+			$query = "UPDATE `game_entry` SET `title`= ?, `order` = ? WHERE `entryid` = ?";
 			$result = $conn -> prepare($query);
-			//print_r($_POST);
-			$result -> bind_param("si", $_POST['character'], $_POST['idcharacter']);
+			$result -> bind_param("sii", $_POST['entry'], $_POST['order'], $_POST['entryid']);
 			$result -> execute();
 		}else if($_POST['action'] == 'Delete'){
-			$query = "DELETE `resources` FROM `character` 
-JOIN `combo` ON `combo`.`character_idcharacter` = `character`.`idcharacter`
-JOIN `resources` ON `resources`.`combo_idcombo` = `combo`.`idcombo`
-WHERE `character`.`idcharacter` = ?";
-			$result = $conn -> prepare($query);
-			//print_r($_POST);
-			$result -> bind_param("i", $_POST['idcharacter']);
-			$result -> execute();
 			
-			$query = "DELETE `combo` FROM `character` 
-JOIN `combo` ON `combo`.`character_idcharacter` = `character`.`idcharacter`
-WHERE `character`.`idcharacter` = ?";
+			$query = "DELETE FROM `game_entry` WHERE `entryid` = ?";
 			$result = $conn -> prepare($query);
-			//print_r($_POST);
-			$result -> bind_param("i", $_POST['idcharacter']);
-			$result -> execute();
-			
-			$query = "DELETE FROM `character` WHERE `idcharacter` = ?";
-			$result = $conn -> prepare($query);
-			//print_r($_POST);
-			$result -> bind_param("i", $_POST['idcharacter']);
+			$result -> bind_param("i", $_POST['entryid']);
 			$result -> execute();
 			
 			
 		}else if($_POST['action'] == 'Add'){
-			$query = "INSERT INTO `character`(`idcharacter`, `Name`, `game_idgame`) VALUES (NULL,?,?)";
+			$query = "INSERT INTO `game_entry`(`entryid`, `title`, `gameid`, `order`) VALUES (NULL, ?, ?, ?)";
 			$result = $conn -> prepare($query);
-			//print_r($_POST);
-			$result -> bind_param("si", $_POST['character'], $_GET['gameid']);
+			$result -> bind_param("sii", $_POST['entry'], $_GET['gameid'], $_POST['order']);
 			$result -> execute();
 		}
 	}
@@ -70,6 +50,7 @@ WHERE `character`.`idcharacter` = ?";
 		<meta name="description" content="Community-fueled searchable environment that shares and perfects combos.">
 		<title>Combo好き</title>
 		<?php getCSS(); ?>
+
 		<style>
 			<?php
 				background();
@@ -83,32 +64,31 @@ WHERE `character`.`idcharacter` = ?";
 			<div class="container-fluid my-3">
 				<div class="form-group">
 					<?php
-						
-						$query = "SELECT `idcharacter`, `Name` FROM `character` WHERE `game_idgame` = ? ORDER BY Name;";
+						$query = "SELECT `entryid`, `title`, `order` FROM `game_entry` WHERE `gameid` = ? ORDER BY `order`,`title`";
 						$result = $conn -> prepare($query);
 						$result -> bind_param("i",$_GET['gameid']);
 						$result -> execute();
 						//print_r($result);
 						
 						//$game -> get_result()
-						echo '<table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed text-white">';
+						echo '<table class="table table-hover align-middle caption-top combosuki-main-reversed text-white">';
 						echo '<tr>';
-						echo '<th>Character</th';
+						echo '<th>Entry</th>';
 						echo '</tr>';
 						foreach($result -> get_result()	as $lol){
 							
 							echo '<tr><td>';
-							echo '<form method="post" action="characters.php?gameid='.$_GET['gameid'].'">';
-							echo '<div class="input-group"><textarea name="character" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Character Name">'.$lol['Name'].'</textarea>';
-							//echo $lol['Name'];
+							echo '<form method="post" action="entries.php?gameid='.$_GET['gameid'].'">';
+							echo '<div class="input-group"><textarea name="entry" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Entry Title">'.$lol['title'].'</textarea>';
+							echo '<input class="form-control" type="number" name="order" placeholder="Order" value="'.$lol['order'].'" step="any">';
 							echo '
   <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
   <div class="input-group-append" id="button-addon4">
-  <input type="hidden" name="idcharacter" value="'.$lol['idcharacter'].'">
+  <input type="hidden" name="entryid" value="'.$lol['entryid'].'">
     <button type="submit" name="action" value="Update" class="btn btn-primary">Update</button>
     <button type="submit" name="action" value="Delete" class="btn btn-danger" ';
 							if(1):?>
-							onclick="return confirm('Are you sure you want to delete this character?');"
+							onclick="return confirm('Are you sure you want to delete this entry?');"
 							<?php
 							endif;
 							echo ' >Delete</button>
@@ -121,9 +101,9 @@ WHERE `character`.`idcharacter` = ?";
 						}
 						
 						echo '<tr><td>';
-							echo '<form method="post" action="characters.php?gameid='.$_GET['gameid'].'">';
-							echo '<div class="input-group"><textarea name="character" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Character Name" autofocus></textarea>';
-							//echo $lol['Name'];
+							echo '<form method="post" action="entries.php?gameid='.$_GET['gameid'].'">';
+							echo '<div class="input-group"><textarea name="entry" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Entry Name" autofocus></textarea>';
+							echo '<input class="form-control" type="number" name="order" placeholder="Order" value="" step="any">';
 							echo '
   <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
   <div class="input-group-append" id="button-addon4">
@@ -139,6 +119,7 @@ WHERE `character`.`idcharacter` = ?";
 						edit_controls($_GET['gameid']);
 						mysqli_close($conn);
 					?>
+					<p>Entry types are the way you categorize submissions, a few examples are: Combo, Blockstring, Okizeme...</p>
 				</div>
 			</div>
 		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
