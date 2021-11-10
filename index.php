@@ -30,9 +30,9 @@
 
 		<meta name="description" content="Community-fueled searchable environment that shares and perfects combos.">
 		<title>Combo好き</title>
-
-		<link href="css/bootstrap.min.css" rel="stylesheet">
-		<link rel="stylesheet" href="css/combosuki.css">
+		<?php
+			getCSS();
+		?>
 		<style>
 			<?php
 				background();

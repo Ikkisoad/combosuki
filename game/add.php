@@ -19,7 +19,7 @@
 			$result -> bind_param("ssss", $_POST['gameName'], $_POST['gameImage'], $_POST['gamePass'], $modPass);
 			$result -> execute();
 			$gameid = mysqli_insert_id($conn);
-			header("Location: editgame.php?gameid=".$gameid."");
+			header("Location: ".$URLDepth."game/edit/index.php?gameid=".$gameid."");
 			exit();
 		}
 	}
@@ -44,9 +44,9 @@
 
 		<meta name="description" content="Community-fueled searchable environment that shares and perfects combos.">
 		<title>Combo好き</title>
-
-		<link href="css/bootstrap.min.css" rel="stylesheet">
-		<link rel="stylesheet" href="css/combosuki.css">
+		<?php
+			getCSS();
+		?>
 		<style>
 			<?php
 				background();
@@ -59,7 +59,7 @@
 		<?php header_buttons(1, 0, 0, 0);?>
 			<div class="container">
 				<div class="form-group">
-					<form method="post" action="addgame.php">
+					<form method="post" action="add.php">
 						<div class="input-group mb-3">
 							<div class="input-group-prepend">
 								<span class="input-group-text">Game Name </span></div>

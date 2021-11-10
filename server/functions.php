@@ -309,7 +309,7 @@ ORDER BY `game`.`name`";
 		<div class="row combosuki-main-reversed rounded">';
 		foreach($result -> get_result()	as $gameid){
 			echo '<div class="col border-combosuki text-start">';
-				echo '<a class="link-light text text-nowrap" style="margin-left:5em;" href=game.php?gameid=';
+				echo '<a class="link-light text text-nowrap" style="margin-left:5em;" href=game/index.php?gameid=';
 				echo $gameid['idgame'];
 				echo '>';
 				echo $gameid['name'].' ('.$gameid['Entries'].')</a>';
@@ -812,7 +812,7 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 							<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
 								<?php
 
-									echo '<li><a class="dropdown-item" href="'.$URLDepth.'addgame.php">Add Game</a></li>
+									echo '<li><a class="dropdown-item" href="'.$URLDepth.'game/add.php">Add Game</a></li>
 										<li><hr class="dropdown-divider"></li>';
 									echo '<li><a class="dropdown-item" href="index.php?about=2">Combo Guidelines</a></li>';
 									echo '<li><a class="dropdown-item" href="https://srk.shib.live/w/Shoryuken_Wiki:Community_portal/Discords/Game" target="_blank">FGC Discord Compendium</a></li>';
@@ -823,7 +823,7 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 							</ul>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true"></a>
+							<a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">I am doing some changes, sorry if I broke anytthing.</a>
 						</li>
 					</ul>
 					<?php
