@@ -282,7 +282,7 @@ ORDER BY COUNT(`combo`.`character_idcharacter`) DESC LIMIT 20) as subQuery ORDER
 						echo '<a class="card-title text ';
 						echo !$flImageCard ? 'text-nowrap ' : '';
 						echo 'text-white " ';
-						echo 'href="game.php?gameid=';
+						echo 'href="game/index.php?gameid=';
 						echo $gameid['idgame'];
 						echo '">'.$gameid['name'].'</a>';
 						echo '
@@ -309,7 +309,7 @@ ORDER BY `game`.`name`";
 		<div class="row combosuki-main-reversed rounded">';
 		foreach($result -> get_result()	as $gameid){
 			echo '<div class="col border-combosuki text-start">';
-				echo '<a class="link-light text text-nowrap" style="margin-left:5em;" href=game.php?gameid=';
+				echo '<a class="link-light text text-nowrap" style="margin-left:5em;" href=game/index.php?gameid=';
 				echo $gameid['idgame'];
 				echo '>';
 				echo $gameid['name'].' ('.$gameid['Entries'].')</a>';
@@ -568,6 +568,7 @@ function quick_search_form($gameid, $conn){
 
 function button_printing($idgame, $dataCombo, $conn){
 	//require 'server/conexao.php';
+	global $URLDepth;
 	$query = "SELECT name,png FROM `button` WHERE `game_idgame` = ?";
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i",$idgame);
@@ -581,7 +582,7 @@ function button_printing($idgame, $dataCombo, $conn){
 		array_push($buttonsName,$each['name']);
 		array_push($buttonsPNG,$each['png']);
 	}
-	$combo_image = '<img class="img-fluid" alt="Responsive image" src=img/buttons/start.png>';
+	$combo_image = '<img class="img-fluid" alt="Responsive image" src='.$URLDepth.'img/buttons/start.png>';
 	$buttonID;
 	$buttonsName = array_map('strtolower', $buttonsName);
 	
@@ -600,7 +601,7 @@ function button_printing($idgame, $dataCombo, $conn){
 				//echo $buttonID;
 				if($buttonID > -1){
 					if($image == '\n'){$combo_image .= '<br>';}
-					$combo_image .= '<img class="img-fluid" alt="Responsive image" src=img/buttons/';
+					$combo_image .= '<img class="img-fluid" alt="Responsive image" src='.$URLDepth.'img/buttons/';
 					$combo_image .= $buttonsPNG[$buttonID];
 					$combo_image .= '.png>';
 				}else{
@@ -614,7 +615,7 @@ function button_printing($idgame, $dataCombo, $conn){
 				//echo $buttonID;
 				if($buttonID > -1){
 					if($image == '->'){echo '<br>';}
-					$combo_image .= '<img class="img-fluid" alt="Responsive image" src=img/buttons/';
+					$combo_image .= '<img class="img-fluid" alt="Responsive image" src='.$URLDepth.'img/buttons/';
 					$combo_image .= $buttonsPNG[$buttonID];
 					$combo_image .= '.png>';
 				}else{
@@ -776,7 +777,7 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 							if($back){
 								if($back == 1){
 									echo '<li class="nav-item">';
-										echo '<a class="nav-link active" href="'.$backDestination.'?gameid='.$_GET['gameid'].'">';
+										echo '<a class="nav-link active" href="'.$URLDepth.'game/index.php?gameid='.$_GET['gameid'].'">';
 										echo $backto.'</a>';
 									echo '</li>';
 								}else if($back == 2){
@@ -811,7 +812,7 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 							<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
 								<?php
 
-									echo '<li><a class="dropdown-item" href="'.$URLDepth.'addgame.php">Add Game</a></li>
+									echo '<li><a class="dropdown-item" href="'.$URLDepth.'game/add.php">Add Game</a></li>
 										<li><hr class="dropdown-divider"></li>';
 									echo '<li><a class="dropdown-item" href="index.php?about=2">Combo Guidelines</a></li>';
 									echo '<li><a class="dropdown-item" href="https://srk.shib.live/w/Shoryuken_Wiki:Community_portal/Discords/Game" target="_blank">FGC Discord Compendium</a></li>';
@@ -822,7 +823,7 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 							</ul>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true"></a>
+							<a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">I am doing some changes, sorry if I broke anytthing.</a>
 						</li>
 					</ul>
 					<?php
@@ -837,17 +838,17 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 						
 					?>
 					<?php if($buttons > 1): ?>
-						<form method="post" action="<?php echo $URLDepth?>forms.php?gameid=<?php echo $_GET['gameid']; ?>">
+						<form method="post" action="<?php echo $URLDepth?>game/forms.php?gameid=<?php echo $_GET['gameid']; ?>">
 							<button class="btn btn-combosuki text-white">Submit</button>
 							<input type="hidden" id="type" name="type" value="1">
 						</form>
 
-						<form method="get" action="<?php echo $URLDepth?>forms.php">
+						<form method="get" action="<?php echo $URLDepth?>game/forms.php">
 							<button class="btn btn-combosuki text-white">Search</button>
 							<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 						</form>
 
-						<form method="get" action="<?php echo $URLDepth === '' ? 'edit/' : '';?>game.php">
+						<form method="get" action="<?php echo $URLDepth;?>game/edit/game.php">
 							<button class="btn btn-combosuki text-white">Edit Game</button>
 							<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 						</form>
