@@ -132,8 +132,6 @@ WHERE `game`.`idgame` = ?";
 		<title>Combo好き</title>
 		<?php getCSS(); ?>
 
-		<link href="css/bootstrap.min.css" rel="stylesheet">
-		<link rel="stylesheet" href="css/combosuki.css">
 		<style>
 			<?php
 				background();
