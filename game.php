@@ -1,6 +1,6 @@
 <!doctype php>
 <?php
-	include_once "server/initialize.php";
+	require_once "server/initialize.php";
 ?>
 <html>
 	<head>

@@ -1,7 +1,6 @@
 <!doctype php>
 <?php
-	include_once "server/conexao.php";
-	include_once "server/functions.php";
+	require_once "server/initialize.php";
 	if(!empty($_POST)){
 	//	p
 		$_POST = array_map("strip_tags", $_POST);

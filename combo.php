@@ -1,7 +1,6 @@
 <!doctype php>
 <?php
-	include_once "server/conexao.php";
-	include_once "server/functions.php";
+	require_once "server/initialize.php";
 	strip_GETtags();
 	$primaryTitle = array();
 	$primaryValue = array();

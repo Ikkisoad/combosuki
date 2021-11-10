@@ -1,6 +1,5 @@
 <?php
-	include_once "server/conexao.php";
-	include_once "server/functions.php";
+	require_once "server/initialize.php";
 	if(!empty($_POST)){
 		strip_POSTtags();
 		if($_POST['combo'] == ''){
