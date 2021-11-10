@@ -1,11 +1,11 @@
 <!doctype php>
 <?php
-	include_once "server/conexao.php";
-	include_once "server/functions.php";
+	$URLDepth = '../';
+	require_once "../server/initialize.php";
 	if(!empty($_POST)){
 		$_POST = array_map("strip_tags", $_POST);
 		$_GET = array_map("strip_tags", $_GET);
-		verify_password($conn);
+		verify_password();
 		
 		if($_POST['action'] == 'Submit'){
 		
@@ -31,8 +31,7 @@ JOIN `game` ON `game`.`idgame` = `character`.`game_idgame` SET `combo`= REPLACE(
 			$result -> execute();
 		}else if($_POST['action'] == 'SubmitResource'){
 			if(!verify_gameresource($_POST['with'],$conn)){
-				header("Location: index.php");
-				exit();
+				redictIndex();
 			}
 			$query = "UPDATE `resources` SET `Resources_values_idResources_values`= ? WHERE `Resources_values_idResources_values` = ?";
 			$result = $conn -> prepare($query);
@@ -61,9 +60,8 @@ JOIN `game` ON `game`.`idgame` = `character`.`game_idgame` SET `combo`= REPLACE(
 
 		<meta name="description" content="Community-fueled searchable environment that shares and perfects combos.">
 		<title>Combo好き</title>
+		<?php getCSS(); ?>
 
-		<link href="css/bootstrap.min.css" rel="stylesheet">
-		<link rel="stylesheet" href="css/combosuki.css">
 		<style>
 			<?php
 				background();
@@ -84,7 +82,7 @@ JOIN `game` ON `game`.`idgame` = `character`.`game_idgame` SET `combo`= REPLACE(
 						echo '</tr>';
 						
 						echo '<tr><td>';
-							echo '<form method="post" action="editcombos.php?gameid='.$_GET['gameid'].'">';
+							echo '<form method="post" action="mass.php?gameid='.$_GET['gameid'].'">';
 							character_dropdown($conn);
 							entry_select(0,2,$conn);
 							echo '<div class="input-group"><textarea name="replace" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Replace"></textarea>';
@@ -117,7 +115,7 @@ JOIN `game` ON `game`.`idgame` = `character`.`game_idgame` SET `combo`= REPLACE(
 						echo '</tr>';
 						
 						echo '<tr><td>';
-							echo '<form method="post" action="editcombos.php?gameid='.$_GET['gameid'].'">';
+							echo '<form method="post" action="mass.php?gameid='.$_GET['gameid'].'">';
 							echo '<div class="input-group"><textarea name="replace" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Replace Resource ID"></textarea>';
 							
 							echo '<textarea name="with" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="With Resource ID"></textarea>';

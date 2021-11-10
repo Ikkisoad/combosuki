@@ -1,50 +1,30 @@
 <!doctype php>
 <?php
-	include_once "server/conexao.php";
-	include_once "server/functions.php";
+	$URLDepth = '../';
+	require_once "../server/initialize.php";
 	if(!empty($_POST)){
 		$_POST = array_map("strip_tags", $_POST);
 		$_GET = array_map("strip_tags", $_GET);
-		verify_password($conn);
+		//print_r($_POST);
+		verify_password();
 		
 		if($_POST['action'] == 'Update'){
-			if(isset($_POST['listname'])){
-				if($_POST['listpass'] != ''){
-					$query = "UPDATE `list` SET `list_name`= ?,`password`= ?,`type`= ? WHERE `idlist` = ? AND `game_idgame` = ?";
-					$result = $conn -> prepare($query);
-					$result -> bind_param("ssiii", $_POST['listname'], $_POST['listpass'], $_POST['type'], $_POST['idlist'], $_GET['gameid']);
-					$result -> execute();
-				}else{
-					$query = "UPDATE `list` SET `list_name`= ?,`type`= ? WHERE `idlist` = ? AND `game_idgame` = ?";
-					$result = $conn -> prepare($query);
-					$result -> bind_param("siii", $_POST['listname'], $_POST['type'], $_POST['idlist'], $_GET['gameid']);
-					$result -> execute();
-				}
-			}else{
-				if($_POST['listpass'] != ''){
-					$query = "UPDATE `list` SET `password`=?,`type`=? WHERE `idlist` = ? AND `game_idgame` = ?";
-					$result = $conn -> prepare($query);
-					$result -> bind_param("siii", $_POST['listpass'], $_POST['type'], $_POST['idlist'], $_GET['gameid']);
-					$result -> execute();
-				}else{
-					$query = "UPDATE `list` SET `type`=? WHERE `idlist` = ? AND `game_idgame` = ?";
-					$result = $conn -> prepare($query);
-					$result -> bind_param("iii", $_POST['type'], $_POST['idlist'], $_GET['gameid']);
-					$result -> execute();
-				}
-				
-			}
-			
+			$query = "UPDATE `link` SET `Title`=?,`Link`=? WHERE `idLink` = ?";
+			$result = $conn -> prepare($query);
+			$result -> bind_param("ssi", $_POST['title'], $_POST['link'], $_POST['idLink']);
+			$result -> execute();
 		}else if($_POST['action'] == 'Delete'){
-			$query = "DELETE FROM `combo_listing` WHERE `idlist` = ?";
+			$query = "DELETE FROM `link` WHERE `idLink` = ?";
 			$result = $conn -> prepare($query);
-			$result -> bind_param("i", $_POST['idlist']);
+			//print_r($_POST);
+			$result -> bind_param("i", $_POST['idLink']);
+			$result -> execute();
+		}else if($_POST['action'] == 'Add'){
+			$query = "INSERT INTO `link`(`idLink`, `idGame`, `Title`, `Link`) VALUES (NULL, ?, ?, ?)";
+			$result = $conn -> prepare($query);
+			$result -> bind_param("iss", $_GET['gameid'], $_POST['title'], $_POST['link']);
 			$result -> execute();
 			
-			$query = "DELETE FROM `list` WHERE `idlist` = ?";
-			$result = $conn -> prepare($query);
-			$result -> bind_param("i", $_POST['idlist']);
-			$result -> execute();
 		}
 	}
 ?>
@@ -68,9 +48,8 @@
 
 		<meta name="description" content="Community-fueled searchable environment that shares and perfects combos.">
 		<title>Combo好き</title>
+		<?php getCSS(); ?>
 
-		<link href="css/bootstrap.min.css" rel="stylesheet">
-		<link rel="stylesheet" href="css/combosuki.css">
 		<style>
 			<?php
 				background();
@@ -85,40 +64,31 @@
 				<div class="form-group">
 					<?php
 						
-						$query = "SELECT * FROM `list` WHERE `type` != 1 AND `game_idgame` = ? ORDER BY `type` DESC,`list_name`;";
+						$query = "SELECT * FROM `link` WHERE `idGame` = ? ORDER BY `title`;";
 						$result = $conn -> prepare($query);
-						$result -> bind_param("i", $_GET['gameid']);
+						$result -> bind_param("i",$_GET['gameid']);
 						$result -> execute();
+						//print_r($result);
 						
-						echo '<table class="table table-hover align-middle caption-top combosuki-main-reversed text-white">';
+						//$game -> get_result()
+						echo '<table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed text-white">';
 						echo '<tr>';
-						echo '<th>List</th';
+						echo '<th>Link</th';
 						echo '</tr>';
 						foreach($result -> get_result()	as $lol){
 							
 							echo '<tr><td>';
-							echo '<form method="post" action="editlists.php?gameid='.$_GET['gameid'].'">';
-							echo '<div class="input-group"><button class="btn btn-secondary" disabled>ID:'.$lol['idlist'].'</button><textarea name="listname" maxlength="50" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="List Name">'.$lol['list_name'].'</textarea>';					
-							echo '<input name="listpass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="List Password">';
-							echo '<select name="type" class="custom-select">
-									<option value="0">Flagged</option>
-									<option value="1">Normal</option>
-									<option value="2" ';
-									
-							if($lol['type'] == 2) echo 'selected';
-							echo '>Verified</option>
-									<option value="3" ';
-							if($lol['type'] == 3) echo 'selected';
-							echo '>Moderated</option>
-								  </select>';
+							echo '<form method="post" action="links.php?gameid='.$_GET['gameid'].'">';
+							echo '<div class="input-group"><textarea name="title" maxlength="50" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Link Title">'.$lol['Title'].'</textarea>';					
+							echo '<textarea name="link" maxlength="255" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Link URL">'.$lol['Link'].'</textarea>';
 							echo '
   <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
   <div class="input-group-append" id="button-addon4">
-  <input type="hidden" name="idlist" value="'.$lol['idlist'].'">
+  <input type="hidden" name="idLink" value="'.$lol['idLink'].'">
     <button type="submit" name="action" value="Update" class="btn btn-primary">Update</button>
     <button type="submit" name="action" value="Delete" class="btn btn-danger" ';
 							if(1):?>
-							onclick="return confirm('Are you sure you want to delete this list?');"
+							onclick="return confirm('Are you sure you want to delete this link?');"
 							<?php
 							endif;
 							echo ' >Delete</button>
@@ -131,25 +101,13 @@
 						}
 						
 						echo '<tr><td>';
-							echo '<form method="post" action="editlists.php?gameid='.$_GET['gameid'].'">';
-							echo '<div class="input-group"><textarea name="idlist" maxlength="50" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="List ID" autofocus></textarea>';					
-							echo '<input name="listpass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="List Password">';
-							echo '<select name="type" class="custom-select">
-									<option value="0">Flagged</option>
-									<option value="1" selected>Normal</option>
-									<option value="2">Verified</option>
-									<option value="3">Moderated</option>
-								  </select>';
+							echo '<form method="post" action="links.php?gameid='.$_GET['gameid'].'">';
+							echo '<div class="input-group"><textarea name="title" maxlength="50" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Link Title" autofocus></textarea>';					
+							echo '<textarea name="link" maxlength="255" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Link URL"></textarea>';
 							echo '
   <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
   <div class="input-group-append" id="button-addon4">
-    <button type="submit" name="action" value="Update" class="btn btn-primary">Update</button>
-    <button type="submit" name="action" value="Delete" class="btn btn-danger" ';
-							if(1):?>
-							onclick="return confirm('Are you sure you want to delete this list?');"
-							<?php
-							endif;
-							echo ' >Delete</button>
+    <button type="submit" name="action" value="Add" class="btn btn-primary">Add</button>
   </div>
 </div>';
 							echo '</td>';
@@ -161,8 +119,6 @@
 						edit_controls($_GET['gameid']);
 						mysqli_close($conn);
 					?>
-					<p>If someone tries to delete a list with moderator password the list will appear here as flagged.</p>
-					<p>Moderated lists have preference in searches and will always appear on top, followed by verified lists and then normal lists. Flagged lists do not show up.</p>
 				</div>
 			</div>
 		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
