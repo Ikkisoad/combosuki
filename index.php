@@ -162,8 +162,8 @@
 						</form>';
 					}else if($_GET['about'] == 5){ //Games
 						echo '<h2>Games</h2>';
-						game_title(0);
-						game_text_only($conn);
+						//game_title(0);
+						game_text_only();
 					}
 					mysqli_close($conn);
 				?>

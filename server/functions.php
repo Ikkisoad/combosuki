@@ -293,7 +293,8 @@ ORDER BY COUNT(`combo`.`character_idcharacter`) DESC LIMIT 20) as subQuery ORDER
 	echo '</div>';	
 }
 
-function game_text_only($conn){
+function game_text_only(){
+	global $conn;
 	//require "server/conexao.php";
 	$query = "SELECT idgame, `game`.`name`, COUNT(DISTINCT `combo`.`idcombo`) AS Entries
 FROM game 
