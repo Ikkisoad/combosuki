@@ -1,5 +1,6 @@
 <?php
-	require_once "server/initialize.php";
+	$URLDepth = '../';
+	require_once "../server/initialize.php";
 	
 	if(!empty($_POST)){
 		strip_POSTtags();
@@ -115,9 +116,9 @@
 
 		<meta name="description" content="Community-fueled searchable environment that shares and perfects combos.">
 		<title>Combo好き</title>
-
-		<link href="css/bootstrap.min.css" rel="stylesheet">
-		<link rel="stylesheet" href="css/combosuki.css">
+		<?php
+			getCSS();
+		?>
 		<style>
 			<?php
 				background();
