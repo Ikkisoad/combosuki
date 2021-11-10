@@ -1,30 +1,51 @@
 <!doctype php>
 <?php
-	include_once "server/conexao.php";
-	include_once "server/functions.php";
+	$URLDepth = '../';
+	require_once "../server/initialize.php";
 	if(!empty($_POST)){
 		$_POST = array_map("strip_tags", $_POST);
 		$_GET = array_map("strip_tags", $_GET);
 		//print_r($_POST);
-		verify_password($conn);
+		verify_password();
 		
 		if($_POST['action'] == 'Update'){
-			$query = "UPDATE `link` SET `Title`=?,`Link`=? WHERE `idLink` = ?";
-			$result = $conn -> prepare($query);
-			$result -> bind_param("ssi", $_POST['title'], $_POST['link'], $_POST['idLink']);
-			$result -> execute();
-		}else if($_POST['action'] == 'Delete'){
-			$query = "DELETE FROM `link` WHERE `idLink` = ?";
+		
+			$query = "UPDATE `character` SET `Name`=? WHERE `idcharacter` = ?";
 			$result = $conn -> prepare($query);
 			//print_r($_POST);
-			$result -> bind_param("i", $_POST['idLink']);
+			$result -> bind_param("si", $_POST['character'], $_POST['idcharacter']);
 			$result -> execute();
-		}else if($_POST['action'] == 'Add'){
-			$query = "INSERT INTO `link`(`idLink`, `idGame`, `Title`, `Link`) VALUES (NULL, ?, ?, ?)";
+		}else if($_POST['action'] == 'Delete'){
+			$query = "DELETE `resources` FROM `character` 
+JOIN `combo` ON `combo`.`character_idcharacter` = `character`.`idcharacter`
+JOIN `resources` ON `resources`.`combo_idcombo` = `combo`.`idcombo`
+WHERE `character`.`idcharacter` = ?";
 			$result = $conn -> prepare($query);
-			$result -> bind_param("iss", $_GET['gameid'], $_POST['title'], $_POST['link']);
+			//print_r($_POST);
+			$result -> bind_param("i", $_POST['idcharacter']);
 			$result -> execute();
 			
+			$query = "DELETE `combo` FROM `character` 
+JOIN `combo` ON `combo`.`character_idcharacter` = `character`.`idcharacter`
+WHERE `character`.`idcharacter` = ?";
+			$result = $conn -> prepare($query);
+			//print_r($_POST);
+			$result -> bind_param("i", $_POST['idcharacter']);
+			$result -> execute();
+			
+			$query = "DELETE FROM `character` WHERE `idcharacter` = ?";
+			$result = $conn -> prepare($query);
+			//print_r($_POST);
+			$result -> bind_param("i", $_POST['idcharacter']);
+			$result -> execute();
+			
+			
+		}else if($_POST['action'] == 'Add'){
+			$query = "INSERT INTO `character`(`idcharacter`, `Name`, `game_idgame`) VALUES (NULL,?,?)";
+			$result = $conn -> prepare($query);
+			//print_r($_POST);
+			$result -> bind_param("si", $_POST['character'], $_GET['gameid']);
+			$result -> execute();
 		}
 	}
 ?>
@@ -48,9 +69,7 @@
 
 		<meta name="description" content="Community-fueled searchable environment that shares and perfects combos.">
 		<title>Combo好き</title>
-
-		<link href="css/bootstrap.min.css" rel="stylesheet">
-		<link rel="stylesheet" href="css/combosuki.css">
+		<?php getCSS(); ?>
 		<style>
 			<?php
 				background();
@@ -65,7 +84,7 @@
 				<div class="form-group">
 					<?php
 						
-						$query = "SELECT * FROM `link` WHERE `idGame` = ? ORDER BY `title`;";
+						$query = "SELECT `idcharacter`, `Name` FROM `character` WHERE `game_idgame` = ? ORDER BY Name;";
 						$result = $conn -> prepare($query);
 						$result -> bind_param("i",$_GET['gameid']);
 						$result -> execute();
@@ -74,22 +93,22 @@
 						//$game -> get_result()
 						echo '<table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed text-white">';
 						echo '<tr>';
-						echo '<th>Link</th';
+						echo '<th>Character</th';
 						echo '</tr>';
 						foreach($result -> get_result()	as $lol){
 							
 							echo '<tr><td>';
-							echo '<form method="post" action="editlinks.php?gameid='.$_GET['gameid'].'">';
-							echo '<div class="input-group"><textarea name="title" maxlength="50" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Link Title">'.$lol['Title'].'</textarea>';					
-							echo '<textarea name="link" maxlength="255" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Link URL">'.$lol['Link'].'</textarea>';
+							echo '<form method="post" action="characters.php?gameid='.$_GET['gameid'].'">';
+							echo '<div class="input-group"><textarea name="character" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Character Name">'.$lol['Name'].'</textarea>';
+							//echo $lol['Name'];
 							echo '
   <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
   <div class="input-group-append" id="button-addon4">
-  <input type="hidden" name="idLink" value="'.$lol['idLink'].'">
+  <input type="hidden" name="idcharacter" value="'.$lol['idcharacter'].'">
     <button type="submit" name="action" value="Update" class="btn btn-primary">Update</button>
     <button type="submit" name="action" value="Delete" class="btn btn-danger" ';
 							if(1):?>
-							onclick="return confirm('Are you sure you want to delete this link?');"
+							onclick="return confirm('Are you sure you want to delete this character?');"
 							<?php
 							endif;
 							echo ' >Delete</button>
@@ -102,9 +121,9 @@
 						}
 						
 						echo '<tr><td>';
-							echo '<form method="post" action="editlinks.php?gameid='.$_GET['gameid'].'">';
-							echo '<div class="input-group"><textarea name="title" maxlength="50" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Link Title" autofocus></textarea>';					
-							echo '<textarea name="link" maxlength="255" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Link URL"></textarea>';
+							echo '<form method="post" action="characters.php?gameid='.$_GET['gameid'].'">';
+							echo '<div class="input-group"><textarea name="character" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Character Name" autofocus></textarea>';
+							//echo $lol['Name'];
 							echo '
   <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
   <div class="input-group-append" id="button-addon4">

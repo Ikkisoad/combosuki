@@ -1,7 +1,6 @@
 <!doctype php>
 <?php
-	include_once "server/conexao.php";
-	include_once "server/functions.php";
+	require_once "server/initialize.php";
 	if(!empty($_POST)){
 	//	p
 		$_POST = array_map("strip_tags", $_POST);
@@ -10,9 +9,7 @@
 		if($_POST['action'] == 'Submit'){
 			
 			if($_POST['gameName'] == '' || $_POST['gameImage'] == '' || $_POST['gamePass'] == ''){
-				header("Location: index.php");
-				//print_r($_POST);
-				exit();
+				redictIndex();
 			}
 		
 			$query = "INSERT INTO `game`(`idgame`, `name`, `complete`, `image`, `globalPass`, `modPass`) VALUES (NULL, ?,NULL,?,?,?)";

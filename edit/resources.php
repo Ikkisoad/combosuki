@@ -1,19 +1,18 @@
 <!doctype php>
 <?php
-	include_once "server/conexao.php";
-	include_once "server/functions.php";
+	$URLDepth = '../';
+	require_once "../server/initialize.php";
 	$edit = 0;
 	if(!empty($_POST)){
 		$_POST = array_map("strip_tags", $_POST);
 		$_GET = array_map("strip_tags", $_GET);
 			//print_r($_POST);
 		if($_POST['action'] != 'Edit'){
-			verify_password($conn);
+			verify_password();
 			
 			if($_POST['action'] == 'Update'){
 				if(verify_resource_game($_POST['idresource'], $conn) != $_GET['gameid']){
-					header("Location: index.php");
-					exit();	
+					redictIndex();
 				}
 				$query = "UPDATE `game_resources` SET `text_name`= ?,`type`= ?,`primaryORsecundary`= ? WHERE `idgame_resources` = ? AND `game_idgame` = ?";
 				$result = $conn -> prepare($query);
@@ -22,8 +21,7 @@
 				$result -> execute();
 			}else if($_POST['action'] == 'Delete'){
 				if(verify_resource_game($_POST['idresource'], $conn) != $_GET['gameid']){
-					header("Location: index.php");
-					exit();	
+					redictIndex();
 				}
 				$query = "DELETE FROM `resources_values` WHERE `game_resources_idgame_resources` = ?";
 				$result = $conn -> prepare($query);
@@ -49,8 +47,7 @@
 				$edit = 1;
 			}else if($_POST['action'] == 'EditUpdate'){
 					if(verify_resourcevalue_game($_POST['idresourcevalue'], $conn) != $_GET['gameid']){
-						header("Location: index.php");
-						exit();	
+						redictIndex();
 					}
 					$query = "UPDATE `resources_values` SET `value`=?,`order`=? WHERE `idResources_values` = ?";
 					$result = $conn -> prepare($query);
@@ -60,8 +57,7 @@
 				$edit = 1;
 			}else if($_POST['action'] == 'EditDelete'){
 				if(verify_resourcevalue_game($_POST['idresourcevalue'], $conn) != $_GET['gameid']){
-					header("Location: index.php");
-					exit();	
+					redictIndex();	
 				}
 				
 				$query = "DELETE FROM `resources` WHERE `Resources_values_idResources_values` = ?";
@@ -103,9 +99,8 @@
 
 		<meta name="description" content="Community-fueled searchable environment that shares and perfects combos.">
 		<title>Combo好き</title>
+		<?php getCSS(); ?>
 
-		<link href="css/bootstrap.min.css" rel="stylesheet">
-		<link rel="stylesheet" href="css/combosuki.css">
 		<style>
 			<?php
 				background();
@@ -136,7 +131,7 @@
 							foreach($result -> get_result()	as $lol){
 								
 								echo '<tr><td>';
-								echo '<form method="post" action="editresources.php?gameid='.$_GET['gameid'].'">';
+								echo '<form method="post" action="resources.php?gameid='.$_GET['gameid'].'">';
 								echo '<div class="input-group"><button class="btn btn-secondary" disabled>ID:'.$lol['idResources_values'].'</button><textarea name="resourcevalue" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Resource Name">'.$lol['value'].'</textarea>';
 								//echo $lol['Name'];
 								echo '<input class="form-control" type="number" name="order" placeholder="Order" value="'.$lol['order'].'" step="any">';
@@ -162,7 +157,7 @@
 							}
 							
 							echo '<tr><td>';
-								echo '<form method="post" action="editresources.php?gameid='.$_GET['gameid'].'">';
+								echo '<form method="post" action="resources.php?gameid='.$_GET['gameid'].'">';
 								echo '<div class="input-group"><textarea name="resourcevalue" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Resource Name" autofocus></textarea>';
 								//echo $lol['Name'];
 								echo '<input class="form-control" type="number" name="order" placeholder="Order" value="" step="any">';
@@ -194,7 +189,7 @@
 							foreach($result -> get_result()	as $lol){
 								
 								echo '<tr><td>';
-								echo '<form method="post" action="editresources.php?gameid='.$_GET['gameid'].'">';
+								echo '<form method="post" action="resources.php?gameid='.$_GET['gameid'].'">';
 								echo '<div class="input-group"><textarea name="resource" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Resource Name">'.$lol['text_name'].'</textarea>';
 								//echo $lol['Name'];
 								echo '<select name="type" class="custom-select">
@@ -237,7 +232,7 @@
 							}
 							
 							echo '<tr><td>';
-								echo '<form method="post" action="editresources.php?gameid='.$_GET['gameid'].'">';
+								echo '<form method="post" action="resources.php?gameid='.$_GET['gameid'].'">';
 								echo '<div class="input-group"><textarea name="resource" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Resource Name" autofocus></textarea>';
 								//echo $lol['Name'];
 								echo '<select name="type" class="custom-select">

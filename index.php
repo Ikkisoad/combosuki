@@ -1,7 +1,6 @@
 <!doctype php>
 <?php
-	include_once "server/functions.php";
-	include_once "server/conexao.php";
+	require_once "server/initialize.php";
 	strip_POSTtags();
 	set_cookies();
 	if(isset($_POST['color'])){

@@ -1,7 +1,7 @@
 <!doctype php>
 <?php
-	include_once "server/conexao.php";
-	include_once "server/functions.php";
+	$URLDepth = '../';
+	require_once "../server/initialize.php";
 	if(!empty($_POST)){
 		$_POST = array_map("strip_tags", $_POST);
 		$_GET = array_map("strip_tags", $_GET);
@@ -11,8 +11,7 @@
 		$result -> execute();
 		foreach($result -> get_result() as $pass){
 			if($pass['globalPass'] != $_POST['password']){
-				header("Location: index.php");
-				exit();
+				redictIndex();
 			}
 		}
 		
@@ -94,8 +93,7 @@ WHERE `game`.`idgame` = ?";
 			$result -> bind_param("i", $_GET['gameid']);
 			$result -> execute();
 			
-			header("Location: index.php");
-			exit();
+			redictIndex();
 			
 		}else if($_POST['action'] == 'Lock'){
 			(get_gameComplete($conn)>0)?$i=2:$i=-1;
@@ -132,9 +130,8 @@ WHERE `game`.`idgame` = ?";
 
 		<meta name="description" content="Community-fueled searchable environment that shares and perfects combos.">
 		<title>Combo好き</title>
+		<?php getCSS(); ?>
 
-		<link href="css/bootstrap.min.css" rel="stylesheet">
-		<link rel="stylesheet" href="css/combosuki.css">
 		<style>
 			<?php
 				background();
@@ -148,7 +145,7 @@ WHERE `game`.`idgame` = ?";
 			<div class="container-fluid my-3">
 					<div class="form-group">
 							
-							<form method="post" action="editgame.php?gameid=<?php echo $_GET['gameid']?>">
+							<form method="post" action="game.php?gameid=<?php echo $_GET['gameid']?>">
 						<?php
 							$query = "SELECT name,image, patch, description, notation FROM game WHERE idgame = ?;";
 							$result = $conn -> prepare($query);

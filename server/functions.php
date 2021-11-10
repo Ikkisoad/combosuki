@@ -713,36 +713,36 @@ function print_game_notation($idgame, $conn){
 
 function edit_controls($gameid){
 	echo '<div class="btn-group">
-			<form method="get" action="editcharacters.php">
+			<form method="get" action="characters.php">
 				<button class="btn btn-secondary">Characters</button>
 				<input type="hidden" name="gameid" value="'.$gameid.'">
 			</form>
-			<form method="get" action="editbuttons.php">
+			<form method="get" action="buttons.php">
 			<input type="hidden" name="gameid" value="'.$gameid.'">
 				<button class="btn btn-secondary">Buttons</button>
 			</form>
 
-			<form method="get" action="editresources.php">
+			<form method="get" action="resources.php">
 			<input type="hidden" name="gameid" value="'.$gameid.'">
 				<button class="btn btn-secondary">Resources</button>
 			</form>
 			
-			<form method="get" action="editlinks.php">
+			<form method="get" action="links.php">
 				<input type="hidden" name="gameid" value="'.$gameid.'">
 				<button class="btn btn-secondary">Links</button>
 			</form>
 			
-			<form method="get" action="editentries.php">
+			<form method="get" action="entries.php">
 				<input type="hidden" name="gameid" value="'.$gameid.'">
 				<button class="btn btn-secondary">Entries</button>
 			</form>
 			
-			<form method="get" action="editcombos.php">
+			<form method="get" action="mass.php">
 				<input type="hidden" name="gameid" value="'.$gameid.'">
 				<button class="btn btn-secondary">Mass Edit</button>
 			</form>
 			
-			<form method="get" action="editlists.php">
+			<form method="get" action="lists.php">
 				<input type="hidden" name="gameid" value="'.$gameid.'">
 				<button class="btn btn-secondary">Lists</button>
 			</form>
@@ -750,15 +750,16 @@ function edit_controls($gameid){
 }
 
 function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1 -> Home/Lists Buttons>1 -> Home/Lists/Submit/Search/Edit Game Back=1 -> Game Back=2 -> Combo $backDestination == URL $backto == gameName
+	global $URLDepth;
 	if($buttons): ?>
 		<nav class="navbar navbar-expand-lg navbar-dark bg-combosuki-main-2">
 			<?php if($back == 1):?>
-			<a class="navbar-brand" href="index.php">
-				<img src="img/selo.png" style="margin-left:20px" width="30" height="30">
+			<a class="navbar-brand" href="<?php echo $URLDepth; ?>index.php">
+				<img src="<?php echo $URLDepth; ?>img/selo.png" style="margin-left:20px" width="30" height="30">
 			</a>
 			<?php endif;?>
 			<div class="container-fluid">
-				<a class="navbar-brand" href="index.php">Combo好き</a>
+				<a class="navbar-brand" href="<?php echo $URLDepth?>index.php">Combo好き</a>
 				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
 					<span class="navbar-toggler-icon"></span>
 				</button>
@@ -794,7 +795,7 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 							}
 						?>
 						<li class="nav-item">
-							<a class="nav-link" href="list.php">Lists</a>
+							<a class="nav-link" href="<?php echo $URLDepth; ?>list.php">Lists</a>
 						</li>
 						
 						<li class="nav-item dropdown">
@@ -804,7 +805,7 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 							<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
 								<?php
 
-									echo '<li><a class="dropdown-item" href="addgame.php">Add Game</a></li>
+									echo '<li><a class="dropdown-item" href="'.$URLDepth.'addgame.php">Add Game</a></li>
 										<li><hr class="dropdown-divider"></li>';
 									echo '<li><a class="dropdown-item" href="index.php?about=2">Combo Guidelines</a></li>';
 									echo '<li><a class="dropdown-item" href="https://srk.shib.live/w/Shoryuken_Wiki:Community_portal/Discords/Game" target="_blank">FGC Discord Compendium</a></li>';
@@ -830,17 +831,17 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 						
 					?>
 					<?php if($buttons > 1): ?>
-						<form method="post" action="forms.php?gameid=<?php echo $_GET['gameid']; ?>">
+						<form method="post" action="<?php echo $URLDepth?>forms.php?gameid=<?php echo $_GET['gameid']; ?>">
 							<button class="btn btn-combosuki text-white">Submit</button>
 							<input type="hidden" id="type" name="type" value="1">
 						</form>
 
-						<form method="get" action="forms.php">
+						<form method="get" action="<?php echo $URLDepth?>forms.php">
 							<button class="btn btn-combosuki text-white">Search</button>
 							<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 						</form>
 
-						<form method="get" action="editgame.php">
+						<form method="get" action="<?php echo $URLDepth === '' ? 'edit/' : '';?>game.php">
 							<button class="btn btn-combosuki text-white">Edit Game</button>
 							<input type="hidden" name="gameid" value="<?php echo $_GET['gameid'] ?>">
 						</form>
@@ -862,17 +863,23 @@ function get_mod_password($gameid, $conn){
 	}
 }
 
-function verify_password($conn){
+function verify_password(){
+	global $URLDepth, $conn;
 	$query = "SELECT globalPass, modPass, complete FROM game WHERE idgame = ?";
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i", $_GET['gameid']);
 	$result -> execute();
 	foreach($result -> get_result() as $pass){
 		if($pass['globalPass'] != $_POST['gamePass'] && (!password_verify($_POST['gamePass'], $pass['modPass']) || $pass['complete'] == 2 || $pass['complete'] == -1)){
-			header("Location: index.php");
-			exit();
+			redictIndex();
 		}
 	}	
+}
+
+function redictIndex(){
+	global $URLDepth;
+	header("Location: ".$URLDepth."index.php");
+	exit();
 }
 
 function get_combogame($comboid, $conn){
@@ -1180,6 +1187,7 @@ function build_buttonFromVariables($pTitle, $pType, $pID, $pValue, $sTitle, $sTy
 }
 
 function background(){
+	global $URLDepth;
 	echo '
 	body{
 		padding: 0;
@@ -1192,7 +1200,7 @@ function background(){
 		}
 		echo'
 		color: white;
-		background-image: url(img/bg/bolinhas2.png), url(img/bg/risco2.png);
+		background-image: url('.$URLDepth.'img/bg/bolinhas2.png), url('.$URLDepth.'img/bg/risco2.png);
 		background-attachment: fixed;
 		background-position: center;
 		background-repeat: no-repeat;
@@ -1279,8 +1287,7 @@ WHERE `idlist` = ?";
 	
 	foreach($result -> get_result() as $pass){
 		if($pass['globalPass'] != $_POST['listPass'] && !password_verify($_POST['listPass'], $pass['modPass']) && $pass['password'] != $_POST['listPass']){
-			header("Location: index.php");
-			exit();
+			redictIndex();
 		}
 	}
 }
@@ -1464,5 +1471,13 @@ function game_lists($conn){
 		echo '</div>';
 	
 	}
+}
+
+function getCSS(){
+	global $URLDepth;
+	?>
+	<link href="<?php echo $URLDepth; ?>css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="<?php echo $URLDepth; ?>css/combosuki.css">
+	<?php
 }
 ?>

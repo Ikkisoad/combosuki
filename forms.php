@@ -1,7 +1,6 @@
 <!doctype php>
 <?php
-	include_once "server/functions.php";
-	include_once "server/conexao.php";
+	require_once "server/initialize.php";
 	
 	strip_POSTtags();
 	strip_GETtags();
@@ -213,7 +212,6 @@
 							</div>
 							<div class="row align-items-center">
 							<?php
-								require "server/conexao.php";
 								$query = "SELECT text_name,type,idgame_resources,primaryORsecundary FROM `game_resources` WHERE game_idgame = ? ORDER BY game_resources.primaryORsecundary DESC,text_name;";
 								//echo $query;
 								$result = $conn -> prepare($query);
