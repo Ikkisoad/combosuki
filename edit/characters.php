@@ -6,7 +6,7 @@
 		$_POST = array_map("strip_tags", $_POST);
 		$_GET = array_map("strip_tags", $_GET);
 		//print_r($_POST);
-		verify_password($conn);
+		verify_password();
 		
 		if($_POST['action'] == 'Update'){
 		
@@ -101,7 +101,7 @@ WHERE `character`.`idcharacter` = ?";
 						foreach($result -> get_result()	as $lol){
 							
 							echo '<tr><td>';
-							echo '<form method="post" action="editcharacters.php?gameid='.$_GET['gameid'].'">';
+							echo '<form method="post" action="characters.php?gameid='.$_GET['gameid'].'">';
 							echo '<div class="input-group"><textarea name="character" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Character Name">'.$lol['Name'].'</textarea>';
 							//echo $lol['Name'];
 							echo '
@@ -124,7 +124,7 @@ WHERE `character`.`idcharacter` = ?";
 						}
 						
 						echo '<tr><td>';
-							echo '<form method="post" action="editcharacters.php?gameid='.$_GET['gameid'].'">';
+							echo '<form method="post" action="characters.php?gameid='.$_GET['gameid'].'">';
 							echo '<div class="input-group"><textarea name="character" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Character Name" autofocus></textarea>';
 							//echo $lol['Name'];
 							echo '

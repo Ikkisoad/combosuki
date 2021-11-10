@@ -6,7 +6,7 @@
 		$_POST = array_map("strip_tags", $_POST);
 		$_GET = array_map("strip_tags", $_GET);
 		//print_r($_POST);
-		verify_password($conn);
+		verify_password();
 		
 		if($_POST['action'] == 'Update'){
 			$query = "UPDATE `link` SET `Title`=?,`Link`=? WHERE `idLink` = ?";
@@ -80,7 +80,7 @@
 						foreach($result -> get_result()	as $lol){
 							
 							echo '<tr><td>';
-							echo '<form method="post" action="editlinks.php?gameid='.$_GET['gameid'].'">';
+							echo '<form method="post" action="links.php?gameid='.$_GET['gameid'].'">';
 							echo '<div class="input-group"><textarea name="title" maxlength="50" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Link Title">'.$lol['Title'].'</textarea>';					
 							echo '<textarea name="link" maxlength="255" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Link URL">'.$lol['Link'].'</textarea>';
 							echo '
@@ -103,7 +103,7 @@
 						}
 						
 						echo '<tr><td>';
-							echo '<form method="post" action="editlinks.php?gameid='.$_GET['gameid'].'">';
+							echo '<form method="post" action="links.php?gameid='.$_GET['gameid'].'">';
 							echo '<div class="input-group"><textarea name="title" maxlength="50" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Link Title" autofocus></textarea>';					
 							echo '<textarea name="link" maxlength="255" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Link URL"></textarea>';
 							echo '

@@ -9,9 +9,7 @@
 		if($_POST['action'] == 'Submit'){
 			
 			if($_POST['gameName'] == '' || $_POST['gameImage'] == '' || $_POST['gamePass'] == ''){
-				header("Location: index.php");
-				//print_r($_POST);
-				exit();
+				redictIndex();
 			}
 		
 			$query = "INSERT INTO `game`(`idgame`, `name`, `complete`, `image`, `globalPass`, `modPass`) VALUES (NULL, ?,NULL,?,?,?)";

@@ -737,7 +737,7 @@ function edit_controls($gameid){
 				<button class="btn btn-secondary">Entries</button>
 			</form>
 			
-			<form method="get" action="combos.php">
+			<form method="get" action="mass.php">
 				<input type="hidden" name="gameid" value="'.$gameid.'">
 				<button class="btn btn-secondary">Mass Edit</button>
 			</form>
@@ -863,17 +863,23 @@ function get_mod_password($gameid, $conn){
 	}
 }
 
-function verify_password($conn){
+function verify_password(){
+	global $URLDepth, $conn;
 	$query = "SELECT globalPass, modPass, complete FROM game WHERE idgame = ?";
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i", $_GET['gameid']);
 	$result -> execute();
 	foreach($result -> get_result() as $pass){
 		if($pass['globalPass'] != $_POST['gamePass'] && (!password_verify($_POST['gamePass'], $pass['modPass']) || $pass['complete'] == 2 || $pass['complete'] == -1)){
-			header("Location: index.php");
-			exit();
+			redictIndex();
 		}
 	}	
+}
+
+function redictIndex(){
+	global $URLDepth;
+	header("Location: ".$URLDepth."index.php");
+	exit();
 }
 
 function get_combogame($comboid, $conn){
@@ -1281,8 +1287,7 @@ WHERE `idlist` = ?";
 	
 	foreach($result -> get_result() as $pass){
 		if($pass['globalPass'] != $_POST['listPass'] && !password_verify($_POST['listPass'], $pass['modPass']) && $pass['password'] != $_POST['listPass']){
-			header("Location: index.php");
-			exit();
+			redictIndex();
 		}
 	}
 }

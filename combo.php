@@ -60,8 +60,7 @@
 		}
 	}
 	if(!isset($damage)){
-		header("Location: index.php");
-		exit();
+		redictIndex();
 	}
 ?>
 <html>

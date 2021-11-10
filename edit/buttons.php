@@ -83,7 +83,7 @@
 						foreach($result -> get_result()	as $lol){
 							
 							echo '<tr><td>';
-							echo '<form method="post" action="editbuttons.php?gameid='.$_GET['gameid'].'">';
+							echo '<form method="post" action="buttons.php?gameid='.$_GET['gameid'].'">';
 							echo '<div class="input-group"><textarea name="name" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Character Name">'.$lol['name'].'</textarea>';
 							$directory = "img/buttons";
 							$images = glob($directory . "/*.png");
@@ -121,7 +121,7 @@
 						}
 						
 						echo '<tr><td>';
-							echo '<form method="post" action="editbuttons.php?gameid='.$_GET['gameid'].'">';
+							echo '<form method="post" action="buttons.php?gameid='.$_GET['gameid'].'">';
 							echo '<div class="input-group"><textarea name="name" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Button Name" autofocus></textarea>';
 							//echo $lol['Name'];
 							$directory = "img/buttons";

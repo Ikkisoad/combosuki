@@ -5,7 +5,7 @@
 	if(!empty($_POST)){
 		$_POST = array_map("strip_tags", $_POST);
 		$_GET = array_map("strip_tags", $_GET);
-		verify_password($conn);
+		verify_password();
 		
 		if($_POST['action'] == 'Update'){
 			if(isset($_POST['listname'])){
@@ -98,7 +98,7 @@
 						foreach($result -> get_result()	as $lol){
 							
 							echo '<tr><td>';
-							echo '<form method="post" action="editlists.php?gameid='.$_GET['gameid'].'">';
+							echo '<form method="post" action="lists.php?gameid='.$_GET['gameid'].'">';
 							echo '<div class="input-group"><button class="btn btn-secondary" disabled>ID:'.$lol['idlist'].'</button><textarea name="listname" maxlength="50" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="List Name">'.$lol['list_name'].'</textarea>';					
 							echo '<input name="listpass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="List Password">';
 							echo '<select name="type" class="custom-select">
@@ -132,7 +132,7 @@
 						}
 						
 						echo '<tr><td>';
-							echo '<form method="post" action="editlists.php?gameid='.$_GET['gameid'].'">';
+							echo '<form method="post" action="lists.php?gameid='.$_GET['gameid'].'">';
 							echo '<div class="input-group"><textarea name="idlist" maxlength="50" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="List ID" autofocus></textarea>';					
 							echo '<input name="listpass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="List Password">';
 							echo '<select name="type" class="custom-select">

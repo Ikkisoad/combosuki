@@ -3,8 +3,7 @@
 	if(!empty($_POST)){
 		strip_POSTtags();
 		if($_POST['combo'] == ''){
-			header("Location: index.php");
-			exit();
+			redictIndex();
 		}
 		if(!isset($_POST['idcombo'])){
 			$query = "INSERT INTO `combo`(`idcombo`, `combo`, `comments`, `video`, `user_iduser`, `character_idcharacter`, `submited`, `damage`, `type`, `patch`, `author`, `password`) 
