@@ -802,7 +802,7 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 							}
 						?>
 						<li class="nav-item">
-							<a class="nav-link" href="<?php echo $URLDepth; ?>list.php">Lists</a>
+							<a class="nav-link" href="<?php echo $URLDepth; ?>list/list.php">Lists</a>
 						</li>
 						
 						<li class="nav-item dropdown">
