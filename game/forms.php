@@ -158,7 +158,7 @@
 								}
 							?>
 							<button type="button" style="border:#ffffff;background:none;" value="backspace"  name="no" onclick="backspace()">
-								<img src="img/buttons/hidden/backspace.png">
+								<img src="<?php echo $URLDepth; ?>img/buttons/hidden/backspace.png">
 							</button>
 							<textarea style="background-color: #474747; color:#999999;" name="combo" class="form-control" id="comboarea" rows="4" title="<?php
 							print_game_notation($_GET['gameid'], $conn);
