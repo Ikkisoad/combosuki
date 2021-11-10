@@ -1181,6 +1181,7 @@ function build_buttonFromVariables($pTitle, $pType, $pID, $pValue, $sTitle, $sTy
 }
 
 function background(){
+	global $URLDepth;
 	echo '
 	body{
 		padding: 0;
@@ -1193,7 +1194,7 @@ function background(){
 		}
 		echo'
 		color: white;
-		background-image: url(img/bg/bolinhas2.png), url(img/bg/risco2.png);
+		background-image: url('.$URLDepth.'img/bg/bolinhas2.png), url('.$URLDepth.'img/bg/risco2.png);
 		background-attachment: fixed;
 		background-position: center;
 		background-repeat: no-repeat;
