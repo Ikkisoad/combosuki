@@ -320,8 +320,8 @@ ORDER BY `game`.`name`";
 		
 }
 
-function game_image($gameid, $height, $conn){
-	//require "server/conexao.php";
+function game_image($gameid, $height){
+	global $conn;
 	$query = "SELECT image FROM game WHERE idgame = ?;";
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i",$gameid);
@@ -923,7 +923,8 @@ function print_listglyph($type){
 	if($type == 3)echo ' <img src="'.$URLDepth.'img/misc/mod.png" height="19" name="image-579" data-toggle="tooltip" title="Moderated List">';
 }
 
-function print_gameglyph($gameid, $conn){
+function print_gameglyph($gameid){
+	global $conn;
 	$query = "SELECT `image`,`name` FROM `game` WHERE `idgame` = ?";
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i", $gameid);
@@ -1337,15 +1338,15 @@ WHERE `idlist` = ?  GROUP BY `list_category`.`title` ORDER BY `list_category`.`o
 	</nav>';
 }
 
-function jumbotron($conn, $imageHeight){
-	global $URLDepth;
+function jumbotron($imageHeight){
+	global $URLDepth, $conn;
 	if(isset($_GET['gameid'])){
 		if($_GET['gameid']){
 			echo '
 				<div class="jumbotron jumbotron-fluid">
 					<div class="container">
 						<a href="'.$URLDepth.'index.php"><img style="margin-top: 20px;" ';
-							game_image($_GET['gameid'], $imageHeight, $conn);
+							game_image($_GET['gameid'], $imageHeight);
 							echo '</a>
 					</div>
 				</div>';
@@ -1442,9 +1443,9 @@ function search_list_form(){
 			echo '<option value="0">Game</option>';
 			foreach($result -> get_result() as $game){
 			echo '<option value="'.$game['idgame'].'" ';
-			if(isset($_POST)){
-				if(isset($_POST['gameid'])){
-					if($_POST['gameid'] == $game['idgame']){
+			if(isset($_GET)){
+				if(isset($_GET['gameid'])){
+					if($_GET['gameid'] == $game['idgame']){
 						echo 'selected';
 					}
 				}
