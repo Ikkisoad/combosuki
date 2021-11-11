@@ -329,7 +329,7 @@ function game_image($gameid, $height, $conn){
 	
 	foreach($result -> get_result()	as $gameimage){
 		if($gameimage['image'] == ''){
-			echo 'src=img/games/';
+			echo 'src='.$URLDepth.'img/games/';
 			echo $gameid;
 			echo '.png ';
 		}else{
@@ -791,10 +791,10 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 							}
 							if(!isset($_GET['gameid'])){
 								echo '<li class="nav-item">
-										<a class="nav-link" href="index.php?about=1">About</a>
+										<a class="nav-link" href="'.$URLDepth.'index.php?about=1">About</a>
 									</li>';
 								echo '<li class="nav-item">
-										<a class="nav-link" href="index.php?about=5">Games</a>
+										<a class="nav-link" href="'.$URLDepth.'index.php?about=5">Games</a>
 									</li>';
 								echo '<li class="nav-item">
 										<a class="nav-link" href="https://github.com/Ikkisoad/combosuki" target="_blank">GitHub</a>
@@ -814,11 +814,11 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 
 									echo '<li><a class="dropdown-item" href="'.$URLDepth.'game/add.php">Add Game</a></li>
 										<li><hr class="dropdown-divider"></li>';
-									echo '<li><a class="dropdown-item" href="index.php?about=2">Combo Guidelines</a></li>';
+									echo '<li><a class="dropdown-item" href="'.$URLDepth.'index.php?about=2">Combo Guidelines</a></li>';
 									echo '<li><a class="dropdown-item" href="https://srk.shib.live/w/Shoryuken_Wiki:Community_portal/Discords/Game" target="_blank">FGC Discord Compendium</a></li>';
 									echo '<li><hr class="dropdown-divider"></li>';
-									echo '<li><a class="dropdown-item" href="index.php?about=4">Preferences</a></li>';
-									echo '<li><a class="dropdown-item" href="index.php?about=3">Logs</a></li>';
+									echo '<li><a class="dropdown-item" href="'.$URLDepth.'index.php?about=4">Preferences</a></li>';
+									echo '<li><a class="dropdown-item" href="'.$URLDepth.'index.php?about=3">Logs</a></li>';
 								?>
 							</ul>
 						</li>
@@ -829,7 +829,7 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 					<?php
 						if(isset($_GET['listid'])){
 							echo '<li class="nav-item" style="list-style-type: none;">
-								<form class="d-flex" method="get" action="list.php">';
+								<form class="d-flex" method="get" action="'.$URLDepth.'list/list.php">';
 									echo '<input type="hidden" name="listid" value="'.$_GET['listid'].'">';
 									echo '<button class="btn btn-secondary">List ID:'.$_GET['listid'].'</button>';
 								echo '</form>
@@ -1337,11 +1337,12 @@ WHERE `idlist` = ?  GROUP BY `list_category`.`title` ORDER BY `list_category`.`o
 }
 
 function jumbotron($conn, $imageHeight){
+	global $URLDepth;
 	if(isset($_GET['gameid'])){
 		echo '
 			<div class="jumbotron jumbotron-fluid">
 				<div class="container">
-					<a href="index.php"><img style="margin-top: 20px;" ';
+					<a href="'.$URLDepth.'index.php"><img style="margin-top: 20px;" ';
 						game_image($_GET['gameid'], $imageHeight, $conn);
 						echo '</a>
 				</div>
@@ -1351,7 +1352,7 @@ function jumbotron($conn, $imageHeight){
 			<div class="jumbotron jumbotron-fluid">
 				<div class="container">
 					<a href="index.php">
-						<img src="img/combosuki.png" style="margin-top: 20px;" height="'.$imageHeight.'" >
+						<img src="'.$URLDepth.'img/combosuki.png" style="margin-top: 20px;" height="'.$imageHeight.'" >
 					</a>
 				</div>
 			</div>'; //<img src="img/selo.png" style="max-height:200; margin-left:200px;">
