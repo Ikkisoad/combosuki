@@ -164,15 +164,8 @@
 		<script>window.jQuery || document.write('<script src="../../../../assets/js/vendor/jquery.min.js"><\/script>')</script>
 		<script src="../../../../assets/js/vendor/popper.min.js"></script>
 		<script src="../../../../dist/js/bootstrap.min.js"></script>
-		<script>
-		https://tutorialdeep.com/knowhow/show-form-on-button-click-jquery/
-		</script>
-		
-		<script>
-		function setImage(select,id){
-		  var image = document.getElementsByName("image-"+id)[0];
-		  image.src = "../../img/buttons/"+select.options[select.selectedIndex].value+".png";
-		}
-		</script>
+		<?php
+			setImageJS();
+		?>
 		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 </html>

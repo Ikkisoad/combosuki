@@ -10,6 +10,80 @@ function template(){
 	<?php
 }
 
+function setImageJS(){
+	?>
+	<script>
+		function setImage(select,id){
+		  var image = document.getElementsByName("image-"+id)[0];
+		  image.src = "../../img/buttons/"+select.options[select.selectedIndex].value+".png";
+		}
+	</script>
+	<?php
+}
+
+function changeMethodJS(){
+	?>
+	<script>
+		function changeMethod(objButton) {
+				if(document.getElementById("MyForm").method == "post"){
+					$("#MyForm").attr("method", "get");
+					objButton.value = "Search";
+				}else{
+					$("#MyForm").attr("method", "post");
+					objButton.value = "Submit";
+				}
+			}
+	</script>
+	<?php
+}
+
+function backspaceJS(){
+	?>
+	<script>
+		function backspace(){
+			var txt=document.getElementById("comboarea").value;
+			if(txt.length == 0){return;}
+			if(txt[txt.length-1] == " ")txt = txt.substring(0, txt.length - 1);
+			while(txt[txt.length-1] != " " ){
+				if(txt.length == 1){
+					txt = "";
+					break;
+				}
+				txt = txt.substring(0, txt.length - 1);
+				if(txt.legth == 0){
+					break;
+				}
+			}
+			document.getElementById("comboarea").value=txt; 
+		}
+	</script>
+	<?php
+}
+
+function moveNumbersJS(){
+	?>
+	<script>
+		function moveNumbers(num) { 
+				var txt=document.getElementById("comboarea").value; 
+				txt=txt + num + " "; 
+				document.getElementById("comboarea").value=txt; 
+		}
+	</script>
+	<?php
+}
+
+function changeDisplayJS(){
+	?>
+	<script>
+		function change_display(){
+			var temp = document.getElementById("combo_line").innerHTML;
+			document.getElementById("combo_line").innerHTML = document.getElementById("combo_text").innerHTML;
+			document.getElementById("combo_text").innerHTML = temp;
+		}
+	</script>
+	<?php
+}
+
 function returnColorJS(){
 	?>
 	<script>
