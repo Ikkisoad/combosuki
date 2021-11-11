@@ -918,8 +918,9 @@ function get_combolink($comboid,$conn){
 }
 
 function print_listglyph($type){
-	if($type == 2)echo ' <img src="img/misc/verified.png" height="13" name="image-579" data-toggle="tooltip" title="Verified List">';
-	if($type == 3)echo ' <img src="img/misc/mod.png" height="19" name="image-579" data-toggle="tooltip" title="Moderated List">';
+	global $URLDepth;
+	if($type == 2)echo ' <img src="'.$URLDepth.'img/misc/verified.png" height="13" name="image-579" data-toggle="tooltip" title="Verified List">';
+	if($type == 3)echo ' <img src="'.$URLDepth.'img/misc/mod.png" height="19" name="image-579" data-toggle="tooltip" title="Moderated List">';
 }
 
 function print_gameglyph($gameid, $conn){
@@ -1339,23 +1340,25 @@ WHERE `idlist` = ?  GROUP BY `list_category`.`title` ORDER BY `list_category`.`o
 function jumbotron($conn, $imageHeight){
 	global $URLDepth;
 	if(isset($_GET['gameid'])){
-		echo '
-			<div class="jumbotron jumbotron-fluid">
-				<div class="container">
-					<a href="'.$URLDepth.'index.php"><img style="margin-top: 20px;" ';
-						game_image($_GET['gameid'], $imageHeight, $conn);
-						echo '</a>
-				</div>
-			</div>';
-	}else{
-		echo '
-			<div class="jumbotron jumbotron-fluid">
-				<div class="container">
-					<a href="'.$URLDepth.'index.php">
-						<img src="'.$URLDepth.'img/combosuki.png" style="margin-top: 20px;" height="'.$imageHeight.'" >
-					</a>
-				</div>
-			</div>'; //<img src="img/selo.png" style="max-height:200; margin-left:200px;">
+		if($_GET['gameid']){
+			echo '
+				<div class="jumbotron jumbotron-fluid">
+					<div class="container">
+						<a href="'.$URLDepth.'index.php"><img style="margin-top: 20px;" ';
+							game_image($_GET['gameid'], $imageHeight, $conn);
+							echo '</a>
+					</div>
+				</div>';
+		}else{
+			echo '
+				<div class="jumbotron jumbotron-fluid">
+					<div class="container">
+						<a href="'.$URLDepth.'index.php">
+							<img src="'.$URLDepth.'img/combosuki.png" style="margin-top: 20px;" height="'.$imageHeight.'" >
+						</a>
+					</div>
+				</div>'; //<img src="img/selo.png" style="max-height:200; margin-left:200px;">
+		}
 	}
 }
 
@@ -1421,12 +1424,12 @@ function create_list_form($conn){
 	</form>';
 }
 
-function search_list_form($conn){
+function search_list_form(){
+	global $conn, $URLDepth;
 	echo '<h3>Search List</h3>
-	<form class="form-control combosuki-main-reversed text-white" method="post" action="list.php">
-		<input type="hidden" name="submission_type" value="1">
+	<form class="form-control combosuki-main-reversed text-white" method="get" action="'.$URLDepth.'list/search.php">
 		<div class="form-group mb-2">
-			<input placeholder="List Name" style="background-color: #474747; color:#999999;" name="list_name" class="form-control" maxlength="45" rows="1"></input>
+			<input placeholder="List Name" style="background-color: #474747; color:#999999;" name="q" class="form-control" maxlength="45" rows="1"></input>
 		</div>
 		<div class="form-group mb-2">';
 
@@ -1451,7 +1454,7 @@ function search_list_form($conn){
 
 			echo '</select>'; 
 		echo '</div>
-		<div class="form-group mb-2"><button type="submit" name="action" value="Search" class="btn btn-info btn-block">Search</button></div>
+		<div class="form-group mb-2"><button type="submit" value="Search" class="btn btn-info btn-block">Search</button></div>
 	</form>';
 }
 

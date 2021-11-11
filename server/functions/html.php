@@ -11,4 +11,20 @@ function headerHTML(){
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
 		<?php
 }
+
+function openGraphProtocol(){
+	?>
+	
+		<meta property="og:title" content="Combo好き" />
+		<meta property="og:type" content="website" />
+		<meta property="og:image" content="http://combosuki.com/img/combosuki.png" />
+		<meta property="og:url" content="http://combosuki.com/index.php" />
+		<meta property="og:description" 
+		content="Community-fueled searchable environment that shares and perfects combos." />
+		<meta name="theme-color" content="#d94040" />
+
+		<meta name="description" content="Community-fueled searchable environment that shares and perfects combos.">
+		
+	<?php
+}
 ?>
