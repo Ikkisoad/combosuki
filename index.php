@@ -131,11 +131,11 @@
 									</div>
 									<div class="col-auto mx-auto">
 									<label>Default Colors:</label>
-									<button onclick="func('#C62114')" class="bg-combosuki-main-1" style="padding: 12px;" type="button"/>
-									<button onclick="func('#020202')" class="bg-combosuki-main-2" style="padding: 12px;" type="button"/>
-									<button onclick="func('#920000')" class="bg-combosuki-secondary-1" style="padding: 6px;" type="button"/>
-									<button onclick="func('#FA591C')" class="bg-combosuki-secondary-2" style="padding: 6px;" type="button"/>
-									<button onclick="func('#2E2E2E')" class="bg-combosuki-secondary-3" style="padding: 6px;" type="button"/>
+									<button onclick="returnColor('#C62114')" class="bg-combosuki-main-1" style="padding: 12px;" type="button"/>
+									<button onclick="returnColor('#020202')" class="bg-combosuki-main-2" style="padding: 12px;" type="button"/>
+									<button onclick="returnColor('#920000')" class="bg-combosuki-secondary-1" style="padding: 6px;" type="button"/>
+									<button onclick="returnColor('#FA591C')" class="bg-combosuki-secondary-2" style="padding: 6px;" type="button"/>
+									<button onclick="returnColor('#2E2E2E')" class="bg-combosuki-secondary-3" style="padding: 6px;" type="button"/>
 							<?php echo '
 								</div>
 							</div>
@@ -165,10 +165,8 @@
 			</div>
 		</div>
 		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
-		<script>
-			function func(color) {
-				document.getElementById("headcolor").value = color;
-			}
-		</script>
+		<?php
+			returnColorJS();
+		?>
 	</body>
 </html>

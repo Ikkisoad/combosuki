@@ -127,32 +127,5 @@
 		<script>window.jQuery || document.write('<script src="../../../../assets/js/vendor/jquery.min.js"><\/script>')</script>
 		<script src="../../../../assets/js/vendor/popper.min.js"></script>
 		<script src="../../../../dist/js/bootstrap.min.js"></script>
-		<script>
-		https://tutorialdeep.com/knowhow/show-form-on-button-click-jquery/
-		</script>
-		
-		<script> 
-		function moveNumbers(num) { 
-				var txt=document.getElementById("comboarea").value; 
-				txt=txt + num + " "; 
-				document.getElementById("comboarea").value=txt; 
-		}
-		function backspace(){
-			var txt=document.getElementById("comboarea").value;
-			if(txt.length == 0){return;}
-			if(txt[txt.length-1] == " ")txt = txt.substring(0, txt.length - 1);
-			while(txt[txt.length-1] != " " ){
-				if(txt.length == 1){
-					txt = "";
-					break;
-				}
-				txt = txt.substring(0, txt.length - 1);
-				if(txt.legth == 0){
-					break;
-				}
-			}
-			document.getElementById("comboarea").value=txt; 
-		}
-		</script>
 		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 </html>

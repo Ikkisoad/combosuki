@@ -431,40 +431,9 @@
 			</div>
 		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
 	</body>
-
-		<script> 
-		function moveNumbers(num) { 
-				var txt=document.getElementById("comboarea").value; 
-				txt=txt + num + " "; 
-				document.getElementById("comboarea").value=txt; 
-		}
-		function backspace(){
-			var txt=document.getElementById("comboarea").value;
-			if(txt.length == 0){return;}
-			if(txt[txt.length-1] == " ")txt = txt.substring(0, txt.length - 1);
-			while(txt[txt.length-1] != " " ){
-				if(txt.length == 1){
-					txt = "";
-					break;
-				}
-				txt = txt.substring(0, txt.length - 1);
-				if(txt.legth == 0){
-					break;
-				}
-			}
-			document.getElementById("comboarea").value=txt; 
-		}
-		</script>
+		<?php 
+			moveNumbersJS();
+			backspaceJS();
+		?>
 		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-		<!-- <script type="text/javascript">
-			function changeMethod(objButton) {
-				if(document.getElementById("MyForm").method == "post"){
-					$("#MyForm").attr("method", "get");
-					objButton.value = "Search";
-				}else{
-					$("#MyForm").attr("method", "post");
-					objButton.value = "Submit";
-				}
-			}
-		</script> -->
 </html>
