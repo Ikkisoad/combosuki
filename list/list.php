@@ -339,41 +339,10 @@
 	<!-- Placed at the end of the document so the pages load faster -->
 	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 	<script>window.jQuery || document.write('<script src="../../../../assets/js/vendor/jquery.min.js"><\/script>')</script>
-	<script>
-		function playVideo(video_id) {
-			var video = document.getElementById(video_id);
-			var src = video.dataset.src;
-
-			video.src = src + '?autoplay=1';
-		}
-
-		function resetVideo(video_id) {
-			var video = document.getElementById(video_id);
-			var src = video.src.replace('?autoplay=1', '');
-
-			video.src = '';
-			video.dataset.src = src;
-		}
-
-		function showDIV(DIV_ID) {
-			var x = document.getElementById(DIV_ID);
-			if (x.style.display === "none") {
-				x.style.display = "block";
-				playVideo('v'+DIV_ID);
-			}else{
-				x.style.display = "none";
-				resetVideo('v'+DIV_ID);
-			}
-		}
-	</script>
-	<script>
-		function copytoclip(link) {
-			var dummy = document.createElement("textarea");
-			document.body.appendChild(dummy);
-			dummy.value = link;
-			dummy.select();
-			document.execCommand("copy");
-			document.body.removeChild(dummy);
-		}
-	</script>
+	<?php 
+		resetVideoJS();
+		playVideoJS();
+		showDIV_JS();
+		copytoclipJS();
+	?>
 </html>
