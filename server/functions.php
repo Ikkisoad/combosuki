@@ -1351,7 +1351,7 @@ function jumbotron($conn, $imageHeight){
 		echo '
 			<div class="jumbotron jumbotron-fluid">
 				<div class="container">
-					<a href="index.php">
+					<a href="'.$URLDepth.'index.php">
 						<img src="'.$URLDepth.'img/combosuki.png" style="margin-top: 20px;" height="'.$imageHeight.'" >
 					</a>
 				</div>
