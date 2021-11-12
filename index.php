@@ -43,7 +43,7 @@
 	</head>
 	<body>
 		<?php 
-			jumbotron(1,150);
+			jumbotron(150);
 			header_buttons(1, 0, 0, 0);
 		?>
 		<div class="container my-3">

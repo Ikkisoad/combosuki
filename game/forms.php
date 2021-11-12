@@ -35,7 +35,7 @@
 	
 	<body>
 			<?php
-				jumbotron($conn,200);
+				jumbotron(200);
 				if(isset($_POST['type'])){
 					if($_POST['type'] == 1){ //Submit
 						header_buttons(2, 1, 'game.php',get_gamename($_GET['gameid'], $conn));

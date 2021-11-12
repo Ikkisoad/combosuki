@@ -127,7 +127,7 @@
 
 	<body>
 		<?php 
-			jumbotron(1,150);
+			jumbotron(150);
 			header_buttons(1, 0, 0, 0);
 		?>
 
@@ -138,7 +138,7 @@
 					strip_GETtags();
 
 					if(isset($_GET['listid'])){
-						list_categories($_GET['listid'],$conn);
+						list_categories($_GET['listid']);
 						echo '<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4"><div class="chartjs-size-monitor"><div class="chartjs-size-monitor-expand"><div class=""></div></div><div class="chartjs-size-monitor-shrink"><div class=""></div></div></div>
 					';
 						$query = "SELECT list_name, name, type, game_idgame FROM `list` join game ON list.game_idgame = game.idgame where list.idlist = ?";
@@ -261,7 +261,7 @@
 						}
 						echo '</table>';
 						echo '</div></div>';
-						edit_listForm($conn);
+						edit_listForm();
 						echo '</main>';
 					}else{
 						echo '<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">';
@@ -319,10 +319,4 @@
 	<!-- Placed at the end of the document so the pages load faster -->
 	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 	<script>window.jQuery || document.write('<script src="../../../../assets/js/vendor/jquery.min.js"><\/script>')</script>
-	<?php 
-		resetVideoJS();
-		playVideoJS();
-		showDIV_JS();
-		copytoclipJS();
-	?>
 </html>

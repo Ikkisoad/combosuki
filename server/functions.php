@@ -1,5 +1,4 @@
 <?php
-
 function embed_video($video){
 	if($video != ''){
 		echo '<table class="table table-hover align-middle combosuki-main-reversed text-white">';
@@ -1012,13 +1011,14 @@ function get_gamename($gameid, $conn){
 
 }
 
-function edit_listForm($conn){
+function edit_listForm(){
+	global $conn;
 	echo '
 	<div class="row combosuki-main-reversed gap-1">
 		<h3 class="mt-3" id="edit">Edit List</h3>
 		<small>Use , to Add or Remove multiple entries from the list. (Eg.: 777,26 would add or remove entries 777 and 26 from the list.)</small>
 
-		<form class="form-inline gap-3" method="post" action="list.php?listid='.$_GET['listid'].'">
+		<form class="form-inline gap-3" method="post" action="'.$URLDepth.'list/show.php?id='.$_GET['id'].'">
 			<input type="hidden" name="submission_type" value="2">';
 
 			echo '
@@ -1037,7 +1037,7 @@ function edit_listForm($conn){
 
 			$query = "SELECT `idlist_category`, `title` FROM `list_category` WHERE `list_idlist` = ? ORDER BY `list_category`.`order`,`list_category`.`title`;";
 			$result = $conn -> prepare($query);
-			$result -> bind_param("i", $_GET['listid']);
+			$result -> bind_param("i", $_GET['id']);
 			$result -> execute();
 			echo '
 			<div class="form-group mb-2">
@@ -1316,7 +1316,8 @@ function pagination($numberOfPages, $getAtributes, $currentPage){
 	echo'  </ul></nav>';
 }
 
-function list_categories($listid,$conn){
+function list_categories($listid){
+	global $conn;
 	$query = "SELECT `list_category`.`title`
 FROM `combo_listing` 
 INNER JOIN `combo` ON `combo`.`idcombo` = `combo_listing`.`idcombo` 
@@ -1351,15 +1352,10 @@ function jumbotron($imageHeight){
 					</div>
 				</div>';
 		}else{
-			echo '
-				<div class="jumbotron jumbotron-fluid">
-					<div class="container">
-						<a href="'.$URLDepth.'index.php">
-							<img src="'.$URLDepth.'img/combosuki.png" style="margin-top: 20px;" height="'.$imageHeight.'" >
-						</a>
-					</div>
-				</div>'; //<img src="img/selo.png" style="max-height:200; margin-left:200px;">
+			jumbotronCombosukiLogo($imageHeight);				
 		}
+	}else{
+		jumbotronCombosukiLogo($imageHeight);	
 	}
 }
 
@@ -1390,12 +1386,13 @@ function set_cookies(){
 	}
 }
 
-function create_list_form($conn){
+function create_list_form($listName, $gameID){
+	global $conn, $URLDepth;
 	echo '<h3>Create List</h3>
-	<form class="form-control combosuki-main-reversed text-white" method="post" action="list.php">
+	<form class="form-control combosuki-main-reversed text-white" method="post" action="'.$URLDepth.'list/index.php">
 		<input type="hidden" name="submission_type" value="1">
 		<div class="form-group mb-2">
-			<input placeholder="List Name" style="background-color: #474747; color:#999999;" name="list_name" class="form-control" maxlength="45" rows="1"></input>
+			<input placeholder="List Name" style="background-color: #474747; color:#999999;" name="list_name" class="form-control" maxlength="45" rows="1" value="'.$listName.'"></input>
 		</div>
 		<div class="form-group mb-2">';
 
@@ -1408,12 +1405,8 @@ function create_list_form($conn){
 			echo '<option value="0">Game</option>';
 			foreach($result -> get_result() as $game){
 			echo '<option value="'.$game['idgame'].'" ';
-			if(isset($_POST)){
-				if(isset($_POST['gameid'])){
-					if($_POST['gameid'] == $game['idgame']){
-						echo 'selected';
-					}
-				}
+			if($gameID == $game['idgame']){
+				echo 'selected';
 			}
 			echo '>'.$game['name'].'</option>';
 			}
