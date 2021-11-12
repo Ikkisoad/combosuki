@@ -2,12 +2,12 @@
 	$URLDepth = '../';
 	require_once "../server/initialize.php";
 	
-	if(!empty($_POST){
-		if($_POST['submission_type'] == 2){
+	if(!empty($_POST)){
+		if($_POST['submission_type'] == 2){ //Deleting List
 			if($_POST['action'] == 'DeleteList'){
 				$query = "SELECT `password`, `game_idgame` FROM `list` WHERE idlist = ?";
 				$result = $conn -> prepare($query);
-				$result -> bind_param("i",$_GET['listid']);
+				$result -> bind_param("i",$_GET['id']);
 				$result -> execute();
 				foreach($result -> get_result() as $lul){
 					$modPass = get_mod_password($lul['game_idgame'], $conn);
@@ -15,24 +15,24 @@
 						$query = "UPDATE `list` SET `type`=? WHERE `idlist` = ?";
 						$result = $conn -> prepare($query);
 						$i = 0;
-						$result -> bind_param("ii", $i, $_GET['listid']);
+						$result -> bind_param("ii", $i, $_GET['id']);
 						$result -> execute();
 					}
 					$gamepass = get_gamepassword($lul['game_idgame'], $conn);
 					if($lul['password'] == $_POST['listPass'] || $_POST['listPass'] == $gamepass){
 						$query = "DELETE FROM `combo_listing` WHERE `idlist` = ?";
 						$result = $conn -> prepare($query);
-						$result -> bind_param("i", $_GET['listid']);
+						$result -> bind_param("i", $_GET['id']);
 						$result -> execute();
 
 						$query = "DELETE FROM `list_category` WHERE `list_idlist` = ?";
 						$result = $conn -> prepare($query);
-						$result -> bind_param("i", $_GET['listid']);
+						$result -> bind_param("i", $_GET['id']);
 						$result -> execute();
 
 						$query = "DELETE FROM `list` WHERE `idlist` = ?";
 						$result = $conn -> prepare($query);
-						$result -> bind_param("i", $_GET['listid']);
+						$result -> bind_param("i", $_GET['id']);
 						$result -> execute();
 
 
@@ -43,7 +43,7 @@
 				}
 			}
 
-			if(isset($_POST['idlist']))$_GET['listid'] = $_POST['idlist'];
+			if(isset($_POST['idlist']))$_GET['id'] = $_POST['idlist'];
 			verify_ListPassword($conn);
 			if($_POST['action'] == 'UpdateList'){
 				if($_POST['listName'] == ''){
@@ -52,13 +52,13 @@
 				}
 				$query = "UPDATE `list` SET `list_name`= ? WHERE `idlist` = ?";
 				$result = $conn -> prepare($query);
-				$result -> bind_param("si", $_POST['listName'],$_GET['listid']);
+				$result -> bind_param("si", $_POST['listName'],$_GET['id']);
 				$result -> execute();
 			}else{
-				alter_List($conn);
+				alter_List();
 			}
 
-		}else if($_POST['submission_type'] == 3){
+		}else if($_POST['submission_type'] == 3){ //Deleting List Category
 
 			verify_ListPassword($conn);
 

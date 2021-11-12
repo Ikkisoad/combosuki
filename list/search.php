@@ -32,7 +32,7 @@
 				<div class="row">
 				<?php
 					echo '<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">';
-					create_list_form($conn);
+					create_list_form();
 					search_list_form();
 					echo '</nav>';
 					echo '<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4"><div class="chartjs-size-monitor"><div class="chartjs-size-monitor-expand"><div class=""></div></div><div class="chartjs-size-monitor-shrink"><div class=""></div></div></div>

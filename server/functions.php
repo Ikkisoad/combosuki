@@ -801,7 +801,7 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 							}
 						?>
 						<li class="nav-item">
-							<a class="nav-link" href="<?php echo $URLDepth; ?>list/list.php">Lists</a>
+							<a class="nav-link" href="<?php echo $URLDepth; ?>list/index.php">Lists</a>
 						</li>
 						
 						<li class="nav-item dropdown">
@@ -1012,7 +1012,7 @@ function get_gamename($gameid, $conn){
 }
 
 function edit_listForm(){
-	global $conn;
+	global $conn,$URLDepth;
 	echo '
 	<div class="row combosuki-main-reversed gap-1">
 		<h3 class="mt-3" id="edit">Edit List</h3>
@@ -1229,19 +1229,20 @@ function copyLinktoclipboard($link){
 	<?php endif;
 }
 
-function add_listCategory($conn){
+function add_listCategory(){
+	global $conn;
 	if($_POST['comment'] != '' && $_POST['categoryid'] == 0){
 		$query = "INSERT INTO `list_category`(`idlist_category`, `title`, `list_idlist`, `order`) VALUES (NULL,?,?,0)";
 		$result = $conn -> prepare($query);
-		$result -> bind_param("si",$_POST['comment'],$_GET['listid']);
+		$result -> bind_param("si",$_POST['comment'],$_GET['id']);
 		$result -> execute();//echo $query; print_r($_POST);
 		return mysqli_insert_id($conn);
 	}
 	return $_POST['categoryid'];
 }
 
-function alter_List($conn){
-	
+function alter_List(){
+	global $conn;
 	$ids = explode(",", $_POST['comboid']);
 	$category = add_listCategory($conn);
 	for($i = 0; $i<sizeof($ids);$i++){
@@ -1256,12 +1257,12 @@ function alter_List($conn){
 		
 		$query = "SELECT `game_idgame`,`password` FROM `list` WHERE idlist = ?";
 		$result = $conn -> prepare($query);
-		$result -> bind_param("i",$_GET['listid']);
+		$result -> bind_param("i",$_GET['id']);
 		$result -> execute();
 		foreach($result -> get_result() as $lul){
 			$gamepass = get_gamepassword($lul['game_idgame'], $conn);
 			if($gameid != $lul['game_idgame'] && $lul['game_idgame'] != 0){
-				header("Location: list.php?listid=".$_GET['listid']."");
+				header("Location: list.php?listid=".$_GET['id']."");
 				exit();
 			}
 			$modPass = get_mod_password($lul['game_idgame'], $conn);
@@ -1269,17 +1270,17 @@ function alter_List($conn){
 				if($_POST['action'] == 'Submit'){
 					$query = "INSERT INTO `combo_listing`(`idcombo`, `idlist`, `comment`, `list_category_idlist_category`) VALUES (?,?,NULL,?)";
 					$result = $conn -> prepare($query);
-					$result -> bind_param("iii", $ids[$i], $_GET['listid'], $category);
+					$result -> bind_param("iii", $ids[$i], $_GET['id'], $category);
 					$result -> execute();
 				}
 				if($_POST['action'] == 'Delete'){
 					$query = "DELETE FROM `combo_listing` WHERE `idcombo` = ? AND `idlist` = ?";
 					$result = $conn -> prepare($query);
-					$result -> bind_param("ii", $ids[$i], $_GET['listid']);
+					$result -> bind_param("ii", $ids[$i], $_GET['id']);
 					$result -> execute();
 				}
 			}else{
-				header("Location: list.php?listid=".$_GET['listid']."");
+				header("Location: list.php?listid=".$_GET['id']."");
 				exit();
 			}
 		}
@@ -1386,7 +1387,7 @@ function set_cookies(){
 	}
 }
 
-function create_list_form($listName, $gameID){
+function create_list_form($listName = '', $gameID = 0){
 	global $conn, $URLDepth;
 	echo '<h3>Create List</h3>
 	<form class="form-control combosuki-main-reversed text-white" method="post" action="'.$URLDepth.'list/index.php">

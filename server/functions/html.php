@@ -65,6 +65,7 @@ function jumbotronCombosukiLogo($imageHeight){
 }
 
 function listHeader($result){
+	global $URLDepth;
 	while($list = $result->fetch_array(MYSQLI_ASSOC)){
 		$_GET['gameid'] = $list['game_idgame'];
 		//header_buttons(2, 1, 'game.php',get_gamename($_GET['gameid'], $conn));
@@ -80,7 +81,7 @@ function listHeader($result){
 		echo '</h3>';
 		echo '
 		<div id="0" style="display: none;">
-			<form method="post" action="list.php?listid='.$_GET['id'].'">
+			<form method="post" action="'.$URLDepth.'list/show.php?id='.$_GET['id'].'">
 				<input type="hidden" name="submission_type" value="2">
 				<input type="hidden" name="idlist" value="'.$_GET['id'].'">
 				<div class="input-group">
@@ -118,7 +119,7 @@ function listContent($result){
 			</button></h2>';
 			echo '
 			<div id="-'.$data['idlist_category'].'" style="display: none;">
-				<form method="post" action="list.php?listid='.$_GET['id'].'">
+				<form method="post" action="'.$URLDepth.'list/show.php?id='.$_GET['id'].'">
 					<input type="hidden" name="submission_type" value="3">
 					<input type="hidden" name="categoryid" value="'.$data['idlist_category'].'">
 					<div class="input-group">
