@@ -1287,12 +1287,13 @@ function alter_List(){
 	}
 }
 
-function verify_ListPassword($conn){
+function verify_ListPassword(){
+	global $conn;
 	$query = "	SELECT `password`,`modPass`,`globalPass` FROM `list` 
 JOIN `game` ON `game`.`idgame` = `list`.`game_idgame`
 WHERE `idlist` = ?";
 	$result = $conn -> prepare($query);
-	$result -> bind_param("i",$_GET['listid']);
+	$result -> bind_param("i",$_GET['id']);
 	$result -> execute();
 	
 	foreach($result -> get_result() as $pass){

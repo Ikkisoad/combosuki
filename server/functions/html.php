@@ -98,7 +98,7 @@ function listHeader($result){
 			echo '<div class="col">';
 				print_gameglyph($list['game_idgame']);
 				echo $list['name'].' list';
-				copyLinktoclipboard('https://combosuki.com/list.php?listid='.$_GET['id']);
+				copyLinktoclipboard('https://combosuki.com/list/show.php?id='.$_GET['id']);
 			echo '</div>';
 		echo '</div>';
 	}

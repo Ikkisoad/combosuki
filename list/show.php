@@ -36,7 +36,7 @@
 						$result -> execute();
 
 
-						header("Location: list.php");
+						header("Location: ".$URLDepth."list/index.php");
 						exit();
 
 					}
@@ -44,7 +44,7 @@
 			}
 
 			if(isset($_POST['idlist']))$_GET['id'] = $_POST['idlist'];
-			verify_ListPassword($conn);
+			verify_ListPassword();
 			if($_POST['action'] == 'UpdateList'){
 				if($_POST['listName'] == ''){
 					header("Location: list.php");
