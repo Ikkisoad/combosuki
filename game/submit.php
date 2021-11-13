@@ -46,19 +46,19 @@
 				exit();
 			}
 		}
-		$query = "SELECT text_name,type,idgame_resources FROM `game_resources` WHERE game_idgame = ".$_POST['gameid']." ORDER BY text_name;";
+		$query = "SELECT text_name,type,idgame_resources,primaryORsecundary FROM `game_resources` WHERE game_idgame = ".$_POST['gameid']." ORDER BY text_name;";
 		$result = $conn -> prepare($query);
 		$result -> execute();
 		foreach($result -> get_result()	as $resource){
 			$name = str_replace(' ', '_', $resource['text_name']);
 			if($_POST[$name] != '-'){
-				if($resource['type'] == 1){
+				if($resource['type'] == 1){ //List
 					$query = "INSERT INTO `resources`(`idResources`, `combo_idcombo`, `Resources_values_idResources_values`, `number_value`) 
 								VALUES (				NULL,					?		,							?			,		NULL)";
 					$result = $conn -> prepare($query);
 					$result -> bind_param("ii", $comboid, $_POST[$name]);
 					$result -> execute();
-				}else if($resource['type'] == 2){
+				}else if($resource['type'] == 2 && (($resource['primaryORsecundary'] == 0 && $_POST[$name] != 0) || ($resource['primaryORsecundary'] == 1))){ //Number
 					$query = "SELECT idResources_values FROM resources_values WHERE game_resources_idgame_resources = ".$resource['idgame_resources']."";
 					$result = $conn -> prepare($query);
 					$result -> execute();
@@ -69,7 +69,7 @@
 						$result -> bind_param("iid", $comboid, $id['idResources_values'], $_POST[$name]);
 						$result -> execute();
 					}
-				}else if($resource['type'] == 3){
+				}else if($resource['type'] == 3){ //Duplicated
 					foreach($_POST[$name] as $duplicated_resource){
 						$query = "INSERT INTO `resources`(`idResources`, `combo_idcombo`, `Resources_values_idResources_values`, `number_value`) 
 									VALUES (				NULL,					?		,							?			,		NULL)";
