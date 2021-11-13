@@ -90,7 +90,7 @@
 	<body>
 		<?php 
 			$_GET['gameid'] = get_combogame($_GET['idcombo'], $conn);
-			jumbotron($conn,200);
+			jumbotron(200);
 			header_buttons(2,1,'game.php',get_gamename($_GET['gameid'], $conn));
 		?>
 		<div class="container-fluid px-5 my-3">

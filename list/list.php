@@ -3,8 +3,6 @@
 	require_once "../server/initialize.php";
 	
 	if(!empty($_POST)){
-		strip_POSTtags();
-		strip_GETtags();
 		if($_POST['action'] != 'Search'){
 			if($_POST['submission_type'] == 1){
 				if($_POST['list_name'] == '' || $_POST['gameid'] == 0){//This prevents '' lists from being created
@@ -129,7 +127,7 @@
 
 	<body>
 		<?php 
-			jumbotron(1,150);
+			jumbotron(150);
 			header_buttons(1, 0, 0, 0);
 		?>
 
@@ -140,7 +138,7 @@
 					strip_GETtags();
 
 					if(isset($_GET['listid'])){
-						list_categories($_GET['listid'],$conn);
+						list_categories($_GET['listid']);
 						echo '<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4"><div class="chartjs-size-monitor"><div class="chartjs-size-monitor-expand"><div class=""></div></div><div class="chartjs-size-monitor-shrink"><div class=""></div></div></div>
 					';
 						$query = "SELECT list_name, name, type, game_idgame FROM `list` join game ON list.game_idgame = game.idgame where list.idlist = ?";
@@ -263,12 +261,12 @@
 						}
 						echo '</table>';
 						echo '</div></div>';
-						edit_listForm($conn);
+						edit_listForm();
 						echo '</main>';
 					}else{
 						echo '<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">';
 						create_list_form($conn);
-						search_list_form($conn);
+						search_list_form();
 						echo '</nav>';
 						echo '<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4"><div class="chartjs-size-monitor"><div class="chartjs-size-monitor-expand"><div class=""></div></div><div class="chartjs-size-monitor-shrink"><div class=""></div></div></div>
 					';
@@ -302,27 +300,9 @@
 								}
 							}else{
 								$query = "SELECT `idlist`, `list_name`, `type`,`game_idgame` FROM `list` ORDER BY `idlist` DESC LIMIT 0,50";
-								$result = $conn -> prepare($query);
-								echo '<table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed text-white">';
-								$result -> execute();
-								echo '<tr>';
-								echo '<th>List Name</th>';
-								echo '</tr>';
-								foreach($result -> get_result() as $search){
-									if($search['list_name'] != ''){
-										echo '<tr><td>';
-										print_gameglyph($search['game_idgame'],$conn);
-										echo '<text href="list.php?listid='.$search['idlist'].'">'.$search['list_name'].'</text>';
-										print_listglyph($search['type']);
-										echo '	<a href="list.php?listid='.$search['idlist'].'">
-											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-up-right" viewBox="0 0 16 16">
-											  <path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"/>
-											  <path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/>
-											</svg>
-										</a>';
-										echo '</tr></td>';
-									}
-								}
+								//$query = mysqli_prepare($conn, $query);
+								$result = mysqli_query($conn,$query);
+								listsTable($result);
 							}
 						}
 						echo '</main>';
@@ -339,10 +319,4 @@
 	<!-- Placed at the end of the document so the pages load faster -->
 	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 	<script>window.jQuery || document.write('<script src="../../../../assets/js/vendor/jquery.min.js"><\/script>')</script>
-	<?php 
-		resetVideoJS();
-		playVideoJS();
-		showDIV_JS();
-		copytoclipJS();
-	?>
 </html>

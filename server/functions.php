@@ -1,5 +1,4 @@
 <?php
-
 function embed_video($video){
 	if($video != ''){
 		echo '<table class="table table-hover align-middle combosuki-main-reversed text-white">';
@@ -320,8 +319,8 @@ ORDER BY `game`.`name`";
 		
 }
 
-function game_image($gameid, $height, $conn){
-	//require "server/conexao.php";
+function game_image($gameid, $height){
+	global $conn;
 	$query = "SELECT image FROM game WHERE idgame = ?;";
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i",$gameid);
@@ -802,7 +801,7 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 							}
 						?>
 						<li class="nav-item">
-							<a class="nav-link" href="<?php echo $URLDepth; ?>list/list.php">Lists</a>
+							<a class="nav-link" href="<?php echo $URLDepth; ?>list/index.php">Lists</a>
 						</li>
 						
 						<li class="nav-item dropdown">
@@ -918,11 +917,13 @@ function get_combolink($comboid,$conn){
 }
 
 function print_listglyph($type){
-	if($type == 2)echo ' <img src="img/misc/verified.png" height="13" name="image-579" data-toggle="tooltip" title="Verified List">';
-	if($type == 3)echo ' <img src="img/misc/mod.png" height="19" name="image-579" data-toggle="tooltip" title="Moderated List">';
+	global $URLDepth;
+	if($type == 2)echo ' <img src="'.$URLDepth.'img/misc/verified.png" height="13" name="image-579" data-toggle="tooltip" title="Verified List">';
+	if($type == 3)echo ' <img src="'.$URLDepth.'img/misc/mod.png" height="19" name="image-579" data-toggle="tooltip" title="Moderated List">';
 }
 
-function print_gameglyph($gameid, $conn){
+function print_gameglyph($gameid){
+	global $conn;
 	$query = "SELECT `image`,`name` FROM `game` WHERE `idgame` = ?";
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i", $gameid);
@@ -1010,13 +1011,14 @@ function get_gamename($gameid, $conn){
 
 }
 
-function edit_listForm($conn){
+function edit_listForm(){
+	global $conn,$URLDepth;
 	echo '
 	<div class="row combosuki-main-reversed gap-1">
 		<h3 class="mt-3" id="edit">Edit List</h3>
 		<small>Use , to Add or Remove multiple entries from the list. (Eg.: 777,26 would add or remove entries 777 and 26 from the list.)</small>
 
-		<form class="form-inline gap-3" method="post" action="list.php?listid='.$_GET['listid'].'">
+		<form class="form-inline gap-3" method="post" action="'.$URLDepth.'list/show.php?id='.$_GET['id'].'">
 			<input type="hidden" name="submission_type" value="2">';
 
 			echo '
@@ -1035,7 +1037,7 @@ function edit_listForm($conn){
 
 			$query = "SELECT `idlist_category`, `title` FROM `list_category` WHERE `list_idlist` = ? ORDER BY `list_category`.`order`,`list_category`.`title`;";
 			$result = $conn -> prepare($query);
-			$result -> bind_param("i", $_GET['listid']);
+			$result -> bind_param("i", $_GET['id']);
 			$result -> execute();
 			echo '
 			<div class="form-group mb-2">
@@ -1227,19 +1229,20 @@ function copyLinktoclipboard($link){
 	<?php endif;
 }
 
-function add_listCategory($conn){
+function add_listCategory(){
+	global $conn;
 	if($_POST['comment'] != '' && $_POST['categoryid'] == 0){
 		$query = "INSERT INTO `list_category`(`idlist_category`, `title`, `list_idlist`, `order`) VALUES (NULL,?,?,0)";
 		$result = $conn -> prepare($query);
-		$result -> bind_param("si",$_POST['comment'],$_GET['listid']);
+		$result -> bind_param("si",$_POST['comment'],$_GET['id']);
 		$result -> execute();//echo $query; print_r($_POST);
 		return mysqli_insert_id($conn);
 	}
 	return $_POST['categoryid'];
 }
 
-function alter_List($conn){
-	
+function alter_List(){
+	global $conn;
 	$ids = explode(",", $_POST['comboid']);
 	$category = add_listCategory($conn);
 	for($i = 0; $i<sizeof($ids);$i++){
@@ -1254,12 +1257,12 @@ function alter_List($conn){
 		
 		$query = "SELECT `game_idgame`,`password` FROM `list` WHERE idlist = ?";
 		$result = $conn -> prepare($query);
-		$result -> bind_param("i",$_GET['listid']);
+		$result -> bind_param("i",$_GET['id']);
 		$result -> execute();
 		foreach($result -> get_result() as $lul){
 			$gamepass = get_gamepassword($lul['game_idgame'], $conn);
 			if($gameid != $lul['game_idgame'] && $lul['game_idgame'] != 0){
-				header("Location: list.php?listid=".$_GET['listid']."");
+				header("Location: list.php?listid=".$_GET['id']."");
 				exit();
 			}
 			$modPass = get_mod_password($lul['game_idgame'], $conn);
@@ -1267,29 +1270,30 @@ function alter_List($conn){
 				if($_POST['action'] == 'Submit'){
 					$query = "INSERT INTO `combo_listing`(`idcombo`, `idlist`, `comment`, `list_category_idlist_category`) VALUES (?,?,NULL,?)";
 					$result = $conn -> prepare($query);
-					$result -> bind_param("iii", $ids[$i], $_GET['listid'], $category);
+					$result -> bind_param("iii", $ids[$i], $_GET['id'], $category);
 					$result -> execute();
 				}
 				if($_POST['action'] == 'Delete'){
 					$query = "DELETE FROM `combo_listing` WHERE `idcombo` = ? AND `idlist` = ?";
 					$result = $conn -> prepare($query);
-					$result -> bind_param("ii", $ids[$i], $_GET['listid']);
+					$result -> bind_param("ii", $ids[$i], $_GET['id']);
 					$result -> execute();
 				}
 			}else{
-				header("Location: list.php?listid=".$_GET['listid']."");
+				header("Location: list.php?listid=".$_GET['id']."");
 				exit();
 			}
 		}
 	}
 }
 
-function verify_ListPassword($conn){
+function verify_ListPassword(){
+	global $conn;
 	$query = "	SELECT `password`,`modPass`,`globalPass` FROM `list` 
 JOIN `game` ON `game`.`idgame` = `list`.`game_idgame`
 WHERE `idlist` = ?";
 	$result = $conn -> prepare($query);
-	$result -> bind_param("i",$_GET['listid']);
+	$result -> bind_param("i",$_GET['id']);
 	$result -> execute();
 	
 	foreach($result -> get_result() as $pass){
@@ -1314,7 +1318,8 @@ function pagination($numberOfPages, $getAtributes, $currentPage){
 	echo'  </ul></nav>';
 }
 
-function list_categories($listid,$conn){
+function list_categories($listid){
+	global $conn;
 	$query = "SELECT `list_category`.`title`
 FROM `combo_listing` 
 INNER JOIN `combo` ON `combo`.`idcombo` = `combo_listing`.`idcombo` 
@@ -1336,26 +1341,23 @@ WHERE `idlist` = ?  GROUP BY `list_category`.`title` ORDER BY `list_category`.`o
 	</nav>';
 }
 
-function jumbotron($conn, $imageHeight){
-	global $URLDepth;
+function jumbotron($imageHeight){
+	global $URLDepth, $conn;
 	if(isset($_GET['gameid'])){
-		echo '
-			<div class="jumbotron jumbotron-fluid">
-				<div class="container">
-					<a href="'.$URLDepth.'index.php"><img style="margin-top: 20px;" ';
-						game_image($_GET['gameid'], $imageHeight, $conn);
-						echo '</a>
-				</div>
-			</div>';
+		if($_GET['gameid']){
+			echo '
+				<div class="jumbotron jumbotron-fluid">
+					<div class="container">
+						<a href="'.$URLDepth.'index.php"><img style="margin-top: 20px;" ';
+							game_image($_GET['gameid'], $imageHeight);
+							echo '</a>
+					</div>
+				</div>';
+		}else{
+			jumbotronCombosukiLogo($imageHeight);				
+		}
 	}else{
-		echo '
-			<div class="jumbotron jumbotron-fluid">
-				<div class="container">
-					<a href="'.$URLDepth.'index.php">
-						<img src="'.$URLDepth.'img/combosuki.png" style="margin-top: 20px;" height="'.$imageHeight.'" >
-					</a>
-				</div>
-			</div>'; //<img src="img/selo.png" style="max-height:200; margin-left:200px;">
+		jumbotronCombosukiLogo($imageHeight);	
 	}
 }
 
@@ -1386,12 +1388,13 @@ function set_cookies(){
 	}
 }
 
-function create_list_form($conn){
+function create_list_form($listName = '', $gameID = 0){
+	global $conn, $URLDepth;
 	echo '<h3>Create List</h3>
-	<form class="form-control combosuki-main-reversed text-white" method="post" action="list.php">
+	<form class="form-control combosuki-main-reversed text-white" method="post" action="'.$URLDepth.'list/index.php">
 		<input type="hidden" name="submission_type" value="1">
 		<div class="form-group mb-2">
-			<input placeholder="List Name" style="background-color: #474747; color:#999999;" name="list_name" class="form-control" maxlength="45" rows="1"></input>
+			<input placeholder="List Name" style="background-color: #474747; color:#999999;" name="list_name" class="form-control" maxlength="45" rows="1" value="'.$listName.'"></input>
 		</div>
 		<div class="form-group mb-2">';
 
@@ -1404,12 +1407,8 @@ function create_list_form($conn){
 			echo '<option value="0">Game</option>';
 			foreach($result -> get_result() as $game){
 			echo '<option value="'.$game['idgame'].'" ';
-			if(isset($_POST)){
-				if(isset($_POST['gameid'])){
-					if($_POST['gameid'] == $game['idgame']){
-						echo 'selected';
-					}
-				}
+			if($gameID == $game['idgame']){
+				echo 'selected';
 			}
 			echo '>'.$game['name'].'</option>';
 			}
@@ -1421,12 +1420,12 @@ function create_list_form($conn){
 	</form>';
 }
 
-function search_list_form($conn){
+function search_list_form($query = ''){
+	global $conn, $URLDepth;
 	echo '<h3>Search List</h3>
-	<form class="form-control combosuki-main-reversed text-white" method="post" action="list.php">
-		<input type="hidden" name="submission_type" value="1">
+	<form class="form-control combosuki-main-reversed text-white" method="get" action="'.$URLDepth.'list/search.php">
 		<div class="form-group mb-2">
-			<input placeholder="List Name" style="background-color: #474747; color:#999999;" name="list_name" class="form-control" maxlength="45" rows="1"></input>
+			<input placeholder="List Name" style="background-color: #474747; color:#999999;" name="q" class="form-control" maxlength="45" rows="1" value='.$query.'></input>
 		</div>
 		<div class="form-group mb-2">';
 
@@ -1439,9 +1438,9 @@ function search_list_form($conn){
 			echo '<option value="0">Game</option>';
 			foreach($result -> get_result() as $game){
 			echo '<option value="'.$game['idgame'].'" ';
-			if(isset($_POST)){
-				if(isset($_POST['gameid'])){
-					if($_POST['gameid'] == $game['idgame']){
+			if(isset($_GET)){
+				if(isset($_GET['gameid'])){
+					if($_GET['gameid'] == $game['idgame']){
 						echo 'selected';
 					}
 				}
@@ -1451,7 +1450,7 @@ function search_list_form($conn){
 
 			echo '</select>'; 
 		echo '</div>
-		<div class="form-group mb-2"><button type="submit" name="action" value="Search" class="btn btn-info btn-block">Search</button></div>
+		<div class="form-group mb-2"><button type="submit" value="Search" class="btn btn-info btn-block">Search</button></div>
 	</form>';
 }
 
