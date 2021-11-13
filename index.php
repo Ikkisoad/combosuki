@@ -1,8 +1,6 @@
 <!doctype php>
 <?php
 	require_once "server/initialize.php";
-	strip_POSTtags();
-	set_cookies();
 	if(isset($_POST['color'])){
 		setcookie("color", str_replace('#','',$_POST['color']), time() + (10 * 365 * 24 * 60 * 60), "/"); // 86400 = 1 day
 	}
@@ -50,7 +48,7 @@
 			<div class="body">
 				<?php
 					if(!isset($_GET['about'])){
-						game_title(1);
+						gameCards(1);
 					}else if($_GET['about'] == 1){ //About
 						echo '
 						<div class="card combosuki-main-reversed mb-3">
@@ -143,8 +141,8 @@
 								<div class="col-auto mx-auto">
 									  Display method:
 									<select name="display" class="form-select input-small">
-										<option value="1">Image</option>
 										<option value="0">Text</option>
+										<option value="1">Image</option>
 									</select>
 								</div>
 							</div>
@@ -158,7 +156,8 @@
 					}else if($_GET['about'] == 5){ //Games
 						echo '<h2>Games</h2>';
 						//game_title(0);
-						game_text_only();
+						//game_text_only();
+						gameCards(0,0,0);
 					}
 					mysqli_close($conn);
 				?>

@@ -10,4 +10,5 @@
 	
 	strip_POSTtags();
 	strip_GETtags();
+	set_cookies();
 ?>

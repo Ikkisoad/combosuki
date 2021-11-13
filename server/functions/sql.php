@@ -62,4 +62,26 @@ function getFirst50Lists(){
 	return mysqli_query($conn,$query);
 }
 
+function getGames($games = 0, $completeGame = 1){
+	global $conn;
+	$query = "SELECT `subQuery`.`idgame`, `subQuery`.`name`, `subQuery`.`image`, (IF(Latest.Latest = EXTRACT(YEAR_MONTH FROM UTC_DATE()),1,0)) as New FROM (SELECT `game`.`idgame`, `game`.`name`, `game`.`image`, `game`.`complete` FROM `combo`
+	INNER JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter`
+	RIGHT JOIN `game` ON `game`.`idgame` = `character`.`game_idgame` ";
+	$query .= $completeGame ? "WHERE `game`.`complete` > 0 " : "";
+	$query .= "GROUP BY `game`.`idgame`
+	ORDER BY COUNT(`combo`.`character_idcharacter`) DESC ";
+	$query .= $games > 0? "LIMIT " . $games : "";
+	$query .= ") as subQuery
+    INNER JOIN (
+        SELECT EXTRACT(YEAR_MONTH FROM MAX(combo.submited)) as Latest, game.idgame as LIDGame FROM combo 
+        INNER JOIN `character` ON combo.character_idcharacter = `character`.`idcharacter`
+        RIGHT JOIN game ON game.idgame = `character`.game_idgame
+        GROUP BY game.idgame
+    ) as Latest ON Latest.LIDGame = subQuery.idGame
+    ORDER BY subQuery.`name`;";
+	$result = $conn -> prepare($query);
+	$result -> execute();
+	return $result->get_result();
+}
+
 ?>
