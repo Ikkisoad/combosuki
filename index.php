@@ -88,6 +88,7 @@
 						</div>';
 						count_combos($conn);
 						echo '
+						<br>You can help me pay server costs by donating through Paypal, there is also other ways to help this project; By submitting your combos and tech you can help not only this database grow, but make it easier for other people to improve their gameplay.
 						<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
 							<input type="hidden" name="cmd" value="_s-xclick" />
 							<input type="hidden" name="hosted_button_id" value="JNX6A2HZETH5Y" />
@@ -155,8 +156,6 @@
 						</form>';
 					}else if($_GET['about'] == 5){ //Games
 						echo '<h2>Games</h2>';
-						//game_title(0);
-						//game_text_only();
 						gameCards(0,0,0);
 					}
 					mysqli_close($conn);
