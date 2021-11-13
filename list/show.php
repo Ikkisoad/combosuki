@@ -117,7 +117,8 @@
 				';
 						if(isset($_GET['id'])){
 							listHeader(getListBy_ID($_GET['id']));
-							listContent(getListContentBy_ID($_GET['id']));
+							//listContent(getListContentBy_ID($_GET['id']));
+							listContentDetailed(getListContentDetailedBy_ID($_GET['id']));
 							edit_listForm();
 						}
 					echo '</main>';
