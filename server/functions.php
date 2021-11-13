@@ -246,17 +246,8 @@ function combo_table($gameid, $conn){
 }
 
 function game_title($flImageCard){
-	global $conn;
-	$query = "SELECT `subQuery`.`idgame`, `subQuery`.`name`, `subQuery`.`image` FROM (SELECT `game`.`idgame`, `game`.`name`, `game`.`image`, `game`.`complete` FROM `combo`
-INNER JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter`
-INNER JOIN `game` ON `game`.`idgame` = `character`.`game_idgame`
-WHERE `game`.`complete` > 0
-GROUP BY `game`.`idgame`
-ORDER BY COUNT(`combo`.`character_idcharacter`) DESC LIMIT 20) as subQuery ORDER BY subQuery.`name`;";
-	$result = $conn -> prepare($query);
-	$result -> execute();
 	echo'<div class="row">';
-		foreach($result -> get_result()	as $gameid){
+		foreach(getGames()	as $gameid){
 			echo '<div class="col my-3">
 				<div class="card text-center w-100 p-3 h-100 combosuki-main-reversed">';
 				if($flImageCard){
