@@ -41,7 +41,7 @@ function getListContentBy_ID($ID = 0){
 
 function getListContentDetailedBy_ID($ID = 0){
 	global $conn;
-	$query = "SELECT `combo_listing`.`idcombo`, `combo`.`damage`, `character`.`Name`, `combo`.`combo`, `combo`.`comments`,`combo`.`video`,`combo`.`type`, `list_category`.`title`, `list_category`.`idlist_category`,`list_category`.`order`,game_resources.text_name,resources_values.value,number_value 
+	$query = "SELECT `combo_listing`.`idcombo`, `combo`.`damage`, `character`.`Name`, `combo`.`combo`, `combo`.`comments`,`combo`.`video`,`combo`.`type`, IFNULL(`list_category`.`title`,'No Category') as title, `list_category`.`idlist_category`,`list_category`.`order`,game_resources.text_name,resources_values.value,number_value 
     FROM `combo_listing` 
     INNER JOIN `combo` ON `combo`.`idcombo` = `combo_listing`.`idcombo` 
     LEFT JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` 
