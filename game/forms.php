@@ -169,7 +169,7 @@
 							?></textarea>
 							<?php
 							if(isset($_POST['type'])){
-								echo '<a href="https://goo.gl/forms/6Q8dVlNbdOyTMA4h2" target="_blank"> Is something missing?</a>';
+								echo '<a href="https://github.com/Ikkisoad/combosuki/issues" target="_blank"> Is something missing?</a>';
 							}
 							?>
 							<div class="row my-3">
