@@ -56,9 +56,7 @@
 					search_list_form();
 					echo '</nav>';
 					echo '<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4"><div class="chartjs-size-monitor"><div class="chartjs-size-monitor-expand"><div class=""></div></div><div class="chartjs-size-monitor-shrink"><div class=""></div></div></div>';
-					$query = "SELECT `idlist`, `list_name`, `type`,`game_idgame` FROM `list` ORDER BY `idlist` DESC LIMIT 0,50";
-					$result = mysqli_query($conn,$query);
-					listsTable($result);
+					listsTable(getFirst50Lists());
 					echo '</main>';
 
 					mysqli_close($conn);

@@ -32,29 +32,14 @@
 				<div class="row">
 				<?php
 					echo '<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">';
-					create_list_form();
-					search_list_form();
+					create_list_form('',$_GET['gameid']);
+					search_list_form($_GET['q']);
 					echo '</nav>';
 					echo '<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4"><div class="chartjs-size-monitor"><div class="chartjs-size-monitor-expand"><div class=""></div></div><div class="chartjs-size-monitor-shrink"><div class=""></div></div></div>
 				';
-							if(isset($_GET['q'])){
-								$query = "SELECT `idlist`, `list_name`, `type`, `list`.`game_idgame`
-								FROM `list` 
-								WHERE `list_name` LIKE ? 
-								AND (`game_idgame` = ? OR IFNULL(?,0) = 0) 
-								AND `list`.`type` != 0 
-								ORDER BY `type` DESC, `list_name` 
-								LIMIT 0,50";
-								$result = $conn->prepare($query);
-								$_GET['q'] = '%'.$_GET['q'].'%';
-								$result->bind_param("sii",$_GET['q'], $_GET['gameid'], $_GET['gameid']);
-								$result->execute();
-								//echo mysqli_error($conn);
-								//$result = mysqli_query($conn,$query);
-								//mysqli_stmt_execute($result->get_result());
-								//var_dump($result);
-								listsTable($result->get_result());
-							}
+					if(isset($_GET['q'])){
+						listsTable(getListBy_GameID_Name($_GET['gameid'],$_GET['q']));
+					}
 					echo '</main>';
 
 					mysqli_close($conn);

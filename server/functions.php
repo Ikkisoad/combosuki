@@ -1420,12 +1420,12 @@ function create_list_form($listName = '', $gameID = 0){
 	</form>';
 }
 
-function search_list_form(){
+function search_list_form($query = ''){
 	global $conn, $URLDepth;
 	echo '<h3>Search List</h3>
 	<form class="form-control combosuki-main-reversed text-white" method="get" action="'.$URLDepth.'list/search.php">
 		<div class="form-group mb-2">
-			<input placeholder="List Name" style="background-color: #474747; color:#999999;" name="q" class="form-control" maxlength="45" rows="1"></input>
+			<input placeholder="List Name" style="background-color: #474747; color:#999999;" name="q" class="form-control" maxlength="45" rows="1" value='.$query.'></input>
 		</div>
 		<div class="form-group mb-2">';
 

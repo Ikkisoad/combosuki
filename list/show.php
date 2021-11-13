@@ -116,21 +116,8 @@
 					echo '<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4"><div class="chartjs-size-monitor"><div class="chartjs-size-monitor-expand"><div class=""></div></div><div class="chartjs-size-monitor-shrink"><div class=""></div></div></div>
 				';
 						if(isset($_GET['id'])){
-							$query = "SELECT list_name, name, type, game_idgame FROM `list` join game ON list.game_idgame = game.idgame where list.idlist = ?";
-							$result = $conn->prepare($query);
-							$result->bind_param("i",$_GET['id']);
-							$result->execute();
-							listHeader($result->get_result());
-							$query = "SELECT `combo_listing`.`idcombo`, `combo`.`damage`, `character`.`Name`, `combo`.`combo`, `combo`.`comments`,`combo`.`video`,`combo`.`type`, `list_category`.`title`, `list_category`.`idlist_category`,`list_category`.`order` 
-							FROM `combo_listing` 
-							INNER JOIN `combo` ON `combo`.`idcombo` = `combo_listing`.`idcombo` 
-							LEFT JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` 
-							LEFT JOIN `list_category` ON `list_category`.`idlist_category` = `combo_listing`.`list_category_idlist_category`
-							WHERE `idlist` = ? ORDER BY `list_category`.`order`, `list_category`.`title`,`combo`.`damage` DESC;";
-							$result = $conn->prepare($query);
-							$result->bind_param("i",$_GET['id']);
-							$result->execute();
-							listContent($result->get_result());
+							listHeader(getListBy_ID($_GET['id']));
+							listContent(getListContentBy_ID($_GET['id']));
 							edit_listForm();
 						}
 					echo '</main>';
