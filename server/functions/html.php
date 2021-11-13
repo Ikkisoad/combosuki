@@ -253,7 +253,7 @@ function listContentDetailed($result){
 	echo '</table>';
 }
 
-function gameCards($hasCards = 1, $games = 8, $completeGame = 1){
+function gameCards($hasCards = 1, $games = 12, $completeGame = 1){
 	echo'<div class="row">';
 	foreach(getGames($games, $completeGame) as $gameid){
 		echo '<div class="col my-3">

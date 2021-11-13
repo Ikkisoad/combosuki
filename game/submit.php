@@ -144,7 +144,7 @@
 							}else{
 								echo '<h2>Show All:';
 							}
-							copyLinktoclipboard('https://combosuki.com/submit.php?page='.$page.build_GETbutton().'');
+							copyLinktoclipboard('https://combosuki.com/game/submit.php?page='.$page.build_GETbutton().'');
 							echo '</h2>';
 						echo '</div>';
 					echo '</div>';
