@@ -102,6 +102,7 @@
 										<a href="https://www.kombatakademy.com/" class="card-link" target="_blank">Kombat Academy</a>';
 						echo '
 						<h2>Other FGC websites</h2>
+							<a href="https://supercombo.gg/" class="card-link" target="_blank">SuperCombo.gg</a>
 							<a href="https://glossary.infil.net/" class="card-link" target="_blank">The Fighting Game Glossary</a>
 							<a href="http://www.dustloop.com/" class="card-link" target="_blank">Dustloop wiki</a>
 							<a href="https://wiki.gbl.gg/" class="card-link" target="_blank">Mizuumi wiki</a>
