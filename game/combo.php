@@ -2,7 +2,6 @@
 <?php
 	$URLDepth = '../';
 	require_once "../server/initialize.php";
-	strip_GETtags();
 	$primaryTitle = array();
 	$primaryValue = array();
 	$primaryType = array();
@@ -11,21 +10,10 @@
 	$secondaryValue = array();
 	$secondaryType = array();
 	$secondaryID = array();
-	$query = "SELECT `idcombo`,`combo`,`damage`,`value`,`idResources_values`,`number_value`,`character`.`idcharacter`,`character`.`Name`, `video`, `game_resources`.`text_name`,`game_resources`.`type`, `combo`.`type` as listingtype, `combo`.`comments`,`game_resources`.`primaryORsecundary`, `character`.`game_idgame`, `resources_values`.`order`, `combo`.`submited`, `combo`.`patch`, `combo`.`author`
-	FROM `combo` 
-	INNER JOIN `resources` ON `combo`.`idcombo` = `resources`.`combo_idcombo` 
-	LEFT JOIN `resources_values` ON `resources_values`.`idResources_values` = `resources`.`Resources_values_idResources_values` 
-	LEFT JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` 
-	LEFT JOIN `game_resources` ON `game_resources`.`idgame_resources` = `resources_values`.`game_resources_idgame_resources` 
-	WHERE `idcombo` = ? ";
-	$query = $query . "ORDER BY  `game_resources`.`primaryORsecundary` DESC, `idcombo`, `text_name`,`resources`.`idResources`;";
-	$result = $conn -> prepare($query);
-	$result -> bind_param("i",$_GET['idcombo']);
-	$result -> execute();
 	$id_combo = -1;
 	$primaryORsecundary = 0;
 	$secondaryNames = array();
-	foreach($result -> get_result() as $data){
+	foreach(getComboDetailedBy_ID($_GET['idcombo']) as $data){
 		if($id_combo != $data['idcombo']){
 			$patch = $data['patch'];
 			$listing_type = $data['listingtype'];
@@ -33,13 +21,12 @@
 			$name = $data['Name'];
 			$id_combo = $data['idcombo'];
 			$combo = $data['combo'];
-			$combo_image = button_printing($data['game_idgame'], $data['combo'], $conn);
+			$combo_image = button_printing($data['game_idgame'], $data['combo']);
 		}
 		$comment = $data['comments'];
 		$video = $data['video'];
 		$damage = $data['damage'];
 		$submited = new DateTime($data['submited']);
-		$author = $data['author'];
 		if($data['primaryORsecundary'] == 0){
 			array_push($secondaryTitle,$data['text_name']);
 			array_push($secondaryType,$data['type']);
@@ -68,14 +55,9 @@
 	<head>
 		
 		<?php headerHTML(); ?>
-		<meta property="og:title" content="<?php echo $name.' > '.$damage.' damage';?>" />
-		<meta property="og:description" content="<?php echo $combo;?>" />
-		<?php meta_embedvideo($video); ?>
-		<meta property="og:type" content="website" />
-		<meta property="og:image" content="http://combosuki.com/img/combosuki.png" />
-		<meta property="og:url" content="http://combosuki.com/index.php" />
-		<meta name="theme-color" content="#C62114" />
-		<meta name="description" content="Community-fueled searchable environment that shares and perfects combos.">
+		<?php
+		openGraphProtocol($name.' > '.$damage.' damage',$combo);
+		meta_embedvideo($video); ?>
 		<title>Combo好き</title>
 		<?php
 			getCSS();
@@ -95,8 +77,6 @@
 		?>
 		<div class="container-fluid px-5 my-3">
 			<div class="row">
-				
-
 				<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4"><div class="chartjs-size-monitor"><div class="chartjs-size-monitor-expand"><div class=""></div></div><div class="chartjs-size-monitor-shrink"><div class=""></div></div></div>
 					<?php
 					echo '
@@ -114,7 +94,7 @@
 								<button alignt="right" style="float: right;" class="btn btn-secondary" onclick="change_display()">Display Method</button>
 
 								<?php
-								copyLinktoclipboard(get_combolink($id_combo,$conn));
+								copyLinktoclipboard(get_combolink($id_combo));
 							echo '</th>';
 						echo '</tr>';
 						echo '<tr>';
@@ -243,7 +223,6 @@
 						<input type="hidden" name="combo" value="<?php echo $combo; ?>">
 						<input type="hidden" name="comment" value="<?php echo $comment; ?>">
 						<input type="hidden" name="video" value="<?php echo $video; ?>">
-						<input type="hidden" name="author" value="<?php echo $author; ?>">
 						<button class="btn btn-primary">
 						Edit
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square mx-auto" viewBox="0 0 16 16">

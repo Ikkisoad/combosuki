@@ -556,15 +556,12 @@ function quick_search_form($gameid, $conn){
 	</form>';
 }
 
-function button_printing($idgame, $dataCombo, $conn){
-	//require 'server/conexao.php';
-	global $URLDepth;
+function button_printing($idgame, $dataCombo){
+	global $URLDepth, $conn;
 	$query = "SELECT name,png FROM `button` WHERE `game_idgame` = ?";
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i",$idgame);
 	$result -> execute();
-	//$size = '4%';
-	
 	$buttonsName = array();
 	$buttonsPNG = array();
 	
@@ -903,7 +900,7 @@ function get_gamepassword($gameid, $conn){
 	}
 }
 
-function get_combolink($comboid,$conn){
+function get_combolink($comboid){
 	return 'http://combosuki.com/game/combo.php?idcombo='.$comboid;
 }
 

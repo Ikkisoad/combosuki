@@ -2,9 +2,6 @@
 <?php
 	$URLDepth = '../';
 	require_once "../server/initialize.php";
-	
-	strip_POSTtags();
-	strip_GETtags();
 ?>
 <html>
 	<head>
