@@ -22,10 +22,7 @@
 			
 			
 		}else if($_POST['action'] == 'Add'){
-			$query = "INSERT INTO `game_entry`(`entryid`, `title`, `gameid`, `order`) VALUES (NULL, ?, ?, ?)";
-			$result = $conn -> prepare($query);
-			$result -> bind_param("sii", $_POST['entry'], $_GET['gameid'], $_POST['order']);
-			$result -> execute();
+			insertEntry($_POST['entry'], $_GET['gameid'], $_POST['order']);
 		}
 	}
 ?>

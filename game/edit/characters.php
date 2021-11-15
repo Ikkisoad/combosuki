@@ -41,11 +41,7 @@ WHERE `character`.`idcharacter` = ?";
 			
 			
 		}else if($_POST['action'] == 'Add'){
-			$query = "INSERT INTO `character`(`idcharacter`, `Name`, `game_idgame`) VALUES (NULL,?,?)";
-			$result = $conn -> prepare($query);
-			//print_r($_POST);
-			$result -> bind_param("si", $_POST['character'], $_GET['gameid']);
-			$result -> execute();
+			insertCharacter($_POST['character'], $_GET['gameid']);
 		}
 	}
 ?>

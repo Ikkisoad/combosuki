@@ -100,4 +100,91 @@ function getComboDetailedBy_ID($comboid = 0){
 	return $result->get_result();
 }
 
+function insertButton($name,$png,$gameid,$order){
+	global $conn;
+	$query = "INSERT INTO `button`(`idbutton`, `name`, `png`, `game_idgame`, `order`) VALUES (NULL, ?, ?, ?, ?)";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("ssii", $name, $png, $gameid, $order);
+	$result -> execute();
+}
+
+function insertDefaultButtons($gameid){
+	insertButton('1','1',$gameid,0);
+	insertButton('2','2',$gameid,0);
+	insertButton('3','3',$gameid,0);
+	insertButton('4','4',$gameid,0);
+	insertButton('5','5',$gameid,0);
+	insertButton('6','6',$gameid,0);
+	insertButton('7','7',$gameid,0);
+	insertButton('8','8',$gameid,0);
+	insertButton('9','9',$gameid,0);
+	insertButton('214','214',$gameid,0);
+	insertButton('236','236',$gameid,0);
+	insertButton('A','A',$gameid,0);
+	insertButton('B','B',$gameid,0);
+	insertButton('C','C',$gameid,0);
+	insertButton('j','jump',$gameid,0);
+	insertButton('>','gap',$gameid,0);
+}
+
+function insertGame($name,$image,$password){
+	global $conn;
+	$query = "INSERT INTO `game`(`idgame`, `name`, `complete`, `image`, `globalPass`, `modPass`) VALUES (NULL, ?,NULL,?,?,?)";
+	$result = $conn -> prepare($query);
+	$moderationPassword = password_hash($password,PASSWORD_DEFAULT);
+	$result -> bind_param("ssss", $name, $image, $password, $moderationPassword);
+	$result -> execute();
+	return mysqli_insert_id($conn);
+}
+
+function insertCharacter($name, $gameid){
+	global $conn;
+	$query = "INSERT INTO `character`(`idcharacter`, `Name`, `game_idgame`) VALUES (NULL,?,?)";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("si", $name, $gameid);
+	$result -> execute();
+}
+
+function insertDefaultCharacter($gameid){
+	insertCharacter('Combo Chan', $gameid);
+}
+
+function insertResource($gameid,$name,$type,$primary){
+	global $conn;
+	$query = "INSERT INTO `game_resources`(`idgame_resources`, `game_idgame`, `text_name`, `type`, `primaryORsecundary`) VALUES (NULL,?,?,?,?)";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("isii", $gameid, $name,$type,$primary);
+	$result -> execute();
+}
+
+function insertResourceValue($value,$order = 0,$idresource){
+	global $conn;
+	$query = "INSERT INTO `resources_values`(`idResources_values`, `value`, `order`, `game_resources_idgame_resources`) VALUES (NULL,?,?,?)";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("sii", $value,$order,$idresource);
+	$result -> execute();
+}
+
+function insertDefaultResource($gameid){
+	global $conn;
+	insertResource($gameid,'Where?',1,1);
+	$resourceid = mysqli_insert_id($conn);
+	insertResourceValue('Midscreen',0,$resourceid);
+	insertResourceValue('Corner',1,$resourceid);
+}
+
+function insertEntry($entry,$gameid,$order = 0){
+	global $conn;
+	$query = "INSERT INTO `game_entry`(`entryid`, `title`, `gameid`, `order`) VALUES (NULL, ?, ?, ?)";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("sii", $entry, $gameid, $order);
+	$result -> execute();
+}
+
+function insertDefaultEntry($gameid){
+	insertEntry('Combo',$gameid,-1);
+	insertEntry('Okizeme',$gameid);
+	insertEntry('Mix Up',$gameid);
+}
+
 ?>
