@@ -3,16 +3,10 @@
 	$URLDepth = '../';
 	require_once "../server/initialize.php";
 	if(!empty($_POST)){
-	//	p
-		$_POST = array_map("strip_tags", $_POST);
-		$_GET = array_map("strip_tags", $_GET);
-		
 		if($_POST['action'] == 'Submit'){
-			
 			if($_POST['gameName'] == '' || $_POST['gameImage'] == '' || $_POST['gamePass'] == ''){
 				redictIndex();
 			}
-		
 			$query = "INSERT INTO `game`(`idgame`, `name`, `complete`, `image`, `globalPass`, `modPass`) VALUES (NULL, ?,NULL,?,?,?)";
 			$result = $conn -> prepare($query);
 			$modPass = password_hash($_POST['gamePass'],PASSWORD_DEFAULT);
@@ -26,18 +20,10 @@
 ?>
 <html>
 	<head>
-		
-		<?php headerHTML(); ?>
-
-		<meta property="og:title" content="Combo好き" />
-		<meta property="og:type" content="website" />
-		<meta property="og:image" content="http://combosuki.com/img/combosuki.png" />
-		<meta property="og:url" content="http://combosuki.com/index.php" />
-		<meta property="og:description" 
-		content="Community-fueled searchable environment that shares and perfects combos." />
-		<meta name="theme-color" content="#d94040" />
-
-		<meta name="description" content="Community-fueled searchable environment that shares and perfects combos.">
+		<?php
+			headerHTML(); 
+			openGraphProtocol();
+		?>
 		<title>Combo好き</title>
 		<?php
 			getCSS();
