@@ -58,7 +58,7 @@
 					</div>
 					
 						<?php
-							game_lists($conn);
+							game_lists();
 						?>
 				</main>
 				<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
