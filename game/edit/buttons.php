@@ -13,22 +13,16 @@
 		
 			$query = "UPDATE `button` SET `name`=?,`png`=?,`order`=? WHERE `game_idgame` = ? AND `idbutton` = ?";
 			$result = $conn -> prepare($query);
-			//print_r($_POST);
 			$result -> bind_param("ssiii", $_POST['name'], $_POST['png'], $_POST['order'], $_GET['gameid'], $_POST['idbutton']);
 			$result -> execute();
 		}else if($_POST['action'] == 'Delete'){
 			$query = "DELETE FROM `button` WHERE `idbutton` = ? AND `game_idgame` = ?";
 			$result = $conn -> prepare($query);
-			//print_r($_POST);
 			$result -> bind_param("ii", $_POST['idbutton'], $_GET['gameid']);
 			$result -> execute();		
 			
 		}else if($_POST['action'] == 'Add'){
-			$query = "INSERT INTO `button`(`idbutton`, `name`, `png`, `game_idgame`, `order`) VALUES (NULL, ?, ?, ?, ?)";
-			$result = $conn -> prepare($query);
-			//print_r($_POST);
-			$result -> bind_param("ssii", $_POST['name'], $_POST['png'], $_GET['gameid'], $_POST['order']);
-			$result -> execute();
+			insertButton($_POST['name'], $_POST['png'], $_GET['gameid'], $_POST['order']);
 		}
 	}
 ?>
@@ -62,13 +56,10 @@
 				<div class="form-group">
 					<?php
 					
-						$query = "SELECT `idbutton`, `name`, `png`, `order` FROM `button` WHERE `game_idgame` = ? ORDER BY `order`, `name`;";
+						$query = "SELECT `idbutton`, `name`, `png`, `order` FROM `button` WHERE `game_idgame` = ? ORDER BY `order`, idbutton;";
 						$result = $conn -> prepare($query);
 						$result -> bind_param("i",$_GET['gameid']);
 						$result -> execute();
-						//print_r($result);
-						
-						//$game -> get_result()
 						echo '<table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed text-white">';
 						echo '<tr>';
 						echo '<th>Button</th';

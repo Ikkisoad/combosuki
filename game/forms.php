@@ -103,7 +103,7 @@
 								echo '</div>';
 								//Could make a function out of this <>><><>><><><><><><>><><><><>>>><><><><>><><>><><><><>><><><><><><>
 								
-								$query = "SELECT name,png,game_idgame FROM `button` WHERE game_idgame = ? ORDER BY game_idgame, `order`, idbutton";
+								$query = "SELECT name,png,game_idgame FROM `button` WHERE game_idgame = ? ORDER BY `order`, idbutton";
 								$result = $conn -> prepare($query);
 								$result -> bind_param("i", $_GET['gameid']);
 								$result -> execute();

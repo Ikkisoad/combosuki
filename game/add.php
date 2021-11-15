@@ -7,12 +7,11 @@
 			if($_POST['gameName'] == '' || $_POST['gameImage'] == '' || $_POST['gamePass'] == ''){
 				redictIndex();
 			}
-			$query = "INSERT INTO `game`(`idgame`, `name`, `complete`, `image`, `globalPass`, `modPass`) VALUES (NULL, ?,NULL,?,?,?)";
-			$result = $conn -> prepare($query);
-			$modPass = password_hash($_POST['gamePass'],PASSWORD_DEFAULT);
-			$result -> bind_param("ssss", $_POST['gameName'], $_POST['gameImage'], $_POST['gamePass'], $modPass);
-			$result -> execute();
-			$gameid = mysqli_insert_id($conn);
+			$gameid = insertGame($_POST['gameName'], $_POST['gameImage'], $_POST['gamePass']);
+			insertDefaultButtons($gameid);
+			insertDefaultCharacter($gameid);
+			insertDefaultResource($gameid);
+			insertDefaultEntry($gameid);
 			header("Location: ".$URLDepth."game/edit/game.php?gameid=".$gameid."");
 			exit();
 		}
