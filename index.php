@@ -3,10 +3,11 @@
 	require_once "server/initialize.php";
 	if(isset($_POST['color'])){
 		setcookie("color", str_replace('#','',$_POST['color']), time() + (10 * 365 * 24 * 60 * 60), "/"); // 86400 = 1 day
+		$_COOKIE['color'] = str_replace('#','',$_POST['color']);
 	}
 	if(isset($_POST['display'])){
 		setcookie("display", $_POST['display'], time() + (10 * 365 * 24 * 60 * 60), "/"); // 86400 = 1 day
-		header("Refresh:0");
+		//header("Refresh:0");
 	}
 ?>
 <html>
