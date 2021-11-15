@@ -3,10 +3,11 @@
 	require_once "server/initialize.php";
 	if(isset($_POST['color'])){
 		setcookie("color", str_replace('#','',$_POST['color']), time() + (10 * 365 * 24 * 60 * 60), "/"); // 86400 = 1 day
+		$_COOKIE['color'] = str_replace('#','',$_POST['color']);
 	}
 	if(isset($_POST['display'])){
 		setcookie("display", $_POST['display'], time() + (10 * 365 * 24 * 60 * 60), "/"); // 86400 = 1 day
-		header("Refresh:0");
+		//header("Refresh:0");
 	}
 ?>
 <html>
@@ -102,6 +103,7 @@
 										<a href="https://www.kombatakademy.com/" class="card-link" target="_blank">Kombat Academy</a>';
 						echo '
 						<h2>Other FGC websites</h2>
+							<a href="https://supercombo.gg/" class="card-link" target="_blank">SuperCombo.gg</a>
 							<a href="https://glossary.infil.net/" class="card-link" target="_blank">The Fighting Game Glossary</a>
 							<a href="http://www.dustloop.com/" class="card-link" target="_blank">Dustloop wiki</a>
 							<a href="https://wiki.gbl.gg/" class="card-link" target="_blank">Mizuumi wiki</a>

@@ -84,4 +84,20 @@ function getGames($games = 0, $completeGame = 1){
 	return $result->get_result();
 }
 
+function getComboDetailedBy_ID($comboid = 0){
+	global $conn;
+	$query = "SELECT `idcombo`,`combo`,`damage`,`value`,`idResources_values`,`number_value`,`character`.`idcharacter`,`character`.`Name`, `video`, `game_resources`.`text_name`,`game_resources`.`type`, `combo`.`type` as listingtype, `combo`.`comments`,`game_resources`.`primaryORsecundary`, `character`.`game_idgame`, `resources_values`.`order`, `combo`.`submited`, `combo`.`patch`, `combo`.`author`
+	FROM `combo` 
+	INNER JOIN `resources` ON `combo`.`idcombo` = `resources`.`combo_idcombo` 
+	LEFT JOIN `resources_values` ON `resources_values`.`idResources_values` = `resources`.`Resources_values_idResources_values` 
+	LEFT JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` 
+	LEFT JOIN `game_resources` ON `game_resources`.`idgame_resources` = `resources_values`.`game_resources_idgame_resources` 
+	WHERE `idcombo` = ? ";
+	$query = $query . "ORDER BY  `game_resources`.`primaryORsecundary` DESC, `idcombo`, `text_name`,`resources`.`idResources`;";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i",$comboid);
+	$result -> execute();
+	return $result->get_result();
+}
+
 ?>
