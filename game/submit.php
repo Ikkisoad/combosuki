@@ -7,11 +7,11 @@
 			redictIndex();
 		}
 		if(!isset($_POST['idcombo'])){
-			$query = "INSERT INTO `combo`(`idcombo`, `combo`, `comments`, `video`, `user_iduser`, `character_idcharacter`, `submited`, `damage`, `type`, `patch`, `author`, `password`) 
-									VALUES (NULL,		?,		?,			?,	NULL,			?,						?, ?, ?, ?, ?, ?)";
+			$query = "INSERT INTO `combo`(`idcombo`, `combo`, `comments`, `video`, `user_iduser`, `character_idcharacter`, `submited`, `damage`, `type`, `patch`, `password`) 
+									VALUES (NULL,		?,		?,			?,	NULL,			?,						?, ?, ?, ?, ?)";
 			$result = $conn -> prepare($query);
 			$date = date("Y-m-d H:i:s");
-			$result -> bind_param("sssisdisss", $_POST['combo'], $_POST['comments'],$_POST['video'],$_POST['characterid'],$date, $_POST['damage'], $_POST['listingtype'], $_POST['patch'], $_POST['author'], $_POST['comboPass']);
+			$result -> bind_param("sssisdiss", $_POST['combo'], $_POST['comments'],$_POST['video'],$_POST['characterid'],$date, $_POST['damage'], $_POST['listingtype'], $_POST['patch'], $_POST['comboPass']);
 			$result -> execute();
 			$comboid = mysqli_insert_id($conn);
 		}else{
@@ -32,10 +32,9 @@
 			$result -> execute();
 			if($_POST['action'] == 'Submit'){
 				$query = "UPDATE `combo` SET 
-				`combo`= ?,`comments`= ?,`video`= ?,`character_idcharacter`= ?, `damage`= ?,`type`= ?, `patch` = ?, `author`= ?
-				WHERE `idcombo` = ?";
+				`combo`= ?,`comments`= ?,`video`= ?,`character_idcharacter`= ?, `damage`= ?,`type`= ?, `patch` = ? WHERE `idcombo` = ?";
 				$result = $conn -> prepare($query);
-				$result -> bind_param("sssidissi", $_POST['combo'], $_POST['comments'],$_POST['video'],$_POST['characterid'], $_POST['damage'], $_POST['listingtype'], $_POST['patch'], $_POST['author'], $comboid);
+				$result -> bind_param("sssidisi", $_POST['combo'], $_POST['comments'],$_POST['video'],$_POST['characterid'], $_POST['damage'], $_POST['listingtype'], $_POST['patch'], $comboid);
 				$result -> execute();
 			}else{
 				$query = "DELETE FROM `combo` WHERE `idcombo` = ?";
@@ -233,14 +232,6 @@ AND `character`.`game_idgame` = ? ";
 							$parameterValue .= $_GET['video'];
 							$parameterValue .= '%';
 							$query .= "AND `video` LIKE ? ";
-							$parameter_type .= "s";
-							$binded_parameters[$parameters_counter++] = $parameterValue;
-						}
-					}
-					if(isset($_GET['author'])){
-						if($_GET['author'] != ''){
-							$parameterValue .= $_GET['author'];
-							$query .= "AND `combo`.`author` LIKE ? ";
 							$parameter_type .= "s";
 							$binded_parameters[$parameters_counter++] = $parameterValue;
 						}
