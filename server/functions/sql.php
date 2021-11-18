@@ -187,4 +187,13 @@ function insertDefaultEntry($gameid){
 	insertEntry('Mix Up',$gameid);
 }
 
+function getButtonsBy_gameID($gameID){
+	global $conn;
+	$query = "SELECT `idbutton`, `name`, `png`, `order` FROM `button` WHERE `game_idgame` = ? ORDER BY `order`, name;";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i",$gameID);
+	$result -> execute();
+	return $result->get_result();
+}
+
 ?>

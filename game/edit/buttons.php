@@ -56,15 +56,12 @@
 				<div class="form-group">
 					<?php
 					
-						$query = "SELECT `idbutton`, `name`, `png`, `order` FROM `button` WHERE `game_idgame` = ? ORDER BY `order`, idbutton;";
-						$result = $conn -> prepare($query);
-						$result -> bind_param("i",$_GET['gameid']);
-						$result -> execute();
+						
 						echo '<table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed text-white">';
 						echo '<tr>';
 						echo '<th>Button</th';
 						echo '</tr>';
-						foreach($result -> get_result()	as $lol){
+						foreach(getButtonsBy_gameID($_GET['gameid']) as $lol){
 							
 							echo '<tr><td>';
 							echo '<form method="post" action="'.$URLDepth.'game/edit/buttons.php?gameid='.$_GET['gameid'].'">';

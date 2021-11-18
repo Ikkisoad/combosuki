@@ -102,12 +102,6 @@
 								echo '</select>';
 								echo '</div>';
 								//Could make a function out of this <>><><>><><><><><><>><><><><>>>><><><><>><><>><><><><>><><><><><><>
-								
-								$query = "SELECT name,png,game_idgame FROM `button` WHERE game_idgame = ? ORDER BY `order`, idbutton";
-								$result = $conn -> prepare($query);
-								$result -> bind_param("i", $_GET['gameid']);
-								$result -> execute();
-								
 								if(!isset($_POST['type'])){
 									echo '
 									<div class="input-group mb-3">
@@ -136,16 +130,11 @@
 									</div>';
 								}
 								
-								foreach($result -> get_result()	as $button){
-									echo '<button type="button" style="border:none;background:none;margin-left:1em;margin-bottom:1em" value="'; //style="border:none;background:none;"border-color: #000000;background-color: #002f7c;
+								foreach(getButtonsBy_gameID($_GET['gameid']) as $button){
+									echo '<button type="button" style="border:none;background:none;margin-left:1em;margin-bottom:1em" value="'; 
 									echo $button['name'];
-									if($button['game_idgame']){
 										echo '"onclick="moveNumbers(this.value)"><img src="../img/buttons/';
 										echo $button['png'];
-									}else{
-										echo '"onclick="moveNumbers(this.value)"><img src="../img/buttons/';
-										echo $button['png'];
-									}
 									echo '.png"></button> ';
 								}
 							?>
