@@ -54,7 +54,7 @@
 							}
 						
 						
-						?>" action="submit.php">
+						?>" action="<?php echo $URLDepth ?>/game/submit.php">
 						<?php
 							
 							if(!isset($_POST['type'])){

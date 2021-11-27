@@ -41,7 +41,7 @@
 				$result = $conn -> prepare($query);
 				$result -> bind_param("i", $comboid);
 				$result -> execute();
-				header("Location: game.php?gameid=".$_POST['gameid']."");
+				header("Location: ".$URLDepth."game/index.php?gameid=".$_POST['gameid']."");
 				exit();
 			}
 		}
