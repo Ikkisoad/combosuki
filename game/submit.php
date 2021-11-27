@@ -2,7 +2,6 @@
 	$URLDepth = '../';
 	require_once "../server/initialize.php";
 	if(!empty($_POST)){
-		strip_POSTtags();
 		if($_POST['combo'] == ''){
 			redictIndex();
 		}
@@ -116,7 +115,6 @@
 			<div class="container-fluid my-3">
 			<?php
 				if(!empty($_GET)){
-					strip_GETtags();
 					quick_search_form($_GET['gameid'], $conn);
 					if(isset($_GET["page"])) { $page  = $_GET["page"]; } else { $page=0; };
 					$query = "SELECT sum(case when `game_resources`.`type` = 3 then 2 else 1 end) total FROM `game_resources` WHERE `game_idgame` = ? AND `primaryORsecundary` = 1";
