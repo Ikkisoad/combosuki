@@ -174,9 +174,11 @@ AND `character`.`game_idgame` = ? ";
 							}else{
 								$parameterValue .= $_GET['combo'].'%';
 							}
-							$query .= "AND REPLACE(REPLACE(`combo`, ' ', ''),'>','')";
-							if($_GET['combolike'] == 3){ $query .= " NOT ";}
-							$query .= "LIKE REPLACE(REPLACE(?, ' ', ''),'>','') ";
+							$query .= "AND REPLACE(REPLACE(`combo`, ' ', ''),'".htmlentities('>')."','')";
+							if(isset($_GET['combolike'])){
+								$query .= $_GET['combolike'] == 3 ? $query .= " NOT " : "";
+							}
+							$query .= "LIKE REPLACE(REPLACE(?, ' ', ''),'".htmlentities('>')."','') ";
 							$parameter_type .= "s";
 							$binded_parameters[$parameters_counter++] = $parameterValue;
 						}
