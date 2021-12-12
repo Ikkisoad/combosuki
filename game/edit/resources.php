@@ -13,23 +13,12 @@
 				if(verify_resource_game($_POST['idresource'], $conn) != $_GET['gameid']){
 					redictIndex();
 				}
-				$query = "UPDATE `game_resources` SET `text_name`= ?,`type`= ?,`primaryORsecundary`= ? WHERE `idgame_resources` = ? AND `game_idgame` = ?";
-				$result = $conn -> prepare($query);
-				$result -> bind_param("siiii", $_POST['resource'], $_POST['type'],$_POST['primaryORsecundary'],$_POST['idresource'], $_GET['gameid']);
-				$result -> execute();
+				updateGameResource($_POST['resource'], $_POST['type'],$_POST['primaryORsecundary'],$_POST['idresource'], $_GET['gameid']);
 			}else if($_POST['action'] == 'Delete'){
 				if(verify_resource_game($_POST['idresource'], $conn) != $_GET['gameid']){
 					redictIndex();
 				}
-				$query = "DELETE FROM `resources_values` WHERE `game_resources_idgame_resources` = ?";
-				$result = $conn -> prepare($query);
-				$result -> bind_param("i",$_POST['idresource']);
-				$result -> execute();
-				
-				$query = "DELETE FROM `game_resources` WHERE `idgame_resources` = ?";
-				$result = $conn -> prepare($query);
-				$result -> bind_param("i",$_POST['idresource']);
-				$result -> execute();
+				deleteGameResource($_POST['idresource']);
 			}else if($_POST['action'] == 'Add'){
 				insertResource($_GET['gameid'], $_POST['resource'],$_POST['type'],$_POST['primaryorsecundary']);
 			}else if($_POST['action'] == 'EditAdd'){
@@ -39,25 +28,13 @@
 					if(verify_resourcevalue_game($_POST['idresourcevalue'], $conn) != $_GET['gameid']){
 						redictIndex();
 					}
-					$query = "UPDATE `resources_values` SET `value`=?,`order`=? WHERE `idResources_values` = ?";
-					$result = $conn -> prepare($query);
-					$result -> bind_param("sii", $_POST['resourcevalue'], $_POST['order'],$_POST['idresourcevalue']);
-					$result -> execute();
+					updateGameResourceValue($_POST['resourcevalue'], $_POST['order'],$_POST['idresourcevalue']);
 					$edit = 1;
 			}else if($_POST['action'] == 'EditDelete'){
 				if(verify_resourcevalue_game($_POST['idresourcevalue'], $conn) != $_GET['gameid']){
 					redictIndex();	
 				}
-				
-				$query = "DELETE FROM `resources` WHERE `Resources_values_idResources_values` = ?";
-				$result = $conn -> prepare($query);
-				$result -> bind_param("i",$_POST['idresourcevalue']);
-				$result -> execute();
-				
-				$query = "DELETE FROM `resources_values` WHERE `idResources_values` = ?";
-				$result = $conn -> prepare($query);
-				$result -> bind_param("i",$_POST['idresourcevalue']);
-				$result -> execute();
+				deleteGameResourceValue($_POST['idresourcevalue']);
 				$edit = 1;
 			}
 			
