@@ -290,4 +290,81 @@ function gameCards($hasCards = 1, $games = 12, $completeGame = 1){
 	}
 	echo '</div>';	
 }
+
+function editButtons(){
+	global $URLDepth, $conn;
+	?>
+	<table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed text-white">
+		<tr>
+			<th>Button</th>
+		</tr>
+		<?php foreach(getButtonsBy_gameID($_GET['gameid']) as $button){ ?>
+			<tr>
+				<td>
+					<form method="post" action="<?php echo $URLDepth.'game/edit/buttons.php?gameid='.$_GET['gameid'];?>">
+						<div class="input-group"><textarea name="name" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Character Name"><?php echo $button['name']; ?></textarea>
+						<?php $directory = $URLDepth . "img/buttons/";
+						$images = glob($directory . "*.png");?>
+						<select name="png" class="custom-select" onchange="setImage(this,<?php echo $button['idbutton']?>);">
+						<?php foreach($images as $image){
+							$image = str_replace($directory, "", $image);
+							$image = str_replace(".png", "", $image);?>
+							<option value="<?php echo $image;?>"
+								<?php if($image == $button['png']){ ?> selected <?php } ?>
+								>
+								<?php echo $image; ?>
+							</option>
+						<?php } ?>
+						</select>
+						<img src="<?php echo $URLDepth.'img/buttons/'.$button['png']; ?>.png" height=35 name="image-<?php echo $button['idbutton']; ?>"></img>
+						<input class="form-control" type="number" name="order" placeholder="Order" value="<?php echo $button['order']; ?>" step="any">
+						<input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
+						<div class="input-group-append" id="button-addon4">
+							<input type="hidden" name="idbutton" value="<?php echo $button['idbutton']; ?>">
+							<button type="submit" name="action" value="Update" class="btn btn-primary">Update</button>
+							<button type="submit" name="action" value="Delete" class="btn btn-danger" 
+							onclick="return confirm('Are you sure you want to delete this button?');"
+							>Delete</button>
+						</div>
+						</div>
+					</form>
+				</td>
+			</tr>
+		<?php } ?>
+	</table>
+	<?php
+}
+
+function addButton(){
+	global $conn, $URLDepth;?>
+	<table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed text-white">
+		<tr>
+			<td>
+				<form method="post" action="<?php echo $URLDepth.'game/edit/buttons.php?gameid='.$_GET['gameid'];?>">
+					<div class="input-group">
+						<textarea name="name" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Button Name" autofocus></textarea>
+						<?php $directory = $URLDepth . "img/buttons/";
+						$images = glob($directory . "*.png");?>
+						<select name="png" class="custom-select" onchange="setImage(this,0);">
+							<?php foreach($images as $image){
+								$image = str_replace($directory, "", $image);
+								$image = str_replace(".png", "", $image);?>
+								<option value="<?php echo $image; ?>">
+									<?php echo $image; ?>
+								</option>
+							<?php } ?>
+						</select>
+						<img src="<?php echo $URLDepth.'img/buttons/+.png';?>" height="35" name="image-0" />
+						<input class="form-control" type="number" name="order" placeholder="Order" value="" step="any">
+						<input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
+						<div class="input-group-append" id="button-addon4">
+							<button type="submit" name="action" value="Add" class="btn btn-primary">Add</button>
+						</div>
+					</div>
+				</form>
+			</td>
+		</tr>
+	</table>
+	<?php
+}
 ?>

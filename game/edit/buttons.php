@@ -48,78 +48,8 @@
 					<?php
 					
 						
-						echo '<table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed text-white">';
-						echo '<tr>';
-						echo '<th>Button</th';
-						echo '</tr>';
-						foreach(getButtonsBy_gameID($_GET['gameid']) as $lol){
-							
-							echo '<tr><td>';
-							echo '<form method="post" action="'.$URLDepth.'game/edit/buttons.php?gameid='.$_GET['gameid'].'">';
-							echo '<div class="input-group"><textarea name="name" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Character Name">'.$lol['name'].'</textarea>';
-							$directory = $URLDepth . "img/buttons/";
-							$images = glob($directory . "*.png");
-							echo '<select name="png" class="custom-select" onchange="setImage(this,'.$lol['idbutton'].');">';
-							foreach($images as $image){
-								$image = str_replace($directory, "", $image);
-								$image = str_replace(".png", "", $image);
-								echo '<option value="'.$image.'"';
-								if($image == $lol['png']){
-									echo 'selected';
-								}
-								echo '>';
-								echo $image.'</option>';
-							}
-							echo '</select>';
-							echo '<img src='.$URLDepth.'img/buttons/'.$lol['png'].'.png height=35 name="image-'.$lol['idbutton'].'"></img>';
-							echo '<input class="form-control" type="number" name="order" placeholder="Order" value="'.$lol['order'].'" step="any">';
-							echo '
-  <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
-  <div class="input-group-append" id="button-addon4">
-  <input type="hidden" name="idbutton" value="'.$lol['idbutton'].'">
-    <button type="submit" name="action" value="Update" class="btn btn-primary">Update</button>
-    <button type="submit" name="action" value="Delete" class="btn btn-danger" ';
-							if(1):?>
-							onclick="return confirm('Are you sure you want to delete this button?');"
-							<?php
-							endif;
-							echo ' >Delete</button>
-  </div>
-</div>';
-							echo '</td>';
-							echo '</form>';
-							echo '</tr>';
-						
-						}
-						
-						echo '<tr><td>';
-							echo '<form method="post" action="'.$URLDepth.'game/edit/buttons.php?gameid='.$_GET['gameid'].'">';
-							echo '<div class="input-group"><textarea name="name" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Button Name" autofocus></textarea>';
-							//echo $lol['Name'];
-							$directory = $URLDepth . "img/buttons/";
-							$images = glob($directory . "*.png");
-							echo '<select name="png" class="custom-select" onchange="setImage(this,0);">';
-							foreach($images as $image){
-								$image = str_replace($directory, "", $image);
-								$image = str_replace(".png", "", $image);
-								echo '<option value="'.$image.'"';
-								echo '>';
-								echo $image.'</option>';
-							}
-							echo '</select>';
-							echo '<img src="'.$URLDepth.'img/buttons/+.png" height="35" name="image-0" /> ';
-							echo '<input class="form-control" type="number" name="order" placeholder="Order" value="" step="any">';
-							echo '
-  <input name="gamePass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="Game Password">
-  <div class="input-group-append" id="button-addon4">
-    <button type="submit" name="action" value="Add" class="btn btn-primary">Add</button>
-  </div>
-</div>';
-							echo '</td>';
-							echo '</form>';
-							echo '</tr>';
-						
-						echo '</table><br>';
+						editButtons();
+						addButton();
 						
 						edit_controls($_GET['gameid']);
 						mysqli_close($conn);
