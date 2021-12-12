@@ -3,24 +3,14 @@
 	$URLDepth = '../../';
 	require_once "../../server/initialize.php";
 	if(!empty($_POST)){
-		$_POST = array_map("strip_tags", $_POST);
-		$_GET = array_map("strip_tags", $_GET);
-		verify_password($conn);
+		verify_password();
 		
 		$_POST['name'] = str_replace(' ', '', $_POST['name']);
 		
 		if($_POST['action'] == 'Update'){
-		
-			$query = "UPDATE `button` SET `name`=?,`png`=?,`order`=? WHERE `game_idgame` = ? AND `idbutton` = ?";
-			$result = $conn -> prepare($query);
-			$result -> bind_param("ssiii", $_POST['name'], $_POST['png'], $_POST['order'], $_GET['gameid'], $_POST['idbutton']);
-			$result -> execute();
+			updateButton($_POST['name'], $_POST['png'], $_POST['order'], $_GET['gameid'], $_POST['idbutton']);
 		}else if($_POST['action'] == 'Delete'){
-			$query = "DELETE FROM `button` WHERE `idbutton` = ? AND `game_idgame` = ?";
-			$result = $conn -> prepare($query);
-			$result -> bind_param("ii", $_POST['idbutton'], $_GET['gameid']);
-			$result -> execute();		
-			
+			deleteButton($_POST['idbutton'], $_GET['gameid']);			
 		}else if($_POST['action'] == 'Add'){
 			insertButton($_POST['name'], $_POST['png'], $_GET['gameid'], $_POST['order']);
 		}
@@ -28,27 +18,28 @@
 ?>
 <html>
 	<head>
-		<?php headerHTML(); ?>
-		<meta property="og:title" content="Combo好き" />
-		<meta property="og:type" content="website" />
-		<meta property="og:image" content="http://combosuki.com/img/combosuki.png" />
-		<meta property="og:url" content="http://combosuki.com/index.php" />
-		<meta property="og:description" 
-		content="Community-fueled searchable environment that shares and perfects combos." />
-		<meta name="theme-color" content="#C62114" />
-
-		<meta name="description" content="Community-fueled searchable environment that shares and perfects combos.">
+		<?php
+			headerHTML(); 
+			openGraphProtocol();
+		?>
 		<title>Combo好き</title>
-
-		<?php getCSS(); ?>
-
+		<?php
+			getCSS();
+		?>
 		<style>
 			<?php
 				background();
 				table();
 			?>
+			.container{
+				height: 100vh;
+			}
+			.jumbotron{
+				max-height: 190px;
+				background-color: #000000;
+			}
 		</style>
-	</head>
+	</head>	
 	
 	<body>
 		<?php header_buttons(2, 1, 'game.php', get_gamename($_GET['gameid'], $conn));?>

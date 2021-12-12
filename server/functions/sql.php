@@ -108,6 +108,22 @@ function insertButton($name,$png,$gameid,$order){
 	$result -> execute();
 }
 
+function updateButton($name,$png,$order,$gameid,$idbutton){
+	global $conn;
+	$query = "UPDATE `button` SET `name`=?,`png`=?,`order`=? WHERE `game_idgame` = ? AND `idbutton` = ?";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("ssiii", $name,$png,$order,$gameid,$idbutton);
+	$result -> execute();
+}
+
+function deleteButton($idButton,$gameID){
+	global $conn;
+	$query = "DELETE FROM `button` WHERE `idbutton` = ? AND `game_idgame` = ?";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("ii", $idButton,$gameID);
+	$result -> execute();	
+}
+
 function insertDefaultButtons($gameid){
 	insertButton('1','1',$gameid,0);
 	insertButton('2','2',$gameid,0);
