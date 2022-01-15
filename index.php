@@ -138,7 +138,9 @@
 									  Display method:
 									<select name="display" class="form-select input-small">
 										<option value="0">Text</option>
-										<option value="1">Image</option>
+										<option value="1"';
+								  			echo $_COOKIE['display'] ? 'selected':'';
+										echo '>Image</option>
 									</select>
 								</div>
 							</div>
