@@ -1,6 +1,6 @@
 <!doctype php>
 <?php
-	$urldepth = '../';
+	$URLDepth = '../';
 	require_once "../server/initialize.php";
 	if(isset($_POST['color'])){
 		setcookie("color", str_replace('#','',$_POST['color']), time() + (10 * 365 * 24 * 60 * 60), "/"); // 86400 = 1 day
