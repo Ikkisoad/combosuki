@@ -265,8 +265,8 @@ function gameCards($hasCards = 1, $games = 12, $completeGame = 1){
 				vertical-align: middle;"></span>
 					<a href="game/index.php?gameid='.$gameid['idgame'].'"><img class="rounded mx-auto d-block" style="
 					max-height:200px;
-						max-width:200px;
-						height:auto;
+					max-width:200px;
+					height:auto;
 					width:auto;
 					align: center;
 					vertical-align: middle;
