@@ -213,6 +213,7 @@ function getButtonsBy_gameID($gameID){
 }
 
 function updateGameResource($resource,$type,$primary,$idresource,$gameid){
+	global $conn;
 	$query = "UPDATE `game_resources` SET `text_name`= ?,`type`= ?,`primaryORsecundary`= ? WHERE `idgame_resources` = ? AND `game_idgame` = ?";
 	$result = $conn -> prepare($query);
 	$result -> bind_param("siiii",$resource,$type,$primary,$idresource,$gameid);
@@ -220,6 +221,7 @@ function updateGameResource($resource,$type,$primary,$idresource,$gameid){
 }
 
 function deleteGameResource($idresource){
+	global $conn;
 	$query = "DELETE FROM `resources_values` WHERE `game_resources_idgame_resources` = ?";
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i",$idresource);
@@ -232,6 +234,7 @@ function deleteGameResource($idresource){
 }
 
 function updateGameResourceValue($resourceValue,$order,$idresourceValue){
+	global $conn;
 	$query = "UPDATE `resources_values` SET `value`=?,`order`=? WHERE `idResources_values` = ?";
 	$result = $conn -> prepare($query);
 	$result -> bind_param("sii", $resourceValue,$order,$idresourceValue);
@@ -239,6 +242,7 @@ function updateGameResourceValue($resourceValue,$order,$idresourceValue){
 }
 
 function deleteGameResourceValue($idResourceValue){
+	global $conn;
 	$query = "DELETE FROM `resources` WHERE `Resources_values_idResources_values` = ?";
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i",$idResourceValue);
