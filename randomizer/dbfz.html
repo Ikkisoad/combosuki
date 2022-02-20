@@ -1,0 +1,263 @@
+<html>
+	<head>
+		<style>
+			body {
+			  background-color: #020202;
+			  color: #ffffff;
+			}
+		</style>
+	</head>
+	<body>
+		<p><h1>
+		DBFZ Randomizer
+
+		</h1></p>
+		<button onclick="newTeam()">new team</button>
+		<h2 id="team"></h2>
+
+		<img id="portrait0" src="" style="width:100px">
+		<img id="portrait1" src="" style="width:100px">
+		<img id="portrait2" src="" style="width:100px">
+
+		<br>
+		Colors
+		<h2 id="colors"></h2>
+
+		<h2 id="test"></h2>
+
+		<small>randomizer by @Ikkisoad</small>
+
+	</body>
+	<script>
+		function newTeam() {
+		var team = [-1, -1, -1];
+		var assist = [randomAssist(), randomAssist(), randomAssist()];
+		var random = -1;
+		characters.sort();
+		for (var i = 0; i < 3; i++) {
+		while (random == team[0] || random == team[1]) {
+		random = randomEl(characters);
+		}
+		if (team[0] == -1) {
+		team[0] = random;
+		} else if (team[1] == -1) {
+		team[1] = random;
+		} else {
+		team[2] = random;
+		}
+		}
+
+		document.getElementById("team").innerHTML = characters[team[0]].C.toString() + " " + assist[0] + " + " + characters[team[1]].C.toString() + " " + assist[1] + " + " + characters[team[2]].C.toString() + " " + assist[2];
+		randomColors();
+
+		printPortrait("portrait0", team[0]);
+		printPortrait("portrait1", team[1]);
+		printPortrait("portrait2", team[2]);
+		}
+
+		function randomColors() {
+
+		document.getElementById("colors").innerHTML = "";
+		for (var i = 0; i < 3; i++) {
+		document.getElementById("colors").innerHTML += (Math.floor(Math.random() * 25)) + " ";
+		}
+
+		}
+
+		function randomEl(list) {
+		var i = Math.floor(Math.random() * list.length);
+		return i;
+		}
+
+		function printPortrait(image, id) {
+		document.getElementById(image).src = characters[id].img;
+		}
+
+		function randomAssist() {
+		switch (Math.floor(Math.random() * 3)) {
+		case 0:
+		return "A";
+		case 1:
+		return "B";
+		case 2:
+		return "C";
+		}
+		}
+
+		var characters = [{
+		C: "Master Roshi",
+		img: "http://www.dustloop.com/wiki/images/thumb/8/8d/DBFZ_Master_Roshi_Icon.png/98px-DBFZ_Master_Roshi_Icon.png"
+		},
+		{
+		C: "SSB Gogeta",
+		img: "http://www.dustloop.com/wiki/images/thumb/1/1a/DBFZ_SSB_Gogeta_Icon.png/98px-DBFZ_SSB_Gogeta_Icon.png"
+		},
+		{
+		C: "Goku",
+		img: "http://www.dustloop.com/wiki/images/thumb/b/bb/DBFZ_Goku_Icon.png/98px-DBFZ_Goku_Icon.png"
+		},
+		{
+		C: "Tien",
+		img: "http://www.dustloop.com/wiki/images/thumb/8/85/DBFZ_Tien_Icon.png/98px-DBFZ_Tien_Icon.png"
+		},
+		{
+		C: "Yamcha",
+		img: "http://www.dustloop.com/wiki/images/thumb/0/08/DBFZ_Yamcha_Icon.png/98px-DBFZ_Yamcha_Icon.png"
+		},
+		{
+		C: "Krillin",
+		img: "http://www.dustloop.com/wiki/images/thumb/5/51/DBFZ_Krillin_Icon.png/98px-DBFZ_Krillin_Icon.png"
+		},
+		{
+		C: "SS Goku",
+		img: "http://www.dustloop.com/wiki/images/thumb/8/87/DBFZ_SS_Goku_Icon.png/98px-DBFZ_SS_Goku_Icon.png"
+		},
+		{
+		C: "Frieza",
+		img: "http://www.dustloop.com/wiki/images/thumb/a/a0/DBFZ_Frieza_Icon.png/98px-DBFZ_Frieza_Icon.png"
+		},
+		{
+		C: "Kid Buu",
+		img: "http://www.dustloop.com/wiki/images/thumb/a/a4/DBFZ_Kid_Buu_Icon.png/98px-DBFZ_Kid_Buu_Icon.png"
+		},
+		{
+		C: "Captain Ginyu",
+		img: "http://www.dustloop.com/wiki/images/thumb/5/59/DBFZ_Captain_Ginyu_Icon.png/98px-DBFZ_Captain_Ginyu_Icon.png"
+		},
+		{
+		C: "Nappa",
+		img: "http://www.dustloop.com/wiki/images/thumb/0/00/DBFZ_Nappa_Icon.png/98px-DBFZ_Nappa_Icon.png"
+		},
+		{
+		C: "Vegeta",
+		img: "http://www.dustloop.com/wiki/images/thumb/6/66/DBFZ_Vegeta_Icon.png/98px-DBFZ_Vegeta_Icon.png"
+		},
+		{
+		C: "DBS Broly",
+		img: "http://www.dustloop.com/wiki/images/thumb/0/0e/DBFZ_DBS_Broly_Icon.png/98px-DBFZ_DBS_Broly_Icon.png"
+		},
+		{
+		C: "Super Baby 2",
+		img: "http://www.dustloop.com/wiki/images/thumb/4/4e/DBFZ_Super_Baby_2_Icon.png/98px-DBFZ_Super_Baby_2_Icon.png"
+		},
+		{
+		C: "GT Goku",
+		img: "http://www.dustloop.com/wiki/images/thumb/0/01/DBFZ_GT_Goku_Icon.png/98px-DBFZ_GT_Goku_Icon.png"
+		},
+		{
+		C: "Android 17",
+		img: "http://www.dustloop.com/wiki/images/thumb/4/40/DBFZ_Android_17_Icon.png/98px-DBFZ_Android_17_Icon.png"
+		},
+		{
+		C: "Bardock",
+		img: "http://www.dustloop.com/wiki/images/thumb/3/31/DBFZ_Bardock_Icon.png/98px-DBFZ_Bardock_Icon.png"
+		},
+		{
+		C: "SSB Goku",
+		img: "http://www.dustloop.com/wiki/images/thumb/9/94/DBFZ_SSB_Goku_Icon.png/98px-DBFZ_SSB_Goku_Icon.png"
+		},
+		{
+		C: "Adult Gohan",
+		img: "http://www.dustloop.com/wiki/images/thumb/1/14/DBFZ_Adult_Gohan_Icon.png/98px-DBFZ_Adult_Gohan_Icon.png"
+		},
+		{
+		C: "Trunks",
+		img: "http://www.dustloop.com/wiki/images/thumb/b/b8/DBFZ_Trunks_Icon.png/98px-DBFZ_Trunks_Icon.png"
+		},
+		{
+		C: "SS Vegeta",
+		img: "http://www.dustloop.com/wiki/images/thumb/8/8d/DBFZ_SS_Vegeta_Icon.png/98px-DBFZ_SS_Vegeta_Icon.png"
+		},
+		{
+		C: "Cell",
+		img: "http://www.dustloop.com/wiki/images/thumb/7/75/DBFZ_Cell_Icon.png/98px-DBFZ_Cell_Icon.png"
+		},
+		{
+		C: "Android 18",
+		img: "http://www.dustloop.com/wiki/images/thumb/a/ac/DBFZ_Android_18_Icon.png/98px-DBFZ_Android_18_Icon.png"
+		},
+		{
+		C: "Android 16",
+		img: "http://www.dustloop.com/wiki/images/thumb/6/6e/DBFZ_Android_16_Icon.png/98px-DBFZ_Android_16_Icon.png"
+		},
+		{
+		C: "Android 21",
+		img: "http://www.dustloop.com/wiki/images/thumb/5/5f/DBFZ_Android_21_Icon.png/98px-DBFZ_Android_21_Icon.png"
+		},
+		{
+		C: "Broly",
+		img: "http://www.dustloop.com/wiki/images/thumb/8/8f/DBFZ_Broly_Icon.png/98px-DBFZ_Broly_Icon.png"
+		},
+		{
+		C: "Cooler",
+		img: "http://www.dustloop.com/wiki/images/thumb/b/b3/DBFZ_Cooler_Icon.png/98px-DBFZ_Cooler_Icon.png"
+		},
+		{
+		C: "Janemba",
+		img: "http://www.dustloop.com/wiki/images/thumb/a/a3/DBFZ_Janemba_Icon.png/98px-DBFZ_Janemba_Icon.png"
+		},
+		{
+		C: "UI Goku",
+		img: "http://www.dustloop.com/wiki/images/thumb/9/90/DBFZ_UI_Goku_Icon.png/98px-DBFZ_UI_Goku_Icon.png"
+		},
+		{
+		C: "Videl",
+		img: "http://www.dustloop.com/wiki/images/thumb/0/0d/DBFZ_Videl_Icon.png/98px-DBFZ_Videl_Icon.png"
+		},
+		{
+		C: "SSB Vegito",
+		img: "http://www.dustloop.com/wiki/images/thumb/8/89/DBFZ_SSB_Vegito_Icon.png/98px-DBFZ_SSB_Vegito_Icon.png"
+		},
+		{
+		C: "SSB Vegeta",
+		img: "http://www.dustloop.com/wiki/images/thumb/9/92/DBFZ_SSB_Vegeta_Icon.png/98px-DBFZ_SSB_Vegeta_Icon.png"
+		},
+		{
+		C: "Gotenks",
+		img: "http://www.dustloop.com/wiki/images/thumb/f/f2/DBFZ_Gotenks_Icon.png/98px-DBFZ_Gotenks_Icon.png"
+		},
+		{
+		C: "Piccolo",
+		img: "http://www.dustloop.com/wiki/images/thumb/c/c8/DBFZ_Piccolo_Icon.png/98px-DBFZ_Piccolo_Icon.png"
+		},
+		{
+		C: "Teen Gohan",
+		img: "http://www.dustloop.com/wiki/images/thumb/2/2b/DBFZ_Teen_Gohan_Icon.png/98px-DBFZ_Teen_Gohan_Icon.png"
+		},
+		{
+		C: "SS4 Gogeta",
+		img: "http://www.dustloop.com/wiki/images/thumb/f/fa/DBFZ_SS4_Gogeta_Icon.png/98px-DBFZ_SS4_Gogeta_Icon.png"
+		},
+		{
+		C: "Majin Buu",
+		img: "http://www.dustloop.com/wiki/images/thumb/d/d0/DBFZ_Majin_Buu_Icon.png/98px-DBFZ_Majin_Buu_Icon.png"
+		},
+		{
+		C: "Beerus",
+		img: "http://www.dustloop.com/wiki/images/thumb/4/42/DBFZ_Beerus_Icon.png/98px-DBFZ_Beerus_Icon.png"
+		},
+		{
+		C: "Hit",
+		img: "http://www.dustloop.com/wiki/images/thumb/d/dd/DBFZ_Hit_Icon.png/98px-DBFZ_Hit_Icon.png"
+		},
+		{
+		C: "Goku Black",
+		img: "http://www.dustloop.com/wiki/images/thumb/a/a3/DBFZ_Goku_Black_Icon.png/98px-DBFZ_Goku_Black_Icon.png"
+		},
+		{
+		C: "Fused Zamasu",
+		img: "http://www.dustloop.com/wiki/images/thumb/1/17/DBFZ_Fused_Zamasu_Icon.png/98px-DBFZ_Fused_Zamasu_Icon.png"
+		},
+		{
+		C: "Jiren",
+		img: "http://www.dustloop.com/wiki/images/thumb/c/c7/DBFZ_Jiren_Icon.png/98px-DBFZ_Jiren_Icon.png"
+		},
+		{
+		C: "Kefla",
+		img: "http://www.dustloop.com/wiki/images/thumb/5/5d/DBFZ_Kefla_Icon.png/98px-DBFZ_Kefla_Icon.png"
+		}
+		];
+
+		$('button').click();
+	</script>
+</html>
