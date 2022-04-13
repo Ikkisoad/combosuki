@@ -117,8 +117,8 @@
 			<div class="container-fluid my-3">
 				<div class="row">
 				<?php
-					list_categories($_GET['id']);
 					$idPage = $_GET['page'] ?? 0;
+					listCategories($_GET['id'],$idPage);
 					echo '<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4"><div class="chartjs-size-monitor"><div class="chartjs-size-monitor-expand"><div class=""></div></div><div class="chartjs-size-monitor-shrink"><div class=""></div></div></div>
 				';
 						if(isset($_GET['id'])){

@@ -425,4 +425,17 @@ function listPages($idList = 0, $idPage = 0){
 		<?php
 		echo $description;
 }
+
+function listCategories($idList = 0,$idPage = 0){
+	echo '
+	<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar show collapse combosuki-main-reversed">
+		<ul class="list-unstyled mb-0 py-3 pt-md-1">
+			<li class="list-group-item bg-transparent "><a href="#edit"><span>Edit</span></a></li>';
+			foreach(getListPageCategories($idList, $idPage) as $category){
+				echo '<li class="list-group-item bg-transparent "><a href="#'.$category['title'].'"><span>'.$category['title'].'</span></a></li>';
+			}
+			echo '
+		</ul>
+	</nav>';
+}
 ?>

@@ -272,4 +272,20 @@ function insertPage($title, $description, $idList, $order){
 	$result -> bind_param("ssii", $title, $description, $idList, $order);
 	$result -> execute();
 }
+
+function getListPageCategories($idList = 0, $idPage = 0){
+	global $conn;
+	$query = "SELECT `list_category`.`title`
+	FROM `combo_listing` 
+	INNER JOIN `combo` ON `combo`.`idcombo` = `combo_listing`.`idcombo` 
+	LEFT JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` 
+	LEFT JOIN `list_category` ON `list_category`.`idlist_category` = `combo_listing`.`list_category_idlist_category`
+	LEFT JOIN `list_page` ON `list_page`.`idListPage` = `list_category`.`idPage`
+	WHERE `combo_listing`.`idlist` = ? AND (IFNULL(`idPage`,0) = ? OR `idListPage` = ?)
+	GROUP BY `list_category`.`title` ORDER BY `list_category`.`order`, `list_category`.`title`,`combo`.`damage` DESC;";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("iii", $idList, $idPage, $idPage);
+	$result -> execute();
+	return $result->get_result();
+}
 ?>

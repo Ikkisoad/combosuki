@@ -1306,29 +1306,6 @@ function pagination($numberOfPages, $getAtributes, $currentPage){
 	echo'  </ul></nav>';
 }
 
-function list_categories($listid){
-	global $conn;
-	$query = "SELECT `list_category`.`title`
-FROM `combo_listing` 
-INNER JOIN `combo` ON `combo`.`idcombo` = `combo_listing`.`idcombo` 
-LEFT JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` 
-LEFT JOIN `list_category` ON `list_category`.`idlist_category` = `combo_listing`.`list_category_idlist_category`
-WHERE `idlist` = ?  GROUP BY `list_category`.`title` ORDER BY `list_category`.`order`, `list_category`.`title`,`combo`.`damage` DESC;";
-	$result = $conn -> prepare($query);
-	$result -> bind_param("i", $listid);
-	$result -> execute();
-	echo '
-	<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar show collapse combosuki-main-reversed">
-		<ul class="list-unstyled mb-0 py-3 pt-md-1">
-			<li class="list-group-item bg-transparent "><a href="#edit"><span>Edit</span></a></li>';
-			foreach($result -> get_result() as $data){
-				echo '<li class="list-group-item bg-transparent "><a href="#'.$data['title'].'"><span>'.$data['title'].'</span></a></li>';
-			}
-			echo '
-		</ul>
-	</nav>';
-}
-
 function jumbotron($imageHeight){
 	global $URLDepth, $conn;
 	if(isset($_GET['gameid'])){
