@@ -39,19 +39,21 @@ function getListContentBy_ID($ID = 0){
 	return $result->get_result();
 }
 
-function getListContentDetailedBy_ID($ID = 0){
+function getListContentDetailedBy_ID($ID = 0, $idPage = 0){
 	global $conn;
 	$query = "SELECT `combo_listing`.`idcombo`, `combo`.`damage`, `character`.`Name`, `combo`.`combo`, `combo`.`comments`,`combo`.`video`,`combo`.`type`, IFNULL(`list_category`.`title`,'No Category') as title, `list_category`.`idlist_category`,`list_category`.`order`,game_resources.text_name,resources_values.value,number_value 
     FROM `combo_listing` 
     INNER JOIN `combo` ON `combo`.`idcombo` = `combo_listing`.`idcombo` 
     LEFT JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` 
     LEFT JOIN `list_category` ON `list_category`.`idlist_category` = `combo_listing`.`list_category_idlist_category`
+	LEFT JOIN `list_page` ON `list_page`.`idListPage` = `list_category`.`idPage`
     INNER JOIN `resources` ON `combo`.`idcombo` = resources.combo_idcombo
     INNER JOIN resources_values ON resources.Resources_values_idResources_values = resources_values.idResources_values
     INNER JOIN game_resources ON game_resources.idgame_resources = game_resources_idgame_resources
-	WHERE `idlist` = ? ORDER BY `list_category`.`order`, `list_category`.`title`,`combo`.`damage` DESC, game_resources.idgame_resources,primaryORsecundary DESC, game_resources.text_name";
+	WHERE `combo_listing`.`idlist` = ? AND (? = 0 OR `idListPage` = ?)
+	ORDER BY `list_category`.`order`, `list_category`.`title`,`combo`.`damage` DESC, game_resources.idgame_resources,primaryORsecundary DESC, game_resources.text_name";
 	$result = $conn->prepare($query);
-	$result->bind_param("i",$ID);
+	$result->bind_param("iii",$ID,$idPage,$idPage);
 	$result->execute();
 	return $result->get_result();
 }
@@ -251,6 +253,23 @@ function deleteGameResourceValue($idResourceValue){
 	$query = "DELETE FROM `resources_values` WHERE `idResources_values` = ?";
 	$result = $conn -> prepare($query);
 	$result -> bind_param("i",$idResourceValue);
+	$result -> execute();
+}
+
+function getListPages($idList){
+	global $conn;
+	$query = "SELECT `idListPage`, `Title`, `Description`, `idList`, `order` FROM `list_page` WHERE `idList` = ? ORDER BY `order`";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("i",$idList);
+	$result -> execute();
+	return $result->get_result();
+}
+
+function insertPage($title, $description, $idList, $order){
+	global $conn;
+	$query = "INSERT INTO `list_page`(`idListPage`, `Title`, `Description`, `idList`, `order`) VALUES (NULL,?,?,?,?)";
+	$result = $conn -> prepare($query);
+	$result -> bind_param("ssii", $title, $description, $idList, $order);
 	$result -> execute();
 }
 ?>
