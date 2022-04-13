@@ -50,7 +50,7 @@ function getListContentDetailedBy_ID($ID = 0, $idPage = 0){
     INNER JOIN `resources` ON `combo`.`idcombo` = resources.combo_idcombo
     INNER JOIN resources_values ON resources.Resources_values_idResources_values = resources_values.idResources_values
     INNER JOIN game_resources ON game_resources.idgame_resources = game_resources_idgame_resources
-	WHERE `combo_listing`.`idlist` = ? AND (? = 0 OR `idListPage` = ?)
+	WHERE `combo_listing`.`idlist` = ? AND (IFNULL(`idPage`,0) = ? OR `idListPage` = ?)
 	ORDER BY `list_category`.`order`, `list_category`.`title`,`combo`.`damage` DESC, game_resources.idgame_resources,primaryORsecundary DESC, game_resources.text_name";
 	$result = $conn->prepare($query);
 	$result->bind_param("iii",$ID,$idPage,$idPage);

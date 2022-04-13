@@ -404,7 +404,7 @@ function listPages($idList = 0, $idPage = 0){
 	?>
 		<ul class="nav nav-tabs combosuki-main-reversed">
 		<li class="nav-item">
-			<a class="nav-link" aria-current="page" href="show.php?id=<?php echo $idList; ?>&page=0">Everything</a>
+			<a class="nav-link" aria-current="page" href="show.php?id=<?php echo $idList; ?>&page=0">No Page</a>
 		</li>
 	<?php foreach(getListPages($idList) as $page){ ?>
 		<li class="nav-item">
