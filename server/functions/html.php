@@ -65,7 +65,6 @@ function listHeader($result){
 	global $URLDepth;
 	while($list = $result->fetch_array(MYSQLI_ASSOC)){
 		$_GET['gameid'] = $list['game_idgame'];
-		//header_buttons(2, 1, 'game.php',get_gamename($_GET['gameid'], $conn));
 		echo '<h3 class="mt-3">'.$list['list_name'];
 			print_listglyph($list['type']);
 			echo '
@@ -87,6 +86,20 @@ function listHeader($result){
 					<div class="input-group-append" id="button-addon4">
 						<button type="submit" name="action" value="UpdateList" class="btn btn-primary">Update</button>
 						<button type="submit" name="action" value="DeleteList" class="btn btn-danger" onclick="return confirm();">Delete List</button>
+					</div>
+				</div>
+			</form>
+			<h3 class="mt-3">Add page</h3>
+			<form method="post" action="'.$URLDepth.'list/show.php?id='.$_GET['id'].'">
+				<input type="hidden" name="submission_type" value="4">
+				<input type="hidden" name="idlist" value="'.$_GET['id'].'">
+				<div class="input-group">
+					<textarea name="pageTitle" maxlength="255" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Page Title"></textarea>
+					<textarea name="pageDescription" maxlength="1000" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Page Description"></textarea>
+					<input class="form-control" type="number" name="pageOrder" placeholder="Order" step="any">
+					<input name="listPass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="List Password">
+					<div class="input-group-append" id="button-addon4">
+						<button type="submit" name="action" value="AddPage" class="btn btn-primary">Add</button>
 					</div>
 				</div>
 			</form>
@@ -170,7 +183,7 @@ function listContent($result){
 }
 
 
-function listContentDetailed($result){
+function listContentDetailed($result, $idPage = 0, $idList = 0){
 	global $URLDepth, $conn;
 	$title = '';
 	$comboID ='';
@@ -191,8 +204,9 @@ function listContentDetailed($result){
 					<input type="hidden" name="categoryid" value="'.$data['idlist_category'].'">
 					<div class="input-group">
 						<textarea name="category" maxlength="45" style="background-color: #474747; color:#ffffff;" class="form-control" rows="1" placeholder="Category Name">'.$data['title'].'</textarea>
-						<input class="form-control" type="number" name="order" placeholder="Order" value="'.$data['order'].'" step="any">
-						<input name="listPass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="List Password">
+						<input class="form-control" type="number" name="order" placeholder="Order" value="'.$data['order'].'" step="any">';
+						listPageDropdown($idList, $idPage);
+						echo '<input name="listPass" type="password" maxlength="16" style="background-color: #474747; color:#999999;" class="form-control" rows="1" placeholder="List Password">
 						<div class="input-group-append" id="button-addon4">
 							<input type="hidden" name="entryid" value="54">
 							<button type="submit" name="action" value="UpdateCategory" class="btn btn-primary">Update</button>
@@ -248,6 +262,23 @@ function listContentDetailed($result){
 		}
 	}
 	echo '</table>';
+}
+
+function listPageDropdown($idList = 0, $idPage = 0){
+	?>
+	<select name="idPage" class="form-select">
+	<?php
+	foreach(getListPages($idList) as $page){
+		?>
+		<option value="<?php echo $page['idListPage'];?>"
+		<?php if($idPage == $page['idListPage'])echo 'selected';?>>
+		<?php echo $page['Title'];?>
+		</option>
+		<?php
+	}
+	?>
+	</select>
+	<?php
 }
 
 function gameCards($hasCards = 1, $games = 12, $completeGame = 1){
@@ -365,5 +396,46 @@ function addButton(){
 		</tr>
 	</table>
 	<?php
+}
+
+function listPages($idList = 0, $idPage = 0){
+	global $conn, $URLDepth;
+	$description = '';
+	?>
+		<ul class="nav nav-tabs combosuki-main-reversed">
+		<li class="nav-item">
+			<a class="nav-link" aria-current="page" href="show.php?id=<?php echo $idList; ?>&page=0">No Page</a>
+		</li>
+	<?php foreach(getListPages($idList) as $page){ ?>
+		<li class="nav-item">
+			<a class="nav-link" aria-current="page" href="show.php?id=<?php echo $idList; ?>&page=
+			<?php 
+			echo $page['idListPage'];?>">
+			<?php
+			echo $page['Title'];?></a>
+		</li>
+		
+	<?php
+			if($idPage != 0 && $idPage == $page['idListPage']){
+				$description = $page['Description'];
+			}
+		}
+		?>
+		</ul>
+		<?php
+		echo $description;
+}
+
+function listCategories($idList = 0,$idPage = 0){
+	echo '
+	<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar show collapse combosuki-main-reversed">
+		<ul class="list-unstyled mb-0 py-3 pt-md-1">
+			<li class="list-group-item bg-transparent "><a href="#edit"><span>Edit</span></a></li>';
+			foreach(getListPageCategories($idList, $idPage) as $category){
+				echo '<li class="list-group-item bg-transparent "><a href="#'.$category['title'].'"><span>'.$category['title'].'</span></a></li>';
+			}
+			echo '
+		</ul>
+	</nav>';
 }
 ?>

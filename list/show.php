@@ -73,10 +73,15 @@
 				$result -> bind_param("i", $_POST['categoryid']);
 				$result -> execute();
 			}else if($_POST['action'] == 'UpdateCategory' && $_POST['category'] != ''){
-				$query = "UPDATE `list_category` SET `title`=?,`order`=? WHERE `idlist_category` = ?";
+				$query = "UPDATE `list_category` SET `title`=?,`order`=?, `idPage`=? WHERE `idlist_category` = ?";
 				$result = $conn -> prepare($query);
-				$result -> bind_param("sii", $_POST['category'],$_POST['order'],$_POST['categoryid']);
+				$result -> bind_param("siii", $_POST['category'],$_POST['order'],$_POST['idPage'],$_POST['categoryid']);
 				$result -> execute();
+			}
+		}else if($_POST['submission_type'] == 4){ //Add Page
+			verify_ListPassword($conn);
+			if($_POST['action'] == 'AddPage'){
+				insertPage($_POST['pageTitle'],$_POST['pageDescription'],$_GET['id'],$_POST['pageOrder']);
 			}
 		}
 		
@@ -112,13 +117,15 @@
 			<div class="container-fluid my-3">
 				<div class="row">
 				<?php
-					list_categories($_GET['id']);
+					$idPage = $_GET['page'] ?? 0;
+					listCategories($_GET['id'],$idPage);
 					echo '<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4"><div class="chartjs-size-monitor"><div class="chartjs-size-monitor-expand"><div class=""></div></div><div class="chartjs-size-monitor-shrink"><div class=""></div></div></div>
 				';
 						if(isset($_GET['id'])){
 							listHeader(getListBy_ID($_GET['id']));
+							listPages($_GET['id'], $idPage);
 							//listContent(getListContentBy_ID($_GET['id']));
-							listContentDetailed(getListContentDetailedBy_ID($_GET['id']));
+							listContentDetailed(getListContentDetailedBy_ID($_GET['id'],$idPage),$idPage, $_GET['id']);
 							edit_listForm();
 						}
 					echo '</main>';
