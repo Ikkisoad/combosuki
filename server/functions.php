@@ -999,58 +999,6 @@ function get_gamename($gameid, $conn){
 
 }
 
-function edit_listForm(){
-	global $conn,$URLDepth;
-	echo '
-	<div class="row combosuki-main-reversed gap-1">
-		<h3 class="mt-3" id="edit">Edit List</h3>
-		<small>Use , to Add or Remove multiple entries from the list. (Eg.: 777,26 would add or remove entries 777 and 26 from the list.)</small>
-
-		<form class="form-inline gap-3" method="post" action="'.$URLDepth.'list/show.php?id='.$_GET['id'].'">
-			<input type="hidden" name="submission_type" value="2">';
-
-			echo '
-			<div class="row">
-				<div class="col">
-					<input placeholder="Entry ID" style="background-color: #474747; color:#999999; min-width:150px;" name="comboid" class="form-control" rows="1"></input>
-				</div>
-
-				<div class="col">
-					<input placeholder="List Password" name="listPass" type="password" maxlength="16" style="background-color: #474747; color:#999999; min-width:150px;" class="form-control" rows="1"></input>
-				</div>
-				<div class="col">
-					<input placeholder="Category" name="comment" maxlength="45" style="background-color: #474747; color:#999999; min-width:150px;" class="form-control" rows="1"></input>
-				</div>
-			</div>';
-
-			$query = "SELECT `idlist_category`, `title` FROM `list_category` WHERE `list_idlist` = ? ORDER BY `list_category`.`order`,`list_category`.`title`;";
-			$result = $conn -> prepare($query);
-			$result -> bind_param("i", $_GET['id']);
-			$result -> execute();
-			echo '
-			<div class="form-group mb-2">
-				<select name="categoryid" class="form-select">';
-					echo '
-					<option value="0">New Category</option>';
-					foreach($result -> get_result() as $category){
-						echo '<option value="'.$category['idlist_category'].'" ';
-						echo '>'.$category['title'].'</option>';
-					}
-				echo '</select>
-			</div>'; 
-
-			echo '
-			<div class="row align-center">
-				<div class="col">
-					<button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Add Entry</button>
-					<button type="submit" name="action" value="Delete" class="btn btn-danger btn-block">Remove Entry</button>
-				</div>
-			</div>';
-			echo '
-		</form>
-	</div>';
-}
-
 function addtoListForm(){
 	if(1):?>
 		<form method="post" action="list.php">
@@ -1220,10 +1168,10 @@ function copyLinktoclipboard($link){
 function add_listCategory(){
 	global $conn;
 	if($_POST['comment'] != '' && $_POST['categoryid'] == 0){
-		$query = "INSERT INTO `list_category`(`idlist_category`, `title`, `list_idlist`, `order`) VALUES (NULL,?,?,0)";
+		$query = "INSERT INTO `list_category`(`idlist_category`, `title`, `list_idlist`, `order`, `idPage`) VALUES (NULL,?,?,0,?)";
 		$result = $conn -> prepare($query);
-		$result -> bind_param("si",$_POST['comment'],$_GET['id']);
-		$result -> execute();//echo $query; print_r($_POST);
+		$result -> bind_param("sii",$_POST['comment'],$_GET['id'],$_GET['page']);
+		$result -> execute();
 		return mysqli_insert_id($conn);
 	}
 	return $_POST['categoryid'];
@@ -1250,7 +1198,7 @@ function alter_List(){
 		foreach($result -> get_result() as $lul){
 			$gamepass = get_gamepassword($lul['game_idgame'], $conn);
 			if($gameid != $lul['game_idgame'] && $lul['game_idgame'] != 0){
-				header("Location: list.php?listid=".$_GET['id']."");
+				header("Location: show.php?listid=".$_GET['id']."");
 				exit();
 			}
 			$modPass = get_mod_password($lul['game_idgame'], $conn);
@@ -1268,7 +1216,7 @@ function alter_List(){
 					$result -> execute();
 				}
 			}else{
-				header("Location: list.php?listid=".$_GET['id']."");
+				header("Location: show.php?listid=".$_GET['id']."&page=".$_POST['page']."");
 				exit();
 			}
 		}
