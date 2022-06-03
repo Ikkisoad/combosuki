@@ -47,7 +47,7 @@
 			verify_ListPassword();
 			if($_POST['action'] == 'UpdateList'){
 				if($_POST['listName'] == ''){
-					header("Location: list.php");
+					header("Location: ".$URLDepth."list/index.php");
 					exit();
 				}
 				$query = "UPDATE `list` SET `list_name`= ? WHERE `idlist` = ?";
@@ -124,9 +124,8 @@
 						if(isset($_GET['id'])){
 							listHeader(getListBy_ID($_GET['id']));
 							listPages($_GET['id'], $idPage);
-							//listContent(getListContentBy_ID($_GET['id']));
 							listContentDetailed(getListContentDetailedBy_ID($_GET['id'],$idPage),$idPage, $_GET['id']);
-							edit_listForm();
+							editListForm($idPage);
 						}
 					echo '</main>';
 
