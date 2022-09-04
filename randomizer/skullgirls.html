@@ -11,6 +11,7 @@
 		<input type="checkbox" id="Annie" checked> Annie
 		<input type="checkbox" id="Beowulf" checked> Beowulf
 		<input type="checkbox" id="BigBand" checked> Big Band
+		<input type="checkbox" id="BlackDahlia" checked> Black Dahlia
 		<input type="checkbox" id="Cerebella" checked> Cerebella
 		<input type="checkbox" id="Double" checked> Double
 		<input type="checkbox" id="Eliza" checked> Eliza
@@ -29,6 +30,7 @@
 			<option value="14">Annie</option>
 			<option value="13">Beowulf</option>
 			<option value="11">Big Band</option>
+			<option value="16">Black Dahlia</option>
 			<option value="2">Cerebella</option>
 			<option value="10">Double</option>
 			<option value="9">Eliza</option>
@@ -50,6 +52,7 @@
 			<option value="14">Annie</option>
 			<option value="13">Beowulf</option>
 			<option value="11">Big Band</option>
+			<option value="16">Black Dahlia</option>
 			<option value="2">Cerebella</option>
 			<option value="10">Double</option>
 			<option value="9">Eliza</option>
@@ -71,6 +74,7 @@
 			<option value="14">Annie</option>
 			<option value="13">Beowulf</option>
 			<option value="11">Big Band</option>
+			<option value="16">Black Dahlia</option>
 			<option value="2">Cerebella</option>
 			<option value="10">Double</option>
 			<option value="9">Eliza</option>
@@ -194,6 +198,10 @@
 		  case 15:
 			document.getElementById("c1").innerHTML += "<br>>Umbrella: " + randomEl(Umbrella);
 			color = Math.floor(Math.random() * 31);
+			break;
+		  case 16:
+			document.getElementById("c1").innerHTML += "<br>>Black Dahlia: " + randomEl(BlackDahlia);
+			color = Math.floor(Math.random() * 6);
 			break;
 		}
 		switch (counter) {
@@ -336,6 +344,9 @@
 	  if (document.getElementById("BigBand").checked == true) {
 		roster.push(11);
 	  }
+	  if (document.getElementById("BlackDahlia").checked == true) {
+		roster.push(16);
+	  }
 	  if (document.getElementById("Cerebella").checked == true) {
 		roster.push(2);
 	  }
@@ -382,6 +393,8 @@
 	var Beowulf = ["s.LP - Cheap Pop", "s.MP - Pipe Bomb", "s.HP - Hurting Hammer", "s.LK - Low Town", "s.MK - Wulf Kick", "s.HK - Lone Boot", "c.LP - Wulf Paw", "c.MP - Potato", "c.HP - Nosebleed Seat", "c.LK - Trepak Attack", "c.MK - Ankle Lace", "c.HK - Geatish Leg Sweep", "Hurting Hurl (L) (236LP)", "Hurting Hurl (M) (236MP)", "Hurting Hurl (H) (236HP)", "Wulf Blitzer (L) (236LK)", "Wulf Blitzer (M) (236MK)", "Wulf Blitzer (H) (236HK)", "Wulf Shoot (236LK+LP)", "Clinch Up (Throw) ", "Clinch Up (Back Throw) ", "Dash (PP)", "Backdash (4PP)", "Aroo Ready? (Taunt)"];
 
 	var BigBand = ["s.LP - Honky Tonk", "s.MP - Free Form", "s.HP - Air Mail Special", "s.LK - Hot Socks", "s.MK - Pneumatic Slide", "s.HK - Kick Stand", "c.LP - Ring-a-Ding", "c.MP - Glissando", "c.HP - Overblow", "c.LK - Sharp Note", "c.MK - Bass Drop", "c.HK - Low Rank", "Beat Extend (L) (623LP)", "Beat Extend (M) (623MP)", "Beat Extend (H) (623HP)", "Brass Knuckles (L) (46PK)", "Brass Knuckles (M) (46MP)", "Brass Knuckles (H) (46HP)", "Take the 'A' Train (L) (46LK)", "Take the 'A' Train (M) (46MK)", "Take the 'A' Train (H) (46HK)", "Giant Step (L) (214LK)", "Giant Step (M) (214MK)", "Giant Step (H) (214HK)", "Heavy Toll (Throw)", "Heavy Toll (Back Throw)", "Dash (PP)", "Backdash (4PP)", "Bagpipe Blues (Taunt) (Start)"];
+
+	var BlackDahlia = ["s.LP - Business and Pleasure", "s.LP - Business and Pleasure", "s.HP - Skull Cracker", "s.LK - Shin Splitter", "s.MK - Stiletto Stab", "s.HK - Highball Heel", "c.LP - Tchotchke Roulette", "c.MP - Swan Strike", "c.HP - Quake", "c.LK - Blade Waltz", "c.MK - Medici Mousetrap", "c.HK - Clean Sweep", "Order Up! (L) (236LP)", "Order Up! (M) (236MP)", "Order Up! (H) (236HP)", "Another Round (LP) (214LP)", "Another Round (MP) (214MP)", "Another Round (HP) (214HP)", "Tea Time (L) (214LK)", "Tea Time (M) (214MK)", "Tea Time (H) (214HK)", "Onslaught (K+K)", "Shakedown (Throw) (5/6LP+LK)", "Shakedown (Backthrow) (4LP+LK", "Dash (PP)", "Backdash (4PP)", "It's Apple Juice (Taunt) (Start)", "Empower (236LP+LK)"];
 
 	var Cerebella = ["s.LP - Tune Up", "s.MP - Medici Shakedown", "s.HP - Tent Stake Hammer", "s.LK - Point Cut", "s.MK - Cugine Kick", "s.HK - Adagio Swing", "c.LP - Kneecapper", "c.MP - Enforcer Elbow", "c.HP - Boost-iere", "c.LK - Diamond Scratch", "c.MK - Loop de Loop", "c.HK - Medici Legbreaker", "s.F + HP - Titan Knuckle", "Lock'n'Load (L) (236LP)", "Lock'n'Load (M) (236MP)", "Lock'n'Load (H) (236HP)", "Run Stop (46LP+LK)", "Kanchou (46MK+MP)", "Battle Butt (46HK+HP)", "Tumbling Run (46K)", "Diamond Deflector (623LP)", "Devil Horns (623MP)", "Cerecopter (623HP)", "Merry Go-Rilla (214LK+LP)", "Diamond Drop (236LK+LP)", "Excellebella (623LK+LP)", "Cere-rana (Throw)", "Cere-rana (Back Throw)", "Dash (PP)", "Backdash (4PP)", "Medici Muscle (Taunt) (Start)"];
 
