@@ -95,6 +95,7 @@
 
 								<?php
 								copyLinktoclipboard(get_combolink($id_combo));
+								copyCombotoclipboard(get_combo($combo));
 							echo '</th>';
 						echo '</tr>';
 						echo '<tr>';
