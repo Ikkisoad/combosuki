@@ -900,10 +900,6 @@ function get_gamepassword($gameid, $conn){
 	}
 }
 
-function get_combo($combo){
-	return $combo;
-}
-
 function get_combolink($comboid){
 	return 'http://combosuki.com/game/combo.php?idcombo='.$comboid;
 }
