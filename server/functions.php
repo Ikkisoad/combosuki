@@ -1165,6 +1165,14 @@ function copyLinktoclipboard($link){
 	<?php endif;
 }
 
+function copyCombotoclipboard($combo){
+	if(1):?>
+	<button alignt="right" style="float: right;" class="btn btn-secondary" onclick="copytoclip('<?php echo $combo; ?>')">
+		Copy Combo
+	</button>
+	<?php endif;
+}
+
 function add_listCategory(){
 	global $conn;
 	if($_POST['comment'] != '' && $_POST['categoryid'] == 0){
