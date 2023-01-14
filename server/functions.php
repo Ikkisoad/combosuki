@@ -1175,10 +1175,11 @@ function copyCombotoclipboard($combo){
 
 function add_listCategory(){
 	global $conn;
-	if($_POST['comment'] != '' && $_POST['categoryid'] == 0){
+	$title = $_POST['comment'] != '' ? $_POST['comment'] : 'Unnamed Category';
+	if($_POST['categoryid'] == 0){
 		$query = "INSERT INTO `list_category`(`idlist_category`, `title`, `list_idlist`, `order`, `idPage`) VALUES (NULL,?,?,0,?)";
 		$result = $conn -> prepare($query);
-		$result -> bind_param("sii",$_POST['comment'],$_GET['id'],$_GET['page']);
+		$result -> bind_param("sii",$title,$_GET['id'],$_GET['page']);
 		$result -> execute();
 		return mysqli_insert_id($conn);
 	}
