@@ -467,7 +467,7 @@ function editListForm($idPage = 0){
 				<select name="categoryid" class="form-select">';
 					echo '
 					<option value="0">New Category</option>';
-					foreach(getListPageCategories($_GET['id'], $idPage) as $category){
+					foreach(getListPageCategories($_GET['id'], $idPage, 1) as $category){
 						echo '<option value="'.$category['idlist_category'].'" ';
 						echo '>'.$category['title'].'</option>';
 					}

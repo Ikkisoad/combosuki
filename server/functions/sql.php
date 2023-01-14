@@ -275,7 +275,7 @@ function insertPage($title, $description, $idList, $order){
 
 function getListPageCategories($idList = 0, $idPage = 0, $content = 0){
 	global $conn;
-	$query = $content == 0 ? "SELECT `list_category`.`title`" : "SELECT *";
+	$query = $content == 0 ? "SELECT `list_category`.`title`" : "SELECT `list_category`.`title`, `list_category`.`idlist_category`";
 	$query .= " FROM `combo_listing` 
 	INNER JOIN `combo` ON `combo`.`idcombo` = `combo_listing`.`idcombo` 
 	LEFT JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` 
