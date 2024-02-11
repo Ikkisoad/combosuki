@@ -17,6 +17,7 @@
 		<input type="checkbox" id="Eliza" checked> Eliza
 		<input type="checkbox" id="Filia" checked> Filia
 		<input type="checkbox" id="Fukua" checked> Fukua
+		<input type="checkbox" id="Marie" checked> Marie
 		<input type="checkbox" id="MsFortune" checked> Ms Fortune
 		<input type="checkbox" id="Painwheel" checked> Painwheel
 		<input type="checkbox" id="Parasoul" checked> Parasoul
@@ -36,6 +37,7 @@
 			<option value="9">Eliza</option>
 			<option value="6">Filia</option>
 			<option value="12">Fukua</option>
+			<option value="17">Marie</option>
 			<option value="3">Ms Fortune</option>
 			<option value="4">Painwheel</option>
 			<option value="8">Parasoul</option>
@@ -58,6 +60,7 @@
 			<option value="9">Eliza</option>
 			<option value="6">Filia</option>
 			<option value="12">Fukua</option>
+			<option value="17">Marie</option>
 			<option value="3">Ms Fortune</option>
 			<option value="4">Painwheel</option>
 			<option value="8">Parasoul</option>
@@ -80,6 +83,7 @@
 			<option value="9">Eliza</option>
 			<option value="6">Filia</option>
 			<option value="12">Fukua</option>
+			<option value="17">Marie</option>
 			<option value="3">Ms Fortune</option>
 			<option value="4">Painwheel</option>
 			<option value="8">Parasoul</option>
@@ -201,6 +205,10 @@
 			break;
 		  case 16:
 			document.getElementById("c1").innerHTML += "<br>>Black Dahlia: " + randomEl(BlackDahlia);
+			color = Math.floor(Math.random() * 31);
+			break;
+		  case 17:
+			document.getElementById("c1").innerHTML += "<br>>Marie: " + randomEl(Marie);
 			color = Math.floor(Math.random() * 6);
 			break;
 		}
@@ -362,6 +370,9 @@
 	  if (document.getElementById("Fukua").checked == true) {
 		roster.push(12);
 	  }
+	  if (document.getElementById("Marie").checked == true) {
+		roster.push(17);
+	  }
 	  if (document.getElementById("MsFortune").checked == true) {
 		roster.push(3);
 	  }
@@ -405,6 +416,8 @@
 	var Filia = ["s.LP - Snip Snip", "s.MP - Thinning Shears", "s.HP - Chompadour", "s.LK - Knee High", "s.MK - Leg Warmer", "s.HK - Samson Boot", "c.LP - Comb Under", "c.MP - Ariel Rave", "c.HP - Queue Sting", "c.LK - Ankle Sock", "c.MK - French Twist", "c.HK - Tread of Hair", "Ringlet Spike (L) (236LP)", "Ringlet Spike (M) (236MP)", "Ringlet Spike (H) (236HP)", "Ringlet Psych (623K)", "Updo (L) (623LP)", "Updo (M) (236MP)", "Updo (H) (236HP)", "Hairball (L) (214LK)", "Hairball (M) (214MK)", "Hairball (H) (214HK)", "Samson Cuddle (Throw)", "Samson Cuddle (Back Throw)", "Dash (PP)", "Backdash (4PP)", "Born With It (Taunt) (Start)"];
 
 	var Fukua = ["s.LP - Standing Jab", "s.MP - Thinning Shears", "s.HP - Chompadour", "s.LK - Knee High", "s.MK - Fukua sets mode +k", "s.HK - Shamone Boot", "c.LP - Crouching Jab", "c.MP - Ariel Rave", "c.HP - Queue Sting", "c.LK - Ankle Sock", "c.MK - French Twist", "c.HK - Tread of Hair", "Love Dart (L) (236LP)", "Love Dart (M) (236MP)", "Love Dart (H) (236HP)", "Forever a Clone (L) (214LK)", "Forever a Clone (M) (214MK)", "Forever a Clone (H) (214HK)", "Platonic Drillationship (L) (236LK)", "Platonic Drillationship (M) (236MK)", "Platonic Drillationship (H) (236HK)", "Tender Embrace (236LK+LP)", "Inevitable Snuggle (214LK+LP)", "Shamone Cuddle (Throw)", "Shamone Cuddle (Back Throw)", "Dash (PP)", "Backdash (4PP)", "Breakdown (Taunt) (Start)"];
+
+	var Marie = ["s.LP - Rattan Luck", "s.MP - Backhanded Compliment", "s.HP - Clean Cut", "s.LK - Voided Warranty", "s.MK - Batter-ment", "s.HK - Helping Hands", "c.LP - Scrub Scrubber", "c.MP - Pain Cushion", "c.HP - Dead Lift", "c.LK - Bellows Blast", "c.MK - Tidying Up", "c.HK - Literally a Sweep", "Hop To It (L) (236LP)", "Hop To It (M) (236MP)", "Hop To It (H) (236HP)", "Hilgard's Howl (L) (214LK)", "Hilgard's Howl (M) (214MK)", "Hilgard's Howl (H) (214HK)", "Hilgard's Haymaker (L) (236LK)", "Hilgard's Haymaker (M) (236MK)", "Hilgard's Haymaker (H) (236HK)", "Marie Go 'Round (L) (214LP)", "Marie Go 'Round (M) (214MP)", "Marie Go 'Round (H) (214HP)", "Suction Obstruction (236LPLK)", "May I Cut In? (Throw)", "May I Cut In? (Back Throw)", "Dash (PP)", "Backdash (4PP)", "A Moment's Time (Taunt) (Start)"];
 
 	var MsFortune = ["s.LP - Neko Pun-ch", "s.MP - Facepalm", "s.HP - Ears Pierced", "s.LK - Flip Flop", "s.MK - One-Two Punisher", "s.HK - Wheel of Fortune", "c.LP - Toy Touch", "c.MP - Hand In Hand", "c.HP - High Brow", "c.LK - Knees and Toes", "c.MK - Nail Clipper", "c.HK - Kitt n' Spin", "Cat Scratch (L) (236LP)", "Cat Scratch (M) (236MP)", "Cat Scratch (H) (236HP)", "El Gato (214K)", "Cat Slide (236K)", "Be Headed (214P)", "Fiber Upper (L) (623LK)", "Fiber Upper (M) (623MK)", "Fiber Upper (H) (623HK)", "Headbutt (2/4/5/6HP)", "Zoom! (1/3HP)", "Apotemnophobia (Throw)", "Apotemnophobia (Back Throw)", "Dash (PP)", "Backdash (4PP)", "Nyaaawn (Taunt) (Start)"];
 
