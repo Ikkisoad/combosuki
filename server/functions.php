@@ -805,6 +805,7 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 									echo '<li><a class="dropdown-item" href="https://srk.shib.live/w/Shoryuken_Wiki:Community_portal/Discords/Game" target="_blank">FGC Discord Compendium</a></li>';
 									echo '<li><hr class="dropdown-divider"></li>';
 									echo '<li><a class="dropdown-item" href="'.$URLDepth.'index.php?about=4">Preferences</a></li>';
+									echo '<li><a class="dropdown-item" href="'.$URLDepth.'randomizer">Randomizers</a></li>';
 									echo '<li><a class="dropdown-item" href="'.$URLDepth.'index.php?about=3">Logs</a></li>';
 								?>
 							</ul>
