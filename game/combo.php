@@ -57,7 +57,7 @@
 		<?php headerHTML(); ?>
 		<?php
 		openGraphProtocol($name.' > '.$damage.' damage',$combo);
-		meta_embedvideo($video); ?>
+		//meta_embedvideo($video); ?>
 		<title>Combo好き</title>
 		<?php
 			getCSS();

@@ -29,7 +29,7 @@ function listsTable($lists){
 	global $URLDepth;
 	echo '<table id="myTable" class="table table-hover align-middle caption-top combosuki-main-reversed text-white">';
 	echo '<tr>';
-	echo '<th>List Name</th>';
+	echo '<th>Guides</th>';
 	echo '</tr>';
 	while($list = $lists->fetch_array(MYSQLI_ASSOC)){
 		if($list['list_name'] != ''){

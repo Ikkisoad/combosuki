@@ -60,7 +60,7 @@
 
 		}else if($_POST['submission_type'] == 3){ //Deleting List Category
 
-			verify_ListPassword($conn);
+			verify_ListPassword();
 
 			if($_POST['action'] == 'DeleteCategory'){
 				$query = "DELETE FROM `combo_listing` WHERE `list_category_idlist_category` = ?";
@@ -79,7 +79,7 @@
 				$result -> execute();
 			}
 		}else if($_POST['submission_type'] == 4){ //Add Page
-			verify_ListPassword($conn);
+			verify_ListPassword();
 			if($_POST['action'] == 'AddPage'){
 				insertPage($_POST['pageTitle'],$_POST['pageDescription'],$_GET['id'],$_POST['pageOrder']);
 			}

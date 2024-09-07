@@ -570,7 +570,7 @@ function button_printing($idgame, $dataCombo){
 		array_push($buttonsPNG,$each['png']);
 	}
 	$combo_image = '<img class="img-fluid" alt="Responsive image" src='.$URLDepth.'img/buttons/start.png>';
-	$buttonID;
+	// $buttonID;
 	$buttonsName = array_map('strtolower', $buttonsName);
 	
 	$array = str_split($dataCombo);
@@ -789,7 +789,7 @@ function header_buttons($buttons, $back, $backDestination, $backto){ //Buttons=1
 							}
 						?>
 						<li class="nav-item">
-							<a class="nav-link" href="<?php echo $URLDepth; ?>list/index.php">Lists</a>
+							<a class="nav-link" href="<?php echo $URLDepth; ?>list/index.php">Guides</a>
 						</li>
 						
 						<li class="nav-item dropdown">
@@ -1190,7 +1190,7 @@ function add_listCategory(){
 function alter_List(){
 	global $conn;
 	$ids = explode(",", $_POST['comboid']);
-	$category = add_listCategory($conn);
+	$category = add_listCategory();
 	for($i = 0; $i<sizeof($ids);$i++){
 		
 		$query = "SELECT `character`.`game_idgame` FROM `combo` INNER JOIN `character` ON `character`.`idcharacter` = `combo`.`character_idcharacter` WHERE `combo`.`idcombo` = ?";
