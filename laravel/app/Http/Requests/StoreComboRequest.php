@@ -25,7 +25,6 @@ class StoreComboRequest extends FormRequest
             'patch' => ['nullable', 'string', 'max:10'],
             'comments' => ['nullable', 'string'],
             'video' => ['nullable', 'string', 'max:255'],
-            'password' => ['required', 'string', 'max:16'],
             'resources' => ['array'],
             'resources.*' => ['nullable'],
         ];

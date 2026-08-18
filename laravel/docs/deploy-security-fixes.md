@@ -1,63 +1,64 @@
-# Deploy das correções de segurança (2026-08-18)
+# Security fixes deployment (2026-08-18)
 
-Runbook para aplicar em staging e, depois, em produção as correções de:
+Runbook for applying the following fixes to staging now, and later to production:
 
-1. Injeção de iframe via campo `video` de combo ([app/Services/VideoEmbedResolver.php](../app/Services/VideoEmbedResolver.php))
-2. Senhas de jogo/lista/combo armazenadas em texto puro ([app/Services/GamePasswordChecker.php](../app/Services/GamePasswordChecker.php), controllers relacionados)
-3. Falta de rate limiting nos endpoints protegidos por senha ([routes/web.php](../routes/web.php))
-4. Headers de segurança ausentes ([app/Http/Middleware/SecurityHeaders.php](../app/Http/Middleware/SecurityHeaders.php))
+1. Iframe injection via a combo's `video` field ([app/Services/VideoEmbedResolver.php](../app/Services/VideoEmbedResolver.php))
+2. Game/list/combo passwords stored in plaintext ([app/Services/GamePasswordChecker.php](../app/Services/GamePasswordChecker.php) and related controllers)
+3. Missing rate limiting on password-protected endpoints ([routes/web.php](../routes/web.php))
+4. Missing security headers ([app/Http/Middleware/SecurityHeaders.php](../app/Http/Middleware/SecurityHeaders.php))
 
-A peça crítica é a migration `2026_08_18_000000_hash_plaintext_passwords`, que amplia as colunas
-`game.globalPass`, `list.password` e `combo.password` de `VARCHAR(16)` para `VARCHAR(255)` e
-re-hasheia com bcrypt tudo que ainda estiver em texto puro. **É unidirecional**: `down()` só desfaz
-a largura da coluna, não recupera o texto original. Ela é **idempotente** — pula qualquer valor que já
-comece com `$2y$`, então pode ser reexecutada com segurança se cair no meio.
+The critical piece is the `2026_08_18_000000_hash_plaintext_passwords` migration, which widens the
+`game.globalPass`, `list.password` and `combo.password` columns from `VARCHAR(16)` to `VARCHAR(255)`
+and rehashes with bcrypt anything still stored in plaintext. **This is one-way**: `down()` only
+reverts the column width, it cannot recover the original plaintext. It is **idempotent** — it skips
+any value that already starts with `$2y$`, so it's safe to rerun if it's interrupted partway through.
 
-Validado localmente em 2026-08-18 contra ~3.100 senhas de combo + 67 de lista + 40 de jogo: rodou em
-~10 minutos (bcrypt custo 12 é proposicionalmente lento) e zerou o total de senhas não-hasheadas.
+Validated locally on 2026-08-18 against ~3,100 combo passwords + 67 list passwords + 40 game
+passwords: it ran in ~10 minutes (bcrypt cost 12 is deliberately slow) and brought the count of
+plaintext passwords to zero.
 
-## Antes de rodar em qualquer ambiente
+## Before running in any environment
 
-- [ ] Confirmar que o código já está commitado/mergeado no branch de deploy do ambiente
-- [ ] Confirmar acesso SSH (evitar rodar via terminal do hPanel no navegador — sessões de ~10min
-      correm risco de a aba cair antes de terminar; se só houver terminal web, use `nohup` + `disown`
-      conforme abaixo)
-- [ ] **Backup do banco antes de qualquer coisa** — a etapa de hash é irreversível
+- [ ] Confirm the code is already committed/merged on that environment's deploy branch
+- [ ] Confirm SSH access (avoid running this from a browser-based hPanel terminal — a ~10 minute
+      session risks the tab closing before it finishes; if SSH isn't available, use `nohup` +
+      `disown` as shown below)
+- [ ] **Back up the database before anything else** — the hashing step is irreversible
 
-## Passo a passo
+## Step by step
 
-### 1. Backup do banco
+### 1. Back up the database
 
 ```bash
-mysqldump -u USUARIO -p NOME_DO_BANCO > backup_pre_security_fix_$(date +%Y%m%d_%H%M).sql
+mysqldump -u USER -p DATABASE_NAME > backup_pre_security_fix_$(date +%Y%m%d_%H%M).sql
 ```
 
-Em produção, prefira um snapshot completo (hPanel costuma ter backup automático de banco+arquivos —
-confirme que existe um recente antes de prosseguir, além deste dump manual).
+In production, prefer a full snapshot (hPanel usually has automatic database + file backups —
+confirm a recent one exists before proceeding, in addition to this manual dump).
 
-### 2. Deploy do código
+### 2. Deploy the code
 
 ```bash
-cd /caminho/da/app/laravel
-git pull origin <branch-do-ambiente>   # stagging para staging; branch/tag de produção quando for a vez
+cd /path/to/app/laravel
+git pull origin <environment-branch>   # stagging for staging; the production branch/tag when it's time
 composer install --no-dev --optimize-autoloader
 ```
 
-Nenhuma dependência nova foi adicionada (a migration usa `DB::statement` bruto em vez de
-`Schema::change()`, então não precisa de `doctrine/dbal`).
+No new dependency was added (the migration uses a raw `DB::statement` instead of
+`Schema::change()`, so it doesn't need `doctrine/dbal`).
 
-### 3. Modo de manutenção
+### 3. Maintenance mode
 
-Evita que alguém tente validar uma senha no meio da migração (linhas ainda não hasheadas falham a
-comparação até serem processadas).
+Prevents anyone from attempting a password check mid-migration (rows not yet hashed will fail the
+comparison until they're processed).
 
 ```bash
-php artisan down --secret="escolha-um-token-aqui"
+php artisan down --secret="pick-a-token-here"
 ```
 
-Use `--secret` para poder acessar `/escolha-um-token-aqui` e testar antes de reabrir para todos.
+Use `--secret` so you can access `/pick-a-token-here` and test before reopening to everyone.
 
-### 4. Rodar a migration
+### 4. Run the migration
 
 ```bash
 nohup php artisan migrate --force > /tmp/migrate_security.log 2>&1 &
@@ -65,15 +66,15 @@ disown
 tail -f /tmp/migrate_security.log
 ```
 
-- `--force` é obrigatório porque `APP_ENV` de staging/produção bloqueia `migrate` interativo.
-- `nohup ... & disown` mantém o processo rodando mesmo se a sessão SSH/terminal cair.
-- `Ctrl+C` no `tail -f` só sai do acompanhamento, não mata a migration.
-- Se a sessão cair de verdade e não houver certeza se terminou, rode `php artisan migrate:status`
-  (mostra `[3] Ran` quando concluída) — ou apenas rode `migrate --force` de novo; é seguro por ser
-  idempotente.
+- `--force` is required because `APP_ENV` on staging/production blocks interactive `migrate`.
+- `nohup ... & disown` keeps the process running even if the SSH session/terminal drops.
+- `Ctrl+C` on `tail -f` only exits the log follow, it doesn't kill the migration.
+- If the session really does drop and you're not sure it finished, run `php artisan migrate:status`
+  (shows `[3] Ran` once complete) — or just run `migrate --force` again; it's safe since it's
+  idempotent.
 
-Estimativa de tempo: proporcional ao nº de linhas em `combo`/`list`/`game` com senha preenchida.
-Em staging foram ~3.200 linhas em ~10 min. Antes de rodar em produção, meça o volume:
+Time estimate: proportional to the number of rows in `combo`/`list`/`game` with a password set. On
+staging that was ~3,200 rows in ~10 min. Before running in production, measure the volume:
 
 ```bash
 php artisan tinker --execute="
@@ -83,10 +84,10 @@ echo DB::table('game')->whereNotNull('globalPass')->where('globalPass','!=','')-
 "
 ```
 
-e estime `tempo ≈ (linhas_produção / linhas_staging) × 10min`. Se for muito maior, considere rodar
-fora do horário de pico e avisar os usuários com antecedência.
+and estimate `time ≈ (production_rows / staging_rows) × 10min`. If it's substantially larger,
+run it during off-peak hours and give users advance notice.
 
-### 5. Limpar caches
+### 5. Clear caches
 
 ```bash
 php artisan config:clear
@@ -95,48 +96,47 @@ php artisan view:clear
 php artisan cache:clear
 ```
 
-### 6. Verificar
+### 6. Verify
 
 ```bash
-php artisan migrate:status | tail -5   # deve mostrar hash_plaintext_passwords como Ran
+php artisan migrate:status | tail -5   # should show hash_plaintext_passwords as Ran
 
 php artisan tinker --execute="
 \$col = DB::select('SHOW COLUMNS FROM combo LIKE \'password\'');
 echo 'combo.password: '.\$col[0]->Type.PHP_EOL;
-echo 'combo ainda em texto puro: '.DB::table('combo')->whereNotNull('password')->where('password','!=','')->where('password','not like','\$2y\$%')->count().PHP_EOL;
-echo 'list ainda em texto puro: '.DB::table('list')->whereNotNull('password')->where('password','!=','')->where('password','not like','\$2y\$%')->count().PHP_EOL;
-echo 'game ainda em texto puro: '.DB::table('game')->whereNotNull('globalPass')->where('globalPass','!=','')->where('globalPass','not like','\$2y\$%')->count().PHP_EOL;
+echo 'combo still plaintext: '.DB::table('combo')->whereNotNull('password')->where('password','!=','')->where('password','not like','\$2y\$%')->count().PHP_EOL;
+echo 'list still plaintext: '.DB::table('list')->whereNotNull('password')->where('password','!=','')->where('password','not like','\$2y\$%')->count().PHP_EOL;
+echo 'game still plaintext: '.DB::table('game')->whereNotNull('globalPass')->where('globalPass','!=','')->where('globalPass','not like','\$2y\$%')->count().PHP_EOL;
 "
 ```
 
-Os três contadores "ainda em texto puro" devem ser `0`.
+All three "still plaintext" counters must be `0`.
 
-### 7. Sair do modo de manutenção
+### 7. Exit maintenance mode
 
 ```bash
 php artisan up
 ```
 
-### 8. Teste funcional (com o site já público de novo)
+### 8. Functional test (with the site public again)
 
-- [ ] Editar um jogo/lista existente com a senha real que já era usada antes → deve continuar
-      funcionando normalmente (o valor foi re-hasheado, não trocado)
-- [ ] Enviar uma senha errada de propósito 11+ vezes seguidas num mesmo endpoint → a partir da
-      tentativa 11 deve vir `429 Too Many Requests` (rate limit `throttle:10,1`)
-- [ ] Submeter um combo com `video` = `javascript:alert(1)//streamable.com/https` (ou qualquer URL
-      não-https/não-whitelisted) → a página do combo não deve renderizar nenhum `<iframe>` com esse
-      valor
-- [ ] `curl -I https://<ambiente>/` → deve trazer `X-Frame-Options`, `X-Content-Type-Options`,
-      `Referrer-Policy`, `Content-Security-Policy: frame-ancestors 'self'` (e `Strict-Transport-Security`
-      já que é HTTPS)
+- [ ] Edit an existing game/list with the password that already worked before → should keep working
+      as-is (the value was rehashed, not changed)
+- [ ] Deliberately submit a wrong password 11+ times in a row on the same endpoint → from the 11th
+      attempt onward it should return `429 Too Many Requests` (the `throttle:10,1` rate limit)
+- [ ] Submit a combo with `video` = `javascript:alert(1)//streamable.com/https` (or any
+      non-https/non-whitelisted URL) → the combo page must not render any `<iframe>` with that value
+- [ ] `curl -I https://<environment>/` → should include `X-Frame-Options`, `X-Content-Type-Options`,
+      `Referrer-Policy`, `Content-Security-Policy: frame-ancestors 'self'` (and
+      `Strict-Transport-Security` since it's HTTPS)
 
-## Diferenças para produção
+## Differences for production
 
-- Volume de dados é maior → confirme a estimativa de tempo do passo 4 antes de começar, e escolha
-  uma janela de baixo tráfego
-- Backup deve ser o procedimento completo de produção (banco + arquivos), não só o `mysqldump` manual
-- Rodar em staging primeiro (este runbook) serve como ensaio: se algo comportar diferente do
-  esperado aqui, pare e investigue antes de tocar em produção
-- Se algo der errado a meio da migração em produção e for necessário abortar: restaurar o backup do
-  passo 1 é a única forma de voltar ao texto puro (a migration em si não desfaz o hash); depois disso
-  reavalie antes de tentar de novo
+- Data volume is larger → confirm the step 4 time estimate before starting, and pick a low-traffic
+  window
+- Backup should be production's full backup procedure, not just the manual `mysqldump`
+- Running staging first (this runbook) is the dry run: if anything behaves differently than expected
+  here, stop and investigate before touching production
+- If something goes wrong mid-migration in production and it needs to be aborted: restoring the
+  step 1 backup is the only way back to plaintext (the migration itself doesn't undo the hashing);
+  reassess before trying again

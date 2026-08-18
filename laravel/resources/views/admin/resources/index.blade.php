@@ -27,7 +27,6 @@
                                     <option value="1" @selected($resource->primaryORsecundary === 1)>Primary</option>
                                     <option value="0" @selected($resource->primaryORsecundary !== 1)>Secondary</option>
                                 </select>
-                                <input name="gamePass" type="password" maxlength="16" class="form-control" placeholder="Game Password">
                                 <input type="hidden" name="idresource" value="{{ $resource->idgame_resources }}">
                                 <button type="submit" name="action" value="Update" class="btn btn-primary">Update</button>
                                 <button type="submit" name="action" value="Delete" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this resource?');">Delete</button>
@@ -52,7 +51,6 @@
                                 <option value="1">Primary</option>
                                 <option value="0">Secondary</option>
                             </select>
-                            <input name="gamePass" type="password" maxlength="16" class="form-control" placeholder="Game Password">
                             <button type="submit" name="action" value="Add" class="btn btn-primary">Add</button>
                         </div>
                     </form>

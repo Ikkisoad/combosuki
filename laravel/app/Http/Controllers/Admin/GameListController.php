@@ -5,15 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Game;
 use App\Models\ListModel;
-use App\Services\GamePasswordChecker;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class GameListController extends Controller
 {
-    public function __construct(private GamePasswordChecker $passwordChecker) {}
-
     public function index(Game $game): View
     {
         $lists = ListModel::where('game_idgame', $game->idgame)->orderBy('list_name')->get();
@@ -27,15 +24,10 @@ class GameListController extends Controller
             'action' => ['required', 'in:Update,Delete'],
             'idlist' => ['required', 'integer'],
             'listname' => ['nullable', 'string', 'max:100'],
-            'listpass' => ['nullable', 'string', 'max:16'],
             'type' => ['nullable', 'integer', 'in:0,1,2,3'],
-            'gamePass' => ['required', 'string', 'max:16'],
         ]);
 
-        if (! $this->passwordChecker->check($game, $validated['gamePass'])) {
-            return back()->with('error', 'Incorrect game password.');
-        }
-
+        // TODO: record which user made this edit once an audit/edit-log exists
         $list = ListModel::where('idlist', $validated['idlist'])->where('game_idgame', $game->idgame)->first();
 
         if (! $list) {
@@ -53,10 +45,6 @@ class GameListController extends Controller
 
         if ($validated['listname'] ?? null) {
             $update['list_name'] = $validated['listname'];
-        }
-
-        if ($validated['listpass'] ?? null) {
-            $update['password'] = bcrypt($validated['listpass']);
         }
 
         $list->update($update);

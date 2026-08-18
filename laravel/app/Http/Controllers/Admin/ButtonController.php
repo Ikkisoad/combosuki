@@ -5,15 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Button;
 use App\Models\Game;
-use App\Services\GamePasswordChecker;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ButtonController extends Controller
 {
-    public function __construct(private GamePasswordChecker $passwordChecker) {}
-
     public function index(Game $game): View
     {
         $buttons = Button::where('game_idgame', $game->idgame)->orderBy('order')->orderBy('name')->get();
@@ -34,13 +31,9 @@ class ButtonController extends Controller
             'png' => ['required_if:action,Add,Update', 'nullable', 'string', 'max:45'],
             'order' => ['nullable', 'numeric'],
             'idbutton' => ['required_if:action,Update,Delete', 'nullable', 'integer'],
-            'gamePass' => ['required', 'string', 'max:16'],
         ]);
 
-        if (! $this->passwordChecker->check($game, $validated['gamePass'])) {
-            return back()->with('error', 'Incorrect game password.');
-        }
-
+        // TODO: record which user made this edit once an audit/edit-log exists
         $name = isset($validated['name']) ? str_replace(' ', '', $validated['name']) : null;
 
         if ($validated['action'] === 'Add') {

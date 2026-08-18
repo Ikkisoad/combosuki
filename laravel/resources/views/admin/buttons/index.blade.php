@@ -25,7 +25,6 @@
                                 </select>
                                 <img src="{{ asset('img/buttons/'.$button->png.'.png') }}" height="35" name="image-{{ $button->idbutton }}">
                                 <input class="form-control" type="number" name="order" value="{{ $button->order }}" step="any">
-                                <input name="gamePass" type="password" maxlength="16" class="form-control" placeholder="Game Password">
                                 <input type="hidden" name="idbutton" value="{{ $button->idbutton }}">
                                 <button type="submit" name="action" value="Update" class="btn btn-primary">Update</button>
                                 <button type="submit" name="action" value="Delete" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this button?');">Delete</button>
@@ -47,7 +46,6 @@
                             </select>
                             <img src="{{ asset('img/buttons/+.png') }}" height="35" name="image-0">
                             <input class="form-control" type="number" name="order" step="any">
-                            <input name="gamePass" type="password" maxlength="16" class="form-control" placeholder="Game Password">
                             <button type="submit" name="action" value="Add" class="btn btn-primary">Add</button>
                         </div>
                     </form>

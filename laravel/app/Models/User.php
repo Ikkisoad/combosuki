@@ -2,19 +2,34 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class User extends Model
+class User extends Authenticatable
 {
     protected $table = 'user';
 
     protected $primaryKey = 'iduser';
 
-    protected $fillable = ['nickname', 'trusted_user'];
+    protected $fillable = ['nickname', 'trusted_user', 'password', 'is_admin'];
+
+    protected $hidden = ['password'];
+
+    protected function casts(): array
+    {
+        return [
+            'is_admin' => 'boolean',
+            'password' => 'hashed',
+        ];
+    }
 
     public function combos(): HasMany
     {
         return $this->hasMany(Combo::class, 'user_iduser');
+    }
+
+    public function lists(): HasMany
+    {
+        return $this->hasMany(ListModel::class, 'user_iduser');
     }
 }

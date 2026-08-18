@@ -19,7 +19,6 @@
                             <div class="input-group">
                                 <textarea name="title" maxlength="50" class="form-control" rows="1">{{ $link->Title }}</textarea>
                                 <textarea name="link" maxlength="255" class="form-control" rows="1">{{ $link->Link }}</textarea>
-                                <input name="gamePass" type="password" maxlength="16" class="form-control" placeholder="Game Password">
                                 <input type="hidden" name="idLink" value="{{ $link->idLink }}">
                                 <button type="submit" name="action" value="Update" class="btn btn-primary">Update</button>
                                 <button type="submit" name="action" value="Delete" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this link?');">Delete</button>
@@ -35,7 +34,6 @@
                         <div class="input-group">
                             <textarea name="title" maxlength="50" class="form-control" rows="1" placeholder="Link Title" autofocus></textarea>
                             <textarea name="link" maxlength="255" class="form-control" rows="1" placeholder="Link URL"></textarea>
-                            <input name="gamePass" type="password" maxlength="16" class="form-control" placeholder="Game Password">
                             <button type="submit" name="action" value="Add" class="btn btn-primary">Add</button>
                         </div>
                     </form>

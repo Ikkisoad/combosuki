@@ -13,7 +13,7 @@ class ListModel extends Model
 
     protected $primaryKey = 'idlist';
 
-    protected $fillable = ['list_name', 'game_idgame', 'password', 'type'];
+    protected $fillable = ['list_name', 'game_idgame', 'password', 'type', 'user_iduser'];
 
     protected $hidden = ['password'];
 
@@ -28,6 +28,11 @@ class ListModel extends Model
     public function game(): BelongsTo
     {
         return $this->belongsTo(Game::class, 'game_idgame');
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_iduser');
     }
 
     public function categories(): HasMany

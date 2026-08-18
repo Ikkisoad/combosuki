@@ -44,6 +44,28 @@
                     </ul>
                 </li>
             </ul>
+            <ul class="navbar-nav mb-2 mb-lg-0">
+                @auth
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarUserDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            {{ auth()->user()->nickname }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUserDropdown">
+                            <li><a class="dropdown-item" href="{{ route('password.edit') }}">Change Password</a></li>
+                            <li>
+                                <form method="post" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" class="dropdown-item">Log Out</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                @else
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('login') }}">Login</a>
+                    </li>
+                @endauth
+            </ul>
             {{ $actions ?? '' }}
         </div>
     </div>

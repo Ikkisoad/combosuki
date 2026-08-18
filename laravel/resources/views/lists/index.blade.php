@@ -20,9 +20,6 @@
                         </select>
                     </div>
                     <div class="mb-2">
-                        <input placeholder="List Password" name="password" type="password" maxlength="16" class="form-control">
-                    </div>
-                    <div class="mb-2">
                         <button type="submit" class="btn btn-primary btn-block">Create List</button>
                     </div>
                 </form>

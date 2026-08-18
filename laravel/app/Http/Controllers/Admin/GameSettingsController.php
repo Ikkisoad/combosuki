@@ -4,15 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Game;
-use App\Services\GamePasswordChecker;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class GameSettingsController extends Controller
 {
-    public function __construct(private GamePasswordChecker $passwordChecker) {}
-
     public function edit(Game $game): View
     {
         return view('admin.game.edit', ['game' => $game]);
@@ -27,28 +24,17 @@ class GameSettingsController extends Controller
             'patch' => ['nullable', 'string', 'max:10'],
             'description' => ['nullable', 'string', 'max:255'],
             'notation' => ['nullable', 'string', 'max:1000'],
-            'modPass' => ['nullable', 'string', 'max:16'],
-            'password' => ['required', 'string', 'max:16'],
         ]);
 
-        if (! $this->passwordChecker->checkGlobalOnly($game, $validated['password'])) {
-            return back()->with('error', 'Incorrect game password.');
-        }
-
+        // TODO: record which user made this edit once an audit/edit-log exists
         if ($validated['action'] === 'Submit') {
-            $update = [
+            $game->update([
                 'name' => $validated['title'],
                 'image' => $validated['image'] ?? null,
                 'patch' => $validated['patch'] ?? null,
                 'description' => $validated['description'] ?? null,
                 'notation' => $validated['notation'] ?? null,
-            ];
-
-            if ($validated['modPass'] ?? null) {
-                $update['modPass'] = bcrypt($validated['modPass']);
-            }
-
-            $game->update($update);
+            ]);
 
             return redirect()->route('admin.game.edit', $game)->with('status', 'Saved.');
         }

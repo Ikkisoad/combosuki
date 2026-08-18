@@ -61,12 +61,10 @@
                                 <form method="post" action="{{ route('lists.rename', $list) }}" class="d-flex gap-2 mb-2">
                                     @csrf
                                     <input type="text" name="list_name" maxlength="100" class="form-control" value="{{ $list->list_name }}">
-                                    <input type="password" name="password" maxlength="16" class="form-control" placeholder="List Password">
                                     <button class="btn btn-primary text-nowrap">Rename</button>
                                 </form>
                                 <form method="post" action="{{ route('lists.destroy', $list) }}" class="d-flex gap-2" onsubmit="return confirm('Are you sure you want to delete this list?');">
                                     @csrf
-                                    <input type="password" name="password" maxlength="16" class="form-control" placeholder="List Password">
                                     <button class="btn btn-danger text-nowrap">Delete List</button>
                                 </form>
                             </div>
@@ -115,9 +113,6 @@
                         @csrf
                         <div class="col-auto">
                             <input placeholder="Entry ID" name="comboid" class="form-control" required>
-                        </div>
-                        <div class="col-auto">
-                            <input placeholder="List Password" name="password" type="password" maxlength="16" class="form-control" required>
                         </div>
                         <div class="col-auto">
                             <input placeholder="Category (optional)" name="category" maxlength="45" class="form-control">

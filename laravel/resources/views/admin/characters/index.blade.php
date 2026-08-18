@@ -27,7 +27,6 @@
                             @csrf
                             <div class="input-group">
                                 <textarea name="character" maxlength="45" class="form-control" rows="1">{{ $character->name }}</textarea>
-                                <input name="gamePass" type="password" maxlength="16" class="form-control" placeholder="Game Password">
                                 <input type="hidden" name="idcharacter" value="{{ $character->idcharacter }}">
                                 <button type="submit" name="action" value="Update" class="btn btn-primary">Update</button>
                                 <button type="submit" name="action" value="Delete" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this character?');">Delete</button>
@@ -42,7 +41,6 @@
                         @csrf
                         <div class="input-group">
                             <textarea name="character" maxlength="45" class="form-control" rows="1" placeholder="Character Name" autofocus></textarea>
-                            <input name="gamePass" type="password" maxlength="16" class="form-control" placeholder="Game Password">
                             <button type="submit" name="action" value="Add" class="btn btn-primary">Add</button>
                         </div>
                     </form>

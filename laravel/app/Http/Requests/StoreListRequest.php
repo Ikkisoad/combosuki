@@ -30,7 +30,6 @@ class StoreListRequest extends FormRequest
         return [
             'list_name' => ['required', 'string', 'max:100'],
             'game_idgame' => ['nullable', 'integer', 'exists:game,idgame'],
-            'password' => ['required', 'string', 'max:16'],
         ];
     }
 }

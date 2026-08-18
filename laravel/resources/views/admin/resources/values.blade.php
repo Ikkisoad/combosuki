@@ -22,7 +22,6 @@
                                 <button class="btn btn-secondary" disabled>ID: {{ $value->idResources_values }}</button>
                                 <textarea name="resourcevalue" maxlength="45" class="form-control" rows="1">{{ $value->value }}</textarea>
                                 <input class="form-control" type="number" name="order" value="{{ $value->order }}" step="any">
-                                <input name="gamePass" type="password" maxlength="16" class="form-control" placeholder="Game Password">
                                 <input type="hidden" name="idresourcevalue" value="{{ $value->idResources_values }}">
                                 <button type="submit" name="action" value="EditUpdate" class="btn btn-primary">Update</button>
                                 <button type="submit" name="action" value="EditDelete" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this resource value?');">Delete</button>
@@ -38,7 +37,6 @@
                         <div class="input-group">
                             <textarea name="resourcevalue" maxlength="45" class="form-control" rows="1" placeholder="Resource Value" autofocus></textarea>
                             <input class="form-control" type="number" name="order" step="any">
-                            <input name="gamePass" type="password" maxlength="16" class="form-control" placeholder="Game Password">
                             <button type="submit" name="action" value="EditAdd" class="btn btn-primary">Add</button>
                         </div>
                     </form>

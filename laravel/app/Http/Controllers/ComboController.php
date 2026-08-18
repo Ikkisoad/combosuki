@@ -233,7 +233,7 @@ class ComboController extends Controller
             'damage' => $validated['damage'] ?? null,
             'type' => $request->integer('listingtype') ?: 0,
             'patch' => $validated['patch'] ?? null,
-            'password' => bcrypt($validated['password']),
+            'user_iduser' => auth()->id(),
         ]);
 
         foreach ($validated['resources'] ?? [] as $idGameResources => $value) {

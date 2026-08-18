@@ -34,14 +34,6 @@
                 <span class="input-group-text">Notation Guidelines:</span>
                 <textarea name="notation" class="form-control" rows="1" maxlength="950" placeholder="1000 bytes guideline about combo notation.">{{ $game->notation }}</textarea>
             </div>
-            <div class="input-group mb-3">
-                <span class="input-group-text">Moderation Password:</span>
-                <input type="password" maxlength="16" name="modPass" class="form-control">
-            </div>
-            <div class="input-group mb-3">
-                <span class="input-group-text">Game Password:</span>
-                <input type="password" maxlength="16" name="password" class="form-control">
-            </div>
             <div class="btn-group">
                 <button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Update</button>
                 <button type="submit" name="action" value="Delete" class="btn btn-danger btn-block" onclick="return confirm('Are you sure you want to delete this game?');">Delete</button>
@@ -54,10 +46,5 @@
         </form>
 
         <x-admin.edit-nav :game="$game" />
-
-        <p class="mt-3">
-            Moderation password can be changed anytime, and it can be used to edit anything about the game if it is unlocked.
-            If the game is locked, the moderation password can only edit submissions and lists &mdash; it can not edit data from this page.
-        </p>
     </div>
 </x-layouts.app>

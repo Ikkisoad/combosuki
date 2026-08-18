@@ -19,7 +19,6 @@
                             <div class="input-group">
                                 <textarea name="entry" maxlength="45" class="form-control" rows="1">{{ $entry->title }}</textarea>
                                 <input class="form-control" type="number" name="order" value="{{ $entry->order }}" step="any">
-                                <input name="gamePass" type="password" maxlength="16" class="form-control" placeholder="Game Password">
                                 <input type="hidden" name="entryid" value="{{ $entry->entryid }}">
                                 <button type="submit" name="action" value="Update" class="btn btn-primary">Update</button>
                                 <button type="submit" name="action" value="Delete" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this entry?');">Delete</button>
@@ -35,7 +34,6 @@
                         <div class="input-group">
                             <textarea name="entry" maxlength="45" class="form-control" rows="1" placeholder="Entry Name" autofocus></textarea>
                             <input class="form-control" type="number" name="order" step="any">
-                            <input name="gamePass" type="password" maxlength="16" class="form-control" placeholder="Game Password">
                             <button type="submit" name="action" value="Add" class="btn btn-primary">Add</button>
                         </div>
                     </form>

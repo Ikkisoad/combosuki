@@ -52,7 +52,7 @@ class ListController extends Controller
         $list = ListModel::create([
             'list_name' => $request->string('list_name'),
             'game_idgame' => $request->integer('game_idgame') ?: null,
-            'password' => bcrypt($request->string('password')),
+            'user_iduser' => auth()->id(),
             'type' => 1,
         ]);
 
@@ -100,39 +100,22 @@ class ListController extends Controller
     {
         $validated = $request->validate([
             'list_name' => ['required', 'string', 'max:100'],
-            'password' => ['required', 'string', 'max:16'],
         ]);
 
-        if (! $this->passwordMatches($list, $validated['password'])) {
-            return redirect()->route('lists.show', $list)->with('error', 'Incorrect list password.');
-        }
-
+        // TODO: record which user made this edit once an audit/edit-log exists
         $list->update(['list_name' => $validated['list_name']]);
 
         return redirect()->route('lists.show', $list)->with('status', 'List renamed.');
     }
 
-    public function destroy(Request $request, ListModel $list): RedirectResponse
+    public function destroy(ListModel $list): RedirectResponse
     {
-        $validated = $request->validate([
-            'password' => ['required', 'string', 'max:16'],
-        ]);
+        // TODO: record which user made this edit once an audit/edit-log exists
+        $list->combos()->detach();
+        $list->categories()->delete();
+        $list->delete();
 
-        $modPass = $list->game?->modPass;
-
-        if ($modPass && password_verify($validated['password'], $modPass)) {
-            $list->update(['type' => 0]);
-        }
-
-        if ($this->passwordMatches($list, $validated['password'])) {
-            $list->combos()->detach();
-            $list->categories()->delete();
-            $list->delete();
-
-            return redirect()->route('lists.index')->with('status', 'List deleted.');
-        }
-
-        return redirect()->route('lists.show', $list)->with('error', 'Incorrect list password.');
+        return redirect()->route('lists.index')->with('status', 'List deleted.');
     }
 
     /**
@@ -145,14 +128,10 @@ class ListController extends Controller
         $validated = $request->validate([
             'comboid' => ['required', 'string'],
             'category' => ['nullable', 'string', 'max:45'],
-            'password' => ['required', 'string', 'max:16'],
             'action' => ['required', 'in:Submit,Delete'],
         ]);
 
-        if (! $this->passwordMatches($list, $validated['password'])) {
-            return redirect()->route('lists.show', $list)->with('error', 'Incorrect list password.');
-        }
-
+        // TODO: record which user made this edit once an audit/edit-log exists
         $comboIds = array_filter(array_map('trim', explode(',', $validated['comboid'])));
 
         if ($validated['action'] === 'Delete') {
@@ -188,24 +167,5 @@ class ListController extends Controller
         }
 
         return redirect()->route('lists.show', $list)->with('status', 'Entry added.');
-    }
-
-    private function passwordMatches(ListModel $list, string $submitted): bool
-    {
-        if (password_verify($submitted, $list->password)) {
-            return true;
-        }
-
-        $game = $list->game;
-
-        if (! $game) {
-            return false;
-        }
-
-        if ($game->globalPass !== null && password_verify($submitted, $game->globalPass)) {
-            return true;
-        }
-
-        return password_verify($submitted, $game->modPass);
     }
 }

@@ -5,15 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Game;
 use App\Models\GameEntry;
-use App\Services\GamePasswordChecker;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class GameEntryController extends Controller
 {
-    public function __construct(private GamePasswordChecker $passwordChecker) {}
-
     public function index(Game $game): View
     {
         $entries = GameEntry::where('gameid', $game->idgame)->orderBy('order')->orderBy('title')->get();
@@ -28,13 +25,9 @@ class GameEntryController extends Controller
             'entry' => ['required_if:action,Add,Update', 'nullable', 'string', 'max:45'],
             'order' => ['nullable', 'numeric'],
             'entryid' => ['required_if:action,Update,Delete', 'nullable', 'integer'],
-            'gamePass' => ['required', 'string', 'max:16'],
         ]);
 
-        if (! $this->passwordChecker->check($game, $validated['gamePass'])) {
-            return back()->with('error', 'Incorrect game password.');
-        }
-
+        // TODO: record which user made this edit once an audit/edit-log exists
         if ($validated['action'] === 'Add') {
             GameEntry::create(['title' => $validated['entry'], 'gameid' => $game->idgame, 'order' => $validated['order'] ?? null]);
         } elseif ($validated['action'] === 'Update') {

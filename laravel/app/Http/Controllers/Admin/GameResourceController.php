@@ -6,15 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Game;
 use App\Models\GameResource;
 use App\Models\ResourceValue;
-use App\Services\GamePasswordChecker;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class GameResourceController extends Controller
 {
-    public function __construct(private GamePasswordChecker $passwordChecker) {}
-
     public function index(Game $game): View
     {
         $resources = GameResource::where('game_idgame', $game->idgame)
@@ -34,13 +31,9 @@ class GameResourceController extends Controller
             'primaryORsecundary' => ['nullable', 'integer', 'in:0,1'],
             'primaryorsecundary' => ['nullable', 'integer', 'in:0,1'],
             'idresource' => ['required_if:action,Update,Delete', 'nullable', 'integer'],
-            'gamePass' => ['required', 'string', 'max:16'],
         ]);
 
-        if (! $this->passwordChecker->check($game, $validated['gamePass'])) {
-            return back()->with('error', 'Incorrect game password.');
-        }
-
+        // TODO: record which user made this edit once an audit/edit-log exists
         $primary = $validated['primaryORsecundary'] ?? $validated['primaryorsecundary'] ?? 0;
 
         if ($validated['action'] === 'Add') {
@@ -88,13 +81,9 @@ class GameResourceController extends Controller
             'resourcevalue' => ['required_if:action,EditAdd,EditUpdate', 'nullable', 'string', 'max:115'],
             'order' => ['nullable', 'numeric'],
             'idresourcevalue' => ['required_if:action,EditUpdate,EditDelete', 'nullable', 'integer'],
-            'gamePass' => ['required', 'string', 'max:16'],
         ]);
 
-        if (! $this->passwordChecker->check($game, $validated['gamePass'])) {
-            return back()->with('error', 'Incorrect game password.');
-        }
-
+        // TODO: record which user made this edit once an audit/edit-log exists
         if ($validated['action'] === 'EditAdd') {
             ResourceValue::create([
                 'value' => $validated['resourcevalue'],
