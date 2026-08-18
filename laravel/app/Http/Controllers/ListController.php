@@ -52,7 +52,7 @@ class ListController extends Controller
         $list = ListModel::create([
             'list_name' => $request->string('list_name'),
             'game_idgame' => $request->integer('game_idgame') ?: null,
-            'password' => $request->string('password'),
+            'password' => bcrypt($request->string('password')),
             'type' => 1,
         ]);
 
@@ -192,7 +192,7 @@ class ListController extends Controller
 
     private function passwordMatches(ListModel $list, string $submitted): bool
     {
-        if (hash_equals($list->password, $submitted)) {
+        if (password_verify($submitted, $list->password)) {
             return true;
         }
 
@@ -202,7 +202,7 @@ class ListController extends Controller
             return false;
         }
 
-        if ($game->globalPass !== null && hash_equals($game->globalPass, $submitted)) {
+        if ($game->globalPass !== null && password_verify($submitted, $game->globalPass)) {
             return true;
         }
 

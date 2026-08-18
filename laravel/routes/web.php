@@ -25,16 +25,16 @@ Route::get('/games/{game}', [GameController::class, 'show'])->name('games.show')
 
 Route::get('/games/{game}/combos', [ComboController::class, 'index'])->name('games.combos.index');
 Route::get('/games/{game}/combos/add', [ComboController::class, 'create'])->name('games.combos.create');
-Route::post('/games/{game}/combos', [ComboController::class, 'store'])->name('games.combos.store');
+Route::post('/games/{game}/combos', [ComboController::class, 'store'])->middleware('throttle:10,1')->name('games.combos.store');
 Route::get('/combos/{combo}', [ComboController::class, 'show'])->name('combos.show');
 
 Route::get('/lists', [ListController::class, 'index'])->name('lists.index');
 Route::get('/lists/search', [ListController::class, 'search'])->name('lists.search');
-Route::post('/lists', [ListController::class, 'store'])->name('lists.store');
+Route::post('/lists', [ListController::class, 'store'])->middleware('throttle:10,1')->name('lists.store');
 Route::get('/lists/{list}', [ListController::class, 'show'])->name('lists.show');
-Route::post('/lists/{list}/rename', [ListController::class, 'rename'])->name('lists.rename');
-Route::post('/lists/{list}/delete', [ListController::class, 'destroy'])->name('lists.destroy');
-Route::post('/lists/{list}/entries', [ListController::class, 'alterEntries'])->name('lists.entries.alter');
+Route::post('/lists/{list}/rename', [ListController::class, 'rename'])->middleware('throttle:10,1')->name('lists.rename');
+Route::post('/lists/{list}/delete', [ListController::class, 'destroy'])->middleware('throttle:10,1')->name('lists.destroy');
+Route::post('/lists/{list}/entries', [ListController::class, 'alterEntries'])->middleware('throttle:10,1')->name('lists.entries.alter');
 
 Route::view('/matches', 'matches.index')->name('matches.index');
 
@@ -42,25 +42,25 @@ Route::get('/timeline', [TimelineController::class, 'index'])->name('timeline.in
 
 Route::prefix('games/{game}/edit')->name('admin.')->scopeBindings()->group(function () {
     Route::get('/', [GameSettingsController::class, 'edit'])->name('game.edit');
-    Route::post('/', [GameSettingsController::class, 'update'])->name('game.update');
+    Route::post('/', [GameSettingsController::class, 'update'])->middleware('throttle:10,1')->name('game.update');
 
     Route::get('/characters', [CharacterController::class, 'index'])->name('characters.index');
-    Route::post('/characters', [CharacterController::class, 'store'])->name('characters.store');
+    Route::post('/characters', [CharacterController::class, 'store'])->middleware('throttle:10,1')->name('characters.store');
 
     Route::get('/links', [LinkController::class, 'index'])->name('links.index');
-    Route::post('/links', [LinkController::class, 'store'])->name('links.store');
+    Route::post('/links', [LinkController::class, 'store'])->middleware('throttle:10,1')->name('links.store');
 
     Route::get('/entries', [GameEntryController::class, 'index'])->name('entries.index');
-    Route::post('/entries', [GameEntryController::class, 'store'])->name('entries.store');
+    Route::post('/entries', [GameEntryController::class, 'store'])->middleware('throttle:10,1')->name('entries.store');
 
     Route::get('/buttons', [ButtonController::class, 'index'])->name('buttons.index');
-    Route::post('/buttons', [ButtonController::class, 'store'])->name('buttons.store');
+    Route::post('/buttons', [ButtonController::class, 'store'])->middleware('throttle:10,1')->name('buttons.store');
 
     Route::get('/resources', [GameResourceController::class, 'index'])->name('resources.index');
-    Route::post('/resources', [GameResourceController::class, 'store'])->name('resources.store');
+    Route::post('/resources', [GameResourceController::class, 'store'])->middleware('throttle:10,1')->name('resources.store');
     Route::get('/resources/{resource}', [GameResourceController::class, 'values'])->name('resources.values');
-    Route::post('/resources/{resource}', [GameResourceController::class, 'storeValue'])->name('resources.values.store');
+    Route::post('/resources/{resource}', [GameResourceController::class, 'storeValue'])->middleware('throttle:10,1')->name('resources.values.store');
 
     Route::get('/lists', [GameListController::class, 'index'])->name('lists.index');
-    Route::post('/lists', [GameListController::class, 'store'])->name('lists.store');
+    Route::post('/lists', [GameListController::class, 'store'])->middleware('throttle:10,1')->name('lists.store');
 });

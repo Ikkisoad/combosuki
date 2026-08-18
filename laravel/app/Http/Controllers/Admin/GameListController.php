@@ -56,7 +56,7 @@ class GameListController extends Controller
         }
 
         if ($validated['listpass'] ?? null) {
-            $update['password'] = $validated['listpass'];
+            $update['password'] = bcrypt($validated['listpass']);
         }
 
         $list->update($update);

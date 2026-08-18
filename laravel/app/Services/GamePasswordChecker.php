@@ -6,7 +6,7 @@ use App\Models\Game;
 
 /**
  * Replicates legacy's verify_password(): a submitted password is accepted if
- * it matches the game's plaintext globalPass, OR it verifies against the
+ * it matches the game's bcrypt-hashed globalPass, OR it verifies against the
  * bcrypt modPass AND the game isn't in a locked state (complete 2 or -1).
  * Checked inline on every mutating request — there is no persistent
  * "unlocked" session state in this app.
@@ -19,7 +19,7 @@ class GamePasswordChecker
             return false;
         }
 
-        if ($game->globalPass !== null && hash_equals($game->globalPass, $submitted)) {
+        if ($game->globalPass !== null && password_verify($submitted, $game->globalPass)) {
             return true;
         }
 
@@ -36,6 +36,6 @@ class GamePasswordChecker
      */
     public function checkGlobalOnly(Game $game, ?string $submitted): bool
     {
-        return $submitted !== null && $game->globalPass !== null && hash_equals($game->globalPass, $submitted);
+        return $submitted !== null && $game->globalPass !== null && password_verify($submitted, $game->globalPass);
     }
 }
