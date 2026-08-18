@@ -23,6 +23,7 @@ Route::get('/', function () {
 Route::get('/games', [GameController::class, 'index'])->name('games.index');
 Route::get('/games/{game}', [GameController::class, 'show'])->name('games.show');
 
+Route::get('/games/{game}/combos', [ComboController::class, 'index'])->name('games.combos.index');
 Route::get('/games/{game}/combos/add', [ComboController::class, 'create'])->name('games.combos.create');
 Route::post('/games/{game}/combos', [ComboController::class, 'store'])->name('games.combos.store');
 Route::get('/combos/{combo}', [ComboController::class, 'show'])->name('combos.show');

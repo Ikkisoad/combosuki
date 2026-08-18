@@ -10,6 +10,61 @@
             <div class="alert alert-danger">{{ session('error') }}</div>
         @endif
 
+        <form method="get" action="{{ route('games.combos.index', $game) }}" class="card bg-dark p-2 mb-3">
+            <div class="row g-2 align-items-end">
+                <div class="col-auto">
+                    <select name="characterid" class="form-select">
+                        <option value="-">Character</option>
+                        @foreach ($characters as $character)
+                            <option value="{{ $character->idcharacter }}">{{ $character->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <select name="listingtype" class="form-select">
+                        <option value="-">Show All</option>
+                        @foreach ($listingTypes as $entry)
+                            <option value="{{ $entry->entryid }}">{{ $entry->title }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-auto flex-grow-1">
+                    <textarea name="combo" class="form-control" rows="1" placeholder="Starter"></textarea>
+                </div>
+                @foreach ($primaryResources as $resource)
+                    @php $field = str_replace(' ', '_', $resource->text_name); @endphp
+                    <div class="col-auto">
+                        @if ($resource->type === 1)
+                            <select name="{{ $field }}" class="form-select">
+                                <option value="-">{{ $resource->text_name }}</option>
+                                @foreach ($resource->values->sortBy('order') as $value)
+                                    <option value="{{ $value->idResources_values }}">{{ $value->value }}</option>
+                                @endforeach
+                            </select>
+                        @elseif ($resource->type === 2)
+                            @php $bound = $resource->values->first()?->value; @endphp
+                            <input type="number" name="{{ $field }}" class="form-control" min="-{{ $bound }}" max="{{ $bound }}" step="any" placeholder="{{ $resource->text_name }}">
+                        @else
+                            @for ($i = 0; $i < 2; $i++)
+                                <select name="{{ $field }}[]" class="form-select d-inline-block w-auto">
+                                    <option value="-">{{ $resource->text_name }}</option>
+                                    @foreach ($resource->values->sortBy('order') as $value)
+                                        <option value="{{ $value->idResources_values }}">{{ $value->value }}</option>
+                                    @endforeach
+                                </select>
+                            @endfor
+                        @endif
+                    </div>
+                @endforeach
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-info">Quick Search</button>
+                </div>
+                <div class="col-auto">
+                    <a href="{{ route('games.combos.index', $game) }}" class="btn btn-secondary">Advanced Search</a>
+                </div>
+            </div>
+        </form>
+
         <div class="row">
             <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar show collapse">
                 <h3>Entries per Character</h3>

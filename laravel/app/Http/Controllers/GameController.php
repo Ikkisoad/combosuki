@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Character;
 use App\Models\Combo;
 use App\Models\Game;
+use App\Models\GameEntry;
+use App\Models\GameResource;
 use Illuminate\View\View;
 
 class GameController extends Controller
@@ -33,10 +35,20 @@ class GameController extends Controller
             ->limit(5)
             ->get();
 
+        $listingTypes = GameEntry::where('gameid', $game->idgame)->orderBy('order')->orderBy('title')->get();
+
+        $primaryResources = GameResource::where('game_idgame', $game->idgame)
+            ->where('primaryORsecundary', 1)
+            ->with('values')
+            ->orderBy('text_name')
+            ->get();
+
         return view('games.show', [
             'game' => $game,
             'characters' => $characters,
             'latestCombos' => $latestCombos,
+            'listingTypes' => $listingTypes,
+            'primaryResources' => $primaryResources,
         ]);
     }
 
