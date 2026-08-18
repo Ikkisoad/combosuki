@@ -40,6 +40,9 @@ Route::get('/games/{game}/combos', [ComboController::class, 'index'])->name('gam
 Route::get('/games/{game}/combos/add', [ComboController::class, 'create'])->middleware('auth')->name('games.combos.create');
 Route::post('/games/{game}/combos', [ComboController::class, 'store'])->middleware(['auth', 'throttle:10,1'])->name('games.combos.store');
 Route::get('/combos/{combo}', [ComboController::class, 'show'])->name('combos.show');
+Route::get('/combos/{combo}/edit', [ComboController::class, 'edit'])->middleware('auth')->name('combos.edit');
+Route::post('/combos/{combo}/edit', [ComboController::class, 'update'])->middleware(['auth', 'throttle:10,1'])->name('combos.update');
+Route::post('/combos/{combo}/delete', [ComboController::class, 'destroy'])->middleware(['auth', 'throttle:10,1'])->name('combos.destroy');
 
 Route::get('/lists', [ListController::class, 'index'])->name('lists.index');
 Route::get('/lists/search', [ListController::class, 'search'])->name('lists.search');

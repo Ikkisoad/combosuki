@@ -17,6 +17,9 @@
                             @if ($combo->patch)
                                 <button class="btn btn-dark" style="float: right;" disabled>Patch: {{ $combo->patch }}</button>
                             @endif
+                            @auth
+                                <a href="{{ route('combos.edit', $combo) }}" class="btn btn-primary" style="float: right;">Edit</a>
+                            @endauth
                             <button style="float: right;" class="btn btn-secondary" onclick="change_display()">Display Method</button>
                         </th>
                     </tr>

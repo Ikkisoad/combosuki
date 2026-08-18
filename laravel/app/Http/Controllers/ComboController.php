@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreComboRequest;
+use App\Http\Requests\UpdateComboRequest;
 use App\Models\Character;
 use App\Models\Combo;
 use App\Models\Game;
@@ -236,7 +237,84 @@ class ComboController extends Controller
             'user_iduser' => auth()->id(),
         ]);
 
-        foreach ($validated['resources'] ?? [] as $idGameResources => $value) {
+        $this->syncResources($combo, $game, $validated['resources'] ?? []);
+
+        return redirect()->route('combos.show', $combo)->with('status', 'Combo submitted.');
+    }
+
+    public function edit(Combo $combo): View
+    {
+        $combo->load(['character.game', 'resources.resourceValue']);
+        $game = $combo->character->game;
+
+        $characters = Character::where('game_idgame', $game->idgame)->orderBy('name')->get();
+
+        $resources = GameResource::where('game_idgame', $game->idgame)
+            ->whereIn('type', [1, 2])
+            ->with('values')
+            ->orderByDesc('primaryORsecundary')
+            ->orderBy('text_name')
+            ->get();
+
+        $selectedResources = [];
+
+        foreach ($combo->resources as $resource) {
+            $gameResourceId = $resource->resourceValue?->game_resources_idgame_resources;
+
+            if ($gameResourceId === null) {
+                continue;
+            }
+
+            $selectedResources[$gameResourceId] = [
+                'value_id' => $resource->Resources_values_idResources_values,
+                'number_value' => $resource->number_value,
+            ];
+        }
+
+        return view('combos.edit', [
+            'game' => $game,
+            'combo' => $combo,
+            'characters' => $characters,
+            'resources' => $resources,
+            'selectedResources' => $selectedResources,
+        ]);
+    }
+
+    public function update(UpdateComboRequest $request, Combo $combo): RedirectResponse
+    {
+        $validated = $request->validated();
+        $game = $combo->character->game;
+
+        // TODO: record which user made this edit once an audit/edit-log exists
+        $combo->update([
+            'combo' => $validated['combo'],
+            'comments' => $validated['comments'] ?? null,
+            'video' => $validated['video'] ?? null,
+            'character_idcharacter' => $validated['character_idcharacter'],
+            'damage' => $validated['damage'] ?? null,
+            'patch' => $validated['patch'] ?? null,
+        ]);
+
+        $this->syncResources($combo, $game, $validated['resources'] ?? []);
+
+        return redirect()->route('combos.show', $combo)->with('status', 'Combo updated.');
+    }
+
+    public function destroy(Combo $combo): RedirectResponse
+    {
+        $game = $combo->character->game;
+
+        // TODO: record which user made this edit once an audit/edit-log exists
+        $combo->delete();
+
+        return redirect()->route('games.combos.index', $game)->with('status', 'Combo deleted.');
+    }
+
+    private function syncResources(Combo $combo, Game $game, array $resources): void
+    {
+        $combo->resources()->delete();
+
+        foreach ($resources as $idGameResources => $value) {
             if ($value === null || $value === '' || $value === '-') {
                 continue;
             }
@@ -263,7 +341,5 @@ class ComboController extends Controller
                 }
             }
         }
-
-        return redirect()->route('combos.show', $combo)->with('status', 'Combo submitted.');
     }
 }
