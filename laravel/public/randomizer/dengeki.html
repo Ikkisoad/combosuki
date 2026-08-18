@@ -1,0 +1,277 @@
+<html>
+	<head>
+		<style>
+			body {
+			  background-color: #020202;
+			  color: #ffffff;
+			}
+		</style>
+	</head>
+    <body>
+		<p><h1>
+		Dengeki Randomizer
+
+		</h1></p>
+		<button onclick="newTeam()">new team</button>
+		<h2 id="team"></h2>
+
+		<img id="portrait0" src="" style="width:200px"><br><br>
+		<img id="portrait1" src="" style="width:200px"><br>
+		
+
+		<br>
+		Colors
+		<h2 id="colors"></h2>
+
+
+		<small>randomizer by @Dominomorc, feel free to DM for any issues</small>
+
+	</body>
+    <script>
+        function newTeam() {
+		var playervar = [-1];
+        var assistvar = [-1]
+		characters.sort();
+        assists.sort();
+		playervar = randomEl(characters)
+        assistvar = randomEl(assists)    
+
+		document.getElementById("team").innerHTML = characters[playervar].C.toString() + " " + " + " + assists[assistvar].C.toString();
+		randomColors();
+
+		printPortrait("portrait0", playervar);
+		printPortraitAssist("portrait1", assistvar);
+		}
+
+		function randomColors() {
+
+		document.getElementById("colors").innerHTML = "";
+		for (var i = 0; i < 2; i++) {
+		document.getElementById("colors").innerHTML += (Math.floor(Math.random() * 24) + 1) + " ";
+		}
+		}
+
+		function randomEl(list) {
+		var i = Math.floor(Math.random() * list.length);
+		return i;
+		}
+
+		function printPortrait(image, id) {
+		document.getElementById(image).src = characters[id].img;
+		}
+
+        function printPortraitAssist(image, id) {
+		document.getElementById(image).src = assists[id].img;
+		}
+
+        var characters = [{
+        C: "Akira",
+		img: "https://wiki.gbl.gg/images/thumb/4/47/Dfci_icon_Akira.png/90px-Dfci_icon_Akira.png"
+        },
+        {
+        C: "Ako",
+        img: "https://wiki.gbl.gg/images/thumb/8/85/Dfci_icon_Ako.png/90px-Dfci_icon_Ako.png"     
+        },
+        {
+        C: "Asuna",
+        img: "https://wiki.gbl.gg/images/thumb/c/ca/Dfci_icon_Asuna.png/90px-Dfci_icon_Asuna.png"     
+        },
+        {
+        C: "Emi",
+        img: "https://wiki.gbl.gg/images/thumb/6/64/Dfci_icon_Emi.png/90px-Dfci_icon_Emi.png"
+        },
+        {
+        C: "Kirino",
+        img: "https://wiki.gbl.gg/images/thumb/7/76/Dfci_icon_Kirino.png/90px-Dfci_icon_Kirino.png"
+        },
+        {
+        C: "Kirito",
+        img: "https://wiki.gbl.gg/images/thumb/8/8f/Dfci_icon_Kirito.png/90px-Dfci_icon_Kirito.png"
+        },
+        {
+        C: "Kuroko",
+        img: "https://wiki.gbl.gg/images/thumb/5/5e/Dfci_icon_Kuroko.png/90px-Dfci_icon_Kuroko.png"
+        },
+        {
+        C: "Kuroyukihime",
+		img: "https://wiki.gbl.gg/images/thumb/f/f7/Dfci_icon_Kuroyukihime.png/90px-Dfci_icon_Kuroyukihime.png"
+        },
+        {
+        C: "Mikoto",
+        img: "https://wiki.gbl.gg/images/thumb/1/1f/Dfci_icon_Mikoto.png/90px-Dfci_icon_Mikoto.png"     
+        },
+        {
+        C: "Miyuki",
+        img: "https://wiki.gbl.gg/images/thumb/f/fa/Dfci_icon_Miyuki.png/90px-Dfci_icon_Miyuki.png"     
+        },
+        {
+        C: "Quenser",
+        img: "https://wiki.gbl.gg/images/thumb/1/18/Dfci_icon_Quenser.png/90px-Dfci_icon_Quenser.png"
+        },
+        {
+        C: "Rentaro",
+        img: "https://wiki.gbl.gg/images/thumb/7/75/Dfci_icon_Rentaro.png/90px-Dfci_icon_Rentaro.png"
+        },
+        {
+        C: "Selvaria",
+        img: "https://wiki.gbl.gg/images/thumb/4/47/Dfci_icon_Selvaria.png/90px-Dfci_icon_Selvaria.png"
+        },
+        {
+        C: "Shana",
+        img: "https://wiki.gbl.gg/images/thumb/e/ea/Dfci_icon_Shana.png/90px-Dfci_icon_Shana.png"
+        },
+        {
+        C: "Shizuo",
+		img: "https://wiki.gbl.gg/images/thumb/5/5e/Dfci_icon_Shizuo.png/90px-Dfci_icon_Shizuo.png"
+        },
+        {
+        C: "Taiga",
+        img: "https://wiki.gbl.gg/images/thumb/7/78/Dfci_icon_Taiga.png/90px-Dfci_icon_Taiga.png"     
+        },
+        {
+        C: "Tatsuya",
+        img: "https://wiki.gbl.gg/images/thumb/b/bc/Dfci_icon_Tatsuya.png/90px-Dfci_icon_Tatsuya.png"     
+        },
+        {
+        C: "Tomoka",
+        img: "https://wiki.gbl.gg/images/thumb/8/8c/Dfci_icon_Tomoka.png/90px-Dfci_icon_Tomoka.png"
+        },
+        {
+        C: "Yukina",
+        img: "https://wiki.gbl.gg/images/thumb/e/e8/Dfci_icon_Yukina.png/90px-Dfci_icon_Yukina.png"
+        },
+        {
+        C: "Yuuki",
+        img: "https://wiki.gbl.gg/images/thumb/8/85/Dfci_icon_Yuuki.png/90px-Dfci_icon_Yuuki.png"
+        }
+        ];
+        
+        var assists = [{
+            C: "Accelerator",
+            img: "https://wiki.gbl.gg/images/thumb/7/79/Dfci_support_icon_Accelerator.png/90px-Dfci_support_icon_Accelerator.png"
+            },
+            {
+            C: "Alicia",
+            img: "https://wiki.gbl.gg/images/thumb/a/af/Dfci_support_icon_Alicia.png/90px-Dfci_support_icon_Alicia.png"     
+            },
+            {
+            C: "Boogiepop",
+            img: "https://wiki.gbl.gg/images/thumb/4/42/Dfci_support_icon_Boogiepop.png/90px-Dfci_support_icon_Boogiepop.png"     
+            },
+            {
+            C: "Celty",
+            img: "https://wiki.gbl.gg/images/thumb/7/7f/Dfci_support_icon_Celty.png/90px-Dfci_support_icon_Celty.png"
+            },
+            {
+            C: "Dokuro",
+            img: "https://wiki.gbl.gg/images/thumb/b/b1/Dfci_support_icon_Dokuro.png/90px-Dfci_support_icon_Dokuro.png"
+            },
+            {
+            C: "Enju",
+            img: "https://wiki.gbl.gg/images/thumb/6/6c/Dfci_support_icon_Enju.png/90px-Dfci_support_icon_Enju.png"
+            },
+            {
+            C: "Erio",
+            img: "https://wiki.gbl.gg/images/thumb/9/9e/Dfci_support_icon_Erio.png/90px-Dfci_support_icon_Erio.png"
+            },
+            {
+            C: "Froleytia",
+            img: "https://wiki.gbl.gg/images/thumb/b/b2/Dfci_support_icon_Froleytia.png/90px-Dfci_support_icon_Froleytia.png"     
+            },
+            {
+            C: "Haruyuki",
+            img: "https://wiki.gbl.gg/images/thumb/6/6d/Dfci_support_icon_Haruyuki.png/90px-Dfci_support_icon_Haruyuki.png"     
+            },
+            {
+            C: "Holo",
+            img: "https://wiki.gbl.gg/images/thumb/5/50/Dfci_support_icon_Holo.png/90px-Dfci_support_icon_Holo.png"
+            },
+            {
+            C: "Innocent Charm",
+            img: "https://wiki.gbl.gg/images/thumb/c/c9/Dfci_support_icon_Innocent_Charm.png/90px-Dfci_support_icon_Innocent_Charm.png"
+            },
+            {
+            C: "Iriya",
+            img: "https://wiki.gbl.gg/images/thumb/3/30/Dfci_support_icon_Iriya.png/90px-Dfci_support_icon_Iriya.png"
+            },
+            {
+            C: "Izaya",
+            img: "https://wiki.gbl.gg/images/thumb/e/ef/Dfci_support_icon_Izaya.png/90px-Dfci_support_icon_Izaya.png"
+            },
+            {
+            C: "Kino",
+            img: "https://wiki.gbl.gg/images/thumb/a/a5/Dfci_support_icon_Kino.png/90px-Dfci_support_icon_Kino.png"     
+            },
+            {
+            C: "Kojou",
+            img: "https://wiki.gbl.gg/images/thumb/4/4a/Dfci_support_icon_Kojou.png/90px-Dfci_support_icon_Kojou.png"     
+            },
+            {
+            C: "Kouko",
+            img: "https://wiki.gbl.gg/images/thumb/9/99/Dfci_support_icon_Kouko.png/90px-Dfci_support_icon_Kouko.png"
+            },
+            {
+            C: "Kuroneko",
+            img: "https://wiki.gbl.gg/images/thumb/1/10/Dfci_support_icon_Kuroneko.png/90px-Dfci_support_icon_Kuroneko.png"
+            },
+            {
+            C: "Leafa",
+            img: "https://wiki.gbl.gg/images/thumb/9/9a/Dfci_support_icon_Leafa.png/90px-Dfci_support_icon_Leafa.png"
+            },               
+            {
+            C: "LLENN",
+            img: "https://wiki.gbl.gg/images/thumb/0/05/Dfci_support_icon_LLENN.png/90px-Dfci_support_icon_LLENN.png"
+            },
+            {
+            C: "Mashiro",
+            img: "https://wiki.gbl.gg/images/thumb/9/98/Dfci_support_icon_Mashiro.png/90px-Dfci_support_icon_Mashiro.png"     
+            },
+            {
+            C: "Miyuki",
+            img: "https://wiki.gbl.gg/images/thumb/b/b2/Dfci_support_icon_Miyuki.png/90px-Dfci_support_icon_Miyuki.png"     
+            },
+            {
+            C: "Pai",
+            img: "https://wiki.gbl.gg/images/thumb/6/66/Dfci_support_icon_Pai.png/90px-Dfci_support_icon_Pai.png"
+            },
+            {
+            C: "Rusian",
+            img: "https://wiki.gbl.gg/images/thumb/8/89/Dfci_support_icon_Rusian.png/90px-Dfci_support_icon_Rusian.png"
+            },
+            {
+            C: "Ryuuji",
+            img: "https://wiki.gbl.gg/images/thumb/8/8b/Dfci_support_icon_Ryuuji.png/90px-Dfci_support_icon_Ryuuji.png"
+            },                          
+            {
+            C: "Sadao",
+            img: "https://wiki.gbl.gg/images/thumb/8/89/Dfci_support_icon_Sadao.png/90px-Dfci_support_icon_Sadao.png"
+            },
+            {
+            C: "Tatsuya",
+            img: "https://wiki.gbl.gg/images/thumb/d/d8/Dfci_support_icon_Tatsuya.png/90px-Dfci_support_icon_Tatsuya.png"     
+            },
+            {
+            C: "Touma",
+            img: "https://wiki.gbl.gg/images/thumb/9/92/Dfci_support_icon_Touma.png/90px-Dfci_support_icon_Touma.png"     
+            },
+            {
+            C: "Tomo",
+            img: "https://wiki.gbl.gg/images/thumb/0/0a/Dfci_support_icon_Tomo.png/90px-Dfci_support_icon_Tomo.png"
+            },
+            {
+            C: "Uihara",
+            img: "https://wiki.gbl.gg/images/thumb/6/62/Dfci_support_icon_Uihara.png/90px-Dfci_support_icon_Uihara.png"
+            },
+            {
+            C: "Wilhelmina",
+            img: "https://wiki.gbl.gg/images/thumb/a/a8/Dfci_support_icon_Wilhelmina.png/90px-Dfci_support_icon_Wilhelmina.png"
+            },
+            {
+            C: "Zero",
+            img: "https://wiki.gbl.gg/images/thumb/7/79/Dfci_support_icon_Zero.png/90px-Dfci_support_icon_Zero.png"
+            }                                     
+            ];
+
+
+    </script>
+</html>

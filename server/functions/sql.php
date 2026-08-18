@@ -282,7 +282,7 @@ function getListPageCategories($idList = 0, $idPage = 0, $content = 0){
 	LEFT JOIN `list_category` ON `list_category`.`idlist_category` = `combo_listing`.`list_category_idlist_category`
 	LEFT JOIN `list_page` ON `list_page`.`idListPage` = `list_category`.`idPage`
 	WHERE `combo_listing`.`idlist` = ? AND (IFNULL(`idPage`,0) = ? OR `idListPage` = ?)
-	GROUP BY `list_category`.`title` ORDER BY `list_category`.`order`, `list_category`.`title`,`combo`.`damage` DESC;";
+	GROUP BY `list_category`.`idlist_category`, `list_category`.`title` ORDER BY `list_category`.`order`, `list_category`.`title`, MAX(`combo`.`damage`) DESC;";
 	$result = $conn -> prepare($query);
 	$result -> bind_param("iii", $idList, $idPage, $idPage);
 	$result -> execute();
