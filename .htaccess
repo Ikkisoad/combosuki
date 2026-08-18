@@ -1,0 +1,26 @@
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    RewriteEngine On
+
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    RewriteCond %{HTTP:x-xsrf-token} .
+    RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
+
+    # Serve Laravel's static assets (build/, img/, favicons, randomizer/...)
+    # transparently from the nested laravel/public folder, without changing
+    # the visible URL. Needed because this hosting plan does not allow
+    # changing the document root away from the repo root.
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{DOCUMENT_ROOT}/laravel/public%{REQUEST_URI} -f
+    RewriteRule ^(.*)$ laravel/public/$1 [L]
+
+    # Everything else goes through the front controller.
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
