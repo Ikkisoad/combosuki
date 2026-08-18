@@ -1,4 +1,26 @@
-<x-layouts.app :title="$combo->character->name.' - Combo好き'" :description="$combo->combo">
+@php
+    $ogVideo = app(\App\Services\VideoEmbedResolver::class)->openGraph($combo->video);
+
+    $ogDescription = trim(sprintf(
+        '%s%s combo for %s in %s',
+        \Illuminate\Support\Str::limit($combo->combo, 100),
+        $combo->damage ? ' ('.number_format((float) $combo->damage, 0, '', '.').' dmg)' : '',
+        $combo->character->name,
+        $game->name,
+    ));
+
+    $ogImage = $ogVideo['image'] ?? null;
+
+    if (! $ogImage) {
+        $ogImage = $game->image ?: null;
+    }
+@endphp
+<x-layouts.app
+    :title="$combo->character->name.' - Combo好き'"
+    :description="$ogDescription"
+    :image="$ogImage"
+    :player="$ogVideo"
+>
     <x-jumbotron :height="200" />
     <x-nav-bar :game="$game" />
 

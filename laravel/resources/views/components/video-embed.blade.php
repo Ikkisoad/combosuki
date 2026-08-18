@@ -55,6 +55,10 @@
                 <iframe width="640" height="360" style="border: none;" src="{{ $embed['url'] }}" allowfullscreen></iframe>
                 @break
 
+            @case('file')
+                <video controls class="w-100" style="max-height: 480px;" src="{{ $embed['url'] }}"></video>
+                @break
+
             @default
                 {{ $embed['url'] }}
         @endswitch

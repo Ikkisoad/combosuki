@@ -46,6 +46,11 @@
             </ul>
             <ul class="navbar-nav mb-2 mb-lg-0">
                 @auth
+                    @if (auth()->user()->is_admin)
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('admin.dashboard') }}">Admin</a>
+                        </li>
+                    @endif
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarUserDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             {{ auth()->user()->nickname }}

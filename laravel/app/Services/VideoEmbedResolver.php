@@ -4,6 +4,8 @@ namespace App\Services;
 
 class VideoEmbedResolver
 {
+    private const FILE_EXTENSIONS = ['mp4', 'webm', 'mov', 'm4v'];
+
     private const HOSTS = [
         'twitter' => ['twitter.com', 'x.com'],
         'streamable' => ['streamable.com'],
@@ -84,7 +86,70 @@ class VideoEmbedResolver
             return ['provider' => 'medal', 'url' => str_replace('/clips/', '/clip/', $video)];
         }
 
+        $extension = strtolower(pathinfo(parse_url($video, PHP_URL_PATH) ?? '', PATHINFO_EXTENSION));
+
+        if (in_array($extension, self::FILE_EXTENSIONS, true)) {
+            return ['provider' => 'file', 'url' => $video, 'extension' => $extension];
+        }
+
         return ['provider' => 'raw', 'url' => $video];
+    }
+
+    /**
+     * Resolve a video URL to the data needed for a link-preview embed
+     * (Open Graph / Twitter Card meta tags), as opposed to resolve()'s
+     * on-page embed. Only providers that can be embedded from any parent
+     * domain (no "parent"/referrer allow-listing required, unlike e.g.
+     * Twitch clips) are given a player: it's rendered as an iframe/video by
+     * whichever platform unfurls the link, so it must work unmodified for
+     * an unknown embedding host.
+     */
+    public function openGraph(?string $video): ?array
+    {
+        $embed = $this->resolve($video);
+
+        if ($embed === null) {
+            return null;
+        }
+
+        return match ($embed['provider']) {
+            'youtube' => [
+                'kind' => 'html',
+                'player' => 'https://www.youtube.com/embed/'.$embed['videoId'].($embed['start'] ? '?start='.$embed['start'] : ''),
+                'width' => 1280,
+                'height' => 720,
+                'image' => 'https://i.ytimg.com/vi/'.$embed['videoId'].'/hqdefault.jpg',
+            ],
+            'streamable' => [
+                'kind' => 'html',
+                'player' => $embed['url'],
+                'width' => 1280,
+                'height' => 720,
+                'image' => null,
+            ],
+            'medal' => [
+                'kind' => 'html',
+                'player' => $embed['url'],
+                'width' => 640,
+                'height' => 360,
+                'image' => null,
+            ],
+            'gfycat' => [
+                'kind' => 'html',
+                'player' => str_replace('gfycat.com/', 'gfycat.com/ifr/', $embed['url']),
+                'width' => 640,
+                'height' => 360,
+                'image' => null,
+            ],
+            'file' => [
+                'kind' => 'video',
+                'player' => $embed['url'],
+                'width' => 1280,
+                'height' => 720,
+                'image' => null,
+            ],
+            default => null,
+        };
     }
 
     private function resolveYoutube(string $video): array

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "combosuki-laravel",
+      "runtimeExecutable": "php",
+      "runtimeArgs": ["artisan", "serve"],
+      "port": 8000
+    }
+  ]
+}

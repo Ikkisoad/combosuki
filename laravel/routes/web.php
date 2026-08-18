@@ -2,17 +2,20 @@
 
 use App\Http\Controllers\Admin\ButtonController;
 use App\Http\Controllers\Admin\CharacterController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GameEntryController;
 use App\Http\Controllers\Admin\GameListController;
 use App\Http\Controllers\Admin\GameResourceController;
 use App\Http\Controllers\Admin\GameSettingsController;
 use App\Http\Controllers\Admin\LinkController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\ComboController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\ListController;
 use App\Http\Controllers\TimelineController;
+use App\Models\Combo;
 use App\Models\Game;
 use Illuminate\Support\Facades\Route;
 
@@ -21,6 +24,10 @@ Route::get('/', function () {
 
     return view('home', ['games' => $games]);
 })->name('home');
+
+Route::get('/about', function () {
+    return view('about', ['comboCount' => Combo::count()]);
+})->name('about');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -31,6 +38,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/account/password', [PasswordController::class, 'edit'])->name('password.edit');
     Route::post('/account/password', [PasswordController::class, 'update'])->name('password.update');
+});
+
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('/destroy', [DashboardController::class, 'destroy'])->middleware('throttle:10,1')->name('dashboard.destroy');
+
+    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::post('/users', [UserController::class, 'store'])->middleware('throttle:10,1')->name('users.store');
 });
 
 Route::get('/games', [GameController::class, 'index'])->name('games.index');
