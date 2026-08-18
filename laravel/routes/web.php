@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\LinkController;
 use App\Http\Controllers\ComboController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\ListController;
+use App\Http\Controllers\TimelineController;
 use App\Models\Game;
 use Illuminate\Support\Facades\Route;
 
@@ -35,6 +36,8 @@ Route::post('/lists/{list}/delete', [ListController::class, 'destroy'])->name('l
 Route::post('/lists/{list}/entries', [ListController::class, 'alterEntries'])->name('lists.entries.alter');
 
 Route::view('/matches', 'matches.index')->name('matches.index');
+
+Route::get('/timeline', [TimelineController::class, 'index'])->name('timeline.index');
 
 Route::prefix('games/{game}/edit')->name('admin.')->scopeBindings()->group(function () {
     Route::get('/', [GameSettingsController::class, 'edit'])->name('game.edit');
