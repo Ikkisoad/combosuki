@@ -46,15 +46,13 @@
                         </th>
                     </tr>
                     <tr>
-                        <td id="combo_line">{!! nl2br(e($combo->combo)) !!}</td>
+                        <td id="combo_line"><x-combo-notation :game="$game" :notation="$combo->combo" /></td>
                     </tr>
                 </table>
 
                 <x-video-embed :video="$combo->video" />
 
-                <div id="combo_text" style="display: none;">
-                    <x-combo-notation :game="$game" :notation="$combo->combo" />
-                </div>
+                <div id="combo_text" style="display: none;">{!! nl2br(e($combo->combo)) !!}</div>
 
                 @if ($combo->comments)
                     <table class="table table-hover align-middle combosuki-main-reversed text-white">

@@ -110,16 +110,19 @@
                         @foreach ($latestCombos as $combo)
                             <tr>
                                 <td>
-                                    @if ($combo->comments)
+                                    @if ($combo->comments || $combo->video)
                                         <button class="btn btn-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ $combo->idcombo }}">{{ $combo->character->name }}</button>
                                     @else
                                         {{ $combo->character->name }}
                                     @endif
                                 </td>
                                 <td style="min-width:400px">
-                                    <a href="{{ route('combos.show', $combo) }}">{{ $combo->combo }}</a>
-                                    @if ($combo->comments)
-                                        <div class="collapse" id="collapse{{ $combo->idcombo }}">{{ $combo->comments }}</div>
+                                    <x-combo-link :combo="$combo" />
+                                    @if ($combo->comments || $combo->video)
+                                        <div class="collapse" id="collapse{{ $combo->idcombo }}">
+                                            {{ $combo->comments }}
+                                            <x-video-embed :video="$combo->video" />
+                                        </div>
                                     @endif
                                 </td>
                                 <td>{{ number_format((float) $combo->damage, 0, '', '.') }}</td>

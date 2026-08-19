@@ -8,11 +8,23 @@ use App\Models\Game;
 class ComboNotationRenderer
 {
     /**
+     * The color new buttons start with before an admin picks one. A button
+     * still at this color is treated as "not really color-coded": it loses
+     * matching priority to a button with a real color (see tokenize()), and
+     * it doesn't force a space against a neighboring colored token (see
+     * render()) — e.g. an uncolored "5" glues onto a colored "LK" as "5LK".
+     */
+    private const DEFAULT_COLOR = '#ffffff';
+
+    /**
      * Split combo notation text into tokens, each either a literal string of
-     * text or a recognized button whose color should be applied. Buttons are
-     * matched in the game's configured order, first match wins, using each
-     * button's match_type (exact/contains/starts_with/ends_with) against the
-     * word. Returns [['type' => 'text'|'colored', 'value' => ..., 'color' => ...]].
+     * text or a recognized, genuinely color-coded button. Buttons are
+     * matched in the game's configured order using each button's match_type
+     * (exact/contains/starts_with/ends_with) against the word; among
+     * matches, the first one with a non-default color wins, falling back to
+     * the first match overall if every match is still at the default color
+     * (in which case the token is treated as plain text). Returns
+     * [['type' => 'text'|'colored', 'value' => $word, 'color' => ...]].
      */
     public function tokenize(Game $game, string $notation): array
     {
@@ -26,11 +38,16 @@ class ComboNotationRenderer
                 return;
             }
 
-            $button = $buttons->first(fn ($button) => $this->matches($button, $word));
+            $matches = $buttons->filter(fn ($button) => $this->matches($button, $word));
 
-            $tokens[] = $button
-                ? ['type' => 'colored', 'value' => ' '.$word.' ', 'color' => $button->color]
-                : ['type' => 'text', 'value' => ' '.$word.' '];
+            $button = $matches->first(fn ($button) => mb_strtolower($button->color) !== self::DEFAULT_COLOR)
+                ?? $matches->first();
+
+            $isColored = $button && mb_strtolower($button->color) !== self::DEFAULT_COLOR;
+
+            $tokens[] = $isColored
+                ? ['type' => 'colored', 'value' => $word, 'color' => $button->color]
+                : ['type' => 'text', 'value' => $word];
 
             $word = '';
         };
@@ -48,6 +65,40 @@ class ComboNotationRenderer
         $flush($word);
 
         return $tokens;
+    }
+
+    /**
+     * Render tokenized notation as HTML, with colored tokens wrapped in a
+     * styled span. The space between two tokens is dropped whenever exactly
+     * one of them is color-coded, so an uncoded modifier reads as part of
+     * the colored move next to it (e.g. "5 LK" renders as "5LK"); a space is
+     * kept between two colored tokens (distinct moves) and between two
+     * uncoded tokens.
+     */
+    public function render(Game $game, string $notation): string
+    {
+        $tokens = $this->tokenize($game, $notation);
+
+        $html = '';
+        $previousColored = null;
+
+        foreach ($tokens as $token) {
+            $isColored = $token['type'] === 'colored';
+
+            if ($previousColored !== null && $previousColored === $isColored) {
+                $html .= ' ';
+            }
+
+            $word = e($token['value']);
+
+            $html .= $isColored
+                ? '<span style="color: '.e($token['color']).';">'.$word.'</span>'
+                : $word;
+
+            $previousColored = $isColored;
+        }
+
+        return $html;
     }
 
     private function matches(Button $button, string $word): bool

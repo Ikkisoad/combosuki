@@ -155,7 +155,7 @@
                             @endif
                         </td>
                         <td style="min-width:400px">
-                            <a href="{{ route('combos.show', $combo) }}">{{ $combo->combo }}</a>
+                            <x-combo-link :combo="$combo" />
                             @if ($combo->comments || $combo->video)
                                 <div class="collapse" id="collapse{{ $combo->idcombo }}">
                                     {{ $combo->comments }}
