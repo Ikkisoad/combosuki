@@ -43,6 +43,8 @@ class AnonymousWriteAccessTest extends TestCase
 
     private User $user;
 
+    private User $trustedUser;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -109,6 +111,15 @@ class AnonymousWriteAccessTest extends TestCase
             'password' => 'password123',
             'is_admin' => false,
         ]);
+
+        $this->trustedUser = User::create([
+            'nickname' => 'trusted',
+            'password' => 'password123',
+            'is_admin' => false,
+            'trusted_user' => true,
+        ]);
+
+        $this->combo->update(['user_iduser' => $this->user->iduser]);
     }
 
     /**
@@ -127,7 +138,7 @@ class AnonymousWriteAccessTest extends TestCase
             'admin create user' => [
                 'url' => route('admin.users.store'),
                 'payload' => ['nickname' => 'hacker', 'password' => 'password123', 'password_confirmation' => 'password123'],
-                'assertUnchanged' => fn () => $this->assertSame(1, User::count()),
+                'assertUnchanged' => fn () => $this->assertSame(2, User::count()),
             ],
             'combo store' => [
                 'url' => route('games.combos.store', $this->game),
@@ -162,6 +173,21 @@ class AnonymousWriteAccessTest extends TestCase
             'list entries alter' => [
                 'url' => route('lists.entries.alter', $this->list),
                 'payload' => ['comboid' => (string) $this->combo->idcombo, 'action' => 'Submit'],
+                'assertUnchanged' => fn () => $this->assertSame(0, $this->list->combos()->count()),
+            ],
+            'list page store' => [
+                'url' => route('lists.manage.pages.store', $this->list),
+                'payload' => ['Title' => 'Hacked Page'],
+                'assertUnchanged' => fn () => $this->assertSame(0, $this->list->pages()->count()),
+            ],
+            'list category store' => [
+                'url' => route('lists.manage.categories.store', $this->list),
+                'payload' => ['title' => 'Hacked Category'],
+                'assertUnchanged' => fn () => $this->assertSame(0, $this->list->categories()->count()),
+            ],
+            'list combo picker store' => [
+                'url' => route('lists.manage.combos.store', $this->list),
+                'payload' => ['combo_ids' => [$this->combo->idcombo]],
                 'assertUnchanged' => fn () => $this->assertSame(0, $this->list->combos()->count()),
             ],
             'game settings update' => [
@@ -214,6 +240,11 @@ class AnonymousWriteAccessTest extends TestCase
                 'payload' => ['action' => 'Delete', 'idlist' => $this->list->idlist],
                 'assertUnchanged' => fn () => $this->assertDatabaseHas('list', ['idlist' => $this->list->idlist]),
             ],
+            'trusted create user' => [
+                'url' => route('users.store'),
+                'payload' => ['nickname' => 'hacker', 'password' => 'password123', 'password_confirmation' => 'password123'],
+                'assertUnchanged' => fn () => $this->assertSame(2, User::count()),
+            ],
         ];
     }
 
@@ -238,6 +269,9 @@ class AnonymousWriteAccessTest extends TestCase
             'resources admin index' => route('admin.resources.index', $this->game),
             'resource values admin index' => route('admin.resources.values', [$this->game, $this->gameResource]),
             'game lists admin index' => route('admin.lists.index', $this->game),
+            'create user form' => route('users.create'),
+            'list manage hub' => route('lists.manage.index', $this->list),
+            'list combo picker' => route('lists.manage.combos.index', $this->list),
         ];
     }
 
@@ -273,12 +307,12 @@ class AnonymousWriteAccessTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $this->get(route('admin.dashboard'))->assertForbidden();
-        $this->post(route('admin.dashboard.destroy'), ['combo_ids' => [$this->combo->idcombo]])->assertForbidden();
-        $this->get(route('admin.users.index'))->assertForbidden();
-        $this->post(route('admin.users.store'), ['nickname' => 'hacker', 'password' => 'password123', 'password_confirmation' => 'password123'])->assertForbidden();
+        $this->get(route('admin.dashboard'))->assertRedirect()->assertSessionHas('error');
+        $this->post(route('admin.dashboard.destroy'), ['combo_ids' => [$this->combo->idcombo]])->assertRedirect()->assertSessionHas('error');
+        $this->get(route('admin.users.index'))->assertRedirect()->assertSessionHas('error');
+        $this->post(route('admin.users.store'), ['nickname' => 'hacker', 'password' => 'password123', 'password_confirmation' => 'password123'])->assertRedirect()->assertSessionHas('error');
 
-        $this->assertSame(1, User::count());
+        $this->assertSame(2, User::count());
         $this->assertDatabaseHas('combo', ['idcombo' => $this->combo->idcombo]);
     }
 
@@ -288,6 +322,37 @@ class AnonymousWriteAccessTest extends TestCase
 
         $this->get(route('games.combos.create', $this->game))->assertOk();
         $this->get(route('combos.edit', $this->combo))->assertOk();
+    }
+
+    public function test_authenticated_non_trusted_users_are_forbidden_from_trusted_only_endpoints(): void
+    {
+        $this->actingAs($this->user);
+
+        $this->get(route('games.create'))->assertRedirect()->assertSessionHas('error');
+        $this->post(route('games.store'), ['name' => 'Hacked Game', 'image' => 'https://example.com/hacked.png'])->assertRedirect()->assertSessionHas('error');
+        $this->get(route('users.create'))->assertRedirect()->assertSessionHas('error');
+        $this->post(route('users.store'), ['nickname' => 'hacker', 'password' => 'password123', 'password_confirmation' => 'password123'])->assertRedirect()->assertSessionHas('error');
+        $this->get(route('admin.game.edit', $this->game))->assertRedirect()->assertSessionHas('error');
+        $this->post(route('admin.game.update', $this->game), ['action' => 'Submit', 'title' => 'Hacked Game'])->assertRedirect()->assertSessionHas('error');
+
+        $this->assertSame(1, Game::count());
+        $this->assertSame(2, User::count());
+        $this->assertSame('Test Game', $this->game->fresh()->name);
+    }
+
+    public function test_trusted_users_can_reach_trusted_only_endpoints(): void
+    {
+        $this->actingAs($this->trustedUser);
+
         $this->get(route('games.create'))->assertOk();
+        $this->get(route('users.create'))->assertOk();
+        $this->get(route('admin.game.edit', $this->game))->assertOk();
+
+        $response = $this->post(route('users.store'), ['nickname' => 'plain', 'password' => 'password123', 'password_confirmation' => 'password123', 'is_admin' => 1, 'trusted_user' => 1]);
+        $response->assertRedirect();
+
+        $created = User::where('nickname', 'plain')->firstOrFail();
+        $this->assertFalse($created->is_admin);
+        $this->assertFalse($created->trusted_user);
     }
 }

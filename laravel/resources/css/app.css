@@ -88,3 +88,15 @@ body {
 .bg-combosuki-secondary-3 {
     background-color: #2E2E2E;
 }
+
+.combo-card {
+    cursor: grab;
+}
+
+.combo-card.dragging {
+    opacity: 0.4;
+}
+
+.category-dropzone.drop-target {
+    background-color: rgba(250, 89, 28, 0.2);
+}

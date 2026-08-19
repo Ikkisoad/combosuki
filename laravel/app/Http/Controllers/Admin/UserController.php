@@ -54,4 +54,13 @@ class UserController extends Controller
 
         return redirect()->route('admin.users.index')->with('status', "Password updated for \"{$user->nickname}\".");
     }
+
+    public function updateTrusted(User $user): RedirectResponse
+    {
+        $user->update(['trusted_user' => ! $user->trusted_user]);
+
+        $status = $user->trusted_user ? 'trusted' : 'no longer trusted';
+
+        return redirect()->route('admin.users.index')->with('status', "\"{$user->nickname}\" is now {$status}.");
+    }
 }

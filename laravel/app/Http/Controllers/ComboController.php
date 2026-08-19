@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\FiltersCombos;
 use App\Http\Requests\StoreComboRequest;
 use App\Http\Requests\UpdateComboRequest;
 use App\Models\Character;
@@ -17,6 +18,8 @@ use Illuminate\View\View;
 
 class ComboController extends Controller
 {
+    use FiltersCombos;
+
     /**
      * Browse/search combos for a game. Mirrors legacy's forms.php (search
      * mode) + submit.php (result query) combined into one page: the filter
@@ -36,7 +39,7 @@ class ComboController extends Controller
             ->get();
 
         $query = Combo::query()
-            ->with(['character', 'listingType', 'resources.resourceValue'])
+            ->with(['character', 'listingType', 'resources.resourceValue', 'user'])
             ->whereHas('character', fn (Builder $q) => $q->where('game_idgame', $game->idgame));
 
         $this->applyFilters($query, $request, $primaryResources);
@@ -54,142 +57,9 @@ class ComboController extends Controller
         ]);
     }
 
-    private function applyFilters(Builder $query, Request $request, $primaryResources): void
-    {
-        if ($request->filled('combo')) {
-            $mode = $request->integer('combolike', 0);
-            $value = $request->string('combo')->toString();
-
-            $pattern = match ($mode) {
-                1 => '%'.$value,
-                2, 3 => '%'.$value.'%',
-                default => $value.'%',
-            };
-
-            $normalizedPattern = str_replace([' ', '>'], '', $pattern);
-            $operator = $mode === 3 ? 'NOT LIKE' : 'LIKE';
-
-            $query->whereRaw("REPLACE(REPLACE(combo, ' ', ''), '>', '') {$operator} ?", [$normalizedPattern]);
-        }
-
-        if ($request->filled('damage')) {
-            $query->where('damage', '<=', $request->float('damage'));
-        }
-
-        if ($request->filled('patch')) {
-            $query->where('patch', 'like', $request->string('patch'));
-        }
-
-        foreach (array_filter(explode('#', (string) $request->input('comments'))) as $piece) {
-            $query->where('comments', 'like', "%{$piece}%");
-        }
-
-        foreach (array_filter(explode('#', (string) $request->input('notcomments'))) as $piece) {
-            $query->where('comments', 'not like', "%{$piece}%");
-        }
-
-        if ($request->boolean('novideo')) {
-            $query->where(fn (Builder $q) => $q->whereNull('video')->orWhere('video', ''));
-        } elseif ($request->filled('video')) {
-            $query->where('video', 'like', '%'.$request->string('video').'%');
-        }
-
-        if ($request->filled('listingtype') && $request->input('listingtype') !== '-') {
-            $query->where('type', $request->integer('listingtype'));
-        }
-
-        if ($request->filled('characterid') && $request->input('characterid') !== '-') {
-            $query->where('character_idcharacter', $request->integer('characterid'));
-        }
-
-        foreach ($primaryResources as $resource) {
-            $field = str_replace(' ', '_', $resource->text_name);
-            $value = $request->input($field);
-
-            if ($resource->type === 1) {
-                if ($value !== null && $value !== '-' && $value !== '') {
-                    $query->whereHas('resources', fn (Builder $q) => $q->where('Resources_values_idResources_values', $value)
-                    );
-                }
-            } elseif ($resource->type === 2) {
-                if ($value !== null && $value !== '-' && $value !== '') {
-                    $compareField = $field.'compare';
-                    $operator = match ($request->integer($compareField, 0)) {
-                        2 => '=',
-                        1 => '>=',
-                        default => '<=',
-                    };
-
-                    $query->whereHas('resources', function (Builder $q) use ($resource, $operator, $value) {
-                        $q->where('number_value', $operator, $value)
-                            ->whereHas('resourceValue', fn (Builder $q2) => $q2->where('game_resources_idgame_resources', $resource->idgame_resources)
-                            );
-                    });
-                }
-            } elseif ($resource->type === 3) {
-                $this->applyDuplicatedResourceFilter($query, (array) $request->input($field, []));
-            }
-        }
-    }
-
-    private function applyDuplicatedResourceFilter(Builder $query, array $values): void
-    {
-        $values = array_values(array_filter($values, fn ($v) => $v !== null && $v !== '' && $v !== '-'));
-
-        if (count($values) === 0) {
-            return;
-        }
-
-        if (count($values) === 1) {
-            $query->whereHas('resources', fn (Builder $q) => $q->where('Resources_values_idResources_values', $values[0]));
-
-            return;
-        }
-
-        [$a, $b] = [(int) $values[0], (int) $values[1]];
-
-        if ($a === $b) {
-            $query->whereIn('idcombo', function ($sub) use ($a) {
-                $sub->select('combo_idcombo')->from('resources')
-                    ->where('Resources_values_idResources_values', $a)
-                    ->groupBy('combo_idcombo')
-                    ->havingRaw('COUNT(*) > 1');
-            });
-
-            return;
-        }
-
-        [$low, $high] = $a < $b ? [$a, $b] : [$b, $a];
-
-        $query->whereIn('idcombo', function ($sub) use ($low, $high) {
-            $sub->select('combo_idcombo')->from('resources')
-                ->whereIn('Resources_values_idResources_values', [$low, $high])
-                ->groupBy('combo_idcombo')
-                ->havingRaw(
-                    'GROUP_CONCAT(DISTINCT Resources_values_idResources_values ORDER BY Resources_values_idResources_values) = ?',
-                    ["{$low},{$high}"]
-                );
-        });
-    }
-
-    private function applyOrdering(Builder $query, Request $request): void
-    {
-        $submitted = $request->input('Submitted');
-
-        if ($submitted === '1') {
-            $query->orderBy('submited')->orderByDesc('damage');
-        } elseif ($submitted !== null && $submitted !== '-') {
-            $query->orderByDesc('submited')->orderByDesc('damage');
-        } else {
-            $query->orderByDesc('damage');
-        }
-
-        $query->orderBy('idcombo');
-    }
-
     public function show(Combo $combo): View
     {
-        $combo->load(['character.game', 'listingType', 'resources.resourceValue.gameResource']);
+        $combo->load(['character.game', 'listingType', 'resources.resourceValue.gameResource', 'user']);
 
         $primaryResources = $combo->resources
             ->filter(fn ($resource) => $resource->resourceValue?->gameResource?->primaryORsecundary === 1);
@@ -209,6 +79,8 @@ class ComboController extends Controller
     {
         $characters = Character::where('game_idgame', $game->idgame)->orderBy('name')->get();
 
+        $listingTypes = GameEntry::where('gameid', $game->idgame)->orderBy('order')->orderBy('title')->get();
+
         $resources = GameResource::where('game_idgame', $game->idgame)
             ->whereIn('type', [1, 2])
             ->with('values')
@@ -219,6 +91,7 @@ class ComboController extends Controller
         return view('combos.create', [
             'game' => $game,
             'characters' => $characters,
+            'listingTypes' => $listingTypes,
             'resources' => $resources,
         ]);
     }
@@ -234,7 +107,7 @@ class ComboController extends Controller
             'character_idcharacter' => $validated['character_idcharacter'],
             'submited' => now(),
             'damage' => $validated['damage'] ?? null,
-            'type' => $request->integer('listingtype') ?: 0,
+            'type' => $validated['listingtype'],
             'patch' => $validated['patch'] ?? null,
             'user_iduser' => auth()->id(),
         ]);
@@ -246,10 +119,14 @@ class ComboController extends Controller
 
     public function edit(Combo $combo): View
     {
+        $this->authorize('update', $combo);
+
         $combo->load(['character.game', 'resources.resourceValue']);
         $game = $combo->character->game;
 
         $characters = Character::where('game_idgame', $game->idgame)->orderBy('name')->get();
+
+        $listingTypes = GameEntry::where('gameid', $game->idgame)->orderBy('order')->orderBy('title')->get();
 
         $resources = GameResource::where('game_idgame', $game->idgame)
             ->whereIn('type', [1, 2])
@@ -277,6 +154,7 @@ class ComboController extends Controller
             'game' => $game,
             'combo' => $combo,
             'characters' => $characters,
+            'listingTypes' => $listingTypes,
             'resources' => $resources,
             'selectedResources' => $selectedResources,
         ]);
@@ -294,6 +172,7 @@ class ComboController extends Controller
             'video' => $validated['video'] ?? null,
             'character_idcharacter' => $validated['character_idcharacter'],
             'damage' => $validated['damage'] ?? null,
+            'type' => $validated['listingtype'],
             'patch' => $validated['patch'] ?? null,
         ]);
 
@@ -304,6 +183,8 @@ class ComboController extends Controller
 
     public function destroy(Combo $combo): RedirectResponse
     {
+        $this->authorize('delete', $combo);
+
         $game = $combo->character->game;
 
         // TODO: record which user made this edit once an audit/edit-log exists

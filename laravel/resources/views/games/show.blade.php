@@ -10,9 +10,9 @@
             <div class="alert alert-danger">{{ session('error') }}</div>
         @endif
 
-        @auth
+        @if (auth()->check() && auth()->user()->isTrusted())
             <a href="{{ route('admin.game.edit', $game) }}" class="btn btn-secondary btn-sm mb-2" style="float: right;">Edit Game</a>
-        @endauth
+        @endif
 
         <form method="get" action="{{ route('games.combos.index', $game) }}" class="card bg-dark p-2 mb-3">
             <div class="row g-2 align-items-end">
@@ -105,6 +105,7 @@
                             <th>Inputs</th>
                             <th>Damage</th>
                             <th>Type</th>
+                            <th>Author</th>
                             <th>Submitted</th>
                         </tr>
                         @foreach ($latestCombos as $combo)
@@ -127,6 +128,7 @@
                                 </td>
                                 <td>{{ number_format((float) $combo->damage, 0, '', '.') }}</td>
                                 <td>{{ $combo->listingType?->title }}</td>
+                                <td>{{ $combo->user?->nickname ?? 'Anonymous' }}</td>
                                 <td>{{ $combo->submited?->format('d-m-y') }}</td>
                             </tr>
                         @endforeach

@@ -8,15 +8,19 @@ use App\Http\Controllers\Admin\GameListController;
 use App\Http\Controllers\Admin\GameResourceController;
 use App\Http\Controllers\Admin\GameSettingsController;
 use App\Http\Controllers\Admin\LinkController;
-use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\ComboController;
 use App\Http\Controllers\GameController;
+use App\Http\Controllers\ListCategoryController;
+use App\Http\Controllers\ListComboPickerController;
 use App\Http\Controllers\ListController;
+use App\Http\Controllers\ListPageController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\PreferenceController;
 use App\Http\Controllers\TimelineController;
+use App\Http\Controllers\UserController;
 use App\Models\Combo;
 use App\Models\Game;
 use Illuminate\Support\Facades\Route;
@@ -46,14 +50,20 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/destroy', [DashboardController::class, 'destroy'])->middleware('throttle:10,1')->name('dashboard.destroy');
 
-    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+    Route::post('/users', [AdminUserController::class, 'store'])->middleware('throttle:10,1')->name('users.store');
+    Route::post('/users/{user}/password', [AdminUserController::class, 'updatePassword'])->middleware('throttle:10,1')->name('users.password.update');
+    Route::post('/users/{user}/trusted', [AdminUserController::class, 'updateTrusted'])->middleware('throttle:10,1')->name('users.trusted.update');
+});
+
+Route::middleware(['auth', 'trusted'])->group(function () {
+    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
     Route::post('/users', [UserController::class, 'store'])->middleware('throttle:10,1')->name('users.store');
-    Route::post('/users/{user}/password', [UserController::class, 'updatePassword'])->middleware('throttle:10,1')->name('users.password.update');
 });
 
 Route::get('/games', [GameController::class, 'index'])->name('games.index');
-Route::get('/games/add', [GameController::class, 'create'])->middleware('auth')->name('games.create');
-Route::post('/games', [GameController::class, 'store'])->middleware(['auth', 'throttle:10,1'])->name('games.store');
+Route::get('/games/add', [GameController::class, 'create'])->middleware(['auth', 'trusted'])->name('games.create');
+Route::post('/games', [GameController::class, 'store'])->middleware(['auth', 'trusted', 'throttle:10,1'])->name('games.store');
 Route::get('/games/{game}', [GameController::class, 'show'])->name('games.show');
 
 Route::get('/games/{game}/combos', [ComboController::class, 'index'])->name('games.combos.index');
@@ -71,6 +81,22 @@ Route::get('/lists/{list}', [ListController::class, 'show'])->name('lists.show')
 Route::post('/lists/{list}/rename', [ListController::class, 'rename'])->middleware(['auth', 'throttle:10,1'])->name('lists.rename');
 Route::post('/lists/{list}/delete', [ListController::class, 'destroy'])->middleware(['auth', 'throttle:10,1'])->name('lists.destroy');
 Route::post('/lists/{list}/entries', [ListController::class, 'alterEntries'])->middleware(['auth', 'throttle:10,1'])->name('lists.entries.alter');
+Route::patch('/lists/{list}/entries/{combo}/category', [ListController::class, 'reassignEntry'])->middleware(['auth', 'throttle:60,1'])->name('lists.entries.reassign');
+
+Route::middleware(['auth', 'throttle:10,1'])->prefix('lists/{list}/manage')->name('lists.manage.')->scopeBindings()->group(function () {
+    Route::get('/', [ListController::class, 'manage'])->withoutMiddleware('throttle:10,1')->name('index');
+
+    Route::post('/pages', [ListPageController::class, 'store'])->name('pages.store');
+    Route::post('/pages/bulk', [ListPageController::class, 'bulkUpdate'])->name('pages.bulk');
+    Route::post('/pages/{page}/delete', [ListPageController::class, 'destroy'])->name('pages.destroy');
+
+    Route::post('/categories', [ListCategoryController::class, 'store'])->name('categories.store');
+    Route::post('/categories/bulk', [ListCategoryController::class, 'bulkUpdate'])->name('categories.bulk');
+    Route::post('/categories/{category}/delete', [ListCategoryController::class, 'destroy'])->name('categories.destroy');
+
+    Route::get('/combos', [ListComboPickerController::class, 'index'])->withoutMiddleware('throttle:10,1')->name('combos.index');
+    Route::post('/combos', [ListComboPickerController::class, 'store'])->name('combos.store');
+});
 
 Route::view('/matches', 'matches.index')->name('matches.index');
 
@@ -83,7 +109,13 @@ Route::post('/preferences', [PreferenceController::class, 'update'])->middleware
 
 Route::get('/timeline', [TimelineController::class, 'index'])->name('timeline.index');
 
-Route::middleware('auth')->prefix('games/{game}/edit')->name('admin.')->scopeBindings()->group(function () {
+Route::view('/randomizer', 'randomizer.index')->name('randomizer.index');
+Route::view('/randomizer/dbfz', 'randomizer.dbfz')->name('randomizer.dbfz');
+Route::view('/randomizer/mvc2', 'randomizer.mvc2')->name('randomizer.mvc2');
+Route::view('/randomizer/skullgirls', 'randomizer.skullgirls')->name('randomizer.skullgirls');
+Route::view('/randomizer/dengeki', 'randomizer.dengeki')->name('randomizer.dengeki');
+
+Route::middleware(['auth', 'trusted'])->prefix('games/{game}/edit')->name('admin.')->scopeBindings()->group(function () {
     Route::get('/', [GameSettingsController::class, 'edit'])->name('game.edit');
     Route::post('/', [GameSettingsController::class, 'update'])->middleware('throttle:10,1')->name('game.update');
 

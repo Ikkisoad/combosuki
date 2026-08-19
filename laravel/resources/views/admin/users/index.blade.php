@@ -90,7 +90,15 @@
                                         <td>{{ $user->iduser }}</td>
                                         <td>{{ $user->nickname }}</td>
                                         <td>{{ $user->is_admin ? 'Yes' : 'No' }}</td>
-                                        <td>{{ $user->trusted_user ? 'Yes' : 'No' }}</td>
+                                        <td>
+                                            {{ $user->trusted_user ? 'Yes' : 'No' }}
+                                            <form method="post" action="{{ route('admin.users.trusted.update', $user) }}" class="d-inline">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-outline-light">
+                                                    {{ $user->trusted_user ? 'Revoke' : 'Trust' }}
+                                                </button>
+                                            </form>
+                                        </td>
                                         <td>{{ $user->created_at?->format('Y-m-d') }}</td>
                                         <td>
                                             <details>

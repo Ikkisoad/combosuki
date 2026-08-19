@@ -56,7 +56,10 @@
 
                 @if (! ($searched ?? false) || $lists->isNotEmpty())
                     <table class="table table-hover align-middle caption-top combosuki-main-reversed text-white">
-                        <tr><th>{{ ($searched ?? false) ? 'Search Results' : 'Guides' }}</th></tr>
+                        <tr>
+                            <th>{{ ($searched ?? false) ? 'Search Results' : 'Guides' }}</th>
+                            <th>Author</th>
+                        </tr>
                         @foreach ($lists as $list)
                             <tr>
                                 <td>
@@ -67,6 +70,7 @@
                                         <img src="{{ asset('img/misc/mod.png') }}" height="19" title="Moderated List">
                                     @endif
                                 </td>
+                                <td>{{ $list->user?->nickname ?? 'Anonymous' }}</td>
                             </tr>
                         @endforeach
                     </table>

@@ -8,7 +8,7 @@ class UpdateComboRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return $this->user()->can('update', $this->route('combo'));
     }
 
     /**
@@ -20,6 +20,7 @@ class UpdateComboRequest extends FormRequest
 
         return [
             'character_idcharacter' => ['required', 'integer', 'exists:character,idcharacter,game_idgame,'.$game->idgame],
+            'listingtype' => ['required', 'integer', 'exists:game_entry,entryid,gameid,'.$game->idgame],
             'combo' => ['required', 'string'],
             'damage' => ['nullable', 'numeric', 'min:0'],
             'patch' => ['nullable', 'string', 'max:10'],

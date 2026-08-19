@@ -28,6 +28,9 @@
         @if (session('status'))
             <div class="alert alert-success">{{ session('status') }}</div>
         @endif
+        @if (session('error'))
+            <div class="alert alert-danger">{{ session('error') }}</div>
+        @endif
 
         <div class="row">
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
@@ -39,9 +42,9 @@
                             @if ($combo->patch)
                                 <button class="btn btn-dark" style="float: right;" disabled>Patch: {{ $combo->patch }}</button>
                             @endif
-                            @auth
+                            @can('update', $combo)
                                 <a href="{{ route('combos.edit', $combo) }}" class="btn btn-primary" style="float: right;">Edit</a>
-                            @endauth
+                            @endcan
                             <button style="float: right;" class="btn btn-secondary" onclick="change_display()">Display Method</button>
                         </th>
                     </tr>
@@ -88,6 +91,10 @@
                 @endif
 
                 <table class="table table-hover align-middle combosuki-main-reversed text-white">
+                    <tr>
+                        <th>Author:</th>
+                        <td>{{ $combo->user?->nickname ?? 'Anonymous' }}</td>
+                    </tr>
                     <tr>
                         <th>Submitted:</th>
                         <td>{{ $combo->submited?->format('d-m-Y') }}</td>

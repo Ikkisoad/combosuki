@@ -19,8 +19,14 @@ class User extends Authenticatable
     {
         return [
             'is_admin' => 'boolean',
+            'trusted_user' => 'boolean',
             'password' => 'hashed',
         ];
+    }
+
+    public function isTrusted(): bool
+    {
+        return $this->is_admin || $this->trusted_user;
     }
 
     public function combos(): HasMany

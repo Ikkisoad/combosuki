@@ -84,7 +84,7 @@ class GameController extends Controller
             ->orderBy('name')
             ->get();
 
-        $latestCombos = Combo::with(['character', 'listingType'])
+        $latestCombos = Combo::with(['character', 'listingType', 'user'])
             ->whereHas('character', fn ($query) => $query->where('game_idgame', $game->idgame))
             ->orderByDesc('submited')
             ->limit(5)

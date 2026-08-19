@@ -17,7 +17,7 @@ class GameCreationTest extends TestCase
 
     public function test_authenticated_user_can_create_a_game_with_sensible_defaults(): void
     {
-        $this->actingAs(User::create(['nickname' => 'regular', 'password' => 'password123', 'is_admin' => false]));
+        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
 
         $response = $this->post(route('games.store'), [
             'name' => 'New Fighter',
@@ -40,7 +40,7 @@ class GameCreationTest extends TestCase
 
     public function test_game_name_and_image_are_required(): void
     {
-        $this->actingAs(User::create(['nickname' => 'regular', 'password' => 'password123', 'is_admin' => false]));
+        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
 
         $response = $this->post(route('games.store'), ['name' => '', 'image' => '']);
 

@@ -9,7 +9,7 @@ class TimelineController extends Controller
 {
     public function index(): View
     {
-        $combos = Combo::with(['character.game', 'listingType'])
+        $combos = Combo::with(['character.game', 'listingType', 'user'])
             ->whereHas('character.game')
             ->orderByDesc('submited')
             ->paginate(30);

@@ -31,6 +31,15 @@
                 </select>
             </div>
 
+            <div class="input-group mb-3">
+                <label class="input-group-text">Type:</label>
+                <select name="listingtype" class="form-select" required>
+                    @foreach ($listingTypes as $entry)
+                        <option value="{{ $entry->entryid }}" @selected(old('listingtype') == $entry->entryid)>{{ $entry->title }}</option>
+                    @endforeach
+                </select>
+            </div>
+
             <div class="mb-2">
                 @foreach ($buttons as $button)
                     <button type="button" class="btn btn-sm" style="margin-left:0.25em;margin-bottom:0.5em;background-color: {{ $button->color }};" onclick="moveNumbers('{{ $button->name }}')">{{ $button->name }}</button>

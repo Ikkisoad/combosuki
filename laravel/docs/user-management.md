@@ -35,5 +35,35 @@ php artisan tinker --execute="\$u = \App\Models\User::where('nickname', 'someone
 php artisan tinker --execute="\App\Models\User::where('nickname', 'someone')->update(['is_admin' => true]);"
 ```
 
-`is_admin` isn't enforced on any route yet — it's the foundation for the admin mass-edit
-tool (see the "let's block anonymous submissions" plan/commit).
+Admins can reach `/admin` and `/admin/users` (gated by the `admin` middleware), including
+creating new users with any combination of `is_admin`/`trusted_user`, resetting
+passwords, and toggling a user's trusted status.
+
+## Trusted users
+
+`trusted_user` is a third tier between a regular logged-in user and an admin, gated by
+the `trusted` middleware (`User::isTrusted()` is true for `trusted_user` or `is_admin`).
+Trusted users can:
+
+- create and edit games and their content — characters, buttons, links, entries,
+  options/resources, and game-scoped lists (the `/games/{game}/edit/*` routes, plus
+  `/games/add`).
+- edit or delete *any* combo or list, not just their own (see below).
+- create new plain user accounts via `/users/create` — these are always created with
+  `is_admin`/`trusted_user` both off, regardless of what's posted; only an admin can
+  promote someone from there.
+
+Only an admin can grant or revoke `trusted_user` on an existing account (the "Trust" /
+"Revoke" button on `/admin/users`), or via tinker:
+
+```bash
+php artisan tinker --execute="\App\Models\User::where('nickname', 'someone')->update(['trusted_user' => true]);"
+```
+
+## Combo/list ownership
+
+Regular (untrusted) users can submit combos and lists, and edit or delete only the ones
+they created (`Combo`/`ListModel` `user_iduser` matching the logged-in user). Trusted
+users and admins bypass this check and can edit/delete anyone's. This is enforced by
+`App\Policies\ComboPolicy` and `App\Policies\ListPolicy`. Combos/lists with no owner
+(`user_iduser` is null — legacy rows) can only be touched by trusted users/admins.
