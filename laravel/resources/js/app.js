@@ -53,6 +53,15 @@ window.change_display = function () {
     text.innerHTML = temp;
 };
 
+window.showComboEdit = function () {
+    document.getElementById('combo-view').style.display = 'none';
+    document.getElementById('combo-edit-form').style.display = 'block';
+};
+
+window.cancelComboEdit = function () {
+    location.reload();
+};
+
 window.showDIV = function (divId) {
     const el = document.getElementById(divId);
     if (el.style.display === 'none') {

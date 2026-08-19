@@ -14,6 +14,7 @@ use App\Models\Resource;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class ComboController extends Controller
@@ -61,17 +62,33 @@ class ComboController extends Controller
     {
         $combo->load(['character.game', 'listingType', 'resources.resourceValue.gameResource', 'user']);
 
+        $game = $combo->character->game;
+
         $primaryResources = $combo->resources
             ->filter(fn ($resource) => $resource->resourceValue?->gameResource?->primaryORsecundary === 1);
 
         $secondaryResources = $combo->resources
             ->filter(fn ($resource) => $resource->resourceValue?->gameResource?->primaryORsecundary === 0);
 
+        $canEdit = Gate::allows('update', $combo);
+
+        $characters = $listingTypes = $buttons = collect();
+
+        if ($canEdit) {
+            $characters = Character::where('game_idgame', $game->idgame)->orderBy('name')->get();
+            $listingTypes = GameEntry::where('gameid', $game->idgame)->orderBy('order')->orderBy('title')->get();
+            $buttons = $game->buttons()->orderBy('order')->get();
+        }
+
         return view('combos.show', [
             'combo' => $combo,
-            'game' => $combo->character->game,
+            'game' => $game,
             'primaryResources' => $primaryResources,
             'secondaryResources' => $secondaryResources,
+            'canEdit' => $canEdit,
+            'characters' => $characters,
+            'listingTypes' => $listingTypes,
+            'buttons' => $buttons,
         ]);
     }
 
@@ -176,7 +193,13 @@ class ComboController extends Controller
             'patch' => $validated['patch'] ?? null,
         ]);
 
-        $this->syncResources($combo, $game, $validated['resources'] ?? []);
+        // The inline quick-edit form on the combo page doesn't send a `resources`
+        // field at all (it only edits the simple/relational fields); only sync
+        // resources when the submitted form actually included them, so a quick
+        // edit doesn't wipe out the combo's existing resource values.
+        if ($request->has('resources')) {
+            $this->syncResources($combo, $game, $validated['resources'] ?? []);
+        }
 
         return redirect()->route('combos.show', $combo)->with('status', 'Combo updated.');
     }

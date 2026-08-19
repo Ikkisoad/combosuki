@@ -34,35 +34,113 @@
 
         <div class="row">
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-                <table class="table table-hover align-middle combosuki-main-reversed text-white">
-                    <tr>
-                        <th>
-                            Entry ID: {{ $combo->idcombo }} / {{ $combo->character->name }}
-                            {{ $combo->listingType?->title }}
-                            @if ($combo->patch)
-                                <button class="btn btn-dark" style="float: right;" disabled>Patch: {{ $combo->patch }}</button>
-                            @endif
-                            @can('update', $combo)
-                                <a href="{{ route('combos.edit', $combo) }}" class="btn btn-primary" style="float: right;">Edit</a>
-                            @endcan
-                            <button style="float: right;" class="btn btn-secondary" onclick="change_display()">Display Method</button>
-                        </th>
-                    </tr>
-                    <tr>
-                        <td id="combo_line"><x-combo-notation :game="$game" :notation="$combo->combo" /></td>
-                    </tr>
-                </table>
-
-                <x-video-embed :video="$combo->video" />
-
-                <div id="combo_text" style="display: none;">{!! nl2br(e($combo->combo)) !!}</div>
-
-                @if ($combo->comments)
+                <div id="combo-view">
                     <table class="table table-hover align-middle combosuki-main-reversed text-white">
-                        <tr><td>Comment:</td></tr>
-                        <tr><td>{!! nl2br(e($combo->comments)) !!}</td></tr>
+                        <tr>
+                            <th>
+                                Entry ID: {{ $combo->idcombo }} / {{ $combo->character->name }}
+                                {{ $combo->listingType?->title }}
+                                @if ($combo->patch)
+                                    <button class="btn btn-dark" style="float: right;" disabled>Patch: {{ $combo->patch }}</button>
+                                @endif
+                                @can('update', $combo)
+                                    <button type="button" class="btn btn-primary" style="float: right;" onclick="showComboEdit()">Edit</button>
+                                @endcan
+                                <button style="float: right;" class="btn btn-secondary" onclick="change_display()">Display Method</button>
+                            </th>
+                        </tr>
+                        <tr>
+                            <td id="combo_line"><x-combo-notation :game="$game" :notation="$combo->combo" /></td>
+                        </tr>
                     </table>
-                @endif
+
+                    <x-video-embed :video="$combo->video" />
+
+                    <div id="combo_text" style="display: none;">{!! nl2br(e($combo->combo)) !!}</div>
+
+                    @if ($combo->comments)
+                        <table class="table table-hover align-middle combosuki-main-reversed text-white">
+                            <tr><td>Comment:</td></tr>
+                            <tr><td>{!! nl2br(e($combo->comments)) !!}</td></tr>
+                        </table>
+                    @endif
+                </div>
+
+                @can('update', $combo)
+                    <div id="combo-edit-form" style="display: none;">
+                        <table class="table table-hover align-middle combosuki-main-reversed text-white">
+                            <tr>
+                                <th>Editing Entry ID: {{ $combo->idcombo }}</th>
+                            </tr>
+                        </table>
+
+                        <form method="post" action="{{ route('combos.update', $combo) }}">
+                            @csrf
+
+                            <div class="input-group mb-3">
+                                <label class="input-group-text">Character:</label>
+                                <select name="character_idcharacter" class="form-select" required>
+                                    @foreach ($characters as $character)
+                                        <option value="{{ $character->idcharacter }}" @selected($combo->character_idcharacter == $character->idcharacter)>{{ $character->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="input-group mb-3">
+                                <label class="input-group-text">Type:</label>
+                                <select name="listingtype" class="form-select" required>
+                                    @foreach ($listingTypes as $entry)
+                                        <option value="{{ $entry->entryid }}" @selected($combo->type == $entry->entryid)>{{ $entry->title }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="mb-2">
+                                @foreach ($buttons as $button)
+                                    <button type="button" class="btn btn-sm" style="margin-left:0.25em;margin-bottom:0.5em;background-color: {{ $button->color }};" onclick="moveNumbers('{{ $button->name }}')">{{ $button->name }}</button>
+                                @endforeach
+                                <button type="button" class="btn btn-sm btn-secondary" onclick="backspace()">&#9003; Backspace</button>
+                            </div>
+
+                            <textarea name="combo" class="form-control" id="comboarea" rows="4"
+                                      placeholder="{{ $game->notation }}" required>{{ $combo->combo }}</textarea>
+
+                            <div class="row my-3">
+                                <div class="col">
+                                    <div class="input-group mb-3">
+                                        <span class="input-group-text">Damage:</span>
+                                        <input class="form-control" type="number" name="damage" min="0" value="{{ $combo->damage }}">
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="input-group mb-3">
+                                        <span class="input-group-text">Patch:</span>
+                                        <input type="text" name="patch" class="form-control" maxlength="10" value="{{ $combo->patch }}">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col">
+                                    <label>Comments:</label>
+                                    <textarea name="comments" class="form-control" placeholder="Comments like: Corner only, universal, etc... are recommended to make it easier to search specific situations.">{{ $combo->comments }}</textarea>
+
+                                    <label class="mt-2">Video:</label>
+                                    <textarea name="video" class="form-control" rows="1" maxlength="255"
+                                              placeholder="Currently supports YouTube, Twitter/X, Streamable, Twitch clips, Imgur, Niconico, Gfycat and MedalTv.">{{ $combo->video }}</textarea>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col my-3 d-flex gap-2 align-items-center">
+                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                    <button type="button" class="btn btn-secondary" onclick="cancelComboEdit()">Cancel</button>
+                                    <a href="{{ route('combos.edit', $combo) }}" class="ms-auto">Advanced edit (resources &amp; delete) &rarr;</a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                @endcan
             </main>
 
             <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar show collapse">
