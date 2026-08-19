@@ -33,14 +33,14 @@
                         More
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="/games/add">Add Game</a></li>
+                        <li><a class="dropdown-item" href="{{ route('games.create') }}">Add Game</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="/combo-guidelines">Combo Guidelines</a></li>
+                        <li><a class="dropdown-item" href="{{ route('combo-guidelines') }}">Combo Guidelines</a></li>
                         <li><a class="dropdown-item" href="https://srk.shib.live/w/Shoryuken_Wiki:Community_portal/Discords/Game" target="_blank">FGC Discord Compendium</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="/preferences">Preferences</a></li>
+                        <li><a class="dropdown-item" href="{{ route('preferences.edit') }}">Preferences</a></li>
                         <li><a class="dropdown-item" href="/randomizer">Randomizers</a></li>
-                        <li><a class="dropdown-item" href="/logs">Logs</a></li>
+                        <li><a class="dropdown-item" href="{{ route('logs.index') }}">Logs</a></li>
                     </ul>
                 </li>
             </ul>

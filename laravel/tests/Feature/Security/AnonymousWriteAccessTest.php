@@ -169,6 +169,11 @@ class AnonymousWriteAccessTest extends TestCase
                 'payload' => ['action' => 'Submit', 'title' => 'Hacked Game'],
                 'assertUnchanged' => fn () => $this->assertSame('Test Game', $this->game->fresh()->name),
             ],
+            'game store' => [
+                'url' => route('games.store'),
+                'payload' => ['name' => 'Hacked Game', 'image' => 'https://example.com/hacked.png'],
+                'assertUnchanged' => fn () => $this->assertSame(1, Game::count()),
+            ],
             'character store' => [
                 'url' => route('admin.characters.store', $this->game),
                 'payload' => ['action' => 'Add', 'character' => 'Hacker'],
@@ -224,6 +229,7 @@ class AnonymousWriteAccessTest extends TestCase
             'admin users index' => route('admin.users.index'),
             'combo create form' => route('games.combos.create', $this->game),
             'combo edit form' => route('combos.edit', $this->combo),
+            'game create form' => route('games.create'),
             'game settings edit form' => route('admin.game.edit', $this->game),
             'characters admin index' => route('admin.characters.index', $this->game),
             'links admin index' => route('admin.links.index', $this->game),
@@ -282,5 +288,6 @@ class AnonymousWriteAccessTest extends TestCase
 
         $this->get(route('games.combos.create', $this->game))->assertOk();
         $this->get(route('combos.edit', $this->combo))->assertOk();
+        $this->get(route('games.create'))->assertOk();
     }
 }

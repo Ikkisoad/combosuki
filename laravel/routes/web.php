@@ -14,6 +14,8 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\ComboController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\ListController;
+use App\Http\Controllers\LogController;
+use App\Http\Controllers\PreferenceController;
 use App\Http\Controllers\TimelineController;
 use App\Models\Combo;
 use App\Models\Game;
@@ -50,6 +52,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 });
 
 Route::get('/games', [GameController::class, 'index'])->name('games.index');
+Route::get('/games/add', [GameController::class, 'create'])->middleware('auth')->name('games.create');
+Route::post('/games', [GameController::class, 'store'])->middleware(['auth', 'throttle:10,1'])->name('games.store');
 Route::get('/games/{game}', [GameController::class, 'show'])->name('games.show');
 
 Route::get('/games/{game}/combos', [ComboController::class, 'index'])->name('games.combos.index');
@@ -69,6 +73,13 @@ Route::post('/lists/{list}/delete', [ListController::class, 'destroy'])->middlew
 Route::post('/lists/{list}/entries', [ListController::class, 'alterEntries'])->middleware(['auth', 'throttle:10,1'])->name('lists.entries.alter');
 
 Route::view('/matches', 'matches.index')->name('matches.index');
+
+Route::view('/combo-guidelines', 'combo-guidelines')->name('combo-guidelines');
+
+Route::get('/logs', [LogController::class, 'index'])->name('logs.index');
+
+Route::get('/preferences', [PreferenceController::class, 'edit'])->name('preferences.edit');
+Route::post('/preferences', [PreferenceController::class, 'update'])->middleware('throttle:20,1')->name('preferences.update');
 
 Route::get('/timeline', [TimelineController::class, 'index'])->name('timeline.index');
 
