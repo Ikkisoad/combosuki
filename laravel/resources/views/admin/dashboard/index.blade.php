@@ -46,6 +46,21 @@
             @csrf
 
             <h2 class="text-white h4">Combos <small class="text-white-50">({{ $combos->total() }})</small></h2>
+
+            @if (request()->filled('combo_search'))
+                <div class="form-check mb-2">
+                    <input type="checkbox" class="form-check-input" id="combo-select-all-matching">
+                    <label class="form-check-label text-white" for="combo-select-all-matching">
+                        Select all {{ $combos->total() }} combos matching &ldquo;{{ request('combo_search') }}&rdquo;{{ request()->boolean('combo_unverified') ? ' (unverified only)' : '' }} &mdash; not just this page
+                    </label>
+                </div>
+                <input type="hidden" name="combo_delete_all_matching" value="1" id="combo-delete-all-matching-input" disabled>
+                <input type="hidden" name="combo_search" value="{{ request('combo_search') }}" id="combo-search-hidden-input" disabled>
+                @if (request()->boolean('combo_unverified'))
+                    <input type="hidden" name="combo_unverified" value="1" id="combo-unverified-hidden-input" disabled>
+                @endif
+            @endif
+
             <div class="table-responsive">
                 <table class="table table-hover align-middle combosuki-main-reversed text-white">
                     <thead>
@@ -159,8 +174,20 @@
             const form = document.getElementById('bulk-delete-form');
             const countEl = document.getElementById('selected-count');
             const deleteBtn = document.getElementById('delete-selected-btn');
+            const selectAllMatching = document.getElementById('combo-select-all-matching');
+            const comboTotal = {{ $combos->total() }};
+
+            function deleteAllMatchingActive() {
+                return selectAllMatching && selectAllMatching.checked;
+            }
 
             function updateCount() {
+                if (deleteAllMatchingActive()) {
+                    countEl.textContent = comboTotal;
+                    deleteBtn.disabled = comboTotal === 0;
+                    return;
+                }
+
                 const checked = form.querySelectorAll('input[type=checkbox][name$="_ids[]"]:checked').length;
                 countEl.textContent = checked;
                 deleteBtn.disabled = checked === 0;
@@ -181,13 +208,44 @@
                 }
             });
 
+            if (selectAllMatching) {
+                selectAllMatching.addEventListener('change', function () {
+                    const active = selectAllMatching.checked;
+
+                    ['combo-delete-all-matching-input', 'combo-search-hidden-input', 'combo-unverified-hidden-input'].forEach(function (id) {
+                        const el = document.getElementById(id);
+                        if (el) el.disabled = !active;
+                    });
+
+                    // Deleting every matching combo already covers whatever is
+                    // checked on the current page, so disable those checkboxes
+                    // to avoid implying they're being counted separately.
+                    form.querySelectorAll('.combo-checkbox').forEach(function (checkbox) {
+                        checkbox.disabled = active;
+                        if (active) checkbox.checked = false;
+                    });
+                    const comboSelectAllHeader = form.querySelector('.select-all[data-target=".combo-checkbox"]');
+                    if (comboSelectAllHeader) {
+                        comboSelectAllHeader.disabled = active;
+                        if (active) comboSelectAllHeader.checked = false;
+                    }
+
+                    updateCount();
+                });
+            }
+
             form.addEventListener('submit', function (event) {
-                const total = form.querySelectorAll('input[type=checkbox][name$="_ids[]"]:checked').length;
                 const games = form.querySelectorAll('.game-checkbox:checked').length;
 
-                const message = games > 0
-                    ? `Permanently delete ${total} selected entries, including ${games} game(s)? Deleting a game also deletes all of its characters, combos, buttons, resources, links, entry types, and lists. This cannot be undone.`
-                    : `Permanently delete ${total} selected entries? This cannot be undone.`;
+                let message;
+                if (deleteAllMatchingActive()) {
+                    message = `Permanently delete ALL ${comboTotal} combos matching "{{ request('combo_search') }}"? This cannot be undone.`;
+                } else {
+                    const total = form.querySelectorAll('input[type=checkbox][name$="_ids[]"]:checked').length;
+                    message = games > 0
+                        ? `Permanently delete ${total} selected entries, including ${games} game(s)? Deleting a game also deletes all of its characters, combos, buttons, resources, links, entry types, and lists. This cannot be undone.`
+                        : `Permanently delete ${total} selected entries? This cannot be undone.`;
+                }
 
                 if (!confirm(message)) {
                     event.preventDefault();

@@ -68,7 +68,13 @@
                 </div>
                 <div class="col-auto">
                     <label class="form-label">Video contains</label>
-                    <input type="text" name="video" class="form-control" value="{{ request('video') }}">
+                    <input type="text" name="video" id="video" class="form-control" value="{{ request('video') }}" @disabled(request()->boolean('novideo'))>
+                </div>
+                <div class="col-auto">
+                    <div class="form-check">
+                        <input type="checkbox" name="novideo" value="1" class="form-check-input" id="novideo" @checked(request()->boolean('novideo')) onchange="document.getElementById('video').disabled = this.checked;">
+                        <label class="form-check-label" for="novideo">No video only</label>
+                    </div>
                 </div>
                 <div class="col-auto">
                     <label class="form-label">Comment has (# separated)</label>

@@ -18,7 +18,7 @@
     <title>{{ $title }}</title>
 
     <meta property="og:title" content="{{ $title }}" />
-    <meta property="og:type" content="{{ $player ? 'video.other' : 'website' }}" />
+    <meta property="og:type" content="website" />
     <meta property="og:image" content="{{ $image ?? 'https://combosuki.com/img/combosuki.png' }}" />
     <meta property="og:url" content="{{ url()->current() }}" />
     <meta property="og:description" content="{{ $description }}" />

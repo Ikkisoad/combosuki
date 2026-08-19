@@ -88,7 +88,9 @@ class ComboController extends Controller
             $query->where('comments', 'not like', "%{$piece}%");
         }
 
-        if ($request->filled('video')) {
+        if ($request->boolean('novideo')) {
+            $query->where(fn (Builder $q) => $q->whereNull('video')->orWhere('video', ''));
+        } elseif ($request->filled('video')) {
             $query->where('video', 'like', '%'.$request->string('video').'%');
         }
 

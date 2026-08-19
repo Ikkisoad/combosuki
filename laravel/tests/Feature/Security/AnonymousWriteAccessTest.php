@@ -189,6 +189,11 @@ class AnonymousWriteAccessTest extends TestCase
                 'payload' => ['action' => 'Add', 'name' => 'Evil', 'color' => '#000000', 'match_type' => 'exact'],
                 'assertUnchanged' => fn () => $this->assertSame(1, Button::count()),
             ],
+            'button bulk update' => [
+                'url' => route('admin.buttons.bulkUpdate', $this->game),
+                'payload' => ['buttons' => [$this->button->idbutton => ['name' => 'Hacked', 'color' => '#000000', 'match_type' => 'exact']]],
+                'assertUnchanged' => fn () => $this->assertSame('L', $this->button->fresh()->name),
+            ],
             'game resource store' => [
                 'url' => route('admin.resources.store', $this->game),
                 'payload' => ['action' => 'Add', 'resource' => 'Evil', 'type' => 1],

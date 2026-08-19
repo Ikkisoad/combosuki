@@ -122,7 +122,7 @@
 
                     <label class="mt-2">Video:</label>
                     <textarea name="video" class="form-control" rows="1" maxlength="255"
-                              placeholder="Currently supports youtube, niconico, twitter, imgur, Gfycat and MedalTv.">{{ old('video', $combo->video) }}</textarea>
+                              placeholder="Currently supports YouTube, Twitter/X, Streamable, Twitch clips, Imgur, Niconico, Gfycat and MedalTv.">{{ old('video', $combo->video) }}</textarea>
                 </div>
             </div>
 

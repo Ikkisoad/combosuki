@@ -43,4 +43,15 @@ class UserController extends Controller
 
         return redirect()->route('admin.users.index')->with('status', "User \"{$validated['nickname']}\" created.");
     }
+
+    public function updatePassword(Request $request, User $user): RedirectResponse
+    {
+        $validated = $request->validate([
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $user->update(['password' => $validated['password']]);
+
+        return redirect()->route('admin.users.index')->with('status', "Password updated for \"{$user->nickname}\".");
+    }
 }

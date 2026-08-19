@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Combo;
 use App\Models\Game;
 use App\Models\ListModel;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,21 +16,8 @@ class DashboardController extends Controller
 {
     public function index(Request $request): View
     {
-        $combos = Combo::query()
+        $combos = $this->comboQuery($request)
             ->with(['character.game', 'user'])
-            ->when($request->filled('combo_search'), function ($query) use ($request) {
-                $term = $request->string('combo_search');
-                $query->where(function ($q) use ($term) {
-                    $q->where('combo', 'like', "%{$term}%")
-                        ->orWhere('author', 'like', "%{$term}%")
-                        ->orWhere('comments', 'like', "%{$term}%");
-                });
-            })
-            ->when($request->boolean('combo_unverified'), function ($query) {
-                $query->where(function ($q) {
-                    $q->whereNull('verified')->orWhere('verified', 0);
-                });
-            })
             ->orderByDesc('idcombo')
             ->paginate(25, ['*'], 'combo_page')
             ->withQueryString();
@@ -68,18 +56,24 @@ class DashboardController extends Controller
             'list_ids.*' => ['integer'],
             'game_ids' => ['array'],
             'game_ids.*' => ['integer'],
+            'combo_delete_all_matching' => ['nullable', 'boolean'],
+            'combo_search' => ['required_if:combo_delete_all_matching,1', 'nullable', 'string'],
         ]);
 
         $comboIds = $validated['combo_ids'] ?? [];
         $listIds = $validated['list_ids'] ?? [];
         $gameIds = $validated['game_ids'] ?? [];
+        $deleteAllMatching = $request->boolean('combo_delete_all_matching');
 
-        if (empty($comboIds) && empty($listIds) && empty($gameIds)) {
+        if (empty($comboIds) && empty($listIds) && empty($gameIds) && ! $deleteAllMatching) {
             return redirect()->route('admin.dashboard')->with('error', 'No entries selected.');
         }
 
-        $deleted = DB::transaction(function () use ($comboIds, $listIds, $gameIds) {
-            $comboCount = $comboIds ? Combo::whereIn('idcombo', $comboIds)->delete() : 0;
+        $deleted = DB::transaction(function () use ($request, $comboIds, $listIds, $gameIds, $deleteAllMatching) {
+            $comboCount = $deleteAllMatching
+                ? $this->comboQuery($request)->delete()
+                : ($comboIds ? Combo::whereIn('idcombo', $comboIds)->delete() : 0);
+
             $listCount = $listIds ? ListModel::whereIn('idlist', $listIds)->delete() : 0;
 
             $gameCount = 0;
@@ -106,5 +100,27 @@ class DashboardController extends Controller
         });
 
         return redirect()->route('admin.dashboard')->with('status', "Deleted {$deleted} ".str('entry')->plural($deleted).'.');
+    }
+
+    /**
+     * Shared between index() and destroy() so "delete all matching" deletes
+     * exactly what the filtered list currently shows, not a stale count.
+     */
+    private function comboQuery(Request $request): Builder
+    {
+        return Combo::query()
+            ->when($request->filled('combo_search'), function ($query) use ($request) {
+                $term = $request->string('combo_search');
+                $query->where(function ($q) use ($term) {
+                    $q->where('combo', 'like', "%{$term}%")
+                        ->orWhere('author', 'like', "%{$term}%")
+                        ->orWhere('comments', 'like', "%{$term}%");
+                });
+            })
+            ->when($request->boolean('combo_unverified'), function ($query) {
+                $query->where(function ($q) {
+                    $q->whereNull('verified')->orWhere('verified', 0);
+                });
+            });
     }
 }

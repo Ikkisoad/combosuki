@@ -24,7 +24,6 @@ class GameController extends Controller
 
         $characters = Character::where('game_idgame', $game->idgame)
             ->withCount('combos')
-            ->having('combos_count', '>', 0)
             ->orderByDesc('combos_count')
             ->orderBy('name')
             ->get();

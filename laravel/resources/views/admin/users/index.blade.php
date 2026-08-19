@@ -81,6 +81,7 @@
                                     <th>Admin</th>
                                     <th>Trusted</th>
                                     <th>Joined</th>
+                                    <th>Password</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -91,9 +92,24 @@
                                         <td>{{ $user->is_admin ? 'Yes' : 'No' }}</td>
                                         <td>{{ $user->trusted_user ? 'Yes' : 'No' }}</td>
                                         <td>{{ $user->created_at?->format('Y-m-d') }}</td>
+                                        <td>
+                                            <details>
+                                                <summary class="btn btn-sm btn-outline-light">Change</summary>
+                                                <form method="post" action="{{ route('admin.users.password.update', $user) }}" class="mt-2" style="min-width: 220px;">
+                                                    @csrf
+                                                    <div class="mb-2">
+                                                        <input type="password" name="password" class="form-control form-control-sm" placeholder="New password" minlength="8" required>
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <input type="password" name="password_confirmation" class="form-control form-control-sm" placeholder="Confirm password" minlength="8" required>
+                                                    </div>
+                                                    <button type="submit" class="btn btn-sm btn-primary">Update Password</button>
+                                                </form>
+                                            </details>
+                                        </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="5">No users found.</td></tr>
+                                    <tr><td colspan="6">No users found.</td></tr>
                                 @endforelse
                             </tbody>
                         </table>

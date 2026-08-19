@@ -76,12 +76,17 @@ class GameResourceController extends Controller
     {
         abort_if($resource->game_idgame !== $game->idgame, 404);
 
-        $validated = $request->validate([
+        $rules = [
             'action' => ['required', 'in:EditAdd,EditUpdate,EditDelete'],
-            'resourcevalue' => ['required_if:action,EditAdd,EditUpdate', 'nullable', 'string', 'max:115'],
             'order' => ['nullable', 'numeric'],
             'idresourcevalue' => ['required_if:action,EditUpdate,EditDelete', 'nullable', 'integer'],
-        ]);
+        ];
+
+        $rules['resourcevalue'] = $resource->type === 2
+            ? ['required_if:action,EditAdd,EditUpdate', 'nullable', 'numeric']
+            : ['required_if:action,EditAdd,EditUpdate', 'nullable', 'string', 'max:115'];
+
+        $validated = $request->validate($rules);
 
         // TODO: record which user made this edit once an audit/edit-log exists
         if ($validated['action'] === 'EditAdd') {

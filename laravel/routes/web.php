@@ -46,6 +46,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::post('/users', [UserController::class, 'store'])->middleware('throttle:10,1')->name('users.store');
+    Route::post('/users/{user}/password', [UserController::class, 'updatePassword'])->middleware('throttle:10,1')->name('users.password.update');
 });
 
 Route::get('/games', [GameController::class, 'index'])->name('games.index');
@@ -86,6 +87,7 @@ Route::middleware('auth')->prefix('games/{game}/edit')->name('admin.')->scopeBin
 
     Route::get('/buttons', [ButtonController::class, 'index'])->name('buttons.index');
     Route::post('/buttons', [ButtonController::class, 'store'])->middleware('throttle:10,1')->name('buttons.store');
+    Route::post('/buttons/bulk', [ButtonController::class, 'bulkUpdate'])->middleware('throttle:10,1')->name('buttons.bulkUpdate');
 
     Route::get('/resources', [GameResourceController::class, 'index'])->name('resources.index');
     Route::post('/resources', [GameResourceController::class, 'store'])->middleware('throttle:10,1')->name('resources.store');
