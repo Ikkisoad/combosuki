@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\ComboController;
+use App\Http\Controllers\ComboListController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\ListCategoryController;
 use App\Http\Controllers\ListComboPickerController;
@@ -73,6 +74,7 @@ Route::get('/combos/{combo}', [ComboController::class, 'show'])->name('combos.sh
 Route::get('/combos/{combo}/edit', [ComboController::class, 'edit'])->middleware('auth')->name('combos.edit');
 Route::post('/combos/{combo}/edit', [ComboController::class, 'update'])->middleware(['auth', 'throttle:10,1'])->name('combos.update');
 Route::post('/combos/{combo}/delete', [ComboController::class, 'destroy'])->middleware(['auth', 'throttle:10,1'])->name('combos.destroy');
+Route::post('/combos/{combo}/lists/{list}', [ComboListController::class, 'store'])->middleware(['auth', 'throttle:60,1'])->name('combos.lists.store');
 
 Route::get('/lists', [ListController::class, 'index'])->name('lists.index');
 Route::get('/lists/search', [ListController::class, 'search'])->name('lists.search');

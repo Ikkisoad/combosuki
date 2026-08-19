@@ -10,6 +10,7 @@ use App\Models\Combo;
 use App\Models\Game;
 use App\Models\GameEntry;
 use App\Models\GameResource;
+use App\Models\ListModel;
 use App\Models\Resource;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -80,6 +81,20 @@ class ComboController extends Controller
             $buttons = $game->buttons()->orderBy('order')->get();
         }
 
+        $userLists = collect();
+        $comboListIds = [];
+
+        if (auth()->check()) {
+            $userLists = ListModel::where('game_idgame', $game->idgame)
+                ->when(! auth()->user()->isTrusted(), fn (Builder $q) => $q->where('user_iduser', auth()->id()))
+                ->orderBy('list_name')
+                ->get();
+
+            if ($userLists->isNotEmpty()) {
+                $comboListIds = $combo->lists()->pluck('list.idlist')->all();
+            }
+        }
+
         return view('combos.show', [
             'combo' => $combo,
             'game' => $game,
@@ -89,6 +104,8 @@ class ComboController extends Controller
             'characters' => $characters,
             'listingTypes' => $listingTypes,
             'buttons' => $buttons,
+            'userLists' => $userLists,
+            'comboListIds' => $comboListIds,
         ]);
     }
 

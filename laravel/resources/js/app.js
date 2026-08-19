@@ -62,6 +62,43 @@ window.cancelComboEdit = function () {
     location.reload();
 };
 
+window.addComboToList = function (button, listId, comboId) {
+    if (button.disabled) {
+        return;
+    }
+
+    const originalText = button.textContent.trim();
+    button.disabled = true;
+    button.textContent = 'Adding…';
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+
+    fetch(`/combos/${comboId}/lists/${listId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+        },
+    })
+        .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
+        .then(({ ok, data }) => {
+            if (! ok) {
+                button.disabled = false;
+                button.textContent = data.error || data.message || 'Could not add.';
+                setTimeout(() => { button.textContent = originalText; }, 3000);
+                return;
+            }
+
+            button.textContent = originalText + ' ✓';
+        })
+        .catch(() => {
+            button.disabled = false;
+            button.textContent = 'Could not add.';
+            setTimeout(() => { button.textContent = originalText; }, 3000);
+        });
+};
+
 window.showDIV = function (divId) {
     const el = document.getElementById(divId);
     if (el.style.display === 'none') {

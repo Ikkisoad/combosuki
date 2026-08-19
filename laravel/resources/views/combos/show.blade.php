@@ -47,6 +47,24 @@
                                     <button type="button" class="btn btn-primary" style="float: right;" onclick="showComboEdit()">Edit</button>
                                 @endcan
                                 <button style="float: right;" class="btn btn-secondary" onclick="change_display()">Display Method</button>
+                                @auth
+                                    @if ($userLists->isNotEmpty())
+                                        <div class="dropdown d-inline-block" style="float: right;">
+                                            <button class="btn btn-secondary dropdown-toggle" type="button" id="addToListDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                                Add to List
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="addToListDropdown">
+                                                @foreach ($userLists as $list)
+                                                    <li>
+                                                        <button type="button" class="dropdown-item" @disabled(in_array($list->idlist, $comboListIds)) onclick="addComboToList(this, {{ $list->idlist }}, {{ $combo->idcombo }})">
+                                                            {{ $list->list_name }}@if (in_array($list->idlist, $comboListIds)) &check; @endif
+                                                        </button>
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    @endif
+                                @endauth
                             </th>
                         </tr>
                         <tr>
