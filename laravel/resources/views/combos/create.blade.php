@@ -33,13 +33,9 @@
 
             <div class="mb-2">
                 @foreach ($buttons as $button)
-                    <button type="button" style="border:none;background:none;margin-left:1em;margin-bottom:1em" onclick="moveNumbers('{{ $button->name }}')">
-                        <img src="{{ asset('img/buttons/'.$button->png.'.png') }}" alt="{{ $button->name }}">
-                    </button>
+                    <button type="button" class="btn btn-sm" style="margin-left:0.25em;margin-bottom:0.5em;background-color: {{ $button->color }};" onclick="moveNumbers('{{ $button->name }}')">{{ $button->name }}</button>
                 @endforeach
-                <button type="button" style="border:none;background:none;" onclick="backspace()">
-                    <img src="{{ asset('img/buttons/hidden/backspace.png') }}" alt="backspace">
-                </button>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="backspace()">&#9003; Backspace</button>
             </div>
 
             <textarea name="combo" class="form-control" id="comboarea" rows="4"

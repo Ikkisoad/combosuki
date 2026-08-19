@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use RuntimeException;
 
 class AuthController extends Controller
 {
@@ -22,7 +23,15 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        if (! Auth::attempt($credentials)) {
+        try {
+            $authenticated = Auth::attempt($credentials);
+        } catch (RuntimeException) {
+            // The stored password hash isn't a valid bcrypt hash (e.g. it was set via a
+            // query builder mass update, which bypasses the `hashed` cast on User).
+            $authenticated = false;
+        }
+
+        if (! $authenticated) {
             return back()->withInput($request->only('nickname'))->with('error', 'Incorrect nickname or password.');
         }
 

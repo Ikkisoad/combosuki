@@ -18,12 +18,12 @@
                             @csrf
                             <div class="input-group">
                                 <textarea name="name" maxlength="45" class="form-control" rows="1">{{ $button->name }}</textarea>
-                                <select name="png" class="form-select" onchange="setImage(this, {{ $button->idbutton }})">
-                                    @foreach ($images as $image)
-                                        <option value="{{ $image }}" @selected($image === $button->png)>{{ $image }}</option>
+                                <select name="match_type" class="form-select">
+                                    @foreach (['contains', 'starts_with', 'ends_with', 'exact'] as $type)
+                                        <option value="{{ $type }}" @selected($type === $button->match_type)>{{ $type }}</option>
                                     @endforeach
                                 </select>
-                                <img src="{{ asset('img/buttons/'.$button->png.'.png') }}" height="35" name="image-{{ $button->idbutton }}">
+                                <input type="color" name="color" class="form-control form-control-color" value="{{ $button->color }}">
                                 <input class="form-control" type="number" name="order" value="{{ $button->order }}" step="any">
                                 <input type="hidden" name="idbutton" value="{{ $button->idbutton }}">
                                 <button type="submit" name="action" value="Update" class="btn btn-primary">Update</button>
@@ -39,12 +39,12 @@
                         @csrf
                         <div class="input-group">
                             <textarea name="name" maxlength="45" class="form-control" rows="1" placeholder="Button Name" autofocus></textarea>
-                            <select name="png" class="form-select" onchange="setImage(this, 0)">
-                                @foreach ($images as $image)
-                                    <option value="{{ $image }}">{{ $image }}</option>
+                            <select name="match_type" class="form-select">
+                                @foreach (['contains', 'starts_with', 'ends_with', 'exact'] as $type)
+                                    <option value="{{ $type }}" @selected($type === 'exact')>{{ $type }}</option>
                                 @endforeach
                             </select>
-                            <img src="{{ asset('img/buttons/+.png') }}" height="35" name="image-0">
+                            <input type="color" name="color" class="form-control form-control-color" value="#ffffff">
                             <input class="form-control" type="number" name="order" step="any">
                             <button type="submit" name="action" value="Add" class="btn btn-primary">Add</button>
                         </div>

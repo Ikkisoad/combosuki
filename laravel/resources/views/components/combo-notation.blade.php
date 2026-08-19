@@ -6,8 +6,8 @@
 
 <span class="combo-notation">
     @foreach ($tokens as $token)
-        @if ($token['type'] === 'button')
-            <img class="img-fluid" style="display:inline; height:2em;" alt="" src="{{ asset('img/buttons/'.$token['value'].'.png') }}">
+        @if ($token['type'] === 'colored')
+            <span style="color: {{ $token['color'] }};">{{ $token['value'] }}</span>
         @else
             {{ $token['value'] }}
         @endif

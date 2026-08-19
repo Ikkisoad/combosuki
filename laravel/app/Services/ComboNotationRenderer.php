@@ -2,20 +2,21 @@
 
 namespace App\Services;
 
+use App\Models\Button;
 use App\Models\Game;
 
 class ComboNotationRenderer
 {
     /**
      * Split combo notation text into tokens, each either a literal string of
-     * text or a recognized button whose PNG filename should be rendered.
-     * Returns [['type' => 'text'|'button', 'value' => ...], ...] so the Blade
-     * component can escape text and safely build image paths for buttons.
+     * text or a recognized button whose color should be applied. Buttons are
+     * matched in the game's configured order, first match wins, using each
+     * button's match_type (exact/contains/starts_with/ends_with) against the
+     * word. Returns [['type' => 'text'|'colored', 'value' => ..., 'color' => ...]].
      */
     public function tokenize(Game $game, string $notation): array
     {
-        $buttons = $game->buttons()->get(['name', 'png'])
-            ->keyBy(fn ($button) => mb_strtolower($button->name));
+        $buttons = $game->buttons()->orderBy('order')->get(['name', 'color', 'match_type']);
 
         $tokens = [];
         $word = '';
@@ -25,10 +26,10 @@ class ComboNotationRenderer
                 return;
             }
 
-            $button = $buttons->get(mb_strtolower($word));
+            $button = $buttons->first(fn ($button) => $this->matches($button, $word));
 
             $tokens[] = $button
-                ? ['type' => 'button', 'value' => $button->png]
+                ? ['type' => 'colored', 'value' => ' '.$word.' ', 'color' => $button->color]
                 : ['type' => 'text', 'value' => ' '.$word.' '];
 
             $word = '';
@@ -47,5 +48,18 @@ class ComboNotationRenderer
         $flush($word);
 
         return $tokens;
+    }
+
+    private function matches(Button $button, string $word): bool
+    {
+        $needle = mb_strtolower($button->name);
+        $haystack = mb_strtolower($word);
+
+        return match ($button->match_type) {
+            'starts_with' => str_starts_with($haystack, $needle),
+            'ends_with' => str_ends_with($haystack, $needle),
+            'contains' => str_contains($haystack, $needle),
+            default => $haystack === $needle,
+        };
     }
 }

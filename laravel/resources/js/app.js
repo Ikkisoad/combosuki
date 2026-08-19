@@ -13,11 +13,6 @@ window.copytoclip = function (link) {
     document.body.removeChild(dummy);
 };
 
-window.setImage = function (select, id) {
-    const image = document.getElementsByName('image-' + id)[0];
-    image.src = '/img/buttons/' + select.options[select.selectedIndex].value + '.png';
-};
-
 window.playVideo = function (videoId) {
     const video = document.getElementById(videoId);
     video.src = video.dataset.src;

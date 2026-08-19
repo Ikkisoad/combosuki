@@ -20,11 +20,13 @@ Pass `'is_admin' => true` to make them a site admin.
 
 ## Change an existing user's password
 
-Use this to fix a user that was created incorrectly (e.g. via raw SQL) too — updating
-through Eloquent rehashes it correctly in place:
+Use this to fix a user that was created incorrectly (e.g. via raw SQL) too. You must
+load a model instance and call `save()` on it — `User::where(...)->update([...])` is a
+query builder mass update that bypasses the `hashed` cast and stores the password as
+plaintext, reproducing the same "This password does not use the Bcrypt algorithm" bug:
 
 ```bash
-php artisan tinker --execute="\App\Models\User::where('nickname', 'someone')->update(['password' => 'a-new-password']);"
+php artisan tinker --execute="\$u = \App\Models\User::where('nickname', 'someone')->firstOrFail(); \$u->password = 'a-new-password'; \$u->save();"
 ```
 
 ## Promote/demote a site admin

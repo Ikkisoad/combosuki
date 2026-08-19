@@ -15,12 +15,7 @@ class ButtonController extends Controller
     {
         $buttons = Button::where('game_idgame', $game->idgame)->orderBy('order')->orderBy('name')->get();
 
-        $images = collect(glob(public_path('img/buttons/*.png')))
-            ->map(fn ($path) => basename($path, '.png'))
-            ->sort()
-            ->values();
-
-        return view('admin.buttons.index', ['game' => $game, 'buttons' => $buttons, 'images' => $images]);
+        return view('admin.buttons.index', ['game' => $game, 'buttons' => $buttons]);
     }
 
     public function store(Request $request, Game $game): RedirectResponse
@@ -28,7 +23,8 @@ class ButtonController extends Controller
         $validated = $request->validate([
             'action' => ['required', 'in:Add,Update,Delete'],
             'name' => ['required_if:action,Add,Update', 'nullable', 'string', 'max:45'],
-            'png' => ['required_if:action,Add,Update', 'nullable', 'string', 'max:45'],
+            'color' => ['required_if:action,Add,Update', 'nullable', 'string', 'max:7'],
+            'match_type' => ['required_if:action,Add,Update', 'nullable', 'string', 'in:contains,starts_with,ends_with,exact'],
             'order' => ['nullable', 'numeric'],
             'idbutton' => ['required_if:action,Update,Delete', 'nullable', 'integer'],
         ]);
@@ -37,11 +33,22 @@ class ButtonController extends Controller
         $name = isset($validated['name']) ? str_replace(' ', '', $validated['name']) : null;
 
         if ($validated['action'] === 'Add') {
-            Button::create(['name' => $name, 'png' => $validated['png'], 'game_idgame' => $game->idgame, 'order' => $validated['order'] ?? null]);
+            Button::create([
+                'name' => $name,
+                'color' => $validated['color'],
+                'match_type' => $validated['match_type'],
+                'game_idgame' => $game->idgame,
+                'order' => $validated['order'] ?? null,
+            ]);
         } elseif ($validated['action'] === 'Update') {
             Button::where('idbutton', $validated['idbutton'])
                 ->where('game_idgame', $game->idgame)
-                ->update(['name' => $name, 'png' => $validated['png'], 'order' => $validated['order'] ?? null]);
+                ->update([
+                    'name' => $name,
+                    'color' => $validated['color'],
+                    'match_type' => $validated['match_type'],
+                    'order' => $validated['order'] ?? null,
+                ]);
         } else {
             Button::where('idbutton', $validated['idbutton'])->where('game_idgame', $game->idgame)->delete();
         }

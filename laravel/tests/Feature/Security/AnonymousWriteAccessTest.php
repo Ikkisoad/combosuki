@@ -98,7 +98,8 @@ class AnonymousWriteAccessTest extends TestCase
 
         $this->button = Button::create([
             'name' => 'L',
-            'png' => 'l',
+            'color' => '#ffffff',
+            'match_type' => 'exact',
             'game_idgame' => $this->game->idgame,
             'order' => 1,
         ]);
@@ -185,7 +186,7 @@ class AnonymousWriteAccessTest extends TestCase
             ],
             'button store' => [
                 'url' => route('admin.buttons.store', $this->game),
-                'payload' => ['action' => 'Add', 'name' => 'Evil', 'png' => 'evil'],
+                'payload' => ['action' => 'Add', 'name' => 'Evil', 'color' => '#000000', 'match_type' => 'exact'],
                 'assertUnchanged' => fn () => $this->assertSame(1, Button::count()),
             ],
             'game resource store' => [

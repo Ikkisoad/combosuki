@@ -10,6 +10,10 @@
             <div class="alert alert-danger">{{ session('error') }}</div>
         @endif
 
+        @auth
+            <a href="{{ route('admin.game.edit', $game) }}" class="btn btn-secondary btn-sm mb-2" style="float: right;">Edit Game</a>
+        @endauth
+
         <form method="get" action="{{ route('games.combos.index', $game) }}" class="card bg-dark p-2 mb-3">
             <div class="row g-2 align-items-end">
                 <div class="col-auto">

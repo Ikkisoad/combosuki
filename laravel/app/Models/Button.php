@@ -11,7 +11,7 @@ class Button extends Model
 
     protected $primaryKey = 'idbutton';
 
-    protected $fillable = ['name', 'png', 'game_idgame', 'order'];
+    protected $fillable = ['name', 'color', 'match_type', 'game_idgame', 'order'];
 
     public function game(): BelongsTo
     {
