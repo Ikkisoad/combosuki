@@ -100,3 +100,33 @@ body {
 .category-dropzone.drop-target {
     background-color: rgba(250, 89, 28, 0.2);
 }
+
+.sidebar-backdrop {
+    background-color: rgba(2, 2, 2, 0.75);
+    border: 2px solid #C62114;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.sidebar-character-table {
+    border-collapse: collapse;
+}
+
+.sidebar-character-table td {
+    padding: 0.6rem 0.25rem;
+    color: white;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.sidebar-character-table tr:last-child td {
+    border-bottom: none;
+}
+
+.sidebar-character-link {
+    display: inline-flex;
+    color: #FA591C;
+}
+
+.sidebar-character-link:hover {
+    color: white;
+}

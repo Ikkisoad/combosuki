@@ -4,7 +4,7 @@
 
     <div class="container-fluid my-3">
         <div class="row">
-            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar show collapse">
+            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar show collapse sidebar-backdrop">
                 @if ($character->image)
                     <img src="{{ \Illuminate\Support\Facades\Storage::url($character->image) }}" alt="{{ $character->name }}" class="img-fluid rounded mb-2">
                 @endif

@@ -161,7 +161,7 @@
                 @endcan
             </main>
 
-            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar show collapse">
+            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar show collapse sidebar-backdrop">
                 <table class="table table-hover align-middle combosuki-main-reversed text-white">
                     <tr>
                         <th>Damage</th>

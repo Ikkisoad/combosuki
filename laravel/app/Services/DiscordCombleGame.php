@@ -30,9 +30,15 @@ use Illuminate\Support\Str;
  * watch a puzzle in progress — that's the point. But it also means anyone
  * could click the message's own dropdowns, so the owner's Discord user id
  * rides along in every custom_id/Modal (the "u" state key) and every step
- * that isn't a fresh statusResponse() calls assertOwner() first, throwing
+ * that isn't a fresh publicStatus() calls assertOwner() first, throwing
  * DiscordInteractionUnauthorized for the controller to turn into a private
  * bounce reply if the clicking user isn't the one who started the game.
+ *
+ * The public message itself never shows a guessed name or (once finished)
+ * the answer — only colored squares — so it doesn't spoil the puzzle for
+ * channel members who haven't played yet. The full, named breakdown is
+ * privateSummary(), which the controller sends as a private (ephemeral)
+ * follow-up to the owner alongside every public update.
  */
 class DiscordCombleGame
 {
@@ -51,7 +57,7 @@ class DiscordCombleGame
 
     public function start(string $userId): array
     {
-        return $this->statusResponse($userId);
+        return $this->publicStatus($userId);
     }
 
     /**
@@ -71,7 +77,7 @@ class DiscordCombleGame
         return match ($action) {
             'game' => $this->characterStep($this->withState($state, 'g', $selected), $userId),
             'char' => $this->typeStep($this->withState($state, 'c', $selected), $userId),
-            default => $this->statusResponse($userId),
+            default => $this->publicStatus($userId),
         };
     }
 
@@ -119,7 +125,7 @@ class DiscordCombleGame
         $target = $this->dailyCombo->forDate($day);
 
         if (count($this->picks($userId, $day)) >= self::MAX_GUESSES) {
-            return $this->statusResponse($userId);
+            return $this->publicStatus($userId);
         }
 
         $game = Game::find($state['g'] ?? null);
@@ -127,13 +133,13 @@ class DiscordCombleGame
         $type = GameEntry::find($state['t'] ?? null);
 
         if (! $game || ! $character || ! $type) {
-            return $this->statusResponse($userId, 'Something went wrong with that guess — please try again.');
+            return $this->publicStatus($userId, 'Something went wrong with that guess — please try again.');
         }
 
         $damageRaw = trim((string) (collect($submittedRows)->pluck('components.0')->first()['value'] ?? ''));
 
         if (! is_numeric($damageRaw) || (float) $damageRaw < 0) {
-            return $this->statusResponse($userId, 'Damage must be a non-negative number.');
+            return $this->publicStatus($userId, 'Damage must be a non-negative number.');
         }
 
         $this->appendPick($userId, $day, [
@@ -143,7 +149,7 @@ class DiscordCombleGame
             (float) $damageRaw,
         ]);
 
-        return $this->statusResponse($userId);
+        return $this->publicStatus($userId);
     }
 
     private function characterStep(array $state, string $userId): array
@@ -151,7 +157,7 @@ class DiscordCombleGame
         $game = Game::find($state['g'] ?? null);
 
         if (! $game) {
-            return $this->statusResponse($userId);
+            return $this->publicStatus($userId);
         }
 
         $characters = Character::where('game_idgame', $game->idgame)
@@ -180,7 +186,7 @@ class DiscordCombleGame
         $character = Character::find($state['c'] ?? null);
 
         if (! $game || ! $character) {
-            return $this->statusResponse($userId);
+            return $this->publicStatus($userId);
         }
 
         $types = GameEntry::where('gameid', $game->idgame)
@@ -204,15 +210,15 @@ class DiscordCombleGame
         ];
     }
 
-    private function statusResponse(string $userId, ?string $error = null): array
+    /**
+     * The shared, public message: reveal progress, remaining-guess count,
+     * and one row of squares per guess — never a guessed name or (once
+     * finished) the answer, so it doesn't spoil the puzzle for anyone
+     * watching who hasn't played yet.
+     */
+    private function publicStatus(string $userId, ?string $error = null): array
     {
-        $day = now()->startOfDay();
-        $target = $this->dailyCombo->forDate($day);
-        $game = $target->character->game;
-
-        $guesses = $this->evaluateGuesses($this->picks($userId, $day), $target);
-        $won = collect($guesses)->contains('won', true);
-        $finished = $won || count($guesses) >= self::MAX_GUESSES;
+        ['day' => $day, 'game' => $game, 'target' => $target, 'guesses' => $guesses, 'won' => $won, 'finished' => $finished] = $this->progress($userId);
 
         $lines = [];
 
@@ -223,18 +229,10 @@ class DiscordCombleGame
 
         $lines[] = '```'.$this->revealer->renderPlain($game, $target->combo, count($guesses)).'```';
         $lines[] = '';
-        $lines[] = $finished
-            ? ($won ? '**You got it!**' : '**Better luck tomorrow!**')
-            : (self::MAX_GUESSES - count($guesses)).' '.((self::MAX_GUESSES - count($guesses)) === 1 ? 'guess' : 'guesses').' left.';
+        $lines[] = $this->remainingLine($won, $finished, count($guesses));
 
         foreach ($guesses as $index => $guess) {
-            $lines[] = ($index + 1).'. '.$this->guessLine($guess);
-        }
-
-        if ($finished) {
-            $lines[] = '';
-            $lines[] = "**{$target->character->name}** — {$game->name}".($target->listingType ? " ({$target->listingType->title})" : '')
-                .($target->damage !== null ? ' · '.number_format((float) $target->damage, 0, '', '.').' dmg' : '');
+            $lines[] = ($index + 1).'. '.$this->squaresLine($guess);
         }
 
         $embed = ['title' => 'Comble — '.$day->toDateString(), 'description' => implode("\n", $lines)];
@@ -253,7 +251,74 @@ class DiscordCombleGame
         return ['embeds' => [$embed], 'components' => $components];
     }
 
-    private function guessLine(array $guess): string
+    /**
+     * The full, named breakdown of $userId's progress — guessed game,
+     * character, type, and damage per row, plus the answer once finished.
+     * Meant to be sent as a private (ephemeral) follow-up alongside every
+     * publicStatus() update, so the player still gets full detail without
+     * it leaking into the public, watchable message.
+     */
+    public function privateSummary(string $userId): array
+    {
+        ['day' => $day, 'game' => $game, 'target' => $target, 'guesses' => $guesses, 'won' => $won, 'finished' => $finished] = $this->progress($userId);
+
+        $lines = [];
+        $lines[] = '```'.$this->revealer->renderPlain($game, $target->combo, count($guesses)).'```';
+        $lines[] = '';
+        $lines[] = $this->remainingLine($won, $finished, count($guesses));
+
+        foreach ($guesses as $index => $guess) {
+            $lines[] = ($index + 1).'. '.$this->detailedLine($guess);
+        }
+
+        if ($finished) {
+            $lines[] = '';
+            $lines[] = "**{$target->character->name}** — {$game->name}".($target->listingType ? " ({$target->listingType->title})" : '')
+                .($target->damage !== null ? ' · '.number_format((float) $target->damage, 0, '', '.').' dmg' : '');
+        }
+
+        return [
+            'embeds' => [['title' => 'Your Comble guesses (only visible to you)', 'description' => implode("\n", $lines)]],
+            'flags' => 64,
+        ];
+    }
+
+    /** Shared progress data behind both publicStatus() and privateSummary(). */
+    private function progress(string $userId): array
+    {
+        $day = now()->startOfDay();
+        $target = $this->dailyCombo->forDate($day);
+        $game = $target->character->game;
+
+        $guesses = $this->evaluateGuesses($this->picks($userId, $day), $target);
+        $won = collect($guesses)->contains('won', true);
+        $finished = $won || count($guesses) >= self::MAX_GUESSES;
+
+        return compact('day', 'target', 'game', 'guesses', 'won', 'finished');
+    }
+
+    private function remainingLine(bool $won, bool $finished, int $guessCount): string
+    {
+        if ($finished) {
+            return $won ? '**You got it!**' : '**Better luck tomorrow!**';
+        }
+
+        $remaining = self::MAX_GUESSES - $guessCount;
+
+        return $remaining.' '.($remaining === 1 ? 'guess' : 'guesses').' left.';
+    }
+
+    private function squaresLine(array $guess): string
+    {
+        return implode(' ', [
+            $guess['game_correct'] ? '🟩' : '🟥',
+            $guess['character_correct'] ? '🟩' : '🟥',
+            $guess['type_correct'] ? '🟩' : '🟥',
+            $this->damageHintEmoji($guess['damage_hint']),
+        ]);
+    }
+
+    private function detailedLine(array $guess): string
     {
         return implode(' ', [
             $guess['game_correct'] ? '🟩' : '🟥',

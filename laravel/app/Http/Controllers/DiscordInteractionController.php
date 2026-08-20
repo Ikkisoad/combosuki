@@ -8,6 +8,7 @@ use App\Services\DiscordComboSearch;
 use App\Services\DiscordComboWizard;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class DiscordInteractionController extends Controller
 {
@@ -47,7 +48,12 @@ class DiscordInteractionController extends Controller
         }
 
         if ($subcommand === 'comble') {
-            return response()->json(['type' => 4, 'data' => $this->comble->start($this->discordUserId($payload))]);
+            $userId = $this->discordUserId($payload);
+            $publicData = $this->comble->start($userId);
+
+            $this->postPrivateCombleFollowUp($payload, $userId);
+
+            return response()->json(['type' => 4, 'data' => $publicData]);
         }
 
         return response()->json([
@@ -112,11 +118,14 @@ class DiscordInteractionController extends Controller
         $channelId = $payload['channel_id'] ?? null;
 
         if (str_starts_with($customId, 'cb:')) {
+            $userId = $this->discordUserId($payload);
+
             try {
-                return response()->json([
-                    'type' => 7,
-                    'data' => $this->comble->handleModalSubmit($customId, $data['components'] ?? [], $this->discordUserId($payload)),
-                ]);
+                $publicData = $this->comble->handleModalSubmit($customId, $data['components'] ?? [], $userId);
+
+                $this->postPrivateCombleFollowUp($payload, $userId);
+
+                return response()->json(['type' => 7, 'data' => $publicData]);
             } catch (DiscordInteractionUnauthorized $e) {
                 return $this->unauthorizedResponse($e);
             }
@@ -131,6 +140,31 @@ class DiscordInteractionController extends Controller
     private function unauthorizedResponse(DiscordInteractionUnauthorized $e): JsonResponse
     {
         return response()->json(['type' => 4, 'data' => ['content' => $e->getMessage(), 'flags' => 64]]);
+    }
+
+    /**
+     * Sends $userId's full, named guess breakdown (DiscordCombleGame's
+     * privateSummary()) as a private (ephemeral) follow-up message, via the
+     * interaction's own webhook — no bot token needed, unlike
+     * DiscordComboSearch's video follow-up which posts as the bot into the
+     * channel. Best-effort: a missing token/application id (shouldn't happen
+     * on a real Discord request) just skips the follow-up rather than
+     * failing the whole interaction, since the public update is more
+     * important than the private detail.
+     */
+    private function postPrivateCombleFollowUp(array $payload, string $userId): void
+    {
+        $applicationId = $payload['application_id'] ?? config('services.discord.application_id');
+        $token = $payload['token'] ?? null;
+
+        if (! $applicationId || ! $token) {
+            return;
+        }
+
+        Http::asJson()->post(
+            "https://discord.com/api/v10/webhooks/{$applicationId}/{$token}",
+            $this->comble->privateSummary($userId)
+        );
     }
 
     /**

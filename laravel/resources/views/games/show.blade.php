@@ -70,13 +70,25 @@
         </form>
 
         <div class="row">
-            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar show collapse">
+            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar show collapse sidebar-backdrop">
                 <h3>Entries per Character</h3>
-                <ul class="list-unstyled">
-                    @foreach ($characters as $character)
-                        <li><a href="{{ route('characters.show', [$game, $character]) }}">{{ $character->name }}</a>: {{ $character->combos_count }}</li>
-                    @endforeach
-                </ul>
+                <table class="sidebar-character-table w-100">
+                    <tbody>
+                        @foreach ($characters as $character)
+                            <tr>
+                                <td>{{ $character->name }}</td>
+                                <td class="text-end">{{ $character->combos_count }}</td>
+                                <td class="text-end">
+                                    <a href="{{ route('characters.show', [$game, $character]) }}" class="sidebar-character-link" aria-label="View {{ $character->name }}'s page">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M5 3l6 5-6 5" />
+                                        </svg>
+                                    </a>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </nav>
 
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">

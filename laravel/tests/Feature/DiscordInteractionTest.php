@@ -35,10 +35,22 @@ class DiscordInteractionTest extends TestCase
         // process, not just one test — Comble's per-user guess cache would
         // otherwise leak between test methods.
         Cache::flush();
+
+        // Comble sends a private follow-up (see
+        // DiscordInteractionController::postPrivateCombleFollowUp) on every
+        // command/guess; fake it globally so tests don't make real requests.
+        // Individual tests can still call Http::fake() again to add
+        // assertions of their own (e.g. the video follow-up test).
+        Http::fake(['discord.com/*' => Http::response([], 200)]);
     }
 
     private function postInteraction(array $payload): \Illuminate\Testing\TestResponse
     {
+        // A real interaction always carries these; default them here so
+        // every test payload has a valid target for the private-follow-up
+        // webhook call without every test having to set them itself.
+        $payload += ['application_id' => 'test-application-id', 'token' => 'test-interaction-token'];
+
         $body = json_encode($payload);
         $timestamp = (string) time();
         $signature = sodium_bin2hex(sodium_crypto_sign_detached($timestamp.$body, $this->secretKey));
@@ -513,13 +525,28 @@ class DiscordInteractionTest extends TestCase
         $result = $this->postModalSubmit($modalCustomId, $this->damageModalRow('3000'), $owner);
         $result->assertOk()->assertJson(['type' => 7]);
 
+        // Public message: progress only — no guessed names, and (since this
+        // guess won) not the answer either, so it doesn't spoil the puzzle
+        // for anyone else watching who hasn't played yet.
         $description = $result->json('data.embeds.0.description');
         $this->assertStringContainsString('You got it!', $description);
-        $this->assertStringContainsString($character->name, $description);
         $this->assertStringContainsString('AAA', $description);
+        $this->assertStringNotContainsString($character->name, $description);
+        $this->assertStringNotContainsString($game->name, $description);
 
         // Finished: the game dropdown is replaced with a link button.
         $this->assertSame(5, $result->json('data.components.0.components.0.style'));
+
+        // Private follow-up: the same guess, but with names and the answer.
+        Http::assertSent(function ($request) use ($character, $game) {
+            $description = $request['embeds'][0]['description'] ?? '';
+
+            return $request->url() === 'https://discord.com/api/v10/webhooks/test-application-id/test-interaction-token'
+                && $request['flags'] === 64
+                && str_contains($description, 'You got it!')
+                && str_contains($description, $character->name)
+                && str_contains($description, $game->name);
+        });
     }
 
     public function test_combo_comble_rejects_a_non_numeric_damage_guess_without_recording_it(): void
@@ -566,9 +593,14 @@ class DiscordInteractionTest extends TestCase
             'data' => ['name' => 'combo', 'options' => [['name' => 'comble']]],
         ], $this->memberPayload($owner)));
 
+        // Public: the prior guess still counts, but only as a square — no name.
         $description = $response->json('data.embeds.0.description');
         $this->assertStringContainsString('4 guesses left.', $description);
-        $this->assertStringContainsString($wrongCharacter->name, $description);
+        $this->assertStringNotContainsString($wrongCharacter->name, $description);
+
+        // Private follow-up carries the name.
+        Http::assertSent(fn ($request) => $request->url() === 'https://discord.com/api/v10/webhooks/test-application-id/test-interaction-token'
+            && str_contains($request['embeds'][0]['description'] ?? '', $wrongCharacter->name));
     }
 
     public function test_combo_comble_bounces_a_click_from_someone_else_with_a_private_reply(): void
