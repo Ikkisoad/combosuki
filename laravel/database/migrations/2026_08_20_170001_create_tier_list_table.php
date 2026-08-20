@@ -9,12 +9,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tier_list', function (Blueprint $table) {
-            $table->integer('idtier_list', true, false);
+            $table->id('idtier_list');
             $table->string('title', 100);
-            $table->integer('game_idgame', false, false);
-            $table->foreign('game_idgame')->references('idgame')->on('game')->cascadeOnDelete();
-            $table->integer('user_iduser', false, false)->nullable();
-            $table->foreign('user_iduser')->references('iduser')->on('user')->nullOnDelete();
+            $table->foreignId('game_idgame')->constrained('game', 'idgame')->cascadeOnDelete();
+            $table->foreignId('user_iduser')->nullable()->constrained('user', 'iduser')->nullOnDelete();
             $table->timestamps();
         });
     }

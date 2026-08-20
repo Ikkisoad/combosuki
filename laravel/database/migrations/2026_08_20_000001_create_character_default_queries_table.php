@@ -10,18 +10,11 @@ return new class extends Migration
     {
         Schema::create('character_default_queries', function (Blueprint $table) {
             $table->id('idquery');
-            // Plain `integer`, not foreignId()'s unsignedBigInteger: the live
-            // `game.idgame` column is a signed `int` (legacy schema), so the
-            // FK column type has to match it exactly for MySQL to accept the
-            // constraint (see the other game_idgame/*_iduser columns across
-            // this schema, which are all plain int for the same reason).
-            $table->integer('game_idgame');
+            $table->foreignId('game_idgame')->constrained('game', 'idgame')->cascadeOnDelete();
             $table->string('label', 150);
             $table->json('filters');
             $table->integer('order')->default(0);
             $table->timestamps();
-
-            $table->foreign('game_idgame')->references('idgame')->on('game')->cascadeOnDelete();
         });
     }
 
