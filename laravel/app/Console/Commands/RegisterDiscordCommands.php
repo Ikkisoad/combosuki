@@ -64,6 +64,11 @@ class RegisterDiscordCommands extends Command
                         'description' => 'Search combos step by step with dropdowns',
                         'type' => 1,
                     ],
+                    [
+                        'name' => 'comble',
+                        'description' => 'Play today\'s Comble puzzle — guess the combo behind the mystery notation',
+                        'type' => 1,
+                    ],
                 ],
             ],
         ]);

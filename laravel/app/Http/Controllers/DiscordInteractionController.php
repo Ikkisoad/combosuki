@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\DiscordCombleGame;
 use App\Services\DiscordComboSearch;
 use App\Services\DiscordComboWizard;
 use Illuminate\Http\JsonResponse;
@@ -12,6 +13,7 @@ class DiscordInteractionController extends Controller
     public function __construct(
         private DiscordComboSearch $comboSearch,
         private DiscordComboWizard $wizard,
+        private DiscordCombleGame $comble,
     ) {}
 
     public function __invoke(Request $request): JsonResponse
@@ -43,6 +45,10 @@ class DiscordInteractionController extends Controller
             return response()->json(['type' => 4, 'data' => $data]);
         }
 
+        if ($subcommand === 'comble') {
+            return response()->json(['type' => 4, 'data' => $this->comble->start($this->discordUserId($payload))]);
+        }
+
         return response()->json([
             'type' => 4,
             'data' => $this->comboSearch->handle($data, $channelId),
@@ -62,6 +68,20 @@ class DiscordInteractionController extends Controller
             return response()->json(['type' => 9, 'data' => $this->wizard->buildModal($customId)]);
         }
 
+        // Comble's type dropdown opens a damage-guess Modal the same way.
+        if (str_starts_with($customId, 'cb:type:')) {
+            $data = $this->comble->buildDamageModal($customId, $data['values'][0] ?? null, $this->discordUserId($payload));
+
+            return response()->json(['type' => 9, 'data' => $data]);
+        }
+
+        if (str_starts_with($customId, 'cb:')) {
+            return response()->json([
+                'type' => 7,
+                'data' => $this->comble->handleComponent($customId, $data['values'] ?? [], $this->discordUserId($payload)),
+            ]);
+        }
+
         return response()->json([
             'type' => 7,
             'data' => $this->wizard->handleComponent($customId, $data['values'] ?? [], $channelId),
@@ -71,11 +91,28 @@ class DiscordInteractionController extends Controller
     private function handleModalSubmit(array $payload): JsonResponse
     {
         $data = $payload['data'] ?? [];
+        $customId = $data['custom_id'] ?? '';
         $channelId = $payload['channel_id'] ?? null;
+
+        if (str_starts_with($customId, 'cb:')) {
+            return response()->json([
+                'type' => 7,
+                'data' => $this->comble->handleModalSubmit($customId, $data['components'] ?? [], $this->discordUserId($payload)),
+            ]);
+        }
 
         return response()->json([
             'type' => 7,
-            'data' => $this->wizard->handleModalSubmit($data['custom_id'] ?? '', $data['components'] ?? [], $channelId),
+            'data' => $this->wizard->handleModalSubmit($customId, $data['components'] ?? [], $channelId),
         ]);
+    }
+
+    /**
+     * Discord puts the invoking user under `member.user` in a guild channel
+     * and under `user` directly in a DM.
+     */
+    private function discordUserId(array $payload): string
+    {
+        return $payload['member']['user']['id'] ?? $payload['user']['id'] ?? '';
     }
 }

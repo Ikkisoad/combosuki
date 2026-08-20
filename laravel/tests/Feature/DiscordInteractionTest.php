@@ -9,6 +9,7 @@ use App\Models\GameEntry;
 use App\Models\GameResource;
 use App\Models\ResourceValue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -29,6 +30,11 @@ class DiscordInteractionTest extends TestCase
         $this->secretKey = sodium_crypto_sign_secretkey($keypair);
 
         config(['services.discord.public_key' => sodium_bin2hex($this->publicKey)]);
+
+        // The "array" cache store (see phpunit.xml) lives for the whole test
+        // process, not just one test — Comble's per-user guess cache would
+        // otherwise leak between test methods.
+        Cache::flush();
     }
 
     private function postInteraction(array $payload): \Illuminate\Testing\TestResponse
@@ -422,5 +428,130 @@ class DiscordInteractionTest extends TestCase
 
         $response->assertOk();
         $this->assertSame('w:game::', $response->json('data.components.0.components.0.custom_id'));
+    }
+
+    private function postModalSubmit(string $customId, array $components): \Illuminate\Testing\TestResponse
+    {
+        return $this->postInteraction([
+            'type' => 5,
+            'data' => ['custom_id' => $customId, 'components' => $components],
+        ]);
+    }
+
+    private function damageModalRow(string $value): array
+    {
+        return [['type' => 1, 'components' => [['type' => 4, 'custom_id' => 'damage', 'value' => $value]]]];
+    }
+
+    public function test_combo_comble_starts_with_a_game_dropdown_and_the_hidden_reveal(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Test Character', 'game_idgame' => $game->idgame]);
+        $type = GameEntry::create(['title' => 'Combo', 'gameid' => $game->idgame, 'order' => 1]);
+        Combo::create([
+            'combo' => 'AAA BBB CCC DDD EEE',
+            'character_idcharacter' => $character->idcharacter,
+            'type' => $type->entryid,
+            'damage' => 3000,
+        ]);
+
+        $response = $this->postInteraction([
+            'type' => 2,
+            'data' => ['name' => 'combo', 'options' => [['name' => 'comble']]],
+        ]);
+
+        $response->assertOk()->assertJson(['type' => 4]);
+        $this->assertSame(64, $response->json('data.flags'));
+        $this->assertSame('cb:game::', $response->json('data.components.0.components.0.custom_id'));
+        $this->assertContains((string) $game->idgame, array_column($response->json('data.components.0.components.0.options'), 'value'));
+        $this->assertStringContainsString('▁', $response->json('data.embeds.0.description'));
+        $this->assertStringNotContainsString('AAA', $response->json('data.embeds.0.description'));
+    }
+
+    public function test_combo_comble_full_flow_records_a_winning_guess(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Test Character', 'game_idgame' => $game->idgame]);
+        $type = GameEntry::create(['title' => 'Combo', 'gameid' => $game->idgame, 'order' => 1]);
+        Combo::create([
+            'combo' => 'AAA BBB CCC DDD EEE',
+            'character_idcharacter' => $character->idcharacter,
+            'type' => $type->entryid,
+            'damage' => 3000,
+        ]);
+
+        $charStep = $this->postComponent('cb:game::', [(string) $game->idgame]);
+        $charStep->assertOk()->assertJson(['type' => 7]);
+        $charSelect = $charStep->json('data.components.0.components.0');
+        $this->assertSame('cb:char::g='.$game->idgame, $charSelect['custom_id']);
+
+        $typeStep = $this->postComponent($charSelect['custom_id'], [(string) $character->idcharacter]);
+        $typeStep->assertOk();
+        $typeSelect = $typeStep->json('data.components.0.components.0');
+        $this->assertStringStartsWith('cb:type::g='.$game->idgame.';c='.$character->idcharacter, $typeSelect['custom_id']);
+
+        $modal = $this->postComponent($typeSelect['custom_id'], [(string) $type->entryid]);
+        $modal->assertOk()->assertJson(['type' => 9]);
+        $modalCustomId = $modal->json('data.custom_id');
+        $this->assertStringStartsWith('cb:dmgsubmit::', $modalCustomId);
+        $this->assertStringContainsString('t='.$type->entryid, $modalCustomId);
+
+        $result = $this->postModalSubmit($modalCustomId, $this->damageModalRow('3000'));
+        $result->assertOk()->assertJson(['type' => 7]);
+
+        $description = $result->json('data.embeds.0.description');
+        $this->assertStringContainsString('You got it!', $description);
+        $this->assertStringContainsString($character->name, $description);
+        $this->assertStringContainsString('AAA', $description);
+
+        // Finished: the game dropdown is replaced with a link button.
+        $this->assertSame(5, $result->json('data.components.0.components.0.style'));
+    }
+
+    public function test_combo_comble_rejects_a_non_numeric_damage_guess_without_recording_it(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Test Character', 'game_idgame' => $game->idgame]);
+        $type = GameEntry::create(['title' => 'Combo', 'gameid' => $game->idgame, 'order' => 1]);
+        Combo::create([
+            'combo' => 'AAA BBB CCC DDD EEE',
+            'character_idcharacter' => $character->idcharacter,
+            'type' => $type->entryid,
+            'damage' => 3000,
+        ]);
+
+        $stateRaw = 'g='.$game->idgame.';c='.$character->idcharacter.';t='.$type->entryid;
+
+        $result = $this->postModalSubmit('cb:dmgsubmit::'.$stateRaw, $this->damageModalRow('not-a-number'));
+
+        $result->assertOk()->assertJson(['type' => 7]);
+        $this->assertStringContainsString('Damage must be a non-negative number.', $result->json('data.embeds.0.description'));
+        $this->assertSame('cb:game::', $result->json('data.components.0.components.0.custom_id'));
+    }
+
+    public function test_combo_comble_progress_persists_across_separate_command_invocations(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Test Character', 'game_idgame' => $game->idgame]);
+        $wrongCharacter = Character::create(['name' => 'Wrong Character', 'game_idgame' => $game->idgame]);
+        $type = GameEntry::create(['title' => 'Combo', 'gameid' => $game->idgame, 'order' => 1]);
+        Combo::create([
+            'combo' => 'AAA BBB CCC DDD EEE',
+            'character_idcharacter' => $character->idcharacter,
+            'type' => $type->entryid,
+            'damage' => 3000,
+        ]);
+
+        $stateRaw = 'g='.$game->idgame.';c='.$wrongCharacter->idcharacter.';t='.$type->entryid;
+        $this->postModalSubmit('cb:dmgsubmit::'.$stateRaw, $this->damageModalRow('100'))->assertOk();
+
+        $response = $this->postInteraction([
+            'type' => 2,
+            'data' => ['name' => 'combo', 'options' => [['name' => 'comble']]],
+        ]);
+
+        $description = $response->json('data.embeds.0.description');
+        $this->assertStringContainsString('4 guesses left.', $description);
+        $this->assertStringContainsString($wrongCharacter->name, $description);
     }
 }
