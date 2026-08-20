@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\DiscordInteractionUnauthorized;
 use App\Services\DiscordCombleGame;
 use App\Services\DiscordComboSearch;
 use App\Services\DiscordComboWizard;
@@ -68,24 +69,40 @@ class DiscordInteractionController extends Controller
             return response()->json(['type' => 9, 'data' => $this->wizard->buildModal($customId)]);
         }
 
-        // Comble's type dropdown opens a damage-guess Modal the same way.
-        if (str_starts_with($customId, 'cb:type:')) {
-            $data = $this->comble->buildDamageModal($customId, $data['values'][0] ?? null, $this->discordUserId($payload));
-
-            return response()->json(['type' => 9, 'data' => $data]);
-        }
-
         if (str_starts_with($customId, 'cb:')) {
-            return response()->json([
-                'type' => 7,
-                'data' => $this->comble->handleComponent($customId, $data['values'] ?? [], $this->discordUserId($payload)),
-            ]);
+            return $this->handleCombleComponent($customId, $data['values'] ?? [], $payload);
         }
 
         return response()->json([
             'type' => 7,
             'data' => $this->wizard->handleComponent($customId, $data['values'] ?? [], $channelId),
         ]);
+    }
+
+    /**
+     * Comble's messages are public (see DiscordCombleGame), so anyone in the
+     * channel can click its dropdowns — not just the player who started the
+     * game. handleComponent()/buildDamageModal() reject a click from anyone
+     * else by throwing DiscordInteractionUnauthorized, caught here and
+     * turned into a private (ephemeral) reply that leaves the shared,
+     * publicly-visible game message untouched.
+     */
+    private function handleCombleComponent(string $customId, array $values, array $payload): JsonResponse
+    {
+        $userId = $this->discordUserId($payload);
+
+        try {
+            // The type dropdown opens a damage-guess Modal, which requires
+            // its own interaction response type (9) instead of the
+            // UPDATE_MESSAGE (7) every other Comble click uses.
+            if (str_starts_with($customId, 'cb:type:')) {
+                return response()->json(['type' => 9, 'data' => $this->comble->buildDamageModal($customId, $values[0] ?? null, $userId)]);
+            }
+
+            return response()->json(['type' => 7, 'data' => $this->comble->handleComponent($customId, $values, $userId)]);
+        } catch (DiscordInteractionUnauthorized $e) {
+            return $this->unauthorizedResponse($e);
+        }
     }
 
     private function handleModalSubmit(array $payload): JsonResponse
@@ -95,16 +112,25 @@ class DiscordInteractionController extends Controller
         $channelId = $payload['channel_id'] ?? null;
 
         if (str_starts_with($customId, 'cb:')) {
-            return response()->json([
-                'type' => 7,
-                'data' => $this->comble->handleModalSubmit($customId, $data['components'] ?? [], $this->discordUserId($payload)),
-            ]);
+            try {
+                return response()->json([
+                    'type' => 7,
+                    'data' => $this->comble->handleModalSubmit($customId, $data['components'] ?? [], $this->discordUserId($payload)),
+                ]);
+            } catch (DiscordInteractionUnauthorized $e) {
+                return $this->unauthorizedResponse($e);
+            }
         }
 
         return response()->json([
             'type' => 7,
             'data' => $this->wizard->handleModalSubmit($customId, $data['components'] ?? [], $channelId),
         ]);
+    }
+
+    private function unauthorizedResponse(DiscordInteractionUnauthorized $e): JsonResponse
+    {
+        return response()->json(['type' => 4, 'data' => ['content' => $e->getMessage(), 'flags' => 64]]);
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\DiscordInteractionUnauthorized;
 use App\Models\Character;
 use App\Models\Combo;
 use App\Models\Game;
@@ -24,6 +25,14 @@ use Illuminate\Support\Str;
  * just server-side since Discord interactions carry no cookies. Only the
  * raw picks are cached; correctness is always recomputed against the day's
  * target, same as the web controller.
+ *
+ * Game messages are public (not ephemeral), so anyone in the channel can
+ * watch a puzzle in progress — that's the point. But it also means anyone
+ * could click the message's own dropdowns, so the owner's Discord user id
+ * rides along in every custom_id/Modal (the "u" state key) and every step
+ * that isn't a fresh statusResponse() calls assertOwner() first, throwing
+ * DiscordInteractionUnauthorized for the controller to turn into a private
+ * bounce reply if the clicking user isn't the one who started the game.
  */
 class DiscordCombleGame
 {
@@ -56,6 +65,7 @@ class DiscordCombleGame
     {
         [, $action, , $stateRaw] = array_pad(explode(':', $customId, 4), 4, '');
         $state = $this->decodeState($stateRaw);
+        $this->assertOwner($state, $userId);
         $selected = $values[0] ?? null;
 
         return match ($action) {
@@ -74,7 +84,9 @@ class DiscordCombleGame
     public function buildDamageModal(string $customId, ?string $selectedTypeId, string $userId): array
     {
         [, , , $stateRaw] = array_pad(explode(':', $customId, 4), 4, '');
-        $state = $this->withState($this->decodeState($stateRaw), 't', $selectedTypeId);
+        $state = $this->decodeState($stateRaw);
+        $this->assertOwner($state, $userId);
+        $state = $this->withState($state, 't', $selectedTypeId);
 
         return [
             'title' => 'Guess the damage',
@@ -101,6 +113,7 @@ class DiscordCombleGame
     {
         [, , , $stateRaw] = array_pad(explode(':', $customId, 4), 4, '');
         $state = $this->decodeState($stateRaw);
+        $this->assertOwner($state, $userId);
 
         $day = now()->startOfDay();
         $target = $this->dailyCombo->forDate($day);
@@ -233,9 +246,11 @@ class DiscordCombleGame
                 'label' => 'Play on the site',
                 'url' => rtrim(config('app.url'), '/').route('comble.show', absolute: false),
             ]])]
-            : [$this->actionRow([$this->gameSelect()])];
+            : [$this->actionRow([$this->gameSelect($userId)])];
 
-        return ['embeds' => [$embed], 'components' => $components, 'flags' => 64];
+        // Not ephemeral: the game is posted publicly so other channel
+        // members can see who's playing and how far they've gotten.
+        return ['embeds' => [$embed], 'components' => $components];
     }
 
     private function guessLine(array $guess): string
@@ -262,7 +277,7 @@ class DiscordCombleGame
         };
     }
 
-    private function gameSelect(): array
+    private function gameSelect(string $ownerId): array
     {
         $games = Game::where('complete', '>', 0)->orderBy('name')->limit(self::MAX_CHOICES + 1)->get();
 
@@ -271,7 +286,23 @@ class DiscordCombleGame
             'value' => (string) $game->idgame,
         ])->all();
 
-        return $this->select('cb:game::', 'Choose a game', $options);
+        return $this->select('cb:game::'.$this->encodeState(['u' => $ownerId]), 'Choose a game', $options);
+    }
+
+    /**
+     * Guards every step after the initial game select: the "u" state key
+     * (set by gameSelect(), carried forward through every subsequent
+     * custom_id/Modal) records who started this game. A state with no "u" —
+     * shouldn't happen via the normal flow, but tolerated rather than
+     * treated as unauthorized — is left unchecked.
+     */
+    private function assertOwner(array $state, string $userId): void
+    {
+        $owner = $state['u'] ?? null;
+
+        if ($owner !== null && $owner !== $userId) {
+            throw new DiscordInteractionUnauthorized;
+        }
     }
 
     /**

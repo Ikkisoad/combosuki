@@ -2,56 +2,41 @@
     <x-jumbotron :height="150" />
     <x-nav-bar />
 
-    <div class="container-fluid my-3">
-        <div class="row">
-            <main class="col-12 px-md-4">
-                <h2>Timeline</h2>
-                <p>The latest combos submitted across every game.</p>
+    <div class="container my-3">
+        <main>
+            <h2>Timeline</h2>
+            <p>The latest combos submitted across every game.</p>
 
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle caption-top combosuki-main-reversed text-white">
-                        <caption>Click the character name to see comments if the entry has them.</caption>
-                        <tr>
-                            <th>Game</th>
-                            <th>Character</th>
-                            <th>Inputs</th>
-                            <th>Damage</th>
-                            <th>Type</th>
-                            <th>Author</th>
-                            <th>Submitted</th>
-                        </tr>
-                        @foreach ($combos as $combo)
-                            <tr>
-                                <td>
-                                    <a href="{{ route('games.show', $combo->character->game) }}" class="text-white">{{ $combo->character->game->name }}</a>
-                                </td>
-                                <td>
-                                    @if ($combo->comments || $combo->video)
-                                        <button class="btn btn-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ $combo->idcombo }}">{{ $combo->character->name }}</button>
-                                    @else
-                                        {{ $combo->character->name }}
-                                    @endif
-                                </td>
-                                <td style="min-width:400px">
-                                    <x-combo-link :combo="$combo" />
-                                    @if ($combo->comments || $combo->video)
-                                        <div class="collapse" id="collapse{{ $combo->idcombo }}">
-                                            {{ $combo->comments }}
-                                            <x-video-embed :video="$combo->video" />
-                                        </div>
-                                    @endif
-                                </td>
-                                <td>{{ number_format((float) $combo->damage, 0, '', '.') }}</td>
-                                <td>{{ $combo->listingType?->title }}</td>
-                                <td>{{ $combo->user?->nickname ?? 'Anonymous' }}</td>
-                                <td>{{ $combo->submited?->format('d-m-y') }}</td>
-                            </tr>
-                        @endforeach
-                    </table>
+            @foreach ($combos as $combo)
+                <div class="card combosuki-main-reversed text-white p-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <strong>{{ $combo->user?->nickname ?? 'Anonymous' }}</strong>
+                        <span class="text-white-50 small">{{ $combo->submited?->format('d-m-y') }}</span>
+                    </div>
+
+                    @if ($combo->comments)
+                        <p class="mb-2">{!! nl2br(e($combo->comments)) !!}</p>
+                    @endif
+
+                    <x-video-embed :video="$combo->video" />
+
+                    <p class="mb-2"><x-combo-link :combo="$combo" /></p>
+
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <button type="button" class="btn btn-sm btn-secondary" data-share-link="{{ route('combos.show', $combo) }}">Share</button>
+                        <span class="text-white-50 small">
+                            <a href="{{ route('games.show', $combo->character->game) }}" class="text-white-50">{{ $combo->character->game->name }}</a>
+                            &middot; {{ $combo->character->name }}
+                            &middot; {{ number_format((float) $combo->damage, 0, '', '.') }} dmg
+                            &middot; {{ $combo->listingType?->title }}
+                        </span>
+                    </div>
                 </div>
+            @endforeach
 
-                {{ $combos->links('pagination::bootstrap-5') }}
-            </main>
-        </div>
+            {{ $combos->links('pagination::bootstrap-5') }}
+        </main>
     </div>
+
+    @vite(['resources/js/timeline.js'])
 </x-layouts.app>
