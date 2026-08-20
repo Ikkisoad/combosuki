@@ -44,6 +44,7 @@
                             <li><hr class="dropdown-divider"></li>
                         @endif
                         <li><a class="dropdown-item" href="{{ route('combo-guidelines') }}">Combo Guidelines</a></li>
+                        <li><a class="dropdown-item" href="{{ route('tier-lists.create') }}">Tier List Maker</a></li>
                         <li><a class="dropdown-item" href="https://srk.shib.live/w/Shoryuken_Wiki:Community_portal/Discords/Game" target="_blank">FGC Discord Compendium</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="{{ route('preferences.edit') }}">Preferences</a></li>

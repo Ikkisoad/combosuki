@@ -105,46 +105,110 @@
                     </p>
                 @endif
 
-                <div class="d-flex justify-content-between align-items-center mt-3">
-                    <h2>Latest submissions</h2>
-                    <a href="{{ route('games.combos.create', $game) }}" class="btn btn-combosuki text-white">Submit a combo</a>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle caption-top combosuki-main-reversed text-white">
-                        <caption>Click the character name to see comments if the entry has them.</caption>
-                        <tr>
-                            <th>Character</th>
-                            <th>Inputs</th>
-                            <th>Damage</th>
-                            <th>Type</th>
-                            <th>Author</th>
-                            <th>Submitted</th>
-                        </tr>
-                        @foreach ($latestCombos as $combo)
-                            <tr>
-                                <td>
-                                    @if ($combo->comments || $combo->video)
-                                        <button class="btn btn-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ $combo->idcombo }}">{{ $combo->character->name }}</button>
-                                    @else
-                                        {{ $combo->character->name }}
-                                    @endif
-                                </td>
-                                <td style="min-width:400px">
-                                    <x-combo-link :combo="$combo" />
-                                    @if ($combo->comments || $combo->video)
-                                        <div class="collapse" id="collapse{{ $combo->idcombo }}">
-                                            {{ $combo->comments }}
-                                            <x-video-embed :video="$combo->video" />
-                                        </div>
-                                    @endif
-                                </td>
-                                <td>{{ number_format((float) $combo->damage, 0, '', '.') }}</td>
-                                <td>{{ $combo->listingType?->title }}</td>
-                                <td>{{ $combo->user?->nickname ?? 'Anonymous' }}</td>
-                                <td>{{ $combo->submited?->format('d-m-y') }}</td>
-                            </tr>
-                        @endforeach
-                    </table>
+                <ul class="nav nav-tabs mt-3" id="game-tabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="combos-tab" data-bs-toggle="tab" data-bs-target="#combos-pane" type="button" role="tab" aria-controls="combos-pane" aria-selected="true">Latest Combos</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="guides-tab" data-bs-toggle="tab" data-bs-target="#guides-pane" type="button" role="tab" aria-controls="guides-pane" aria-selected="false">Guides</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tier-lists-tab" data-bs-toggle="tab" data-bs-target="#tier-lists-pane" type="button" role="tab" aria-controls="tier-lists-pane" aria-selected="false">Tier Lists</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content combosuki-main-reversed text-white p-3 border border-top-0" id="game-tabs-content">
+                    <div class="tab-pane fade show active" id="combos-pane" role="tabpanel" aria-labelledby="combos-tab">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h4 class="mb-0">Latest Combos</h4>
+                            <a href="{{ route('games.combos.create', $game) }}" class="btn btn-combosuki text-white btn-sm">Submit a combo</a>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle caption-top">
+                                <caption>Click the character name to see comments if the entry has them.</caption>
+                                <tr>
+                                    <th>Character</th>
+                                    <th>Inputs</th>
+                                    <th>Damage</th>
+                                    <th>Type</th>
+                                    <th>Author</th>
+                                    <th>Submitted</th>
+                                </tr>
+                                @foreach ($latestCombos as $combo)
+                                    <tr>
+                                        <td>
+                                            @if ($combo->comments || $combo->video)
+                                                <button class="btn btn-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ $combo->idcombo }}">{{ $combo->character->name }}</button>
+                                            @else
+                                                {{ $combo->character->name }}
+                                            @endif
+                                        </td>
+                                        <td style="min-width:400px">
+                                            <x-combo-link :combo="$combo" />
+                                            @if ($combo->comments || $combo->video)
+                                                <div class="collapse" id="collapse{{ $combo->idcombo }}">
+                                                    {{ $combo->comments }}
+                                                    <x-video-embed :video="$combo->video" />
+                                                </div>
+                                            @endif
+                                        </td>
+                                        <td>{{ number_format((float) $combo->damage, 0, '', '.') }}</td>
+                                        <td>{{ $combo->listingType?->title }}</td>
+                                        <td>{{ $combo->user?->nickname ?? 'Anonymous' }}</td>
+                                        <td>{{ $combo->submited?->format('d-m-y') }}</td>
+                                    </tr>
+                                @endforeach
+                            </table>
+                        </div>
+                        <a href="{{ route('games.combos.index', $game) }}" class="link-light">View all combos &rarr;</a>
+                    </div>
+
+                    <div class="tab-pane fade" id="guides-pane" role="tabpanel" aria-labelledby="guides-tab">
+                        <h4 class="mb-2">Guides</h4>
+                        @if ($guides->isEmpty())
+                            <p>No guides for this game yet.</p>
+                        @else
+                            <table class="table table-hover align-middle">
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Author</th>
+                                </tr>
+                                @foreach ($guides as $guide)
+                                    <tr>
+                                        <td><a href="{{ route('lists.show', $guide) }}" class="text-white">{{ $guide->list_name }}</a></td>
+                                        <td>{{ $guide->user?->nickname ?? 'Anonymous' }}</td>
+                                    </tr>
+                                @endforeach
+                            </table>
+                        @endif
+                        <a href="{{ route('lists.search', ['game_idgame' => $game->idgame]) }}" class="link-light">View all guides &rarr;</a>
+                    </div>
+
+                    <div class="tab-pane fade" id="tier-lists-pane" role="tabpanel" aria-labelledby="tier-lists-tab">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h4 class="mb-0">Tier Lists</h4>
+                            <a href="{{ route('tier-lists.create') }}" class="btn btn-primary btn-sm">Make a Tier List</a>
+                        </div>
+                        @if ($tierLists->isEmpty())
+                            <p>No tier lists for this game yet.</p>
+                        @else
+                            <table class="table table-hover align-middle">
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Author</th>
+                                    <th>Date</th>
+                                </tr>
+                                @foreach ($tierLists as $tierList)
+                                    <tr>
+                                        <td><a href="{{ route('tier-lists.show', $tierList) }}" class="text-white">{{ $tierList->title }}</a></td>
+                                        <td>{{ $tierList->user?->nickname ?? 'Anonymous' }}</td>
+                                        <td>{{ $tierList->created_at->format('M j, Y') }}</td>
+                                    </tr>
+                                @endforeach
+                            </table>
+                        @endif
+                        <a href="{{ route('tier-lists.index', ['game_idgame' => $game->idgame]) }}" class="link-light">View all tier lists &rarr;</a>
+                    </div>
                 </div>
             </main>
         </div>

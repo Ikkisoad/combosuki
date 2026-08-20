@@ -101,6 +101,54 @@ body {
     background-color: rgba(250, 89, 28, 0.2);
 }
 
+.character-card {
+    cursor: grab;
+    width: 84px;
+    padding: 4px;
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+}
+
+.character-card img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.character-card.dragging {
+    opacity: 0.4;
+}
+
+.tier-row {
+    min-height: 96px;
+}
+
+.tier-label {
+    width: 64px;
+    flex-shrink: 0;
+    font-size: 1.5rem;
+    color: #fff;
+    border-radius: 4px 0 0 4px;
+}
+
+.tier-dropzone {
+    background-color: rgba(255, 255, 255, 0.04);
+    border-radius: 0 4px 4px 0;
+}
+
+.tier-dropzone.drop-target {
+    background-color: rgba(250, 89, 28, 0.2);
+}
+
+.tier-s { background-color: #c0392b; }
+.tier-a { background-color: #e67e22; }
+.tier-b { background-color: #f1c40f; color: #2e2e2e; }
+.tier-c { background-color: #2ecc71; color: #2e2e2e; }
+.tier-d { background-color: #3498db; }
+.tier-f { background-color: #7f8c8d; }
+
 .sidebar-backdrop {
     background-color: rgba(2, 2, 2, 0.75);
     border: 2px solid #C62114;

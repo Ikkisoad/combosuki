@@ -8,7 +8,9 @@ use App\Models\Combo;
 use App\Models\Game;
 use App\Models\GameEntry;
 use App\Models\GameResource;
+use App\Models\ListModel;
 use App\Models\ResourceValue;
+use App\Models\TierList;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -98,12 +100,26 @@ class GameController extends Controller
             ->orderBy('text_name')
             ->get();
 
+        $guides = ListModel::where('game_idgame', $game->idgame)
+            ->with('user')
+            ->orderByDesc('idlist')
+            ->limit(10)
+            ->get();
+
+        $tierLists = TierList::where('game_idgame', $game->idgame)
+            ->with('user')
+            ->orderByDesc('idtier_list')
+            ->limit(10)
+            ->get();
+
         return view('games.show', [
             'game' => $game,
             'characters' => $characters,
             'latestCombos' => $latestCombos,
             'listingTypes' => $listingTypes,
             'primaryResources' => $primaryResources,
+            'guides' => $guides,
+            'tierLists' => $tierLists,
         ]);
     }
 

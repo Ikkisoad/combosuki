@@ -38,4 +38,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(ListModel::class, 'user_iduser');
     }
+
+    public function tierLists(): HasMany
+    {
+        return $this->hasMany(TierList::class, 'user_iduser');
+    }
 }

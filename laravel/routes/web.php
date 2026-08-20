@@ -23,6 +23,7 @@ use App\Http\Controllers\ListController;
 use App\Http\Controllers\ListPageController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\PreferenceController;
+use App\Http\Controllers\TierListController;
 use App\Http\Controllers\TimelineController;
 use App\Http\Controllers\UserController;
 use App\Models\Combo;
@@ -106,6 +107,11 @@ Route::middleware(['auth', 'throttle:10,1'])->prefix('lists/{list}/manage')->nam
     Route::get('/combos', [ListComboPickerController::class, 'index'])->withoutMiddleware('throttle:10,1')->name('combos.index');
     Route::post('/combos', [ListComboPickerController::class, 'store'])->name('combos.store');
 });
+
+Route::get('/tier-lists', [TierListController::class, 'index'])->name('tier-lists.index');
+Route::get('/tier-lists/create', [TierListController::class, 'create'])->middleware('auth')->name('tier-lists.create');
+Route::post('/tier-lists', [TierListController::class, 'store'])->middleware(['auth', 'throttle:10,1'])->name('tier-lists.store');
+Route::get('/tier-lists/{tierList}', [TierListController::class, 'show'])->name('tier-lists.show');
 
 Route::view('/matches', 'matches.index')->name('matches.index');
 

@@ -61,4 +61,9 @@ class Game extends Model
     {
         return $this->hasMany(CharacterQuery::class, 'game_idgame');
     }
+
+    public function tierLists(): HasMany
+    {
+        return $this->hasMany(TierList::class, 'game_idgame');
+    }
 }
