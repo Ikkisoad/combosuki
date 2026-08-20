@@ -6,9 +6,6 @@ use App\Http\Controllers\Concerns\FiltersCombos;
 use App\Models\Character;
 use App\Models\Combo;
 use App\Models\Game;
-use App\Models\GameResource;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
@@ -84,25 +81,7 @@ class DiscordComboSearch
      */
     public function runSearch(Game $game, array $filters, ?string $channelId = null): array
     {
-        $primaryResources = GameResource::where('game_idgame', $game->idgame)
-            ->where('primaryORsecundary', 1)
-            ->with('values')
-            ->orderBy('text_name')
-            ->get();
-
-        $request = Request::create('/', 'GET', array_filter(
-            $filters,
-            fn ($value) => $value !== null && $value !== ''
-        ));
-
-        $query = Combo::query()
-            ->with(['character', 'listingType'])
-            ->whereHas('character', fn (Builder $q) => $q->where('game_idgame', $game->idgame));
-
-        $this->applyFilters($query, $request, $primaryResources);
-        $this->applyOrdering($query, $request);
-
-        $combos = $query->limit(5)->get();
+        $combos = $this->searchCombos($game, $filters, 5);
 
         if ($combos->isEmpty()) {
             return $this->ephemeral('No combos found.');

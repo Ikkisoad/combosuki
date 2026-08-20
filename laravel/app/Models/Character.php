@@ -12,7 +12,7 @@ class Character extends Model
 
     protected $primaryKey = 'idcharacter';
 
-    protected $fillable = ['name', 'game_idgame'];
+    protected $fillable = ['name', 'image', 'game_idgame'];
 
     public function game(): BelongsTo
     {

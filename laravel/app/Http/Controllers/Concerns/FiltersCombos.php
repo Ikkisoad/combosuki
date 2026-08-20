@@ -2,11 +2,44 @@
 
 namespace App\Http\Controllers\Concerns;
 
+use App\Models\Combo;
+use App\Models\Game;
+use App\Models\GameResource;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 trait FiltersCombos
 {
+    /**
+     * Run a combo search for $game scoped to $filters (a flat map of
+     * FiltersCombos field names — see applyFilters()/applyOrdering() — to
+     * values), returning up to $limit combos ordered the same way the
+     * search page/Discord bot order results (damage desc by default).
+     */
+    private function searchCombos(Game $game, array $filters, int $limit): Collection
+    {
+        $primaryResources = GameResource::where('game_idgame', $game->idgame)
+            ->where('primaryORsecundary', 1)
+            ->with('values')
+            ->orderBy('text_name')
+            ->get();
+
+        $request = Request::create('/', 'GET', array_filter(
+            $filters,
+            fn ($value) => $value !== null && $value !== ''
+        ));
+
+        $query = Combo::query()
+            ->with(['character', 'listingType'])
+            ->whereHas('character', fn (Builder $q) => $q->where('game_idgame', $game->idgame));
+
+        $this->applyFilters($query, $request, $primaryResources);
+        $this->applyOrdering($query, $request);
+
+        return $query->limit($limit)->get();
+    }
+
     private function applyFilters(Builder $query, Request $request, $primaryResources): void
     {
         if ($request->filled('combo')) {

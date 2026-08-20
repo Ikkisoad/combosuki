@@ -56,4 +56,9 @@ class Game extends Model
     {
         return $this->hasMany(ListModel::class, 'game_idgame');
     }
+
+    public function characterQueries(): HasMany
+    {
+        return $this->hasMany(CharacterQuery::class, 'game_idgame');
+    }
 }

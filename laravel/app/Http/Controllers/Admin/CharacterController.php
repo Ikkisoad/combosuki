@@ -7,6 +7,7 @@ use App\Models\Character;
 use App\Models\Game;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class CharacterController extends Controller
@@ -23,16 +24,33 @@ class CharacterController extends Controller
         $validated = $request->validate([
             'action' => ['required', 'in:Add,Update,Delete'],
             'character' => ['required_if:action,Add,Update', 'nullable', 'string', 'max:45'],
+            'image' => ['nullable', 'image', 'max:5120'],
             'idcharacter' => ['required_if:action,Update,Delete', 'nullable', 'integer'],
         ]);
 
         // TODO: record which user made this edit once an audit/edit-log exists
         if ($validated['action'] === 'Add') {
-            Character::create(['name' => $validated['character'], 'game_idgame' => $game->idgame]);
+            Character::create([
+                'name' => $validated['character'],
+                'image' => $request->hasFile('image') ? $request->file('image')->store('character-portraits', 'public') : null,
+                'game_idgame' => $game->idgame,
+            ]);
         } elseif ($validated['action'] === 'Update') {
-            Character::where('idcharacter', $validated['idcharacter'])
+            $character = Character::where('idcharacter', $validated['idcharacter'])
                 ->where('game_idgame', $game->idgame)
-                ->update(['name' => $validated['character']]);
+                ->first();
+
+            $attributes = ['name' => $validated['character']];
+
+            if ($character && $request->hasFile('image')) {
+                if ($character->image) {
+                    Storage::disk('public')->delete($character->image);
+                }
+
+                $attributes['image'] = $request->file('image')->store('character-portraits', 'public');
+            }
+
+            $character?->update($attributes);
         } else {
             $character = Character::where('idcharacter', $validated['idcharacter'])
                 ->where('game_idgame', $game->idgame)
@@ -42,6 +60,10 @@ class CharacterController extends Controller
                 $combo->resources()->delete();
                 $combo->delete();
             });
+
+            if ($character?->image) {
+                Storage::disk('public')->delete($character->image);
+            }
 
             $character?->delete();
         }

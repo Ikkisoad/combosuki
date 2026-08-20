@@ -1,7 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\ButtonController;
-use App\Http\Controllers\Admin\CharacterController;
+use App\Http\Controllers\Admin\CharacterController as AdminCharacterController;
+use App\Http\Controllers\Admin\CharacterQueryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GameEntryController;
 use App\Http\Controllers\Admin\GameListController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\Admin\LinkController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\CombleController;
 use App\Http\Controllers\ComboController;
 use App\Http\Controllers\ComboListController;
@@ -67,6 +69,10 @@ Route::get('/games', [GameController::class, 'index'])->name('games.index');
 Route::get('/games/add', [GameController::class, 'create'])->middleware(['auth', 'trusted'])->name('games.create');
 Route::post('/games', [GameController::class, 'store'])->middleware(['auth', 'trusted', 'throttle:10,1'])->name('games.store');
 Route::get('/games/{game}', [GameController::class, 'show'])->name('games.show');
+
+Route::scopeBindings()->group(function () {
+    Route::get('/games/{game}/characters/{character}', [CharacterController::class, 'show'])->name('characters.show');
+});
 
 Route::get('/games/{game}/combos', [ComboController::class, 'index'])->name('games.combos.index');
 Route::get('/games/{game}/combos/add', [ComboController::class, 'create'])->middleware('auth')->name('games.combos.create');
@@ -127,8 +133,11 @@ Route::middleware(['auth', 'trusted'])->prefix('games/{game}/edit')->name('admin
     Route::get('/', [GameSettingsController::class, 'edit'])->name('game.edit');
     Route::post('/', [GameSettingsController::class, 'update'])->middleware('throttle:10,1')->name('game.update');
 
-    Route::get('/characters', [CharacterController::class, 'index'])->name('characters.index');
-    Route::post('/characters', [CharacterController::class, 'store'])->middleware('throttle:10,1')->name('characters.store');
+    Route::get('/characters', [AdminCharacterController::class, 'index'])->name('characters.index');
+    Route::post('/characters', [AdminCharacterController::class, 'store'])->middleware('throttle:10,1')->name('characters.store');
+
+    Route::get('/queries', [CharacterQueryController::class, 'index'])->name('queries.index');
+    Route::post('/queries', [CharacterQueryController::class, 'store'])->middleware('throttle:10,1')->name('queries.store');
 
     Route::get('/links', [LinkController::class, 'index'])->name('links.index');
     Route::post('/links', [LinkController::class, 'store'])->middleware('throttle:10,1')->name('links.store');

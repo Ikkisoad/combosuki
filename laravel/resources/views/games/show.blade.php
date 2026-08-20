@@ -74,7 +74,7 @@
                 <h3>Entries per Character</h3>
                 <ul class="list-unstyled">
                     @foreach ($characters as $character)
-                        <li>{{ $character->name }}: {{ $character->combos_count }}</li>
+                        <li><a href="{{ route('characters.show', [$game, $character]) }}">{{ $character->name }}</a>: {{ $character->combos_count }}</li>
                     @endforeach
                 </ul>
             </nav>
