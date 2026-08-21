@@ -49,11 +49,10 @@ class DiscordInteractionController extends Controller
 
         if ($subcommand === 'comble') {
             $userId = $this->discordUserId($payload);
-            $publicData = $this->comble->start($userId);
 
-            $this->postPrivateCombleFollowUp($payload, $userId);
+            $this->deferPrivateCombleFollowUp($payload, $userId);
 
-            return response()->json(['type' => 4, 'data' => $publicData]);
+            return response()->json(['type' => 4, 'data' => $this->comble->start($userId)]);
         }
 
         return response()->json([
@@ -123,7 +122,7 @@ class DiscordInteractionController extends Controller
             try {
                 $publicData = $this->comble->handleModalSubmit($customId, $data['components'] ?? [], $userId);
 
-                $this->postPrivateCombleFollowUp($payload, $userId);
+                $this->deferPrivateCombleFollowUp($payload, $userId);
 
                 return response()->json(['type' => 7, 'data' => $publicData]);
             } catch (DiscordInteractionUnauthorized $e) {
@@ -143,16 +142,22 @@ class DiscordInteractionController extends Controller
     }
 
     /**
-     * Sends $userId's full, named guess breakdown (DiscordCombleGame's
-     * privateSummary()) as a private (ephemeral) follow-up message, via the
-     * interaction's own webhook — no bot token needed, unlike
-     * DiscordComboSearch's video follow-up which posts as the bot into the
-     * channel. Best-effort: a missing token/application id (shouldn't happen
-     * on a real Discord request) just skips the follow-up rather than
-     * failing the whole interaction, since the public update is more
-     * important than the private detail.
+     * Queues $userId's full, named guess breakdown (DiscordCombleGame's
+     * privateSummary()) to be sent as a private (ephemeral) follow-up
+     * message, via the interaction's own webhook — no bot token needed,
+     * unlike DiscordComboSearch's video follow-up which posts as the bot
+     * into the channel.
+     *
+     * Deferred with afterResponse() rather than sent inline: Discord expects
+     * the *initial* response within 3 seconds, and this outbound HTTP call
+     * used to sit in front of it — any slowness reaching discord.com there
+     * (DNS, TLS, a slow API response) delayed that ack and surfaced to
+     * players as "The application did not respond" on every single
+     * `/combo comble` use. afterResponse() runs this only once Discord
+     * already has the real response in hand, so the follow-up can be as
+     * slow as it wants without threatening the interaction itself.
      */
-    private function postPrivateCombleFollowUp(array $payload, string $userId): void
+    private function deferPrivateCombleFollowUp(array $payload, string $userId): void
     {
         $applicationId = $payload['application_id'] ?? config('services.discord.application_id');
         $token = $payload['token'] ?? null;
@@ -161,10 +166,16 @@ class DiscordInteractionController extends Controller
             return;
         }
 
-        Http::asJson()->post(
-            "https://discord.com/api/v10/webhooks/{$applicationId}/{$token}",
-            $this->comble->privateSummary($userId)
-        );
+        dispatch(function () use ($applicationId, $token, $userId) {
+            try {
+                Http::asJson()->timeout(5)->post(
+                    "https://discord.com/api/v10/webhooks/{$applicationId}/{$token}",
+                    $this->comble->privateSummary($userId)
+                );
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        })->afterResponse();
     }
 
     /**
