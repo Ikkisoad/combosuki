@@ -28,12 +28,14 @@ use App\Http\Controllers\TimelineController;
 use App\Http\Controllers\UserController;
 use App\Models\Combo;
 use App\Models\Game;
+use App\Services\DailyChallenge;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     $games = Game::where('complete', '>', 0)->orderBy('name')->get();
+    $challenge = app(DailyChallenge::class)->today();
 
-    return view('home', ['games' => $games]);
+    return view('home', ['games' => $games, 'challenge' => $challenge]);
 })->name('home');
 
 Route::get('/about', function () {
