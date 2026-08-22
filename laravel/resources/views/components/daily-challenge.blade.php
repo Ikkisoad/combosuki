@@ -9,10 +9,10 @@
 @if (! $query || ! $character)
     <p>No challenge is available yet &mdash; check back once some default queries are configured.</p>
 @else
-    <h2 class="mt-0">{{ $character->game->name }} &mdash; {{ $character->name }} &mdash; {{ $query->label }}</h2>
+    <h3 class="mt-0">{{ $character->game->name }} &mdash; {{ $character->name }} &mdash; {{ $query->label }}</h3>
 
     @if ($combo)
-        <table class="table table-hover align-middle caption-top combosuki-main-reversed text-white">
+        <table class="table table-hover align-middle caption-top text-white">
             <tr>
                 <th>Character</th>
                 <th>Inputs</th>
