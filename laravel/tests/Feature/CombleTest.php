@@ -272,20 +272,59 @@ class CombleTest extends TestCase
         $wrongCharacter = $this->makeCharacter($wrongGame, 'Zangief');
         $wrongType = $this->makeType($wrongGame);
 
+        $tokens = ['AAA', 'BBB', 'CCC', 'DDD', 'EEE'];
+
+        $this->assertCount(0, $this->visibleTokens($this->showPage()->getContent(), $tokens));
+
         $first = $this->submitGuess($this->guessPayload($wrongGame, $wrongCharacter, $wrongType));
         $cookie = $this->cookieFromResponse($first);
 
-        $this->showPage(cookie: $cookie)
-            ->assertSee('AAA')
-            ->assertDontSee('BBB');
+        $visibleAfterOne = $this->visibleTokens($this->showPage(cookie: $cookie)->getContent(), $tokens);
+        $this->assertCount(1, $visibleAfterOne);
 
         $second = $this->submitGuess($this->guessPayload($wrongGame, $wrongCharacter, $wrongType), cookie: $cookie);
         $cookie = $this->cookieFromResponse($second);
 
-        $this->showPage(cookie: $cookie)
-            ->assertSee('AAA')
-            ->assertSee('BBB')
-            ->assertDontSee('CCC');
+        $visibleAfterTwo = $this->visibleTokens($this->showPage(cookie: $cookie)->getContent(), $tokens);
+        $this->assertCount(2, $visibleAfterTwo);
+        $this->assertContains($visibleAfterOne[0], $visibleAfterTwo, 'a token revealed on an earlier guess must stay revealed');
+    }
+
+    /** Which of $tokens appear as literal, unredacted text in the rendered reveal. */
+    private function visibleTokens(string $html, array $tokens): array
+    {
+        return array_values(array_filter($tokens, fn ($token) => str_contains($html, $token)));
+    }
+
+    /**
+     * The reveal is meant to scatter revealed tokens across the whole combo,
+     * not always uncover it left-to-right starting from the first token.
+     * Across enough distinct puzzles, the first token should end up excluded
+     * from the reveal at least once — under the old prefix-based reveal it
+     * would be included every single time, so this reliably distinguishes
+     * the two behaviors.
+     */
+    public function test_the_reveal_order_is_scattered_not_always_left_to_right(): void
+    {
+        $firstTokenAlwaysRevealed = true;
+
+        foreach (range(1, 20) as $seed) {
+            $game = $this->makeGame(['name' => 'Scatter Game '.$seed]);
+            $character = $this->makeCharacter($game);
+            $type = $this->makeType($game);
+            $notation = implode(' ', array_map(fn ($i) => "T{$seed}x{$i}", range(0, 9)));
+            $this->makeCombo($character, $type, ['combo' => $notation]);
+
+            $html = app(\App\Services\CombleRevealer::class)->render($game, $notation, 1);
+
+            if (! str_contains($html, "T{$seed}x0")) {
+                $firstTokenAlwaysRevealed = false;
+
+                break;
+            }
+        }
+
+        $this->assertFalse($firstTokenAlwaysRevealed, 'expected at least one puzzle where the first token is not part of the reveal');
     }
 
     private function makeGame(array $overrides = []): Game

@@ -530,7 +530,13 @@ class DiscordInteractionTest extends TestCase
         // for anyone else watching who hasn't played yet.
         $description = $result->json('data.embeds.0.description');
         $this->assertStringContainsString('You got it!', $description);
-        $this->assertStringContainsString('AAA', $description);
+        // The reveal is scattered across the combo's tokens (not always the
+        // first one), so check that some token is revealed rather than
+        // asserting a specific one.
+        $this->assertTrue(
+            collect(['AAA', 'BBB', 'CCC', 'DDD', 'EEE'])->contains(fn ($token) => str_contains($description, $token)),
+            'expected at least one combo token to be revealed'
+        );
         $this->assertStringNotContainsString($character->name, $description);
         $this->assertStringNotContainsString($game->name, $description);
 
