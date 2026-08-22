@@ -184,31 +184,77 @@
 
                     <div class="tab-pane fade" id="tier-lists-pane" role="tabpanel" aria-labelledby="tier-lists-tab">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h4 class="mb-0">Tier Lists</h4>
+                            <h4 class="mb-0">Perceived Strength</h4>
                             <a href="{{ route('tier-lists.create') }}" class="btn btn-primary btn-sm">Make a Tier List</a>
                         </div>
-                        @if ($tierLists->isEmpty())
-                            <p>No tier lists for this game yet.</p>
+
+                        <form method="get" action="{{ route('games.show', $game) }}" class="row g-2 align-items-end mb-3" id="tier-date-range-form">
+                            <div class="col-auto">
+                                <label for="tier_from" class="form-label small mb-0">From</label>
+                                <input type="date" id="tier_from" name="tier_from" value="{{ $tierFrom }}" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-auto">
+                                <label for="tier_to" class="form-label small mb-0">To</label>
+                                <input type="date" id="tier_to" name="tier_to" value="{{ $tierTo }}" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-info btn-sm">Filter</button>
+                                @if ($tierFrom || $tierTo)
+                                    <a href="{{ route('games.show', $game) }}#tier-lists-pane" class="btn btn-outline-light btn-sm" id="tier-date-range-reset">Reset</a>
+                                @endif
+                            </div>
+                        </form>
+
+                        @if ($tierListAggregate['tierListCount'] === 0)
+                            <p>No tier lists for this game yet in the selected range.</p>
                         @else
-                            <table class="table table-hover align-middle">
-                                <tr>
-                                    <th>Title</th>
-                                    <th>Author</th>
-                                    <th>Date</th>
-                                </tr>
-                                @foreach ($tierLists as $tierList)
-                                    <tr>
-                                        <td><a href="{{ route('tier-lists.show', $tierList) }}" class="text-white">{{ $tierList->title }}</a></td>
-                                        <td>{{ $tierList->user?->nickname ?? 'Anonymous' }}</td>
-                                        <td>{{ $tierList->created_at->format('M j, Y') }}</td>
-                                    </tr>
-                                @endforeach
-                            </table>
+                            <p class="text-white-50 small">Median of {{ $tierListAggregate['tierListCount'] }} community tier {{ \Illuminate\Support\Str::plural('list', $tierListAggregate['tierListCount']) }}.</p>
+
+                            @foreach (['S', 'A', 'B', 'C', 'D', 'F'] as $tier)
+                                <div class="tier-row d-flex align-items-stretch mb-2">
+                                    <div class="tier-label tier-{{ strtolower($tier) }} d-flex align-items-center justify-content-center fw-bold">{{ $tier }}</div>
+                                    <div class="tier-dropzone flex-grow-1 d-flex flex-wrap gap-2 p-2">
+                                        @forelse ($tierListAggregate['tiers'][$tier] as $entry)
+                                            <div class="character-card" title="{{ $entry['votes'] }} {{ \Illuminate\Support\Str::plural('vote', $entry['votes']) }}">
+                                                @if ($entry['character']->image)
+                                                    <img src="{{ \Illuminate\Support\Facades\Storage::url($entry['character']->image) }}" alt="{{ $entry['character']->name }}">
+                                                @endif
+                                                <div class="small text-center">{{ $entry['character']->name }}</div>
+                                            </div>
+                                        @empty
+                                            <span class="text-white-50 small">&mdash;</span>
+                                        @endforelse
+                                    </div>
+                                </div>
+                            @endforeach
                         @endif
+
                         <a href="{{ route('tier-lists.index', ['game_idgame' => $game->idgame]) }}" class="link-light">View all tier lists &rarr;</a>
                     </div>
                 </div>
             </main>
         </div>
     </div>
+
+    @if ($tierFrom || $tierTo)
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var tabButton = document.getElementById('tier-lists-tab');
+                var tabPane = document.getElementById('tier-lists-pane');
+                if (!tabButton || !tabPane) {
+                    return;
+                }
+                document.querySelectorAll('#game-tabs .nav-link').forEach(function (el) {
+                    el.classList.remove('active');
+                    el.setAttribute('aria-selected', 'false');
+                });
+                document.querySelectorAll('#game-tabs-content .tab-pane').forEach(function (el) {
+                    el.classList.remove('show', 'active');
+                });
+                tabButton.classList.add('active');
+                tabButton.setAttribute('aria-selected', 'true');
+                tabPane.classList.add('show', 'active');
+            });
+        </script>
+    @endif
 </x-layouts.app>

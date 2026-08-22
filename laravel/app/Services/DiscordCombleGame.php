@@ -82,10 +82,13 @@ class DiscordCombleGame
     }
 
     /**
-     * Build the damage-guess Modal (interaction response type 9), triggered
-     * by selecting a type from typeStep()'s dropdown. The type answer arrives
-     * via the interaction's `values`, not the custom_id — same reasoning as
-     * DiscordComboWizard's resource selects.
+     * Build the damage/starter-guess Modal (interaction response type 9),
+     * triggered by selecting a type from typeStep()'s dropdown. The type
+     * answer arrives via the interaction's `values`, not the custom_id —
+     * same reasoning as DiscordComboWizard's resource selects. Neither field
+     * in this Modal gates finishing the game — only game/character
+     * correctness does — the starter field is additionally optional to fill
+     * in at all, same as the web version.
      */
     public function buildDamageModal(string $customId, ?string $selectedTypeId, string $userId): array
     {
@@ -95,7 +98,7 @@ class DiscordCombleGame
         $state = $this->withState($state, 't', $selectedTypeId);
 
         return [
-            'title' => 'Guess the damage',
+            'title' => 'Guess the damage & starter',
             'custom_id' => 'cb:dmgsubmit::'.$this->encodeState($state),
             'components' => [
                 $this->actionRow([[
@@ -105,6 +108,15 @@ class DiscordCombleGame
                     'label' => 'Damage guess',
                     'required' => true,
                     'placeholder' => 'e.g. 3500',
+                ]]),
+                $this->actionRow([[
+                    'type' => 4,
+                    'custom_id' => 'starter',
+                    'style' => 1,
+                    'label' => 'First 6 characters (optional)',
+                    'required' => false,
+                    'max_length' => 6,
+                    'placeholder' => 'e.g. 2LP 5M',
                 ]]),
             ],
         ];
@@ -136,20 +148,37 @@ class DiscordCombleGame
             return $this->publicStatus($userId, 'Something went wrong with that guess — please try again.');
         }
 
-        $damageRaw = trim((string) (collect($submittedRows)->pluck('components.0')->first()['value'] ?? ''));
+        $damageRaw = trim((string) ($this->modalValue($submittedRows, 'damage') ?? ''));
 
         if (! is_numeric($damageRaw) || (float) $damageRaw < 0) {
             return $this->publicStatus($userId, 'Damage must be a non-negative number.');
         }
+
+        $starterRaw = trim((string) ($this->modalValue($submittedRows, 'starter') ?? ''));
 
         $this->appendPick($userId, $day, [
             $game->idgame,
             $character->idcharacter,
             $type->entryid,
             (float) $damageRaw,
+            $starterRaw !== '' ? $starterRaw : null,
         ]);
 
         return $this->publicStatus($userId);
+    }
+
+    /** Finds one Modal text input's submitted value by its custom_id, across all of the Modal's action rows. */
+    private function modalValue(array $submittedRows, string $customId): ?string
+    {
+        foreach ($submittedRows as $row) {
+            foreach ($row['components'] ?? [] as $component) {
+                if (($component['custom_id'] ?? null) === $customId) {
+                    return $component['value'] ?? null;
+                }
+            }
+        }
+
+        return null;
     }
 
     private function characterStep(array $state, string $userId): array
@@ -240,7 +269,7 @@ class DiscordCombleGame
             ? [$this->actionRow([[
                 'type' => 2,
                 'style' => 5,
-                'label' => 'Play on the site',
+                'label' => 'Play on Combo好き',
                 'url' => rtrim(config('app.url'), '/').route('comble.show', absolute: false),
             ]])]
             : [$this->actionRow([$this->gameSelect($userId)])];
@@ -313,6 +342,7 @@ class DiscordCombleGame
             $guess['game_correct'] ? '🟩' : '🟥',
             $guess['character_correct'] ? '🟩' : '🟥',
             $guess['type_correct'] ? '🟩' : '🟥',
+            $this->starterResultEmoji($guess['starter_result']),
             $this->damageHintEmoji($guess['damage_hint']),
         ]);
     }
@@ -326,9 +356,20 @@ class DiscordCombleGame
             $guess['character']->name,
             $guess['type_correct'] ? '🟩' : '🟥',
             $guess['listing_type']->title,
+            $this->starterResultEmoji($guess['starter_result']),
+            $guess['starter'] ?? '—',
             $this->damageHintEmoji($guess['damage_hint']),
             $guess['damage'] !== null ? number_format($guess['damage'], 0, '', '.') : '—',
         ]);
+    }
+
+    private function starterResultEmoji(string $result): string
+    {
+        return match ($result) {
+            'correct' => '🟩',
+            'partial' => '🟧',
+            default => '🟥',
+        };
     }
 
     private function damageHintEmoji(string $hint): string
@@ -383,14 +424,15 @@ class DiscordCombleGame
             $character = Character::find($pick[1] ?? null);
             $listingType = GameEntry::find($pick[2] ?? null);
             $damage = isset($pick[3]) ? (float) $pick[3] : null;
+            $starter = $pick[4] ?? null;
 
             if (! $game || ! $character || ! $listingType) {
                 continue;
             }
 
             $guesses[] = array_merge(
-                ['game' => $game, 'character' => $character, 'listing_type' => $listingType, 'damage' => $damage],
-                $this->evaluator->evaluate($target, $game, $character, $listingType, $damage)
+                ['game' => $game, 'character' => $character, 'listing_type' => $listingType, 'damage' => $damage, 'starter' => $starter],
+                $this->evaluator->evaluate($target, $game, $character, $listingType, $damage, $starter)
             );
         }
 

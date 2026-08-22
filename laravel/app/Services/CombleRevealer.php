@@ -43,9 +43,11 @@ class CombleRevealer
                 }
             }
 
+            $color = $isRevealed ? $this->displayColor($tokens, $revealed, $index) : null;
+
             $html .= $isRevealed
-                ? ($isColored
-                    ? '<span style="color: '.e($token['color']).';">'.e($token['value']).'</span>'
+                ? ($color !== null
+                    ? '<span style="color: '.e($color).';">'.e($token['value']).'</span>'
                     : e($token['value']))
                 : '<span class="comble-hidden-token">'.str_repeat('▁', mb_strlen($token['value'])).'</span>';
 
@@ -53,6 +55,36 @@ class CombleRevealer
         }
 
         return $html;
+    }
+
+    /**
+     * Same color-propagation rule as ComboNotationRenderer::propagatedColor()
+     * — an uncoded token glued to a colored neighbor takes that neighbor's
+     * color — but only from a neighbor that is itself revealed, so an
+     * uncoded token never leaks the color (and thus the identity) of a
+     * still-hidden button next to it.
+     */
+    private function displayColor(array $tokens, array $revealed, int $index): ?string
+    {
+        $token = $tokens[$index];
+
+        if ($token['type'] === 'colored') {
+            return $token['color'];
+        }
+
+        $next = $tokens[$index + 1] ?? null;
+
+        if ($next && $next['type'] === 'colored' && isset($revealed[$index + 1])) {
+            return $next['color'];
+        }
+
+        $previous = $tokens[$index - 1] ?? null;
+
+        if ($previous && $previous['type'] === 'colored' && isset($revealed[$index - 1])) {
+            return $previous['color'];
+        }
+
+        return null;
     }
 
     /**
@@ -95,6 +127,16 @@ class CombleRevealer
      * anything, and without touching PHP's global RNG state (mt_srand()
      * would work but leaks into any other randomness generated later in the
      * same request).
+     *
+     * Any token overlapping the raw notation's first 6 characters — the
+     * "Starter" guess field's answer — sorts after every other token, no
+     * matter what the hash comparison says. Since this method is only ever
+     * consulted while the puzzle isn't finished, guessesMade is at most 4,
+     * and CombleDailyCombo guarantees at least 5 tokens, the reveal count
+     * (ceil(guessesMade/5 * tokenCount)) never reaches tokenCount itself —
+     * so whichever of these deprioritized tokens lands last is guaranteed to
+     * stay hidden for the whole game, and the Starter answer is never fully
+     * given away by the reveal alone.
      */
     private function revealOrder(int $tokenCount, string $notation): array
     {
@@ -102,10 +144,70 @@ class CombleRevealer
             return [];
         }
 
+        $protected = $this->starterOverlappingTokenIndices($notation);
+
         $indices = range(0, $tokenCount - 1);
 
-        usort($indices, fn (int $a, int $b) => hash('sha256', $notation.'|'.$a) <=> hash('sha256', $notation.'|'.$b));
+        usort($indices, function (int $a, int $b) use ($protected, $notation) {
+            $aProtected = isset($protected[$a]);
+            $bProtected = isset($protected[$b]);
+
+            if ($aProtected !== $bProtected) {
+                return $aProtected ? 1 : -1;
+            }
+
+            return hash('sha256', $notation.'|'.$a) <=> hash('sha256', $notation.'|'.$b);
+        });
 
         return $indices;
+    }
+
+    /**
+     * Token indices whose span in the raw notation string overlaps its
+     * first 6 characters (positions 0-5) — mirrors
+     * ComboNotationRenderer::tokenize()'s own word-splitting exactly, so the
+     * indices line up with $tokens, but tracks each word's starting
+     * character offset instead of just its text.
+     */
+    private function starterOverlappingTokenIndices(string $notation): array
+    {
+        $protected = [];
+        $tokenIndex = 0;
+        $word = '';
+        $wordStart = null;
+        $charIndex = 0;
+
+        $flush = function () use (&$word, &$wordStart, &$tokenIndex, &$protected) {
+            if ($word === '') {
+                return;
+            }
+
+            if ($wordStart < 6) {
+                $protected[$tokenIndex] = true;
+            }
+
+            $tokenIndex++;
+            $word = '';
+        };
+
+        foreach (mb_str_split($notation) as $char) {
+            if ($char !== ' ') {
+                if ($word === '') {
+                    $wordStart = $charIndex;
+                }
+
+                $word .= $char;
+                $charIndex++;
+
+                continue;
+            }
+
+            $flush();
+            $charIndex++;
+        }
+
+        $flush();
+
+        return $protected;
     }
 }

@@ -51,6 +51,7 @@
                         <th>Game</th>
                         <th>Character</th>
                         <th>Type</th>
+                        <th>Starter</th>
                         <th>Damage</th>
                     </tr>
                 </thead>
@@ -61,6 +62,10 @@
                             <td class="{{ $guess['game_correct'] ? 'bg-success' : 'bg-danger' }}">{{ $guess['game']->name }}</td>
                             <td class="{{ $guess['character_correct'] ? 'bg-success' : 'bg-danger' }}">{{ $guess['character']->name }}</td>
                             <td class="{{ $guess['type_correct'] ? 'bg-success' : 'bg-danger' }}">{{ $guess['listing_type']->title }}</td>
+                            <td
+                                class="{{ match ($guess['starter_result']) { 'correct' => 'bg-success', 'partial' => '', default => 'bg-danger' } }}"
+                                style="{{ $guess['starter_result'] === 'partial' ? 'background-color: #fd7e14;' : '' }}"
+                            >{{ $guess['starter'] ?: '—' }}</td>
                             <td>
                                 {{ $guess['damage'] !== null ? number_format($guess['damage'], 0, '', '.') : '—' }}
                                 @switch($guess['damage_hint'])
@@ -106,13 +111,13 @@
             <form method="post" action="{{ $isToday ? route('comble.guess') : route('comble.guess.date', ['date' => $day->toDateString()]) }}" id="comble-guess-form">
                 @csrf
                 <div class="row g-2 align-items-end">
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label">Game</label>
                         <select name="game_id" id="comble-game" class="form-select" required>
                             <option value="">Choose a game&hellip;</option>
                         </select>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label">Character</label>
                         <select name="character_id" id="comble-character" class="form-select" required disabled>
                             <option value="">Choose a game first&hellip;</option>
@@ -123,6 +128,10 @@
                         <select name="listing_type_id" id="comble-type" class="form-select" required disabled>
                             <option value="">Choose a game first&hellip;</option>
                         </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Starter <span class="text-white-50">(optional)</span></label>
+                        <input type="text" name="starter" id="comble-starter" class="form-control" maxlength="6" placeholder="First 6 chars">
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Damage</label>

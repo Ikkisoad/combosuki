@@ -20,7 +20,7 @@ class CombleGuessEvaluator
      * as wrong. SQLite's dynamic typing hides this, which is why it only
      * ever surfaces against the production database.
      */
-    public function evaluate(Combo $target, Game $guessedGame, Character $guessedCharacter, GameEntry $guessedType, ?float $guessedDamage): array
+    public function evaluate(Combo $target, Game $guessedGame, Character $guessedCharacter, GameEntry $guessedType, ?float $guessedDamage, ?string $guessedStarter = null): array
     {
         $gameCorrect = (int) $guessedGame->idgame === (int) $target->character->game_idgame;
         $characterCorrect = (int) $guessedCharacter->idcharacter === (int) $target->character_idcharacter;
@@ -30,9 +30,45 @@ class CombleGuessEvaluator
             'game_correct' => $gameCorrect,
             'character_correct' => $characterCorrect,
             'type_correct' => $typeCorrect,
+            'starter_result' => $this->starterResult($target, $guessedStarter),
             'damage_hint' => $this->damageHint($target, $guessedDamage),
             'won' => $gameCorrect && $characterCorrect,
         ];
+    }
+
+    /**
+     * Compares a guess at the combo's opening 6 characters against the real
+     * notation string (not tokens — literal characters, spaces included),
+     * position by position, case-insensitively. Never guessed, never gates a
+     * win: same non-blocking "bonus hint" role as damage.
+     *
+     * Returns 'correct' (identical, same length), 'partial' (at least one
+     * character right in its own position, but not a full match — shown as
+     * orange rather than plain right/wrong), or 'wrong' (no positions
+     * match, or nothing was guessed).
+     */
+    private function starterResult(Combo $target, ?string $guessedStarter): string
+    {
+        if ($guessedStarter === null || $guessedStarter === '') {
+            return 'wrong';
+        }
+
+        $guessed = mb_strtolower($guessedStarter);
+        $actual = mb_strtolower(mb_substr($target->combo, 0, 6));
+
+        if ($guessed === $actual) {
+            return 'correct';
+        }
+
+        $length = min(mb_strlen($guessed), mb_strlen($actual));
+
+        for ($i = 0; $i < $length; $i++) {
+            if (mb_substr($guessed, $i, 1) === mb_substr($actual, $i, 1)) {
+                return 'partial';
+            }
+        }
+
+        return 'wrong';
     }
 
     private function damageHint(Combo $target, ?float $guessedDamage): string

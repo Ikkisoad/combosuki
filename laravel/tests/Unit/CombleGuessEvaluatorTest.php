@@ -52,4 +52,35 @@ class CombleGuessEvaluatorTest extends TestCase
         $this->assertTrue($result['character_correct']);
         $this->assertTrue($result['won']);
     }
+
+    public function test_starter_guess_matches_the_first_six_raw_characters_case_insensitively(): void
+    {
+        $game = (new Game())->forceFill(['idgame' => 5, 'name' => 'Test Game']);
+        $game->exists = true;
+
+        $character = (new Character())->forceFill(['idcharacter' => 9, 'name' => 'Ryu', 'game_idgame' => 5]);
+        $character->exists = true;
+        $character->setRelation('game', $game);
+
+        $target = (new Combo())->forceFill([
+            'idcombo' => 1,
+            'combo' => '2LP 5MP 2HP',
+            'character_idcharacter' => 9,
+            'type' => 7,
+            'damage' => null,
+        ]);
+        $target->exists = true;
+        $target->setRelation('character', $character);
+
+        $guessedType = (new GameEntry())->forceFill(['entryid' => 7, 'title' => 'Combo', 'gameid' => 5]);
+        $evaluator = new CombleGuessEvaluator();
+
+        // '2LP 5MP 2HP'[0:6] === '2LP 5M', compared case-insensitively.
+        $this->assertSame('correct', $evaluator->evaluate($target, $game, $character, $guessedType, null, '2lp 5m')['starter_result']);
+        // Shares the first 4 positions ('2LP ') but not the last 2 — some characters right, not all.
+        $this->assertSame('partial', $evaluator->evaluate($target, $game, $character, $guessedType, null, '2LP XZ')['starter_result']);
+        // No position matches at all.
+        $this->assertSame('wrong', $evaluator->evaluate($target, $game, $character, $guessedType, null, '999999')['starter_result']);
+        $this->assertSame('wrong', $evaluator->evaluate($target, $game, $character, $guessedType, null, null)['starter_result']);
+    }
 }

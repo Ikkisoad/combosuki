@@ -261,6 +261,68 @@ class CombleTest extends TestCase
             ->assertSee('Higher');
     }
 
+    public function test_a_correct_starter_guess_is_marked_correct(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $type = $this->makeType($game);
+        $this->makeCombo($character, $type, ['combo' => 'AAA BBB CCC DDD EEE']);
+
+        // First 6 raw characters of 'AAA BBB CCC DDD EEE', space included.
+        $response = $this->submitGuess($this->guessPayload($game, $character, $type, 3000, 'AAA BB'));
+
+        $this->showPage(cookie: $this->cookieFromResponse($response))
+            ->assertOk()
+            ->assertSee('AAA BB');
+    }
+
+    public function test_a_wrong_starter_guess_does_not_block_a_win(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $type = $this->makeType($game);
+        $this->makeCombo($character, $type, ['combo' => 'AAA BBB CCC DDD EEE']);
+
+        $response = $this->submitGuess($this->guessPayload($game, $character, $type, 3000, 'ZZZZZZ'));
+
+        $this->showPage(cookie: $this->cookieFromResponse($response))
+            ->assertOk()
+            ->assertSee('You got it!')
+            ->assertSee('ZZZZZZ');
+    }
+
+    public function test_a_partially_correct_starter_guess_is_shown_in_orange(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $type = $this->makeType($game);
+        $this->makeCombo($character, $type, ['combo' => 'AAA BBB CCC DDD EEE']);
+
+        // First 6 chars are 'AAA BB'; 'AAA XX' shares the first 4 positions
+        // ('AAA ') but not the last 2 — some characters right, not all.
+        $response = $this->submitGuess($this->guessPayload($game, $character, $type, 3000, 'AAA XX'));
+
+        $this->showPage(cookie: $this->cookieFromResponse($response))
+            ->assertOk()
+            ->assertSee('AAA XX')
+            ->assertSee('background-color: #fd7e14;', false);
+    }
+
+    public function test_the_starter_guess_is_optional(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $type = $this->makeType($game);
+        $this->makeCombo($character, $type);
+
+        $response = $this->submitGuess($this->guessPayload($game, $character, $type));
+        $response->assertRedirect(route('comble.show'));
+
+        $this->showPage(cookie: $this->cookieFromResponse($response))
+            ->assertOk()
+            ->assertSee('You got it!');
+    }
+
     public function test_the_reveal_grows_with_each_guess(): void
     {
         $game = $this->makeGame();
@@ -327,6 +389,39 @@ class CombleTest extends TestCase
         $this->assertFalse($firstTokenAlwaysRevealed, 'expected at least one puzzle where the first token is not part of the reveal');
     }
 
+    /**
+     * The Starter field asks the player to guess the notation's first 6 raw
+     * characters, so the progressive reveal must never expose all of them
+     * itself — that would make the guess trivial. 'AAA BBB CCC DDD EEE FFF'
+     * [0:6] is 'AAA BB', spanning the 'AAA' and 'BBB' tokens entirely and
+     * partially respectively; both must never be revealed at the same time,
+     * at any guess count the reveal is actually used for (1 through 4 — at
+     * 5 the puzzle is finished and the real answer is shown in full anyway).
+     * This specific 6-token notation is deliberately chosen: without the
+     * starter-protecting reorder in CombleRevealer::revealOrder(), its
+     * hash-based scatter order happens to reveal both 'AAA' and 'BBB'
+     * together by guess 3, so this test would actually catch a regression
+     * (unlike a naively-picked example that might pass by pure luck of the
+     * hash ordering).
+     */
+    public function test_the_reveal_never_exposes_the_full_starter_answer_while_the_puzzle_is_in_progress(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $type = $this->makeType($game);
+        $notation = 'AAA BBB CCC DDD EEE FFF';
+        $this->makeCombo($character, $type, ['combo' => $notation]);
+
+        foreach ([1, 2, 3, 4] as $guessesMade) {
+            $html = app(\App\Services\CombleRevealer::class)->render($game, $notation, $guessesMade);
+
+            $this->assertFalse(
+                str_contains($html, 'AAA') && str_contains($html, 'BBB'),
+                "at guessesMade={$guessesMade}, the reveal exposed the full 6-character starter answer"
+            );
+        }
+    }
+
     private function makeGame(array $overrides = []): Game
     {
         return Game::create(array_merge([
@@ -357,14 +452,15 @@ class CombleTest extends TestCase
         ], $overrides));
     }
 
-    private function guessPayload(Game $game, Character $character, GameEntry $type, float $damage = 3000): array
+    private function guessPayload(Game $game, Character $character, GameEntry $type, float $damage = 3000, ?string $starter = null): array
     {
-        return [
+        return array_filter([
             'game_id' => $game->idgame,
             'character_id' => $character->idcharacter,
             'listing_type_id' => $type->entryid,
             'damage' => $damage,
-        ];
+            'starter' => $starter,
+        ], fn ($value) => $value !== null);
     }
 
     /**

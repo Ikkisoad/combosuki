@@ -37,11 +37,17 @@ class DiscordInteractionTest extends TestCase
         Cache::flush();
 
         // Comble sends a private follow-up (see
-        // DiscordInteractionController::postPrivateCombleFollowUp) on every
+        // DiscordInteractionController::syncPrivateCombleFollowUp) on every
         // command/guess; fake it globally so tests don't make real requests.
-        // Individual tests can still call Http::fake() again to add
-        // assertions of their own (e.g. the video follow-up test).
-        Http::fake(['discord.com/*' => Http::response([], 200)]);
+        // The response always carries an 'id', like Discord's real webhook
+        // message object, so that mechanism's cache-and-PATCH-on-next-guess
+        // behavior engages the same way it would in production.
+        //
+        // Http::fake() stub callbacks accumulate and the *first* registered
+        // one to return a non-null response wins — a test calling
+        // Http::fake() again for the same 'discord.com/*' pattern can add
+        // extra assertions, but can't override this default response body.
+        Http::fake(['discord.com/*' => Http::response(['id' => 'test-message-id'], 200)]);
     }
 
     private function postInteraction(array $payload): \Illuminate\Testing\TestResponse
@@ -460,6 +466,14 @@ class DiscordInteractionTest extends TestCase
         return [['type' => 1, 'components' => [['type' => 4, 'custom_id' => 'damage', 'value' => $value]]]];
     }
 
+    private function damageAndStarterModalRows(string $damage, string $starter): array
+    {
+        return [
+            ['type' => 1, 'components' => [['type' => 4, 'custom_id' => 'damage', 'value' => $damage]]],
+            ['type' => 1, 'components' => [['type' => 4, 'custom_id' => 'starter', 'value' => $starter]]],
+        ];
+    }
+
     public function test_combo_comble_starts_with_a_public_game_dropdown_and_no_notation_reveal(): void
     {
         $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
@@ -558,6 +572,83 @@ class DiscordInteractionTest extends TestCase
                 && str_contains($description, $character->name)
                 && str_contains($description, $game->name);
         });
+    }
+
+    public function test_combo_comble_records_an_optional_starter_guess(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Test Character', 'game_idgame' => $game->idgame]);
+        $type = GameEntry::create(['title' => 'Combo', 'gameid' => $game->idgame, 'order' => 1]);
+        Combo::create([
+            'combo' => 'AAA BBB CCC DDD EEE',
+            'character_idcharacter' => $character->idcharacter,
+            'type' => $type->entryid,
+            'damage' => 3000,
+        ]);
+
+        $owner = 'owner-1';
+        $stateRaw = 'g='.$game->idgame.';c='.$character->idcharacter.';t='.$type->entryid.';u='.$owner;
+
+        $result = $this->postModalSubmit('cb:dmgsubmit::'.$stateRaw, $this->damageAndStarterModalRows('3000', 'AAA BB'), $owner);
+        $result->assertOk()->assertJson(['type' => 7]);
+
+        // Private follow-up: shows the guessed starter text (never on the
+        // public message — see the no-notation-reveal test).
+        Http::assertSent(function ($request) {
+            $description = $request['embeds'][0]['description'] ?? '';
+
+            return $request->url() === 'https://discord.com/api/v10/webhooks/test-application-id/test-interaction-token'
+                && str_contains($description, 'AAA BB');
+        });
+    }
+
+    public function test_combo_comble_edits_the_same_private_message_instead_of_sending_a_new_one_per_guess(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Test Character', 'game_idgame' => $game->idgame]);
+        $wrongCharacter = Character::create(['name' => 'Wrong Character', 'game_idgame' => $game->idgame]);
+        $type = GameEntry::create(['title' => 'Combo', 'gameid' => $game->idgame, 'order' => 1]);
+        Combo::create([
+            'combo' => 'AAA BBB CCC DDD EEE',
+            'character_idcharacter' => $character->idcharacter,
+            'type' => $type->entryid,
+            'damage' => 3000,
+        ]);
+
+        $owner = 'owner-1';
+
+        // Starting the game sends the first (and only ever POSTed) private
+        // message; the fake response's 'id' (see setUp()) is what the guess
+        // below must reuse for a PATCH instead of another POST.
+        $this->postInteraction(array_merge([
+            'type' => 2,
+            'data' => ['name' => 'combo', 'options' => [['name' => 'comble']]],
+        ], $this->memberPayload($owner)))->assertOk();
+
+        $stateRaw = 'g='.$game->idgame.';c='.$wrongCharacter->idcharacter.';t='.$type->entryid.';u='.$owner;
+        $this->postModalSubmit('cb:dmgsubmit::'.$stateRaw, $this->damageModalRow('100'), $owner)->assertOk();
+
+        $requests = collect(Http::recorded())->map(fn ($pair) => $pair[0]);
+
+        // Laravel's test client reuses one Application instance across both
+        // postInteraction() calls above, and Application::terminate() never
+        // clears its terminating-callback list — so an afterResponse() job
+        // from the first call can end up re-invoked during the second call's
+        // termination too. That's a testing-only artifact (a real Discord
+        // interaction is its own PHP request/process in production), not a
+        // sign of duplicate messages: every one of those re-invocations
+        // still resolves the same cached id and PATCHes it, never POSTs
+        // again — which is exactly the guarantee this test cares about, so
+        // assert on that property rather than an exact call count.
+        $posts = $requests->filter(fn ($request) => $request->method() === 'POST');
+        $patches = $requests->filter(fn ($request) => $request->method() === 'PATCH');
+
+        $this->assertCount(1, $posts);
+        $this->assertTrue($patches->isNotEmpty(), 'expected at least one PATCH editing the existing private message');
+        $this->assertTrue(
+            $patches->every(fn ($request) => str_contains($request->url(), '/messages/test-message-id')),
+            'every PATCH should target the message created by the first guess'
+        );
     }
 
     public function test_combo_comble_rejects_a_non_numeric_damage_guess_without_recording_it(): void

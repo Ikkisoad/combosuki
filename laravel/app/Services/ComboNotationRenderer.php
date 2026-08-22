@@ -73,7 +73,10 @@ class ComboNotationRenderer
      * one of them is color-coded, so an uncoded modifier reads as part of
      * the colored move next to it (e.g. "5 LK" renders as "5LK"); a space is
      * kept between two colored tokens (distinct moves) and between two
-     * uncoded tokens.
+     * uncoded tokens. An uncoded token glued to a colored one this way
+     * (e.g. the "5" in "5LK") is painted with that neighbor's color too, so
+     * the whole glued unit reads as one move instead of part-white/part-
+     * colored (see propagatedColor()).
      */
     public function render(Game $game, string $notation): string
     {
@@ -82,7 +85,7 @@ class ComboNotationRenderer
         $html = '';
         $previousColored = null;
 
-        foreach ($tokens as $token) {
+        foreach ($tokens as $index => $token) {
             $isColored = $token['type'] === 'colored';
 
             if ($previousColored !== null && $previousColored === $isColored) {
@@ -90,15 +93,48 @@ class ComboNotationRenderer
             }
 
             $word = e($token['value']);
+            $color = $this->propagatedColor($tokens, $index);
 
-            $html .= $isColored
-                ? '<span style="color: '.e($token['color']).';">'.$word.'</span>'
+            $html .= $color !== null
+                ? '<span style="color: '.e($color).';">'.$word.'</span>'
                 : $word;
 
             $previousColored = $isColored;
         }
 
         return $html;
+    }
+
+    /**
+     * The color a token should render with, including propagation onto
+     * uncoded tokens that are glued to a colored neighbor (no space between
+     * them, per render()'s spacing rule). A colored token always uses its
+     * own color. An uncoded token prefers the color of the colored token
+     * that follows it — since a motion/modifier leads into the button after
+     * it, e.g. "2" in "2 LK" belongs to "LK" — and falls back to the
+     * colored token before it when there's no following one to glue to.
+     */
+    private function propagatedColor(array $tokens, int $index): ?string
+    {
+        $token = $tokens[$index];
+
+        if ($token['type'] === 'colored') {
+            return $token['color'];
+        }
+
+        $next = $tokens[$index + 1] ?? null;
+
+        if ($next && $next['type'] === 'colored') {
+            return $next['color'];
+        }
+
+        $previous = $tokens[$index - 1] ?? null;
+
+        if ($previous && $previous['type'] === 'colored') {
+            return $previous['color'];
+        }
+
+        return null;
     }
 
     private function matches(Button $button, string $word): bool

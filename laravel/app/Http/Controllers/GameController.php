@@ -10,9 +10,10 @@ use App\Models\GameEntry;
 use App\Models\GameResource;
 use App\Models\ListModel;
 use App\Models\ResourceValue;
-use App\Models\TierList;
+use App\Services\TierListAggregator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -76,7 +77,7 @@ class GameController extends Controller
         return redirect()->route('admin.game.edit', $game)->with('status', 'Game created! Finish setting it up below.');
     }
 
-    public function show(Game $game): View
+    public function show(Game $game, Request $request, TierListAggregator $tierListAggregator): View
     {
         $game->load(['links' => fn ($query) => $query->orderBy('Title')]);
 
@@ -106,11 +107,10 @@ class GameController extends Controller
             ->limit(10)
             ->get();
 
-        $tierLists = TierList::where('game_idgame', $game->idgame)
-            ->with('user')
-            ->orderByDesc('idtier_list')
-            ->limit(10)
-            ->get();
+        $tierFrom = $this->parseTierDate($request->input('tier_from'));
+        $tierTo = $this->parseTierDate($request->input('tier_to'));
+
+        $tierListAggregate = $tierListAggregator->aggregate($game, $tierFrom, $tierTo);
 
         return view('games.show', [
             'game' => $game,
@@ -119,8 +119,23 @@ class GameController extends Controller
             'listingTypes' => $listingTypes,
             'primaryResources' => $primaryResources,
             'guides' => $guides,
-            'tierLists' => $tierLists,
+            'tierListAggregate' => $tierListAggregate,
+            'tierFrom' => $request->input('tier_from'),
+            'tierTo' => $request->input('tier_to'),
         ]);
+    }
+
+    private function parseTierDate(?string $value): ?Carbon
+    {
+        if (! $value) {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($value);
+        } catch (\Exception) {
+            return null;
+        }
     }
 
 }

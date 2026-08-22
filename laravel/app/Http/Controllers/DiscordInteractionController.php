@@ -8,6 +8,7 @@ use App\Services\DiscordComboSearch;
 use App\Services\DiscordComboWizard;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 class DiscordInteractionController extends Controller
@@ -50,7 +51,7 @@ class DiscordInteractionController extends Controller
         if ($subcommand === 'comble') {
             $userId = $this->discordUserId($payload);
 
-            $this->deferPrivateCombleFollowUp($payload, $userId);
+            $this->syncPrivateCombleFollowUp($payload, $userId);
 
             return response()->json(['type' => 4, 'data' => $this->comble->start($userId)]);
         }
@@ -122,7 +123,7 @@ class DiscordInteractionController extends Controller
             try {
                 $publicData = $this->comble->handleModalSubmit($customId, $data['components'] ?? [], $userId);
 
-                $this->deferPrivateCombleFollowUp($payload, $userId);
+                $this->syncPrivateCombleFollowUp($payload, $userId);
 
                 return response()->json(['type' => 7, 'data' => $publicData]);
             } catch (DiscordInteractionUnauthorized $e) {
@@ -142,11 +143,20 @@ class DiscordInteractionController extends Controller
     }
 
     /**
-     * Queues $userId's full, named guess breakdown (DiscordCombleGame's
-     * privateSummary()) to be sent as a private (ephemeral) follow-up
-     * message, via the interaction's own webhook — no bot token needed,
-     * unlike DiscordComboSearch's video follow-up which posts as the bot
-     * into the channel.
+     * Keeps $userId's full, named guess breakdown (DiscordCombleGame's
+     * privateSummary()) in a single private (ephemeral) message that gets
+     * edited after every guess, rather than a new one being sent each time —
+     * players were otherwise accumulating one hidden message per guess.
+     *
+     * Discord scopes a followup message to whichever interaction token
+     * created it: a later interaction (each dropdown click/Modal submit gets
+     * its own fresh token) can't edit a message made with an earlier one
+     * directly, so the *creating* token and message id are cached (keyed by
+     * user) and reused for the PATCH on every subsequent guess. That cached
+     * token is only valid for Discord's normal 15-minute interaction-token
+     * window; if it's gone or Discord rejects the edit (e.g. expired), this
+     * falls back to posting a fresh message and re-caching it — so a stale
+     * cache degrades to "a new single message" rather than silently failing.
      *
      * Deferred with afterResponse() rather than sent inline: Discord expects
      * the *initial* response within 3 seconds, and this outbound HTTP call
@@ -157,7 +167,7 @@ class DiscordInteractionController extends Controller
      * already has the real response in hand, so the follow-up can be as
      * slow as it wants without threatening the interaction itself.
      */
-    private function deferPrivateCombleFollowUp(array $payload, string $userId): void
+    private function syncPrivateCombleFollowUp(array $payload, string $userId): void
     {
         $applicationId = $payload['application_id'] ?? config('services.discord.application_id');
         $token = $payload['token'] ?? null;
@@ -168,14 +178,37 @@ class DiscordInteractionController extends Controller
 
         dispatch(function () use ($applicationId, $token, $userId) {
             try {
-                Http::asJson()->timeout(5)->post(
+                $data = $this->comble->privateSummary($userId);
+                $cached = Cache::get($this->followUpCacheKey($userId));
+
+                if ($cached) {
+                    $edit = Http::asJson()->timeout(5)->patch(
+                        "https://discord.com/api/v10/webhooks/{$applicationId}/{$cached['token']}/messages/{$cached['message_id']}",
+                        $data
+                    );
+
+                    if ($edit->successful()) {
+                        return;
+                    }
+                }
+
+                $response = Http::asJson()->timeout(5)->post(
                     "https://discord.com/api/v10/webhooks/{$applicationId}/{$token}",
-                    $this->comble->privateSummary($userId)
+                    $data
                 );
+
+                if ($response->successful() && $messageId = $response->json('id')) {
+                    Cache::put($this->followUpCacheKey($userId), ['token' => $token, 'message_id' => $messageId], now()->addMinutes(15));
+                }
             } catch (\Throwable $e) {
                 report($e);
             }
         })->afterResponse();
+    }
+
+    private function followUpCacheKey(string $userId): string
+    {
+        return 'comble:discord:followup:'.$userId;
     }
 
     /**

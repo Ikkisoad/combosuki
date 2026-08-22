@@ -80,6 +80,7 @@ class CombleController extends Controller
                 Rule::exists('game_entry', 'entryid')->where('gameid', $request->input('game_id')),
             ],
             'damage' => ['required', 'numeric', 'min:0'],
+            'starter' => ['nullable', 'string', 'max:6'],
         ]);
 
         $picks[] = [
@@ -87,6 +88,7 @@ class CombleController extends Controller
             (int) $validated['character_id'],
             (int) $validated['listing_type_id'],
             (float) $validated['damage'],
+            $validated['starter'] ?? null,
         ];
 
         $cookiePayload = json_encode(['picks' => $picks]);
@@ -162,14 +164,15 @@ class CombleController extends Controller
             $character = Character::find($pick[1] ?? null);
             $listingType = GameEntry::find($pick[2] ?? null);
             $damage = isset($pick[3]) ? (float) $pick[3] : null;
+            $starter = $pick[4] ?? null;
 
             if (! $game || ! $character || ! $listingType) {
                 continue;
             }
 
             $guesses[] = array_merge(
-                ['game' => $game, 'character' => $character, 'listing_type' => $listingType, 'damage' => $damage],
-                $this->evaluator->evaluate($target, $game, $character, $listingType, $damage)
+                ['game' => $game, 'character' => $character, 'listing_type' => $listingType, 'damage' => $damage, 'starter' => $starter],
+                $this->evaluator->evaluate($target, $game, $character, $listingType, $damage, $starter)
             );
         }
 
@@ -186,6 +189,11 @@ class CombleController extends Controller
             $guess['game_correct'] ? '🟩' : '🟥',
             $guess['character_correct'] ? '🟩' : '🟥',
             $guess['type_correct'] ? '🟩' : '🟥',
+            match ($guess['starter_result']) {
+                'correct' => '🟩',
+                'partial' => '🟧',
+                default => '🟥',
+            },
             match ($guess['damage_hint']) {
                 'equal' => '🎯',
                 'higher' => '⬆️',
