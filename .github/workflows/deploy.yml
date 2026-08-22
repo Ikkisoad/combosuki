@@ -1,0 +1,114 @@
+name: Deploy to production
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  test:
+    name: PHP tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: laravel
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Copy .env
+        run: cp .env.example .env
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Generate app key
+        run: php artisan key:generate
+
+      - name: Run test suite
+        run: composer test
+
+  build:
+    name: Build frontend assets
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: laravel
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: laravel/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build assets
+        run: npm run build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-assets
+          path: laravel/public/build
+          retention-days: 1
+
+  deploy:
+    name: Deploy to production
+    needs: [test, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-assets
+          path: build-output
+
+      - name: Maintenance mode, git pull, composer install
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_SSH_HOST }}
+          port: ${{ secrets.DEPLOY_SSH_PORT }}
+          username: ${{ secrets.DEPLOY_SSH_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            set -e
+            cd ${{ secrets.DEPLOY_PATH }}/laravel
+            php artisan down --secret="${{ secrets.DEPLOY_MAINTENANCE_SECRET }}"
+            cd ${{ secrets.DEPLOY_PATH }}
+            git pull origin master
+            cd laravel
+            composer install --no-dev --optimize-autoloader --no-interaction
+
+      - name: Ship built frontend assets
+        uses: burnett01/rsync-deployments@7.0.2
+        with:
+          switches: -avzr --delete
+          path: build-output/
+          remote_path: ${{ secrets.DEPLOY_PATH }}/laravel/public/build/
+          remote_host: ${{ secrets.DEPLOY_SSH_HOST }}
+          remote_port: ${{ secrets.DEPLOY_SSH_PORT }}
+          remote_user: ${{ secrets.DEPLOY_SSH_USER }}
+          remote_key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+      - name: Migrate, cache, Discord commands, exit maintenance
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_SSH_HOST }}
+          port: ${{ secrets.DEPLOY_SSH_PORT }}
+          username: ${{ secrets.DEPLOY_SSH_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            set -e
+            cd ${{ secrets.DEPLOY_PATH }}/laravel
+            php artisan migrate --force
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            php artisan discord:register-commands
+            php artisan up
