@@ -48,7 +48,6 @@
                     <th>Character</th>
                     <th>Inputs</th>
                     <th>Damage</th>
-                    <th>Author</th>
                     @foreach ($primaryResources as $resource)
                         <th>{{ $resource->text_name }}</th>
                         @if ($resource->type === 3)
@@ -75,7 +74,6 @@
                             @endif
                         </td>
                         <td>{{ number_format((float) $combo->damage, 0, '', '.') }}</td>
-                        <td>{{ $combo->user?->nickname ?? 'Anonymous' }}</td>
                         @php
                             $comboResourcesByGameResource = $combo->resources->groupBy(fn ($r) => $r->resourceValue?->game_resources_idgame_resources);
                         @endphp

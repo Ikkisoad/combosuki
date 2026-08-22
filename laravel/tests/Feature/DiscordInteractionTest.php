@@ -460,7 +460,7 @@ class DiscordInteractionTest extends TestCase
         return [['type' => 1, 'components' => [['type' => 4, 'custom_id' => 'damage', 'value' => $value]]]];
     }
 
-    public function test_combo_comble_starts_with_a_public_game_dropdown_and_the_hidden_reveal(): void
+    public function test_combo_comble_starts_with_a_public_game_dropdown_and_no_notation_reveal(): void
     {
         $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
         $character = Character::create(['name' => 'Test Character', 'game_idgame' => $game->idgame]);
@@ -483,8 +483,12 @@ class DiscordInteractionTest extends TestCase
         $this->assertNull($response->json('data.flags'));
         $this->assertSame('cb:game::u=owner-1', $response->json('data.components.0.components.0.custom_id'));
         $this->assertContains((string) $game->idgame, array_column($response->json('data.components.0.components.0.options'), 'value'));
-        $this->assertStringContainsString('▁', $response->json('data.embeds.0.description'));
-        $this->assertStringNotContainsString('AAA', $response->json('data.embeds.0.description'));
+
+        // The notation reveal itself is a spoiler and never appears on the
+        // public message — not even the hidden-token blocks.
+        $description = $response->json('data.embeds.0.description');
+        $this->assertStringNotContainsString('AAA', $description);
+        $this->assertStringNotContainsString('▁', $description);
     }
 
     public function test_combo_comble_full_flow_records_a_winning_guess(): void
@@ -525,31 +529,32 @@ class DiscordInteractionTest extends TestCase
         $result = $this->postModalSubmit($modalCustomId, $this->damageModalRow('3000'), $owner);
         $result->assertOk()->assertJson(['type' => 7]);
 
-        // Public message: progress only — no guessed names, and (since this
-        // guess won) not the answer either, so it doesn't spoil the puzzle
-        // for anyone else watching who hasn't played yet.
+        // Public message: progress only — no notation reveal, no guessed
+        // names, and (since this guess won) not the answer either, so it
+        // doesn't spoil the puzzle for anyone else watching who hasn't
+        // played yet.
         $description = $result->json('data.embeds.0.description');
         $this->assertStringContainsString('You got it!', $description);
-        // The reveal is scattered across the combo's tokens (not always the
-        // first one), so check that some token is revealed rather than
-        // asserting a specific one.
-        $this->assertTrue(
-            collect(['AAA', 'BBB', 'CCC', 'DDD', 'EEE'])->contains(fn ($token) => str_contains($description, $token)),
-            'expected at least one combo token to be revealed'
-        );
+        foreach (['AAA', 'BBB', 'CCC', 'DDD', 'EEE', '▁'] as $spoiler) {
+            $this->assertStringNotContainsString($spoiler, $description);
+        }
         $this->assertStringNotContainsString($character->name, $description);
         $this->assertStringNotContainsString($game->name, $description);
 
         // Finished: the game dropdown is replaced with a link button.
         $this->assertSame(5, $result->json('data.components.0.components.0.style'));
 
-        // Private follow-up: the same guess, but with names and the answer.
+        // Private follow-up: the same guess, with the full reveal, names, and
+        // the answer. The revealed token is scattered across the combo's
+        // notation (not always the first one), so check that some token
+        // shows up rather than asserting a specific one.
         Http::assertSent(function ($request) use ($character, $game) {
             $description = $request['embeds'][0]['description'] ?? '';
 
             return $request->url() === 'https://discord.com/api/v10/webhooks/test-application-id/test-interaction-token'
                 && $request['flags'] === 64
                 && str_contains($description, 'You got it!')
+                && collect(['AAA', 'BBB', 'CCC', 'DDD', 'EEE'])->contains(fn ($token) => str_contains($description, $token))
                 && str_contains($description, $character->name)
                 && str_contains($description, $game->name);
         });

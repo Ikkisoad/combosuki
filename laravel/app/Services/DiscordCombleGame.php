@@ -211,14 +211,15 @@ class DiscordCombleGame
     }
 
     /**
-     * The shared, public message: reveal progress, remaining-guess count,
-     * and one row of squares per guess — never a guessed name or (once
-     * finished) the answer, so it doesn't spoil the puzzle for anyone
-     * watching who hasn't played yet.
+     * The shared, public message: remaining-guess count and one row of
+     * squares per guess — never the revealed notation, a guessed name, or
+     * (once finished) the answer, so it doesn't spoil the puzzle for anyone
+     * watching who hasn't played yet. The notation reveal is for the player
+     * alone — see privateSummary().
      */
     private function publicStatus(string $userId, ?string $error = null): array
     {
-        ['day' => $day, 'game' => $game, 'target' => $target, 'guesses' => $guesses, 'won' => $won, 'finished' => $finished] = $this->progress($userId);
+        ['day' => $day, 'guesses' => $guesses, 'won' => $won, 'finished' => $finished] = $this->progress($userId);
 
         $lines = [];
 
@@ -227,8 +228,6 @@ class DiscordCombleGame
             $lines[] = '';
         }
 
-        $lines[] = '```'.$this->revealer->renderPlain($game, $target->combo, count($guesses)).'```';
-        $lines[] = '';
         $lines[] = $this->remainingLine($won, $finished, count($guesses));
 
         foreach ($guesses as $index => $guess) {

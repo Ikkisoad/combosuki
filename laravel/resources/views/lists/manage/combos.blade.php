@@ -109,7 +109,6 @@
                             <th>Character</th>
                             <th>Inputs</th>
                             <th>Damage</th>
-                            <th>Author</th>
                         </tr>
                         @foreach ($combos as $combo)
                             <tr>
@@ -117,7 +116,6 @@
                                 <td>{{ $combo->character->name }}</td>
                                 <td style="min-width:400px"><x-combo-link :combo="$combo" /></td>
                                 <td>{{ number_format((float) $combo->damage, 0, '', '.') }}</td>
-                                <td>{{ $combo->user?->nickname ?? 'Anonymous' }}</td>
                             </tr>
                         @endforeach
                     </table>

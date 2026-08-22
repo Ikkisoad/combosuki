@@ -131,7 +131,6 @@
                                     <th>Inputs</th>
                                     <th>Damage</th>
                                     <th>Type</th>
-                                    <th>Author</th>
                                     <th>Submitted</th>
                                 </tr>
                                 @foreach ($latestCombos as $combo)
@@ -154,7 +153,6 @@
                                         </td>
                                         <td>{{ number_format((float) $combo->damage, 0, '', '.') }}</td>
                                         <td>{{ $combo->listingType?->title }}</td>
-                                        <td>{{ $combo->user?->nickname ?? 'Anonymous' }}</td>
                                         <td>{{ $combo->submited?->format('d-m-y') }}</td>
                                     </tr>
                                 @endforeach

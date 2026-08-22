@@ -64,7 +64,6 @@
                             <th>Inputs</th>
                             <th>Damage</th>
                             <th>Type</th>
-                            <th>Author</th>
                         </tr>
                         @foreach ($combos as $combo)
                             <tr>
@@ -86,7 +85,6 @@
                                 </td>
                                 <td>{{ number_format((float) $combo->damage, 0, '', '.') }}</td>
                                 <td>{{ $combo->listingType?->title }}</td>
-                                <td>{{ $combo->user?->nickname ?? 'Anonymous' }}</td>
                             </tr>
                         @endforeach
                     </table>
