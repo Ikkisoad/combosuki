@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Concerns;
 
 use App\Models\Combo;
 use App\Models\Game;
+use App\Models\GameEntry;
 use App\Models\GameResource;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -38,6 +39,93 @@ trait FiltersCombos
         $this->applyOrdering($query, $request);
 
         return $query->limit($limit)->get();
+    }
+
+    /**
+     * Turn a $filters map (same shape searchCombos()/applyFilters() take)
+     * into a list of plain-English criteria strings, e.g. "Starts with 2LK",
+     * "Meter: 1 bar" — so callers can show searchers/challengers exactly
+     * what a combo must satisfy to count, instead of relying on a free-text
+     * label to convey it accurately. 'characterid' is intentionally not
+     * described here since every caller already shows the character by name
+     * alongside the query.
+     */
+    private function describeFilters(Game $game, array $filters): array
+    {
+        $descriptions = [];
+
+        if (($filters['combo'] ?? '') !== '') {
+            $value = $filters['combo'];
+
+            $descriptions[] = match ((int) ($filters['combolike'] ?? 0)) {
+                1 => "Ends with \"{$value}\"",
+                2 => "Contains \"{$value}\"",
+                3 => "Does not contain \"{$value}\"",
+                default => "Starts with \"{$value}\"",
+            };
+        }
+
+        if (($filters['damage'] ?? '') !== '') {
+            $descriptions[] = 'Damage ≤ '.$filters['damage'];
+        }
+
+        if (($filters['patch'] ?? '') !== '') {
+            $descriptions[] = 'Patch: '.$filters['patch'];
+        }
+
+        foreach (array_filter(explode('#', (string) ($filters['comments'] ?? ''))) as $piece) {
+            $descriptions[] = "Comments mention \"{$piece}\"";
+        }
+
+        foreach (array_filter(explode('#', (string) ($filters['notcomments'] ?? ''))) as $piece) {
+            $descriptions[] = "Comments don't mention \"{$piece}\"";
+        }
+
+        if ($filters['novideo'] ?? false) {
+            $descriptions[] = 'No video';
+        } elseif (($filters['video'] ?? '') !== '') {
+            $descriptions[] = "Video mentions \"{$filters['video']}\"";
+        }
+
+        if (($filters['listingtype'] ?? '-') !== '-' && ($filters['listingtype'] ?? '') !== '') {
+            $title = GameEntry::where('gameid', $game->idgame)->where('entryid', $filters['listingtype'])->value('title');
+            $descriptions[] = 'Type: '.($title ?? $filters['listingtype']);
+        }
+
+        $primaryResources = GameResource::where('game_idgame', $game->idgame)
+            ->where('primaryORsecundary', 1)
+            ->with('values')
+            ->get();
+
+        foreach ($primaryResources as $resource) {
+            $field = str_replace(' ', '_', $resource->text_name);
+            $value = $filters[$field] ?? null;
+
+            if ($resource->type === 1) {
+                if ($value !== null && $value !== '' && $value !== '-') {
+                    $label = $resource->values->firstWhere('idResources_values', (int) $value)?->value ?? $value;
+                    $descriptions[] = "{$resource->text_name}: {$label}";
+                }
+            } elseif ($resource->type === 2) {
+                if ($value !== null && $value !== '' && $value !== '-') {
+                    $operator = match ((int) ($filters[$field.'compare'] ?? 0)) {
+                        2 => '=',
+                        1 => '≥',
+                        default => '≤',
+                    };
+                    $descriptions[] = "{$resource->text_name} {$operator} {$value}";
+                }
+            } elseif ($resource->type === 3) {
+                $values = array_values(array_filter((array) $value, fn ($v) => $v !== null && $v !== '' && $v !== '-'));
+
+                if ($values !== []) {
+                    $labels = collect($values)->map(fn ($v) => $resource->values->firstWhere('idResources_values', (int) $v)?->value ?? $v);
+                    $descriptions[] = "{$resource->text_name}: ".$labels->implode(', ');
+                }
+            }
+        }
+
+        return $descriptions;
     }
 
     private function applyFilters(Builder $query, Request $request, $primaryResources): void

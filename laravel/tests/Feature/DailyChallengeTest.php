@@ -99,6 +99,23 @@ class DailyChallengeTest extends TestCase
             ->assertSee('be the first to submit one');
     }
 
+    public function test_the_querys_actual_filter_criteria_are_spelled_out(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $this->makeQuery($game, '2LK starter, no meter', [
+            'combo' => '2LK',
+            'combolike' => 0,
+            'damage' => '1000',
+        ]);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('Character: '.$character->name)
+            ->assertSee('Starts with &quot;2LK&quot;', false)
+            ->assertSee('Damage ≤ 1000', false);
+    }
+
     private function makeGame(array $overrides = []): Game
     {
         return Game::create(array_merge([
@@ -113,12 +130,12 @@ class DailyChallengeTest extends TestCase
         return Character::create(['name' => $name, 'game_idgame' => $game->idgame]);
     }
 
-    private function makeQuery(Game $game, string $label = 'Random Assist 1'): CharacterQuery
+    private function makeQuery(Game $game, string $label = 'Random Assist 1', array $filters = []): CharacterQuery
     {
         return CharacterQuery::create([
             'game_idgame' => $game->idgame,
             'label' => $label,
-            'filters' => [],
+            'filters' => $filters,
             'order' => 0,
         ]);
     }

@@ -26,7 +26,7 @@
                 <label class="input-group-text">Character:</label>
                 <select name="character_idcharacter" class="form-select" required>
                     @foreach ($characters as $character)
-                        <option value="{{ $character->idcharacter }}" @selected(old('character_idcharacter') == $character->idcharacter)>{{ $character->name }}</option>
+                        <option value="{{ $character->idcharacter }}" @selected(old('character_idcharacter', $defaults['character_idcharacter'] ?? null) == $character->idcharacter)>{{ $character->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -35,7 +35,7 @@
                 <label class="input-group-text">Type:</label>
                 <select name="listingtype" class="form-select" required>
                     @foreach ($listingTypes as $entry)
-                        <option value="{{ $entry->entryid }}" @selected(old('listingtype') == $entry->entryid)>{{ $entry->title }}</option>
+                        <option value="{{ $entry->entryid }}" @selected(old('listingtype', $defaults['listingtype'] ?? null) == $entry->entryid)>{{ $entry->title }}</option>
                     @endforeach
                 </select>
             </div>
@@ -48,7 +48,7 @@
             </div>
 
             <textarea name="combo" class="form-control" id="comboarea" rows="4"
-                      placeholder="{{ $game->notation }}" required>{{ old('combo') }}</textarea>
+                      placeholder="{{ $game->notation }}" required>{{ old('combo', $defaults['combo'] ?? '') }}</textarea>
 
             <a href="https://github.com/Ikkisoad/combosuki/issues" target="_blank">Is something missing?</a>
 
@@ -56,13 +56,13 @@
                 <div class="col">
                     <div class="input-group mb-3">
                         <span class="input-group-text">Damage:</span>
-                        <input class="form-control" type="number" name="damage" min="0" value="{{ old('damage') }}">
+                        <input class="form-control" type="number" name="damage" min="0" value="{{ old('damage', $defaults['damage'] ?? '') }}">
                     </div>
                 </div>
                 <div class="col">
                     <div class="input-group mb-3">
                         <span class="input-group-text">Patch:</span>
-                        <input type="text" name="patch" class="form-control" value="{{ old('patch', $game->patch) }}">
+                        <input type="text" name="patch" class="form-control" value="{{ old('patch', $defaults['patch'] ?? $game->patch) }}">
                     </div>
                 </div>
             </div>
@@ -77,7 +77,7 @@
                                     <select name="resources[{{ $resource->idgame_resources }}]" class="form-select">
                                         <option value="-">-</option>
                                         @foreach ($resource->values->sortBy('order') as $value)
-                                            <option value="{{ $value->idResources_values }}">{{ $value->value }}</option>
+                                            <option value="{{ $value->idResources_values }}" @selected(old("resources.{$resource->idgame_resources}", $defaults['resources'][$resource->idgame_resources] ?? null) == $value->idResources_values)>{{ $value->value }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -86,7 +86,8 @@
                                 <div class="input-group mb-3 flex-nowrap">
                                     <span class="input-group-text">{{ $resource->text_name }}</span>
                                     <input class="form-control" type="number" name="resources[{{ $resource->idgame_resources }}]"
-                                           max="{{ $bound }}" min="-{{ $bound }}" step="any">
+                                           max="{{ $bound }}" min="-{{ $bound }}" step="any"
+                                           value="{{ old("resources.{$resource->idgame_resources}", $defaults['resources'][$resource->idgame_resources] ?? '') }}">
                                 </div>
                             @endif
                         </div>
@@ -105,7 +106,7 @@
                                     <select name="resources[{{ $resource->idgame_resources }}]" class="form-select">
                                         <option value="-">-</option>
                                         @foreach ($resource->values->sortBy('order') as $value)
-                                            <option value="{{ $value->idResources_values }}">{{ $value->value }}</option>
+                                            <option value="{{ $value->idResources_values }}" @selected(old("resources.{$resource->idgame_resources}", $defaults['resources'][$resource->idgame_resources] ?? null) == $value->idResources_values)>{{ $value->value }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -114,7 +115,8 @@
                                 <div class="input-group mb-3 flex-nowrap">
                                     <span class="input-group-text">{{ $resource->text_name }}</span>
                                     <input class="form-control" type="number" name="resources[{{ $resource->idgame_resources }}]"
-                                           max="{{ $bound }}" min="-{{ $bound }}" step="any">
+                                           max="{{ $bound }}" min="-{{ $bound }}" step="any"
+                                           value="{{ old("resources.{$resource->idgame_resources}", $defaults['resources'][$resource->idgame_resources] ?? '') }}">
                                 </div>
                             @endif
                         </div>
@@ -125,11 +127,11 @@
             <div class="row">
                 <div class="col">
                     <label>Comments:</label>
-                    <textarea name="comments" class="form-control" placeholder="Comments like: Corner only, universal, etc... are recommended to make it easier to search specific situations.">{{ old('comments') }}</textarea>
+                    <textarea name="comments" class="form-control" placeholder="Comments like: Corner only, universal, etc... are recommended to make it easier to search specific situations.">{{ old('comments', $defaults['comments'] ?? '') }}</textarea>
 
                     <label class="mt-2">Video:</label>
                     <textarea name="video" class="form-control" rows="1" maxlength="255"
-                              placeholder="Currently supports YouTube, Twitter/X, Streamable, Twitch clips, Imgur, Niconico, Gfycat and MedalTv.">{{ old('video') }}</textarea>
+                              placeholder="Currently supports YouTube, Twitter/X, Streamable, Twitch clips, Imgur, Niconico, Gfycat and MedalTv.">{{ old('video', $defaults['video'] ?? '') }}</textarea>
                 </div>
             </div>
 

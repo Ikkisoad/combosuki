@@ -41,7 +41,7 @@ class DailyChallenge
             ]);
 
         if ($pairs->isEmpty()) {
-            return ['query' => null, 'character' => null, 'combo' => null];
+            return ['query' => null, 'character' => null, 'combo' => null, 'criteria' => []];
         }
 
         $seed = hexdec(substr(hash('sha256', $date->toDateString()), 0, 8));
@@ -52,7 +52,8 @@ class DailyChallenge
 
         $filters = array_merge($query->filters ?? [], ['characterid' => $character->idcharacter]);
         $combo = $this->searchCombos($character->game, $filters, 1)->first();
+        $criteria = $this->describeFilters($character->game, $query->filters ?? []);
 
-        return compact('query', 'character', 'combo');
+        return compact('query', 'character', 'combo', 'criteria');
     }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Concerns\FiltersCombos;
 use App\Http\Requests\StoreComboRequest;
 use App\Http\Requests\UpdateComboRequest;
 use App\Models\Character;
+use App\Models\CharacterQuery;
 use App\Models\Combo;
 use App\Models\Game;
 use App\Models\GameEntry;
@@ -109,7 +110,7 @@ class ComboController extends Controller
         ]);
     }
 
-    public function create(Game $game): View
+    public function create(Game $game, Request $request): View
     {
         $characters = Character::where('game_idgame', $game->idgame)->orderBy('name')->get();
 
@@ -127,7 +128,77 @@ class ComboController extends Controller
             'characters' => $characters,
             'listingTypes' => $listingTypes,
             'resources' => $resources,
+            'defaults' => $this->defaultsFromChallenge($game, $resources, $request),
         ]);
+    }
+
+    /**
+     * When arriving from the home page's daily challenge ("be the first to
+     * submit one!"), `query`/`characterid` identify which CharacterQuery and
+     * character the visitor was just shown, so the form can start pre-filled
+     * with that query's own filters instead of leaving the visitor to guess
+     * how to satisfy it. Absent those params (the normal "Submit a combo"
+     * entry point), this returns no defaults and the form behaves as before.
+     */
+    private function defaultsFromChallenge(Game $game, iterable $resources, Request $request): array
+    {
+        $characterQuery = CharacterQuery::where('game_idgame', $game->idgame)
+            ->where('idquery', $request->input('query'))
+            ->first();
+
+        if (! $characterQuery) {
+            return [];
+        }
+
+        $filters = $characterQuery->filters ?? [];
+        $defaults = [];
+
+        if ($request->filled('characterid')) {
+            $defaults['character_idcharacter'] = $request->integer('characterid');
+        }
+
+        if (($filters['listingtype'] ?? '-') !== '-' && ($filters['listingtype'] ?? '') !== '') {
+            $defaults['listingtype'] = $filters['listingtype'];
+        }
+
+        // Only the "starts with" mode maps onto a single textarea value; for
+        // contains/ends-with/not-contains the required text could belong
+        // anywhere, so prefilling it as a literal prefix would mislead more
+        // than it helps.
+        if ((int) ($filters['combolike'] ?? 0) === 0 && ($filters['combo'] ?? '') !== '') {
+            $defaults['combo'] = $filters['combo'];
+        }
+
+        if (($filters['damage'] ?? '') !== '') {
+            $defaults['damage'] = $filters['damage'];
+        }
+
+        if (($filters['patch'] ?? '') !== '') {
+            $defaults['patch'] = $filters['patch'];
+        }
+
+        $commentPieces = array_filter(explode('#', (string) ($filters['comments'] ?? '')));
+
+        if ($commentPieces !== []) {
+            $defaults['comments'] = implode(', ', $commentPieces);
+        }
+
+        if (! ($filters['novideo'] ?? false) && ($filters['video'] ?? '') !== '') {
+            $defaults['video'] = $filters['video'];
+        }
+
+        foreach ($resources as $resource) {
+            $field = str_replace(' ', '_', $resource->text_name);
+            $value = $filters[$field] ?? null;
+
+            if ($value === null || $value === '' || $value === '-') {
+                continue;
+            }
+
+            $defaults['resources'][$resource->idgame_resources] = $value;
+        }
+
+        return $defaults;
     }
 
     public function store(StoreComboRequest $request, Game $game): RedirectResponse

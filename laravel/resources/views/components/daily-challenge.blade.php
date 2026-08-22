@@ -4,12 +4,21 @@
     $query = $challenge['query'];
     $character = $challenge['character'];
     $combo = $challenge['combo'];
+    $criteria = $challenge['criteria'] ?? [];
 @endphp
 
 @if (! $query || ! $character)
     <p>No challenge is available yet &mdash; check back once some default queries are configured.</p>
 @else
     <h3 class="mt-0">{{ $character->game->name }} &mdash; {{ $character->name }} &mdash; {{ $query->label }}</h3>
+
+    <p class="mb-1">A qualifying combo must satisfy:</p>
+    <ul class="mb-2">
+        <li>Character: {{ $character->name }}</li>
+        @foreach ($criteria as $criterion)
+            <li>{{ $criterion }}</li>
+        @endforeach
+    </ul>
 
     @if ($combo)
         <table class="table table-hover align-middle caption-top text-white">
@@ -40,6 +49,6 @@
         </table>
         <p>Think you can do better? <a href="{{ route('characters.show', [$character->game, $character]) }}" class="link-light">Go beat it &rarr;</a></p>
     @else
-        <p>No combo found for this challenge yet &mdash; <a href="{{ route('games.combos.create', $character->game) }}" class="link-light">be the first to submit one!</a></p>
+        <p>No combo found for this challenge yet &mdash; <a href="{{ route('games.combos.create', $character->game) }}?query={{ $query->idquery }}&characterid={{ $character->idcharacter }}" class="link-light">be the first to submit one!</a></p>
     @endif
 @endif

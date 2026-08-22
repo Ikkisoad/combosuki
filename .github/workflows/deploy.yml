@@ -115,7 +115,11 @@ jobs:
             set -e
             cd ${{ secrets.DEPLOY_PATH }}/laravel
             php artisan migrate --force
-            php artisan storage:link
+            LINK="$(php -r 'require "vendor/autoload.php"; echo (require "bootstrap/app.php")->publicPath("storage");')"
+            TARGET="$(php -r 'require "vendor/autoload.php"; echo (require "bootstrap/app.php")->storagePath("app/public");')"
+            mkdir -p "$TARGET" "$(dirname "$LINK")"
+            if [ -L "$LINK" ]; then rm -f "$LINK"; fi
+            if [ -e "$LINK" ]; then echo "storage link path exists as a real directory, leaving it alone"; else ln -s "$TARGET" "$LINK"; fi
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
