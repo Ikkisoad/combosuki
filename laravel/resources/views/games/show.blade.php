@@ -163,23 +163,7 @@
 
                     <div class="tab-pane fade" id="guides-pane" role="tabpanel" aria-labelledby="guides-tab">
                         <h4 class="mb-2">Guides</h4>
-                        @if ($guides->isEmpty())
-                            <p>No guides for this game yet.</p>
-                        @else
-                            <table class="table table-hover align-middle">
-                                <tr>
-                                    <th>Title</th>
-                                    <th>Author</th>
-                                </tr>
-                                @foreach ($guides as $guide)
-                                    <tr>
-                                        <td><a href="{{ route('lists.show', $guide) }}" class="text-white">{{ $guide->list_name }}</a></td>
-                                        <td>{{ $guide->user?->nickname ?? 'Anonymous' }}</td>
-                                    </tr>
-                                @endforeach
-                            </table>
-                        @endif
-                        <a href="{{ route('lists.search', ['game_idgame' => $game->idgame]) }}" class="link-light">View all guides &rarr;</a>
+                        <div id="guides-results" data-endpoint="{{ route('games.tabs.guides', $game) }}"></div>
                     </div>
 
                     <div class="tab-pane fade" id="tier-lists-pane" role="tabpanel" aria-labelledby="tier-lists-tab">
@@ -188,7 +172,7 @@
                             <a href="{{ route('tier-lists.create') }}" class="btn btn-primary btn-sm">Make a Tier List</a>
                         </div>
 
-                        <form method="get" action="{{ route('games.show', $game) }}" class="row g-2 align-items-end mb-3" id="tier-date-range-form">
+                        <form class="row g-2 align-items-end mb-3" id="tier-date-range-form">
                             <div class="col-auto">
                                 <label for="tier_from" class="form-label small mb-0">From</label>
                                 <input type="date" id="tier_from" name="tier_from" value="{{ $tierFrom }}" class="form-control form-control-sm">
@@ -199,35 +183,11 @@
                             </div>
                             <div class="col-auto">
                                 <button type="submit" class="btn btn-info btn-sm">Filter</button>
-                                @if ($tierFrom || $tierTo)
-                                    <a href="{{ route('games.show', $game) }}#tier-lists-pane" class="btn btn-outline-light btn-sm" id="tier-date-range-reset">Reset</a>
-                                @endif
+                                <button type="button" class="btn btn-outline-light btn-sm" id="tier-date-range-reset">Reset</button>
                             </div>
                         </form>
 
-                        @if ($tierListAggregate['tierListCount'] === 0)
-                            <p>No tier lists for this game yet in the selected range.</p>
-                        @else
-                            <p class="text-white-50 small">Median of {{ $tierListAggregate['tierListCount'] }} community tier {{ \Illuminate\Support\Str::plural('list', $tierListAggregate['tierListCount']) }}.</p>
-
-                            @foreach (['S', 'A', 'B', 'C', 'D', 'F'] as $tier)
-                                <div class="tier-row d-flex align-items-stretch mb-2">
-                                    <div class="tier-label tier-{{ strtolower($tier) }} d-flex align-items-center justify-content-center fw-bold">{{ $tier }}</div>
-                                    <div class="tier-dropzone flex-grow-1 d-flex flex-wrap gap-2 p-2">
-                                        @forelse ($tierListAggregate['tiers'][$tier] as $entry)
-                                            <div class="character-card" title="{{ $entry['votes'] }} {{ \Illuminate\Support\Str::plural('vote', $entry['votes']) }}">
-                                                @if ($entry['character']->image)
-                                                    <img src="{{ \Illuminate\Support\Facades\Storage::url($entry['character']->image) }}" alt="{{ $entry['character']->name }}">
-                                                @endif
-                                                <div class="small text-center">{{ $entry['character']->name }}</div>
-                                            </div>
-                                        @empty
-                                            <span class="text-white-50 small">&mdash;</span>
-                                        @endforelse
-                                    </div>
-                                </div>
-                            @endforeach
-                        @endif
+                        <div id="tier-lists-results" data-endpoint="{{ route('games.tabs.tier-lists', $game) }}"></div>
 
                         <a href="{{ route('tier-lists.index', ['game_idgame' => $game->idgame]) }}" class="link-light">View all tier lists &rarr;</a>
                     </div>
@@ -236,14 +196,55 @@
         </div>
     </div>
 
-    @if ($tierFrom || $tierTo)
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                var tabButton = document.getElementById('tier-lists-tab');
-                var tabPane = document.getElementById('tier-lists-pane');
-                if (!tabButton || !tabPane) {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var guidesTabButton = document.getElementById('guides-tab');
+            var guidesResults = document.getElementById('guides-results');
+            var tierListsTabButton = document.getElementById('tier-lists-tab');
+            var tierListsPane = document.getElementById('tier-lists-pane');
+            var tierResults = document.getElementById('tier-lists-results');
+            var tierForm = document.getElementById('tier-date-range-form');
+            var tierFromInput = document.getElementById('tier_from');
+            var tierToInput = document.getElementById('tier_to');
+            var tierResetButton = document.getElementById('tier-date-range-reset');
+
+            function loadGuides() {
+                if (guidesResults.dataset.loaded === '1') {
                     return;
                 }
+                guidesResults.innerHTML = '<p class="text-white-50">Loading&hellip;</p>';
+                fetch(guidesResults.dataset.endpoint)
+                    .then(function (response) { return response.text(); })
+                    .then(function (html) {
+                        guidesResults.innerHTML = html;
+                        guidesResults.dataset.loaded = '1';
+                    })
+                    .catch(function () {
+                        guidesResults.innerHTML = '<p class="text-danger">Failed to load guides.</p>';
+                    });
+            }
+
+            function loadTierLists() {
+                var params = new URLSearchParams();
+                if (tierFromInput.value) {
+                    params.set('tier_from', tierFromInput.value);
+                }
+                if (tierToInput.value) {
+                    params.set('tier_to', tierToInput.value);
+                }
+                tierResults.innerHTML = '<p class="text-white-50">Loading&hellip;</p>';
+                fetch(tierResults.dataset.endpoint + '?' + params.toString())
+                    .then(function (response) { return response.text(); })
+                    .then(function (html) {
+                        tierResults.innerHTML = html;
+                        tierResults.dataset.loaded = '1';
+                    })
+                    .catch(function () {
+                        tierResults.innerHTML = '<p class="text-danger">Failed to load tier lists.</p>';
+                    });
+            }
+
+            function activateTab(tabButton, pane) {
                 document.querySelectorAll('#game-tabs .nav-link').forEach(function (el) {
                     el.classList.remove('active');
                     el.setAttribute('aria-selected', 'false');
@@ -253,8 +254,33 @@
                 });
                 tabButton.classList.add('active');
                 tabButton.setAttribute('aria-selected', 'true');
-                tabPane.classList.add('show', 'active');
+                pane.classList.add('show', 'active');
+            }
+
+            guidesTabButton.addEventListener('shown.bs.tab', loadGuides);
+
+            tierListsTabButton.addEventListener('shown.bs.tab', function () {
+                if (tierResults.dataset.loaded !== '1') {
+                    loadTierLists();
+                }
             });
-        </script>
-    @endif
+
+            tierForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+                loadTierLists();
+            });
+
+            tierResetButton.addEventListener('click', function () {
+                tierFromInput.value = '';
+                tierToInput.value = '';
+                loadTierLists();
+            });
+
+            var params = new URLSearchParams(window.location.search);
+            if (params.has('tier_from') || params.has('tier_to')) {
+                activateTab(tierListsTabButton, tierListsPane);
+                loadTierLists();
+            }
+        });
+    </script>
 </x-layouts.app>

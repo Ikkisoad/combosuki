@@ -77,7 +77,7 @@ class GameController extends Controller
         return redirect()->route('admin.game.edit', $game)->with('status', 'Game created! Finish setting it up below.');
     }
 
-    public function show(Game $game, Request $request, TierListAggregator $tierListAggregator): View
+    public function show(Game $game, Request $request): View
     {
         $game->load(['links' => fn ($query) => $query->orderBy('Title')]);
 
@@ -101,28 +101,36 @@ class GameController extends Controller
             ->orderBy('text_name')
             ->get();
 
-        $guides = ListModel::where('game_idgame', $game->idgame)
-            ->with('user')
-            ->orderByDesc('idlist')
-            ->limit(10)
-            ->get();
-
-        $tierFrom = $this->parseTierDate($request->input('tier_from'));
-        $tierTo = $this->parseTierDate($request->input('tier_to'));
-
-        $tierListAggregate = $tierListAggregator->aggregate($game, $tierFrom, $tierTo);
-
         return view('games.show', [
             'game' => $game,
             'characters' => $characters,
             'latestCombos' => $latestCombos,
             'listingTypes' => $listingTypes,
             'primaryResources' => $primaryResources,
-            'guides' => $guides,
-            'tierListAggregate' => $tierListAggregate,
             'tierFrom' => $request->input('tier_from'),
             'tierTo' => $request->input('tier_to'),
         ]);
+    }
+
+    public function guidesTab(Game $game): View
+    {
+        $guides = ListModel::where('game_idgame', $game->idgame)
+            ->with('user')
+            ->orderByDesc('idlist')
+            ->limit(10)
+            ->get();
+
+        return view('games.partials.guides-tab', ['game' => $game, 'guides' => $guides]);
+    }
+
+    public function tierListsTab(Game $game, Request $request, TierListAggregator $tierListAggregator): View
+    {
+        $tierFrom = $this->parseTierDate($request->input('tier_from'));
+        $tierTo = $this->parseTierDate($request->input('tier_to'));
+
+        $tierListAggregate = $tierListAggregator->aggregate($game, $tierFrom, $tierTo);
+
+        return view('games.partials.tier-lists-tab', ['tierListAggregate' => $tierListAggregate]);
     }
 
     private function parseTierDate(?string $value): ?Carbon
