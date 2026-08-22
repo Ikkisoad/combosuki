@@ -90,7 +90,8 @@ jobs:
             cd ${{ secrets.DEPLOY_PATH }}
             git pull origin master
             cd laravel
-            composer install --no-dev --optimize-autoloader --no-interaction
+            composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+            php artisan package:discover --ansi
 
       - name: Ship built frontend assets
         uses: burnett01/rsync-deployments@7.0.2
@@ -118,4 +119,16 @@ jobs:
             php artisan route:cache
             php artisan view:cache
             php artisan discord:register-commands
+            php artisan up
+
+      - name: Bring the site back up if the deploy failed
+        if: failure()
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_SSH_HOST }}
+          port: ${{ secrets.DEPLOY_SSH_PORT }}
+          username: ${{ secrets.DEPLOY_SSH_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd ${{ secrets.DEPLOY_PATH }}/laravel
             php artisan up
