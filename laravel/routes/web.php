@@ -143,6 +143,7 @@ Route::middleware(['auth', 'trusted'])->prefix('games/{game}/edit')->name('admin
 
     Route::get('/characters', [AdminCharacterController::class, 'index'])->name('characters.index');
     Route::post('/characters', [AdminCharacterController::class, 'store'])->middleware('throttle:10,1')->name('characters.store');
+    Route::post('/characters/bulk', [AdminCharacterController::class, 'bulkUpdate'])->middleware('throttle:10,1')->name('characters.bulkUpdate');
 
     Route::get('/queries', [CharacterQueryController::class, 'index'])->name('queries.index');
     Route::post('/queries', [CharacterQueryController::class, 'store'])->middleware('throttle:10,1')->name('queries.store');

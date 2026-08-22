@@ -18,7 +18,7 @@ class GameSettingsController extends Controller
     public function update(Request $request, Game $game): RedirectResponse
     {
         $validated = $request->validate([
-            'action' => ['required', 'in:Submit,Delete,Lock,Unlock'],
+            'action' => ['required', 'in:Submit,Delete,Lock,Unlock,Complete,Incomplete'],
             'title' => ['required_if:action,Submit', 'nullable', 'string', 'max:100'],
             'image' => ['nullable', 'string', 'max:255'],
             'patch' => ['nullable', 'string', 'max:10'],
@@ -40,15 +40,30 @@ class GameSettingsController extends Controller
         }
 
         if ($validated['action'] === 'Lock') {
-            $game->update(['complete' => $game->complete > 0 ? 2 : -1]);
+            $game->update(['complete' => $game->isComplete() ? 2 : -1]);
 
             return redirect()->route('admin.game.edit', $game)->with('status', 'Game locked.');
         }
 
         if ($validated['action'] === 'Unlock') {
-            $game->update(['complete' => $game->complete > 0 ? 1 : 0]);
+            $game->update(['complete' => $game->isComplete() ? 1 : 0]);
 
             return redirect()->route('admin.game.edit', $game)->with('status', 'Game unlocked.');
+        }
+
+        if ($validated['action'] === 'Complete' || $validated['action'] === 'Incomplete') {
+            abort_unless($request->user()->is_admin, 403);
+
+            $complete = $validated['action'] === 'Complete';
+            $game->update(['complete' => match (true) {
+                $complete && $game->isLocked() => 2,
+                $complete => 1,
+                $game->isLocked() => -1,
+                default => 0,
+            }]);
+
+            return redirect()->route('admin.game.edit', $game)
+                ->with('status', $complete ? 'Game marked as complete.' : 'Game marked as incomplete.');
         }
 
         // FK cascades handle characters/combos/resources/buttons, but

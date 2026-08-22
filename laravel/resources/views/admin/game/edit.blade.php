@@ -37,10 +37,17 @@
             <div class="btn-group">
                 <button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Update</button>
                 <button type="submit" name="action" value="Delete" class="btn btn-danger btn-block" onclick="return confirm('Are you sure you want to delete this game?');">Delete</button>
-                @if (in_array($game->complete, [2, -1], true))
+                @if ($game->isLocked())
                     <button type="submit" name="action" value="Unlock" class="btn btn-secondary">Unlock</button>
                 @else
                     <button type="submit" name="action" value="Lock" class="btn btn-secondary">Lock</button>
+                @endif
+                @if (auth()->user()->is_admin)
+                    @if ($game->isComplete())
+                        <button type="submit" name="action" value="Incomplete" class="btn btn-secondary">Mark Incomplete</button>
+                    @else
+                        <button type="submit" name="action" value="Complete" class="btn btn-secondary">Mark Complete</button>
+                    @endif
                 @endif
             </div>
         </form>

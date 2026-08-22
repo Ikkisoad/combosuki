@@ -17,6 +17,21 @@ class Game extends Model
 
     protected $hidden = ['globalPass', 'modPass'];
 
+    /**
+     * The `complete` column encodes two flags at once: the sign marks whether
+     * the game is complete (> 0) and the magnitude marks whether it is locked
+     * (2 = complete + locked, -1 = incomplete + locked).
+     */
+    public function isComplete(): bool
+    {
+        return $this->complete > 0;
+    }
+
+    public function isLocked(): bool
+    {
+        return in_array((int) $this->complete, [2, -1], true);
+    }
+
     public function characters(): HasMany
     {
         return $this->hasMany(Character::class, 'game_idgame');
