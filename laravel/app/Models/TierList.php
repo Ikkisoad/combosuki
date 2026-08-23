@@ -14,6 +14,13 @@ class TierList extends Model
 
     protected $fillable = ['title', 'game_idgame', 'user_iduser'];
 
+    protected function casts(): array
+    {
+        return [
+            'views' => 'integer',
+        ];
+    }
+
     public function game(): BelongsTo
     {
         return $this->belongsTo(Game::class, 'game_idgame');

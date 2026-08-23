@@ -22,6 +22,7 @@ class ListModel extends Model
         return [
             'type' => 'integer',
             'game_idgame' => 'integer',
+            'views' => 'integer',
         ];
     }
 

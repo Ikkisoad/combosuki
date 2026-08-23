@@ -14,6 +14,8 @@
             <a href="{{ route('admin.game.edit', $game) }}" class="btn btn-secondary btn-sm mb-2" style="float: right;">Edit Game</a>
         @endif
 
+        <p class="text-white-50 small mb-2">{{ number_format($game->views) }} {{ \Illuminate\Support\Str::plural('view', $game->views) }}</p>
+
         <form method="get" action="{{ route('games.combos.index', $game) }}" class="card bg-dark p-2 mb-3">
             <div class="row g-2 align-items-end">
                 <div class="col-auto">

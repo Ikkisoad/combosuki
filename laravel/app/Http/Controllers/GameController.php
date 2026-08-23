@@ -80,6 +80,7 @@ class GameController extends Controller
     public function show(Game $game, Request $request): View
     {
         $game->load(['links' => fn ($query) => $query->orderBy('Title')]);
+        $game->increment('views');
 
         $characters = Character::where('game_idgame', $game->idgame)
             ->withCount('combos')

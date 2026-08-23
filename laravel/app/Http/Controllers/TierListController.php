@@ -74,6 +74,7 @@ class TierListController extends Controller
     public function show(TierList $tierList): View
     {
         $tierList->load('game', 'user', 'entries.character');
+        $tierList->increment('views');
 
         return view('tier-lists.show', ['tierList' => $tierList]);
     }

@@ -17,6 +17,13 @@ class Game extends Model
 
     protected $hidden = ['globalPass', 'modPass'];
 
+    protected function casts(): array
+    {
+        return [
+            'views' => 'integer',
+        ];
+    }
+
     /**
      * The `complete` column encodes two flags at once: the sign marks whether
      * the game is complete (> 0) and the magnitude marks whether it is locked

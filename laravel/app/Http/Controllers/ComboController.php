@@ -63,6 +63,7 @@ class ComboController extends Controller
     public function show(Combo $combo): View
     {
         $combo->load(['character.game', 'listingType', 'resources.resourceValue.gameResource', 'user']);
+        $combo->increment('views');
 
         $game = $combo->character->game;
 

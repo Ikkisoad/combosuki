@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Character;
 use App\Models\Combo;
+use App\Models\CombleAttempt;
 use App\Models\Game;
 use App\Models\GameEntry;
 use App\Services\CombleDailyCombo;
 use App\Services\CombleGuessEvaluator;
+use App\Services\CombleStats;
 use App\Support\DailyGameClock;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,6 +28,7 @@ class CombleController extends Controller
     public function __construct(
         private CombleDailyCombo $dailyCombo,
         private CombleGuessEvaluator $evaluator,
+        private CombleStats $stats,
     ) {}
 
     public function show(Request $request, ?string $date = null): View
@@ -56,6 +59,7 @@ class CombleController extends Controller
             'stickyCharacterId' => $lastGuess && $lastGuess['character_correct'] ? $lastGuess['character']->idcharacter : null,
             'stickyTypeId' => $lastGuess && $lastGuess['type_correct'] ? $lastGuess['listing_type']->entryid : null,
             'stickyStarter' => $lastGuess && $lastGuess['starter_result'] === 'partial' ? $lastGuess['starter'] : null,
+            'stats' => $this->stats->summary(),
         ]);
     }
 
@@ -96,6 +100,8 @@ class CombleController extends Controller
             (float) $validated['damage'],
             $validated['starter'] ?? null,
         ];
+
+        $this->recordAttemptIfJustFinished($request, $day, $target, $picks);
 
         $cookiePayload = json_encode(['picks' => $picks]);
 
@@ -154,6 +160,28 @@ class CombleController extends Controller
         }
 
         return array_slice(array_values($decoded['picks'] ?? []), 0, self::MAX_GUESSES);
+    }
+
+    /**
+     * Records one completed-game row the moment a guess pushes the game from
+     * in-progress to finished (won, or all guesses used). `firstOrCreate`
+     * plus the (day, visitor_key) unique index means replays of this request
+     * (e.g. back-button resubmits) never double-count.
+     */
+    private function recordAttemptIfJustFinished(Request $request, Carbon $day, Combo $target, array $picks): void
+    {
+        $guesses = $this->evaluateGuesses($picks, $target);
+        $won = collect($guesses)->contains('won', true);
+        $finished = $won || count($guesses) >= self::MAX_GUESSES;
+
+        if (! $finished) {
+            return;
+        }
+
+        CombleAttempt::firstOrCreate(
+            ['day' => $day->toDateString(), 'visitor_key' => $request->session()->getId()],
+            ['guesses' => count($guesses), 'won' => $won, 'user_iduser' => auth()->id()],
+        );
     }
 
     /**

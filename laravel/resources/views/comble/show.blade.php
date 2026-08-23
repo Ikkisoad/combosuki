@@ -143,6 +143,34 @@
                 </div>
             </form>
         @endif
+
+        <div class="card combosuki-main-reversed text-white p-3 mb-3">
+            <h4>Comble Stats</h4>
+            <p class="mb-2 text-white-50">
+                {{ number_format($stats['totalAttempts']) }} {{ \Illuminate\Support\Str::plural('play', $stats['totalAttempts']) }}
+                &middot; {{ $stats['winRate'] }}% win rate
+            </p>
+
+            @if ($stats['totalAttempts'] > 0)
+                @php $max = max($stats['distribution']); @endphp
+                @foreach ([1, 2, 3, 4, 5, 'lost'] as $bucket)
+                    @php $count = $stats['distribution'][$bucket]; @endphp
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <div style="width: 20px;" class="text-end small">{{ $bucket === 'lost' ? 'X' : $bucket }}</div>
+                        <div class="flex-grow-1 bg-dark rounded">
+                            <div
+                                class="{{ $bucket === 'lost' ? 'bg-danger' : 'bg-success' }} rounded d-flex align-items-center justify-content-end px-2 text-dark small fw-bold"
+                                style="height: 18px; width: {{ $count > 0 ? max(6, round($count / $max * 100)) : 0 }}%;"
+                            >
+                                @if ($count > 0)
+                                    {{ $count }}
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            @endif
+        </div>
     </div>
 
     <script type="application/json" id="comble-catalog">{!! json_encode($catalog) !!}</script>

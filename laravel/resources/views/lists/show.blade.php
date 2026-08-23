@@ -39,7 +39,10 @@
                         <img src="{{ asset('img/misc/mod.png') }}" height="19" title="Moderated List">
                     @endif
                 </h3>
-                <p class="text-white-50 mb-2">By {{ $list->user?->nickname ?? 'Anonymous' }}</p>
+                <p class="text-white-50 mb-2">
+                    By {{ $list->user?->nickname ?? 'Anonymous' }}
+                    &middot; {{ number_format($list->views) }} {{ \Illuminate\Support\Str::plural('view', $list->views) }}
+                </p>
 
                 @if ($list->game)
                     <div class="row mb-2">

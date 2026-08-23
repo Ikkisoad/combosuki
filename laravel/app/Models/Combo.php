@@ -24,6 +24,7 @@ class Combo extends Model
     {
         return [
             'submited' => 'datetime',
+            'views' => 'integer',
         ];
     }
 

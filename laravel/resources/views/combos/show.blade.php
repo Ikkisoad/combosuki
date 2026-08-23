@@ -45,6 +45,7 @@
                             <th>
                                 Entry ID: {{ $combo->idcombo }} / {{ $combo->character->name }}
                                 {{ $combo->listingType?->title }}
+                                <span class="text-white-50 small fw-normal">&middot; {{ number_format($combo->views) }} {{ \Illuminate\Support\Str::plural('view', $combo->views) }}</span>
                                 @if ($combo->patch)
                                     <button class="btn btn-dark" style="float: right;" disabled>Patch: {{ $combo->patch }}</button>
                                 @endif

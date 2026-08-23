@@ -8,6 +8,7 @@
             {{ $tierList->game->name }}
             &middot; By {{ $tierList->user?->nickname ?? 'Anonymous' }}
             &middot; {{ $tierList->created_at->format('M j, Y') }}
+            &middot; {{ number_format($tierList->views) }} {{ \Illuminate\Support\Str::plural('view', $tierList->views) }}
         </p>
 
         @php $grouped = $tierList->entries->groupBy('tier'); @endphp

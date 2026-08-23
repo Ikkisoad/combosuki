@@ -66,6 +66,7 @@ class ListController extends Controller
     public function show(ListModel $list, Request $request): View
     {
         $list->load('game', 'pages', 'user');
+        $list->increment('views');
 
         $pageId = $request->integer('page', 0);
 
