@@ -32,6 +32,13 @@ class CharacterShowTest extends TestCase
         $bestMatch = Combo::create([
             'combo' => '2LK > 236B', 'character_idcharacter' => $character->idcharacter, 'submited' => now(), 'damage' => 300, 'type' => 1,
         ]);
+        // Extra higher-damage combos push $weakMatch out of the character's top-3 "Top Damage Combos" section.
+        Combo::create([
+            'combo' => '5C > 236C', 'character_idcharacter' => $character->idcharacter, 'submited' => now(), 'damage' => 250, 'type' => 1,
+        ]);
+        Combo::create([
+            'combo' => '2LK > 214B', 'character_idcharacter' => $character->idcharacter, 'submited' => now(), 'damage' => 200, 'type' => 1,
+        ]);
         Combo::create([
             'combo' => '2LK > 5C', 'character_idcharacter' => $otherCharacter->idcharacter, 'submited' => now(), 'damage' => 999, 'type' => 1,
         ]);
