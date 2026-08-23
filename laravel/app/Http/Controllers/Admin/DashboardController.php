@@ -40,7 +40,7 @@ class DashboardController extends Controller
             ->paginate(25, ['*'], 'game_page')
             ->withQueryString();
 
-        return view('admin.dashboard.index', [
+        return view('admin.data-management.index', [
             'combos' => $combos,
             'lists' => $lists,
             'games' => $games,
@@ -66,7 +66,7 @@ class DashboardController extends Controller
         $deleteAllMatching = $request->boolean('combo_delete_all_matching');
 
         if (empty($comboIds) && empty($listIds) && empty($gameIds) && ! $deleteAllMatching) {
-            return redirect()->route('admin.dashboard')->with('error', 'No entries selected.');
+            return redirect()->route('admin.data-management')->with('error', 'No entries selected.');
         }
 
         $deleted = DB::transaction(function () use ($request, $comboIds, $listIds, $gameIds, $deleteAllMatching) {
@@ -99,7 +99,7 @@ class DashboardController extends Controller
             return $comboCount + $listCount + $gameCount;
         });
 
-        return redirect()->route('admin.dashboard')->with('status', "Deleted {$deleted} ".str('entry')->plural($deleted).'.');
+        return redirect()->route('admin.data-management')->with('status', "Deleted {$deleted} ".str('entry')->plural($deleted).'.');
     }
 
     /**

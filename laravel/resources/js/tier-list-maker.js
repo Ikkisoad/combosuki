@@ -44,10 +44,38 @@ document.addEventListener('DOMContentLoaded', function () {
         return card;
     }
 
+    function getDragAfterElement(zone, x, y) {
+        const cards = [...zone.querySelectorAll('.character-card:not(.dragging)')];
+
+        return cards.reduce((closest, card) => {
+            const box = card.getBoundingClientRect();
+            const withinRow = y >= box.top && y <= box.bottom;
+            const offset = x - box.left - box.width / 2;
+
+            if (withinRow && offset < 0 && offset > closest.offset) {
+                return { offset, element: card };
+            }
+
+            return closest;
+        }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
+    }
+
     function setupDropzone(zone) {
         zone.addEventListener('dragover', function (event) {
             event.preventDefault();
             zone.classList.add('drop-target');
+
+            if (! draggedCard) {
+                return;
+            }
+
+            const afterElement = getDragAfterElement(zone, event.clientX, event.clientY);
+
+            if (afterElement) {
+                zone.insertBefore(draggedCard, afterElement);
+            } else {
+                zone.appendChild(draggedCard);
+            }
         });
 
         zone.addEventListener('dragleave', function () {
@@ -57,10 +85,6 @@ document.addEventListener('DOMContentLoaded', function () {
         zone.addEventListener('drop', function (event) {
             event.preventDefault();
             zone.classList.remove('drop-target');
-
-            if (draggedCard) {
-                zone.appendChild(draggedCard);
-            }
         });
     }
 

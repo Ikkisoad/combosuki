@@ -55,8 +55,10 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-    Route::post('/destroy', [DashboardController::class, 'destroy'])->middleware('throttle:10,1')->name('dashboard.destroy');
+    Route::view('/', 'admin.dashboard.index')->name('dashboard');
+
+    Route::get('/data-management', [DashboardController::class, 'index'])->name('data-management');
+    Route::post('/data-management/destroy', [DashboardController::class, 'destroy'])->middleware('throttle:10,1')->name('data-management.destroy');
 
     Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
     Route::post('/users', [AdminUserController::class, 'store'])->middleware('throttle:10,1')->name('users.store');

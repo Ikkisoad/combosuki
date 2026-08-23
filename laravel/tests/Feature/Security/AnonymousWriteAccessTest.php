@@ -131,7 +131,7 @@ class AnonymousWriteAccessTest extends TestCase
     {
         return [
             'admin dashboard bulk delete' => [
-                'url' => route('admin.dashboard.destroy'),
+                'url' => route('admin.data-management.destroy'),
                 'payload' => ['combo_ids' => [$this->combo->idcombo]],
                 'assertUnchanged' => fn () => $this->assertDatabaseHas('combo', ['idcombo' => $this->combo->idcombo]),
             ],
@@ -257,6 +257,7 @@ class AnonymousWriteAccessTest extends TestCase
     {
         return [
             'admin dashboard' => route('admin.dashboard'),
+            'admin data management' => route('admin.data-management'),
             'admin users index' => route('admin.users.index'),
             'combo create form' => route('games.combos.create', $this->game),
             'combo edit form' => route('combos.edit', $this->combo),
@@ -308,7 +309,8 @@ class AnonymousWriteAccessTest extends TestCase
         $this->actingAs($this->user);
 
         $this->get(route('admin.dashboard'))->assertRedirect()->assertSessionHas('error');
-        $this->post(route('admin.dashboard.destroy'), ['combo_ids' => [$this->combo->idcombo]])->assertRedirect()->assertSessionHas('error');
+        $this->get(route('admin.data-management'))->assertRedirect()->assertSessionHas('error');
+        $this->post(route('admin.data-management.destroy'), ['combo_ids' => [$this->combo->idcombo]])->assertRedirect()->assertSessionHas('error');
         $this->get(route('admin.users.index'))->assertRedirect()->assertSessionHas('error');
         $this->post(route('admin.users.store'), ['nickname' => 'hacker', 'password' => 'password123', 'password_confirmation' => 'password123'])->assertRedirect()->assertSessionHas('error');
 
