@@ -5,7 +5,7 @@
     <div class="container-fluid my-3">
         <div class="row">
             <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">
-                <h3>Create List</h3>
+                <h3>Create Guides</h3>
                 <form class="form-control combosuki-main-reversed text-white" method="post" action="{{ route('lists.store') }}">
                     @csrf
                     <div class="mb-2">
@@ -20,11 +20,11 @@
                         </select>
                     </div>
                     <div class="mb-2">
-                        <button type="submit" class="btn btn-primary btn-block">Create List</button>
+                        <button type="submit" class="btn btn-primary btn-block">Create Guides</button>
                     </div>
                 </form>
 
-                <h3>Search List</h3>
+                <h3>Search Guides</h3>
                 <form class="form-control combosuki-main-reversed text-white" method="get" action="{{ route('lists.search') }}">
                     <div class="mb-2">
                         <input placeholder="List Name" name="list_name" class="form-control" maxlength="45" value="{{ request('list_name') }}">
@@ -58,6 +58,7 @@
                     <table class="table table-hover align-middle caption-top combosuki-main-reversed text-white">
                         <tr>
                             <th>{{ ($searched ?? false) ? 'Search Results' : 'Guides' }}</th>
+                            <th>Game</th>
                             <th>Author</th>
                         </tr>
                         @foreach ($lists as $list)
@@ -70,6 +71,7 @@
                                         <img src="{{ asset('img/misc/mod.png') }}" height="19" title="Moderated List">
                                     @endif
                                 </td>
+                                <td>{{ $list->game?->name ?? '—' }}</td>
                                 <td>{{ $list->user?->nickname ?? 'Anonymous' }}</td>
                             </tr>
                         @endforeach
