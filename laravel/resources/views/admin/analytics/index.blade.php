@@ -62,7 +62,10 @@
     <x-nav-bar />
 
     <div class="container-fluid my-3">
-        <h1 class="text-white">View Analytics</h1>
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <h1 class="text-white">View Analytics</h1>
+            <a href="{{ route('admin.analytics') }}" class="btn btn-outline-light btn-sm">Refresh</a>
+        </div>
         <p class="text-white-50">
             <a href="{{ route('admin.dashboard') }}" class="link-light">&larr; Back to Admin Dashboard</a>
         </p>
