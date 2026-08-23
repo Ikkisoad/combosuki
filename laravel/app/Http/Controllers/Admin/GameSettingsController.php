@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Game;
+use App\Models\GameAlias;
+use App\Support\AliasGenerator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class GameSettingsController extends Controller
@@ -24,10 +27,23 @@ class GameSettingsController extends Controller
             'patch' => ['nullable', 'string', 'max:10'],
             'description' => ['nullable', 'string', 'max:255'],
             'notation' => ['nullable', 'string', 'max:1000'],
+            'aliases' => ['nullable', 'string', 'max:1000'],
         ]);
 
         // TODO: record which user made this edit once an audit/edit-log exists
         if ($validated['action'] === 'Submit') {
+            $aliases = AliasGenerator::parseList($validated['aliases'] ?? '');
+
+            if ($aliases !== []) {
+                $conflict = GameAlias::where('game_idgame', '!=', $game->idgame)
+                    ->whereIn('alias', $aliases)
+                    ->first();
+
+                if ($conflict) {
+                    return back()->withErrors(["Alias \"{$conflict->alias}\" is already used by another game."])->withInput();
+                }
+            }
+
             $game->update([
                 'name' => $validated['title'],
                 'image' => $validated['image'] ?? null,
@@ -35,6 +51,26 @@ class GameSettingsController extends Controller
                 'description' => $validated['description'] ?? null,
                 'notation' => $validated['notation'] ?? null,
             ]);
+
+            // Matched case-insensitively (mirroring the DB's case-insensitive
+            // unique index) so re-submitting an existing alias with different
+            // casing doesn't delete-then-reinsert it.
+            $wanted = collect($aliases)->keyBy(fn ($alias) => Str::lower($alias));
+            $existingAliases = $game->aliases()->get();
+
+            foreach ($existingAliases as $row) {
+                if (! $wanted->has(Str::lower($row->alias))) {
+                    $row->delete();
+                }
+            }
+
+            $existingKeys = $existingAliases->map(fn ($row) => Str::lower($row->alias))->all();
+
+            foreach ($wanted as $key => $alias) {
+                if (! in_array($key, $existingKeys, true)) {
+                    $game->aliases()->create(['alias' => $alias]);
+                }
+            }
 
             return redirect()->route('admin.game.edit', $game)->with('status', 'Saved.');
         }

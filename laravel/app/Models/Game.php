@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Support\AliasGenerator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Game extends Model
 {
@@ -22,6 +24,30 @@ class Game extends Model
         return [
             'views' => 'integer',
         ];
+    }
+
+    /**
+     * Auto-seed a best-effort alias (initials, or the first 5 letters for a
+     * single-word name) on creation, for the Discord `/csk search` command.
+     * Silently skipped on a case-insensitive collision — never blocks the
+     * game from being created.
+     */
+    protected static function booted(): void
+    {
+        static::created(function (Game $game) {
+            $alias = AliasGenerator::initials($game->name, 5);
+
+            $exists = GameAlias::whereRaw('LOWER(alias) = ?', [Str::lower($alias)])->exists();
+
+            if (! $exists) {
+                $game->aliases()->create(['alias' => $alias]);
+            }
+        });
+    }
+
+    public function aliases(): HasMany
+    {
+        return $this->hasMany(GameAlias::class, 'game_idgame');
     }
 
     /**

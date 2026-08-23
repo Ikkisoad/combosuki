@@ -34,6 +34,10 @@
                 <span class="input-group-text">Notation Guidelines:</span>
                 <textarea name="notation" class="form-control" rows="1" maxlength="950" placeholder="1000 bytes guideline about combo notation.">{{ $game->notation }}</textarea>
             </div>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Aliases:</span>
+                <input type="text" name="aliases" class="form-control" maxlength="1000" value="{{ old('aliases', $game->aliases->pluck('alias')->implode(', ')) }}" placeholder="Comma-separated, e.g. SF6, Street Fighter 6">
+            </div>
             <div class="btn-group">
                 <button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Update</button>
                 <button type="submit" name="action" value="Delete" class="btn btn-danger btn-block" onclick="return confirm('Are you sure you want to delete this game?');">Delete</button>

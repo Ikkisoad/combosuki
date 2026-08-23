@@ -33,8 +33,12 @@ class DiscordComboSearch
             return $this->ephemeral('Please provide a game name.');
         }
 
-        $game = Game::whereRaw('LOWER(name) = ?', [Str::lower($gameName)])->first()
-            ?? Game::where('name', 'like', '%'.$gameName.'%')->first();
+        $lowerGameName = Str::lower($gameName);
+
+        $game = Game::whereRaw('LOWER(name) = ?', [$lowerGameName])->first()
+            ?? Game::whereHas('aliases', fn ($q) => $q->whereRaw('LOWER(alias) = ?', [$lowerGameName]))->first()
+            ?? Game::where('name', 'like', '%'.$gameName.'%')->first()
+            ?? Game::whereHas('aliases', fn ($q) => $q->where('alias', 'like', '%'.$gameName.'%'))->first();
 
         if (! $game) {
             return $this->ephemeral("No game found matching \"{$gameName}\".");
@@ -43,11 +47,19 @@ class DiscordComboSearch
         $characterId = null;
 
         if ($characterName) {
+            $lowerCharacterName = Str::lower($characterName);
+
             $character = Character::where('game_idgame', $game->idgame)
-                ->whereRaw('LOWER(name) = ?', [Str::lower($characterName)])
+                ->whereRaw('LOWER(name) = ?', [$lowerCharacterName])
                 ->first()
                 ?? Character::where('game_idgame', $game->idgame)
+                    ->whereHas('aliases', fn ($q) => $q->whereRaw('LOWER(alias) = ?', [$lowerCharacterName]))
+                    ->first()
+                ?? Character::where('game_idgame', $game->idgame)
                     ->where('name', 'like', '%'.$characterName.'%')
+                    ->first()
+                ?? Character::where('game_idgame', $game->idgame)
+                    ->whereHas('aliases', fn ($q) => $q->where('alias', 'like', '%'.$characterName.'%'))
                     ->first();
 
             if (! $character) {

@@ -4,8 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\Character;
 use App\Models\CharacterQuery;
-use App\Models\Combo;
 use App\Models\CombleAttempt;
+use App\Models\Combo;
 use App\Models\Game;
 use App\Models\GameEntry;
 use App\Models\GameResource;
@@ -13,6 +13,7 @@ use App\Models\ResourceValue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class DiscordInteractionTest extends TestCase
@@ -52,7 +53,7 @@ class DiscordInteractionTest extends TestCase
         Http::fake(['discord.com/*' => Http::response(['id' => 'test-message-id'], 200)]);
     }
 
-    private function postInteraction(array $payload): \Illuminate\Testing\TestResponse
+    private function postInteraction(array $payload): TestResponse
     {
         // A real interaction always carries these; default them here so
         // every test payload has a valid target for the private-follow-up
@@ -218,6 +219,42 @@ class DiscordInteractionTest extends TestCase
         $this->assertSame('Wanted Character', $response->json('data.embeds.0.fields.0.value'));
     }
 
+    public function test_combo_search_resolves_game_and_character_by_alias(): void
+    {
+        // Auto-generated on create (see Game/Character::booted()): "Street
+        // Fighter 6" -> "SF6", "Wanted Character" -> "WC".
+        $game = Game::create(['name' => 'Street Fighter 6', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Wanted Character', 'game_idgame' => $game->idgame]);
+        $listingType = GameEntry::create(['title' => 'Combo', 'gameid' => $game->idgame, 'order' => 1]);
+
+        $combo = Combo::create([
+            'combo' => 'A > B > C',
+            'character_idcharacter' => $character->idcharacter,
+            'type' => $listingType->entryid,
+            'damage' => 250,
+        ]);
+
+        $response = $this->postInteraction([
+            'type' => 2,
+            'data' => [
+                'name' => 'csk',
+                'options' => [
+                    [
+                        'name' => 'search',
+                        'options' => [
+                            ['name' => 'game', 'value' => 'sf6'],
+                            ['name' => 'query', 'value' => 'A'],
+                            ['name' => 'character', 'value' => 'wc'],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $response->assertOk()->assertJson(['type' => 4]);
+        $this->assertSame($combo->combo, $response->json('data.embeds.0.title'));
+    }
+
     public function test_combo_search_with_unknown_character_returns_ephemeral_message(): void
     {
         $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
@@ -267,7 +304,7 @@ class DiscordInteractionTest extends TestCase
         $this->assertSame(64, $response->json('data.flags'));
     }
 
-    private function postComponent(string $customId, array $values, ?string $userId = null): \Illuminate\Testing\TestResponse
+    private function postComponent(string $customId, array $values, ?string $userId = null): TestResponse
     {
         return $this->postInteraction(array_merge([
             'type' => 3,
@@ -455,7 +492,7 @@ class DiscordInteractionTest extends TestCase
         $this->assertSame('w:game::', $response->json('data.components.0.components.0.custom_id'));
     }
 
-    private function postModalSubmit(string $customId, array $components, ?string $userId = null): \Illuminate\Testing\TestResponse
+    private function postModalSubmit(string $customId, array $components, ?string $userId = null): TestResponse
     {
         return $this->postInteraction(array_merge([
             'type' => 5,
