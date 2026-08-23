@@ -30,11 +30,13 @@ class CombleStats
 
         $totalAttempts = array_sum($distribution);
         $totalWins = $totalAttempts - $distribution['lost'];
+        $totalPerfect = CombleAttempt::where('perfect', true)->count();
 
         return [
             'totalAttempts' => $totalAttempts,
             'totalWins' => $totalWins,
             'winRate' => $totalAttempts > 0 ? round($totalWins / $totalAttempts * 100, 1) : 0.0,
+            'totalPerfect' => $totalPerfect,
             'distribution' => $distribution,
         ];
     }

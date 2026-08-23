@@ -32,7 +32,7 @@ use App\Services\DailyChallenge;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    $games = Game::where('complete', '>', 0)->orderBy('name')->get();
+    $games = Game::where('complete', '>', 0)->orderByDesc('views')->limit(12)->get();
     $challenge = app(DailyChallenge::class)->today();
 
     return view('home', ['games' => $games, 'challenge' => $challenge]);

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Character;
 use App\Models\CharacterQuery;
 use App\Models\Combo;
+use App\Models\CombleAttempt;
 use App\Models\Game;
 use App\Models\GameEntry;
 use App\Models\GameResource;
@@ -577,6 +578,16 @@ class DiscordInteractionTest extends TestCase
 
         $result = $this->postModalSubmit($modalCustomId, $this->damageModalRow('3000'), $owner);
         $result->assertOk()->assertJson(['type' => 7]);
+
+        // Discord plays feed the same comble_attempts table (and therefore
+        // the same site-wide CombleStats) as the web version, keyed by a
+        // "discord:{id}" visitor_key so they dedup independently of any web
+        // session.
+        $this->assertSame(1, CombleAttempt::count());
+        $attempt = CombleAttempt::first();
+        $this->assertSame('discord:'.$owner, $attempt->visitor_key);
+        $this->assertTrue($attempt->won);
+        $this->assertSame(1, $attempt->guesses);
 
         // Public message: progress only — no notation reveal, no guessed
         // names, and (since this guess won) not the answer either, so it

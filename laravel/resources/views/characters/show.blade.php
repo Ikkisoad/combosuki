@@ -9,6 +9,7 @@
                     <img src="{{ \Illuminate\Support\Facades\Storage::url($character->image) }}" alt="{{ $character->name }}" class="img-fluid rounded mb-2">
                 @endif
                 <h3>{{ $character->name }}</h3>
+                <p class="text-white-50 small">{{ number_format($character->views) }} {{ \Illuminate\Support\Str::plural('view', $character->views) }}</p>
                 <a href="{{ route('games.combos.index', $game) }}?characterid={{ $character->idcharacter }}" class="btn btn-secondary btn-sm">View all combos</a>
             </nav>
 

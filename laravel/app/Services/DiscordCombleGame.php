@@ -54,6 +54,7 @@ class DiscordCombleGame
         private CombleDailyCombo $dailyCombo,
         private CombleGuessEvaluator $evaluator,
         private CombleRevealer $revealer,
+        private CombleAttemptRecorder $attemptRecorder,
     ) {}
 
     public function start(string $userId): array
@@ -164,6 +165,14 @@ class DiscordCombleGame
             (float) $damageRaw,
             $starterRaw !== '' ? $starterRaw : null,
         ]);
+
+        $this->attemptRecorder->recordIfFinished(
+            $day,
+            $this->visitorKey($userId),
+            null,
+            $this->evaluateGuesses($this->picks($userId, $day), $target),
+            self::MAX_GUESSES,
+        );
 
         return $this->publicStatus($userId);
     }
@@ -447,6 +456,17 @@ class DiscordCombleGame
     private function cacheKey(string $userId, Carbon $day): string
     {
         return 'comble:discord:'.$userId.':'.$day->toDateString();
+    }
+
+    /**
+     * Discord user ids are stable, globally unique identities (unlike the
+     * web flow's rotating session id), so this alone is enough to dedup one
+     * CombleAttempt row per Discord player per day via the "discord:"
+     * prefix keeping this key space distinct from web session ids.
+     */
+    private function visitorKey(string $userId): string
+    {
+        return 'discord:'.$userId;
     }
 
     private function picks(string $userId, Carbon $day): array

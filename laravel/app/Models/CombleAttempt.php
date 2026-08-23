@@ -13,7 +13,7 @@ class CombleAttempt extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['day', 'user_iduser', 'visitor_key', 'guesses', 'won'];
+    protected $fillable = ['day', 'user_iduser', 'visitor_key', 'guesses', 'won', 'perfect'];
 
     protected function casts(): array
     {
@@ -21,6 +21,7 @@ class CombleAttempt extends Model
             'day' => 'date',
             'guesses' => 'integer',
             'won' => 'boolean',
+            'perfect' => 'boolean',
         ];
     }
 

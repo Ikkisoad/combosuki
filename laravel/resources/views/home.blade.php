@@ -14,6 +14,10 @@
                     <x-game-card :game="$game" />
                 @endforeach
             </div>
+
+            <div class="text-center my-3">
+                <a href="{{ route('games.index') }}" class="btn btn-combosuki text-white">Check out all games</a>
+            </div>
         </div>
     </div>
 </x-layouts.app>

@@ -14,6 +14,13 @@ class Character extends Model
 
     protected $fillable = ['name', 'image', 'game_idgame'];
 
+    protected function casts(): array
+    {
+        return [
+            'views' => 'integer',
+        ];
+    }
+
     public function game(): BelongsTo
     {
         return $this->belongsTo(Game::class, 'game_idgame');

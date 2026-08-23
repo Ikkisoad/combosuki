@@ -149,6 +149,7 @@
             <p class="mb-2 text-white-50">
                 {{ number_format($stats['totalAttempts']) }} {{ \Illuminate\Support\Str::plural('play', $stats['totalAttempts']) }}
                 &middot; {{ $stats['winRate'] }}% win rate
+                &middot; {{ number_format($stats['totalPerfect']) }} perfect {{ \Illuminate\Support\Str::plural('score', $stats['totalPerfect']) }}
             </p>
 
             @if ($stats['totalAttempts'] > 0)
