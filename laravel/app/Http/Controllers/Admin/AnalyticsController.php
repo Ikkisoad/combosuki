@@ -5,13 +5,18 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Character;
 use App\Models\Combo;
+use App\Models\CombleDayView;
 use App\Models\Game;
 use App\Models\ListModel;
 use App\Models\TierList;
+use App\Services\CombleDailyCombo;
+use Illuminate\Support\Carbon;
 use Illuminate\View\View;
 
 class AnalyticsController extends Controller
 {
+    public function __construct(private CombleDailyCombo $dailyCombo) {}
+
     public function index(): View
     {
         $totals = [
@@ -20,6 +25,7 @@ class AnalyticsController extends Controller
             'characters' => ['count' => Character::count(), 'views' => (int) Character::sum('views')],
             'guides' => ['count' => ListModel::count(), 'views' => (int) ListModel::sum('views')],
             'tierLists' => ['count' => TierList::count(), 'views' => (int) TierList::sum('views')],
+            'combleDays' => ['count' => CombleDayView::count(), 'views' => (int) CombleDayView::sum('views')],
         ];
 
         $topGames = Game::orderByDesc('views')->limit(10)->get(['idgame', 'name', 'views']);
@@ -44,6 +50,21 @@ class AnalyticsController extends Controller
             ->limit(10)
             ->get(['idtier_list', 'title', 'game_idgame', 'views']);
 
+        $topCombleDays = CombleDayView::orderByDesc('views')
+            ->limit(10)
+            ->get(['day', 'views'])
+            ->map(function (CombleDayView $dayView) {
+                $day = Carbon::parse($dayView->day);
+                $target = $this->dailyCombo->forDate($day);
+
+                return [
+                    'day' => $day,
+                    'views' => $dayView->views,
+                    'game' => $target->character->game,
+                    'character' => $target->character,
+                ];
+            });
+
         return view('admin.analytics.index', [
             'totals' => $totals,
             'topGames' => $topGames,
@@ -51,6 +72,7 @@ class AnalyticsController extends Controller
             'topCharacters' => $topCharacters,
             'topGuides' => $topGuides,
             'topTierLists' => $topTierLists,
+            'topCombleDays' => $topCombleDays,
         ]);
     }
 }

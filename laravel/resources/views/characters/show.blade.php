@@ -10,6 +10,9 @@
                 @endif
                 <h3>{{ $character->name }}</h3>
                 <p class="text-white-50 small">{{ number_format($character->views) }} {{ \Illuminate\Support\Str::plural('view', $character->views) }}</p>
+                @if ($averageDamage !== null)
+                    <p class="text-white-50 small">{{ number_format((float) $averageDamage, 0, '', '.') }} avg. damage</p>
+                @endif
                 <a href="{{ route('games.combos.index', $game) }}?characterid={{ $character->idcharacter }}" class="btn btn-secondary btn-sm">View all combos</a>
             </nav>
 
@@ -25,16 +28,14 @@
                     @if ($combo)
                         <table class="table table-hover align-middle caption-top combosuki-main-reversed text-white">
                             <tr>
-                                <th>Character</th>
+                                <th>Details</th>
                                 <th>Inputs</th>
                                 <th>Damage</th>
                             </tr>
                             <tr>
                                 <td>
                                     @if ($combo->comments || $combo->video)
-                                        <button class="btn btn-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ $query->idquery }}-{{ $combo->idcombo }}">{{ $combo->character->name }}</button>
-                                    @else
-                                        {{ $combo->character->name }}
+                                        <button class="btn btn-dark btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ $query->idquery }}-{{ $combo->idcombo }}">Details</button>
                                     @endif
                                 </td>
                                 <td style="min-width:400px">
@@ -53,6 +54,37 @@
                         <p>No combo found yet &mdash; <a href="{{ route('games.combos.create', $game) }}?query={{ $query->idquery }}&characterid={{ $character->idcharacter }}" class="btn btn-combosuki btn-sm text-white">Submit one</a></p>
                     @endif
                 @endforeach
+
+                @if ($topDamageCombos->isNotEmpty())
+                    <h2 class="mt-3">Top Damage Combos</h2>
+
+                    <table class="table table-hover align-middle caption-top combosuki-main-reversed text-white">
+                        <tr>
+                            <th></th>
+                            <th>Inputs</th>
+                            <th>Damage</th>
+                        </tr>
+                        @foreach ($topDamageCombos as $combo)
+                            <tr>
+                                <td>
+                                    @if ($combo->comments || $combo->video)
+                                        <button class="btn btn-dark btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-top-{{ $combo->idcombo }}">Details</button>
+                                    @endif
+                                </td>
+                                <td style="min-width:400px">
+                                    <x-combo-link :combo="$combo" />
+                                    @if ($combo->comments || $combo->video)
+                                        <div class="collapse" id="collapse-top-{{ $combo->idcombo }}">
+                                            {{ $combo->comments }}
+                                            <x-video-embed :video="$combo->video" />
+                                        </div>
+                                    @endif
+                                </td>
+                                <td>{{ number_format((float) $combo->damage, 0, '', '.') }}</td>
+                            </tr>
+                        @endforeach
+                    </table>
+                @endif
             </main>
         </div>
     </div>

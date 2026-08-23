@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Exceptions\DiscordInteractionUnauthorized;
 use App\Models\Character;
 use App\Models\Combo;
+use App\Models\CombleDayView;
 use App\Models\Game;
 use App\Models\GameEntry;
 use App\Support\DailyGameClock;
@@ -59,6 +60,8 @@ class DiscordCombleGame
 
     public function start(string $userId): array
     {
+        CombleDayView::recordView(DailyGameClock::today());
+
         return $this->publicStatus($userId);
     }
 

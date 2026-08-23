@@ -178,3 +178,27 @@ body {
 .sidebar-character-link:hover {
     color: white;
 }
+
+.nav-tabs {
+    border-bottom-color: #C62114;
+}
+
+.nav-tabs .nav-link {
+    background-color: #020202;
+    color: white;
+    border-color: #C62114 #C62114 transparent;
+}
+
+.nav-tabs .nav-link:hover,
+.nav-tabs .nav-link:focus {
+    background-color: #2E2E2E;
+    color: white;
+    border-color: #C62114 #C62114 transparent;
+}
+
+.nav-tabs .nav-link.active {
+    background-color: #020202;
+    color: white;
+    border-color: #FA591C #FA591C #020202;
+    border-bottom-width: 3px;
+}

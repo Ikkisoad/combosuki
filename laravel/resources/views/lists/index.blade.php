@@ -60,6 +60,7 @@
                             <th>{{ ($searched ?? false) ? 'Search Results' : 'Guides' }}</th>
                             <th>Game</th>
                             <th>Author</th>
+                            <th>Created</th>
                         </tr>
                         @foreach ($lists as $list)
                             <tr>
@@ -73,6 +74,7 @@
                                 </td>
                                 <td>{{ $list->game?->name ?? '—' }}</td>
                                 <td>{{ $list->user?->nickname ?? 'Anonymous' }}</td>
+                                <td>{{ $list->created_at?->format('M j, Y') }}</td>
                             </tr>
                         @endforeach
                     </table>

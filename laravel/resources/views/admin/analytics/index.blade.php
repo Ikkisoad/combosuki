@@ -5,6 +5,11 @@
         'characters' => 'Characters',
         'guides' => 'Guides',
         'tierLists' => 'Tier Lists',
+        'combleDays' => 'Comble Days',
+    ];
+
+    $itemWords = [
+        'combleDays' => 'day',
     ];
 
     $maxTypeViews = max(1, ...array_column($totals, 'views'));
@@ -43,6 +48,15 @@
         'views' => $t->views,
         'url' => route('tier-lists.show', $t),
     ])->all();
+
+    $topCombleDaysRows = $topCombleDays->map(fn ($row) => [
+        'label' => $row['day']->format('M j, Y'),
+        'sublabel' => $row['game']->name.' — '.$row['character']->name,
+        'views' => $row['views'],
+        'url' => $row['day']->isToday()
+            ? route('comble.show')
+            : route('comble.show.date', ['date' => $row['day']->toDateString()]),
+    ])->all();
 @endphp
 <x-layouts.app title="Admin Analytics">
     <x-nav-bar />
@@ -61,7 +75,7 @@
                         <div class="text-white-50 small text-uppercase">{{ $typeLabels[$key] }}</div>
                         <div class="fs-3 fw-bold">{{ number_format($data['views']) }}</div>
                         <div class="text-white-50 small">
-                            {{ number_format($data['count']) }} {{ \Illuminate\Support\Str::plural('item', $data['count']) }}
+                            {{ number_format($data['count']) }} {{ \Illuminate\Support\Str::plural($itemWords[$key] ?? 'item', $data['count']) }}
                             &middot; {{ number_format($avg, 1) }} avg
                         </div>
                     </div>
@@ -95,6 +109,7 @@
             <div class="col-lg-6">
                 <x-admin.top-list title="Top 10 Combos" :rows="$topCombosRows" />
                 <x-admin.top-list title="Top 10 Guides" :rows="$topGuidesRows" />
+                <x-admin.top-list title="Top 10 Comble Days" :rows="$topCombleDaysRows" />
             </div>
         </div>
     </div>

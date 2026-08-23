@@ -79,6 +79,8 @@ Route::post('/games', [GameController::class, 'store'])->middleware(['auth', 'tr
 Route::get('/games/{game}', [GameController::class, 'show'])->name('games.show');
 Route::get('/games/{game}/tabs/guides', [GameController::class, 'guidesTab'])->name('games.tabs.guides');
 Route::get('/games/{game}/tabs/tier-lists', [GameController::class, 'tierListsTab'])->name('games.tabs.tier-lists');
+Route::get('/games/{game}/tabs/most-viewed', [GameController::class, 'mostViewedTab'])->name('games.tabs.most-viewed');
+Route::get('/games/{game}/tabs/damage-stats', [GameController::class, 'damageStatsTab'])->name('games.tabs.damage-stats');
 
 Route::scopeBindings()->group(function () {
     Route::get('/games/{game}/characters/{character}', [CharacterController::class, 'show'])->name('characters.show');

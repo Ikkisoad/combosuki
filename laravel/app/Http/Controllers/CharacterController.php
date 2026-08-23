@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\FiltersCombos;
 use App\Models\Character;
 use App\Models\CharacterQuery;
+use App\Models\Combo;
 use App\Models\Game;
 use Illuminate\View\View;
 
@@ -27,11 +28,23 @@ class CharacterController extends Controller
             return [$query->idquery => $this->searchCombos($game, $filters, 1)->first()];
         });
 
+        $topDamageCombos = Combo::with('listingType')
+            ->where('character_idcharacter', $character->idcharacter)
+            ->orderByDesc('damage')
+            ->limit(3)
+            ->get();
+
+        $averageDamage = Combo::where('character_idcharacter', $character->idcharacter)
+            ->whereNotNull('damage')
+            ->avg('damage');
+
         return view('characters.show', [
             'game' => $game,
             'character' => $character,
             'queries' => $queries,
             'topCombos' => $topCombos,
+            'topDamageCombos' => $topDamageCombos,
+            'averageDamage' => $averageDamage,
         ]);
     }
 }

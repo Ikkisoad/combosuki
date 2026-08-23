@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Character;
 use App\Models\Combo;
+use App\Models\CombleDayView;
 use App\Models\Game;
 use App\Models\GameEntry;
 use App\Services\CombleAttemptRecorder;
@@ -35,6 +36,8 @@ class CombleController extends Controller
     public function show(Request $request, ?string $date = null): View
     {
         $day = $this->resolveDate($date);
+        CombleDayView::recordView($day);
+
         $target = $this->dailyCombo->forDate($day);
         $game = $target->character->game;
 

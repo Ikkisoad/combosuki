@@ -41,6 +41,25 @@
                 </div>
             </div>
 
+            @if (auth()->user()->is_admin)
+                <div class="row g-2 align-items-end mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Created date <span class="text-white-50">(admin)</span></label>
+                        <input type="date" name="created_at" class="form-control" value="{{ old('created_at') }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Author <span class="text-white-50">(admin)</span></label>
+                        <select name="user_iduser" class="form-select">
+                            <option value="{{ auth()->id() }}" @selected(old('user_iduser', auth()->id()) == auth()->id())>Myself ({{ auth()->user()->nickname }})</option>
+                            <option value="" @selected(old('user_iduser') === '')>Anonymous</option>
+                            @foreach ($users as $user)
+                                <option value="{{ $user->iduser }}" @selected(old('user_iduser') == $user->iduser)>{{ $user->nickname }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+            @endif
+
             <div id="tier-list-entries-fields"></div>
 
             <div id="tier-board" style="display:none;">

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\FiltersCombos;
 use App\Models\Button;
 use App\Models\Character;
+use App\Models\CharacterQuery;
 use App\Models\Combo;
 use App\Models\Game;
 use App\Models\GameEntry;
@@ -20,6 +22,8 @@ use Illuminate\View\View;
 
 class GameController extends Controller
 {
+    use FiltersCombos;
+
     private const DEFAULT_BUTTONS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '214', '236', 'A', 'B', 'C', 'j', '>'];
 
     public function index(): View
@@ -123,6 +127,77 @@ class GameController extends Controller
             ->get();
 
         return view('games.partials.guides-tab', ['game' => $game, 'guides' => $guides]);
+    }
+
+    public function mostViewedTab(Game $game): View
+    {
+        $mostViewedCombos = Combo::with(['character', 'listingType', 'user'])
+            ->whereHas('character', fn ($query) => $query->where('game_idgame', $game->idgame))
+            ->orderByDesc('views')
+            ->limit(3)
+            ->get();
+
+        $mostViewedGuides = ListModel::where('game_idgame', $game->idgame)
+            ->with('user')
+            ->orderByDesc('views')
+            ->limit(3)
+            ->get();
+
+        return view('games.partials.most-viewed-tab', [
+            'game' => $game,
+            'mostViewedCombos' => $mostViewedCombos,
+            'mostViewedGuides' => $mostViewedGuides,
+        ]);
+    }
+
+    /**
+     * Average, per character, the damage of that character's top result for
+     * each of the game's default queries (character_default_queries — see
+     * CharacterQuery/FiltersCombos::searchCombos()), the same "top combo per
+     * default query" data the character page shows. Surfaces the game-wide
+     * average of those per-character averages, the character with the
+     * highest one, and the full per-character breakdown (sorted desc) for
+     * the comparison graph.
+     */
+    public function damageStatsTab(Game $game): View
+    {
+        $queries = CharacterQuery::where('game_idgame', $game->idgame)
+            ->orderBy('order')
+            ->orderBy('label')
+            ->get();
+
+        $characters = Character::where('game_idgame', $game->idgame)->get();
+
+        $characterAverages = $characters
+            ->map(function (Character $character) use ($game, $queries) {
+                $damages = $queries
+                    ->map(fn (CharacterQuery $query) => $this->searchCombos(
+                        $game,
+                        array_merge($query->filters ?? [], ['characterid' => $character->idcharacter]),
+                        1
+                    )->first()?->damage)
+                    ->filter(fn ($damage) => $damage !== null)
+                    ->map(fn ($damage) => (float) $damage);
+
+                return [
+                    'character' => $character,
+                    'average' => $damages->isNotEmpty() ? $damages->avg() : null,
+                ];
+            })
+            ->filter(fn (array $entry) => $entry['average'] !== null)
+            ->sortByDesc('average')
+            ->values();
+
+        $gameAverageDamage = $characterAverages->isNotEmpty() ? $characterAverages->avg('average') : null;
+        $topCharacterEntry = $characterAverages->first();
+
+        return view('games.partials.damage-stats-tab', [
+            'game' => $game,
+            'queriesCount' => $queries->count(),
+            'gameAverageDamage' => $gameAverageDamage,
+            'topCharacterEntry' => $topCharacterEntry,
+            'characterAverages' => $characterAverages,
+        ]);
     }
 
     public function tierListsTab(Game $game, Request $request, TierListAggregator $tierListAggregator): View

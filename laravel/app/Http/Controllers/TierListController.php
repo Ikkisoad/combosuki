@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTierListRequest;
 use App\Models\Game;
 use App\Models\TierList;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -43,19 +44,30 @@ class TierListController extends Controller
             ]),
         ]);
 
-        return view('tier-lists.create', ['games' => $games, 'catalog' => $catalog]);
+        $users = auth()->user()?->is_admin
+            ? User::where('iduser', '!=', auth()->id())->orderBy('nickname')->get(['iduser', 'nickname'])
+            : collect();
+
+        return view('tier-lists.create', ['games' => $games, 'catalog' => $catalog, 'users' => $users]);
     }
 
     public function store(StoreTierListRequest $request): RedirectResponse
     {
         $validated = $request->validated();
+        $user = $request->user();
 
-        $tierList = DB::transaction(function () use ($validated) {
+        $tierList = DB::transaction(function () use ($validated, $user) {
             $tierList = TierList::create([
                 'title' => $validated['title'],
                 'game_idgame' => $validated['game_idgame'],
-                'user_iduser' => auth()->id(),
+                'user_iduser' => $user->is_admin && array_key_exists('user_iduser', $validated)
+                    ? $validated['user_iduser']
+                    : $user->iduser,
             ]);
+
+            if ($user->is_admin && ! empty($validated['created_at'])) {
+                $tierList->forceFill(['created_at' => $validated['created_at']])->save();
+            }
 
             foreach ($validated['entries'] ?? [] as $order => $entry) {
                 $tierList->entries()->create([

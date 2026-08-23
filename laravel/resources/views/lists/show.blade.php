@@ -40,6 +40,7 @@
                 </h3>
                 <p class="text-white-50 mb-2">
                     By {{ $list->user?->nickname ?? 'Anonymous' }}
+                    &middot; Created {{ $list->created_at?->format('M j, Y') }}
                     &middot; {{ number_format($list->views) }} {{ \Illuminate\Support\Str::plural('view', $list->views) }}
                 </p>
 
