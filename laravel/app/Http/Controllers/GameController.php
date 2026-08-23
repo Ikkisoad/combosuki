@@ -117,6 +117,7 @@ class GameController extends Controller
     {
         $guides = ListModel::where('game_idgame', $game->idgame)
             ->with('user')
+            ->orderByDesc('type')
             ->orderByDesc('idlist')
             ->limit(10)
             ->get();
