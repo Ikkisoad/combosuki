@@ -85,6 +85,7 @@ class ComboController extends Controller
 
         $userLists = collect();
         $comboListIds = [];
+        $isFavorited = false;
 
         if (auth()->check()) {
             $userLists = ListModel::where('game_idgame', $game->idgame)
@@ -95,6 +96,10 @@ class ComboController extends Controller
             if ($userLists->isNotEmpty()) {
                 $comboListIds = $combo->lists()->pluck('list.idlist')->all();
             }
+
+            $isFavorited = (bool) auth()->user()->favoriteGuide?->combos()
+                ->where('combo_listing.idcombo', $combo->idcombo)
+                ->exists();
         }
 
         return view('combos.show', [
@@ -108,6 +113,7 @@ class ComboController extends Controller
             'buttons' => $buttons,
             'userLists' => $userLists,
             'comboListIds' => $comboListIds,
+            'isFavorited' => $isFavorited,
         ]);
     }
 

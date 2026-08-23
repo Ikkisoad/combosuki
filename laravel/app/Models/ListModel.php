@@ -13,7 +13,7 @@ class ListModel extends Model
 
     protected $primaryKey = 'idlist';
 
-    protected $fillable = ['list_name', 'game_idgame', 'password', 'type', 'user_iduser'];
+    protected $fillable = ['list_name', 'game_idgame', 'password', 'type', 'user_iduser', 'is_favorite_guide'];
 
     protected $hidden = ['password'];
 
@@ -23,6 +23,7 @@ class ListModel extends Model
             'type' => 'integer',
             'game_idgame' => 'integer',
             'views' => 'integer',
+            'is_favorite_guide' => 'boolean',
         ];
     }
 

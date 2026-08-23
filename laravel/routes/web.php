@@ -17,6 +17,7 @@ use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\CombleController;
 use App\Http\Controllers\ComboController;
 use App\Http\Controllers\ComboListController;
+use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\ListCategoryController;
 use App\Http\Controllers\ListComboPickerController;
@@ -24,6 +25,7 @@ use App\Http\Controllers\ListController;
 use App\Http\Controllers\ListPageController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\PreferenceController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TierListController;
 use App\Http\Controllers\TimelineController;
 use App\Http\Controllers\UserController;
@@ -73,6 +75,8 @@ Route::middleware(['auth', 'trusted'])->group(function () {
     Route::post('/users', [UserController::class, 'store'])->middleware('throttle:10,1')->name('users.store');
 });
 
+Route::get('/users/{user}', [ProfileController::class, 'show'])->name('users.show');
+
 Route::get('/games', [GameController::class, 'index'])->name('games.index');
 Route::get('/games/add', [GameController::class, 'create'])->middleware(['auth', 'trusted'])->name('games.create');
 Route::post('/games', [GameController::class, 'store'])->middleware(['auth', 'trusted', 'throttle:10,1'])->name('games.store');
@@ -94,6 +98,8 @@ Route::get('/combos/{combo}/edit', [ComboController::class, 'edit'])->middleware
 Route::post('/combos/{combo}/edit', [ComboController::class, 'update'])->middleware(['auth', 'throttle:10,1'])->name('combos.update');
 Route::post('/combos/{combo}/delete', [ComboController::class, 'destroy'])->middleware(['auth', 'throttle:10,1'])->name('combos.destroy');
 Route::post('/combos/{combo}/lists/{list}', [ComboListController::class, 'store'])->middleware(['auth', 'throttle:60,1'])->name('combos.lists.store');
+Route::post('/combos/{combo}/favorite', [FavoriteController::class, 'store'])->middleware(['auth', 'throttle:60,1'])->name('favorites.store');
+Route::post('/combos/{combo}/unfavorite', [FavoriteController::class, 'destroy'])->middleware(['auth', 'throttle:60,1'])->name('favorites.destroy');
 
 Route::get('/lists', [ListController::class, 'index'])->name('lists.index');
 Route::get('/lists/search', [ListController::class, 'search'])->name('lists.search');

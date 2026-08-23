@@ -99,6 +99,51 @@ window.addComboToList = function (button, listId, comboId) {
         });
 };
 
+window.toggleFavorite = function (button, comboId) {
+    if (button.disabled) {
+        return;
+    }
+
+    const wasFavorited = button.dataset.favorited === '1';
+    const action = wasFavorited ? 'unfavorite' : 'favorite';
+    const originalText = button.textContent.trim();
+
+    button.disabled = true;
+    button.textContent = wasFavorited ? 'Removing…' : 'Adding…';
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+
+    fetch(`/combos/${comboId}/${action}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+        },
+    })
+        .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
+        .then(({ ok, data }) => {
+            button.disabled = false;
+
+            if (! ok) {
+                button.textContent = data.error || data.message || 'Could not update favorite.';
+                setTimeout(() => { button.textContent = originalText; }, 3000);
+                return;
+            }
+
+            const nowFavorited = ! wasFavorited;
+            button.dataset.favorited = nowFavorited ? '1' : '0';
+            button.classList.toggle('btn-warning', nowFavorited);
+            button.classList.toggle('btn-outline-warning', ! nowFavorited);
+            button.textContent = nowFavorited ? '★ Favorited' : '☆ Favorite';
+        })
+        .catch(() => {
+            button.disabled = false;
+            button.textContent = 'Could not update favorite.';
+            setTimeout(() => { button.textContent = originalText; }, 3000);
+        });
+};
+
 window.showDIV = function (divId) {
     const el = document.getElementById(divId);
     if (el.style.display === 'none') {

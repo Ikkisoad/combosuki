@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
@@ -37,6 +38,19 @@ class User extends Authenticatable
     public function lists(): HasMany
     {
         return $this->hasMany(ListModel::class, 'user_iduser');
+    }
+
+    public function favoriteGuide(): HasOne
+    {
+        return $this->hasOne(ListModel::class, 'user_iduser')->where('is_favorite_guide', true);
+    }
+
+    public function getOrCreateFavoriteGuide(): ListModel
+    {
+        return ListModel::firstOrCreate(
+            ['user_iduser' => $this->iduser, 'is_favorite_guide' => true],
+            ['list_name' => 'Favorites', 'game_idgame' => null, 'type' => 0, 'password' => ''],
+        );
     }
 
     public function tierLists(): HasMany

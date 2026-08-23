@@ -203,7 +203,9 @@ class CombleController extends Controller
 
     /**
      * A Wordle-style shareable summary: one row of squares per guess (green
-     * for a correct column, red for a wrong one), no spoilers.
+     * for a correct column, red for a wrong one), no spoilers. Starter uses
+     * circles rather than squares, since (unlike the others) it's optional
+     * to even guess.
      */
     private function shareText(array $guesses, bool $won, Carbon $day): string
     {
@@ -212,9 +214,9 @@ class CombleController extends Controller
             $guess['character_correct'] ? '🟩' : '🟥',
             $guess['type_correct'] ? '🟩' : '🟥',
             match ($guess['starter_result']) {
-                'correct' => '🟩',
-                'partial' => '🟧',
-                default => '🟥',
+                'correct' => '🟢',
+                'partial' => '🟠',
+                default => '🔴',
             },
             match ($guess['damage_hint']) {
                 'equal' => '🎯',
@@ -233,7 +235,10 @@ class CombleController extends Controller
         return implode("\n", array_merge(
             ['Comble '.$day->toDateString().' '.$score, ''],
             $rows,
-            ['', $link]
+            // Angle brackets are Discord's syntax for suppressing a link's
+            // embed/preview — without them, pasting the share text drops a
+            // big "Comble" card under the message, drowning out the squares.
+            ['', "<{$link}>"]
         ));
     }
 

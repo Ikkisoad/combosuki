@@ -114,6 +114,48 @@ class CombleTest extends TestCase
             ->assertDontSee('X/5', false);
     }
 
+    /**
+     * The starter guess is optional, unlike game/character/type/damage — the
+     * share text uses circles instead of squares for its result so that
+     * stands out from the rest of the row.
+     */
+    public function test_the_share_texts_starter_result_uses_circles_not_squares(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $type = $this->makeType($game);
+        $this->makeCombo($character, $type, ['combo' => 'AAA BBB CCC DDD EEE']);
+
+        // Correct starter guess ('AAA BB' is the first 6 raw characters).
+        $response = $this->submitGuess($this->guessPayload($game, $character, $type, 3000, 'AAA BB'));
+
+        $shareText = $this->showPage(cookie: $this->cookieFromResponse($response))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('🟢', $shareText);
+        $this->assertStringNotContainsString('🟩🟩🟩🟩', $shareText);
+    }
+
+    /**
+     * Angle brackets are Discord's syntax for suppressing a link's embed —
+     * without them, pasting the share text into Discord drops a big
+     * "Comble" preview card under the message, drowning out the squares.
+     */
+    public function test_the_share_texts_link_is_wrapped_to_suppress_discord_embeds(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $type = $this->makeType($game);
+        $this->makeCombo($character, $type);
+
+        $response = $this->submitGuess($this->guessPayload($game, $character, $type));
+
+        $this->showPage(cookie: $this->cookieFromResponse($response))
+            ->assertOk()
+            ->assertSee('<'.route('comble.show').'>');
+    }
+
     public function test_a_wrong_guess_keeps_the_puzzle_in_progress(): void
     {
         $game = $this->makeGame();

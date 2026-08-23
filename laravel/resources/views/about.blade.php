@@ -16,7 +16,7 @@
                             <p class="card-text">This application started as a fun project at the end of 2018, and the motivation to keep improving it is to help out the FGC assemble their findings and sort out the best options with specific sets of resources.</p>
                             <p class="card-text">Hopefully with this database we will be able to keep the best combos known, without losing them to endless feeds...</p>
                             <p class="card-text"><small class="text-muted">...</small></p>
-                            <a href="https://twitter.com/Ikkisoad" class="card-link" target="_blank">@Ikkisoad</a>
+                            <a href="https://bsky.app/profile/ikkisoad.combosuki.com" class="card-link" target="_blank">@ikkisoad.combosuki.com</a>
                         </div>
                     </div>
                 </div>
@@ -50,18 +50,59 @@
                 <img alt="" border="0" src="https://www.paypal.com/en_BR/i/scr/pixel.gif" width="1" height="1" />
             </form>
 
-            <h2>Similar websites</h2>
-            <a href="https://combotier.com/" class="card-link" target="_blank">Combotier</a>
-
-            <h2>Other FGC websites</h2>
-            <a href="https://supercombo.gg/" class="card-link" target="_blank">SuperCombo.gg</a>
-            <a href="https://glossary.infil.net/" class="card-link" target="_blank">The Fighting Game Glossary</a>
-            <a href="http://www.dustloop.com/" class="card-link" target="_blank">Dustloop wiki</a>
-            <a href="https://wiki.gbl.gg/" class="card-link" target="_blank">Mizuumi wiki</a>
-            <a href="https://www.dreamcancel.com/" class="card-link" target="_blank">Dream Cancel wiki</a>
-            <a href="https://srk.shib.live/w/Main_Page" class="card-link" target="_blank">Shoryuken wiki</a>
-            <a href="https://fgcombo.com/" class="card-link" target="_blank">FGCombo</a>
-            <a href="https://www.top8er.com/" class="card-link" target="_blank">Top8er</a>
+            <div class="sidebar-backdrop mb-3 d-inline-block">
+                <h3>Other FGC websites</h3>
+                <div class="d-flex flex-wrap column-gap-4 row-gap-2">
+                    <a href="https://supercombo.gg/" target="_blank" class="sidebar-character-link align-items-center gap-1" aria-label="Open SuperCombo.gg">
+                        SuperCombo.gg
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 3l6 5-6 5" />
+                        </svg>
+                    </a>
+                    <a href="https://glossary.infil.net/" target="_blank" class="sidebar-character-link align-items-center gap-1" aria-label="Open The Fighting Game Glossary">
+                        The Fighting Game Glossary
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 3l6 5-6 5" />
+                        </svg>
+                    </a>
+                    <a href="http://www.dustloop.com/" target="_blank" class="sidebar-character-link align-items-center gap-1" aria-label="Open Dustloop wiki">
+                        Dustloop wiki
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 3l6 5-6 5" />
+                        </svg>
+                    </a>
+                    <a href="https://wiki.gbl.gg/" target="_blank" class="sidebar-character-link align-items-center gap-1" aria-label="Open Mizuumi wiki">
+                        Mizuumi wiki
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 3l6 5-6 5" />
+                        </svg>
+                    </a>
+                    <a href="https://www.dreamcancel.com/" target="_blank" class="sidebar-character-link align-items-center gap-1" aria-label="Open Dream Cancel wiki">
+                        Dream Cancel wiki
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 3l6 5-6 5" />
+                        </svg>
+                    </a>
+                    <a href="https://srk.shib.live/w/Main_Page" target="_blank" class="sidebar-character-link align-items-center gap-1" aria-label="Open Shoryuken wiki">
+                        Shoryuken wiki
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 3l6 5-6 5" />
+                        </svg>
+                    </a>
+                    <a href="https://fgcombo.com/" target="_blank" class="sidebar-character-link align-items-center gap-1" aria-label="Open FGCombo">
+                        FGCombo
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 3l6 5-6 5" />
+                        </svg>
+                    </a>
+                    <a href="https://www.top8er.com/" target="_blank" class="sidebar-character-link align-items-center gap-1" aria-label="Open Top8er">
+                        Top8er
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 3l6 5-6 5" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </x-layouts.app>

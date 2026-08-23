@@ -54,6 +54,13 @@
                                 @endcan
                                 <button style="float: right;" class="btn btn-secondary" onclick="change_display()">Display Method</button>
                                 @auth
+                                    <button type="button"
+                                            class="btn {{ $isFavorited ? 'btn-warning' : 'btn-outline-warning' }}"
+                                            style="float: right;"
+                                            data-favorited="{{ $isFavorited ? '1' : '0' }}"
+                                            onclick="toggleFavorite(this, {{ $combo->idcombo }})">
+                                        {{ $isFavorited ? '★ Favorited' : '☆ Favorite' }}
+                                    </button>
                                     @if ($userLists->isNotEmpty())
                                         <div class="dropdown d-inline-block" style="float: right;">
                                             <button class="btn btn-secondary dropdown-toggle" type="button" id="addToListDropdown" data-bs-toggle="dropdown" aria-expanded="false">
