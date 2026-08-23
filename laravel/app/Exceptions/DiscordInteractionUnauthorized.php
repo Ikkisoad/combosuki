@@ -12,7 +12,7 @@ use RuntimeException;
  */
 class DiscordInteractionUnauthorized extends RuntimeException
 {
-    public function __construct(string $message = "This isn't your Comble game — run `/combo comble` to start your own!")
+    public function __construct(string $message = "This isn't your Comble game — run `/csk comble` to start your own!")
     {
         parent::__construct($message);
     }

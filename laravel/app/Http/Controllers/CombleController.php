@@ -8,6 +8,7 @@ use App\Models\Game;
 use App\Models\GameEntry;
 use App\Services\CombleDailyCombo;
 use App\Services\CombleGuessEvaluator;
+use App\Support\DailyGameClock;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -107,17 +108,17 @@ class CombleController extends Controller
     private function resolveDate(?string $date): Carbon
     {
         if ($date === null) {
-            return now()->startOfDay();
+            return DailyGameClock::today();
         }
 
         try {
-            $day = Carbon::createFromFormat('!Y-m-d', $date);
+            $day = Carbon::createFromFormat('!Y-m-d', $date, DailyGameClock::TIMEZONE);
         } catch (\Throwable) {
             abort(404);
         }
 
         abort_if($day->format('Y-m-d') !== $date, 404);
-        abort_if($day->gt(now()->startOfDay()), 404);
+        abort_if($day->gt(DailyGameClock::today()), 404);
 
         return $day;
     }

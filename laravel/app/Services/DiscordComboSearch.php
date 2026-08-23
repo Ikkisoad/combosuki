@@ -16,7 +16,7 @@ class DiscordComboSearch
     public function __construct(private VideoEmbedResolver $videoResolver) {}
 
     /**
-     * Handle the text-based `/combo search` interaction's `data` payload and
+     * Handle the text-based `/csk search` interaction's `data` payload and
      * return the Discord interaction response `data` object. $channelId
      * (from the interaction envelope, not `data`) is passed through to
      * runSearch() — see its docblock.
@@ -68,7 +68,7 @@ class DiscordComboSearch
      * field names — `combo`, `characterid`, and any primary resource's
      * text_name with spaces replaced by underscores — to values) and return
      * the Discord interaction response `data` object. Shared by the
-     * text-based `/combo search` command and DiscordComboWizard's dropdown
+     * text-based `/csk search` command and DiscordComboWizard's dropdown
      * flow, so both stay behind one query-building/response-formatting path.
      *
      * $channelId, when given, is used to post a real bot channel message

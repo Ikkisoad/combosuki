@@ -9,7 +9,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 /**
- * Drives the `/combo browse` dropdown flow: game -> character -> the game's
+ * Drives the `/csk browse` dropdown flow: game -> character -> the game's
  * primary resource filters -> results, each step re-rendering the same
  * (ephemeral) message via a Discord MESSAGE_COMPONENT (or MODAL_SUBMIT)
  * interaction.

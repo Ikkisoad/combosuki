@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Http\Controllers\Concerns\FiltersCombos;
 use App\Models\Character;
 use App\Models\CharacterQuery;
+use App\Support\DailyGameClock;
 use Carbon\CarbonInterface;
 
 class DailyChallenge
@@ -13,7 +14,7 @@ class DailyChallenge
 
     public function today(): array
     {
-        return $this->forDate(now());
+        return $this->forDate(DailyGameClock::today());
     }
 
     /**

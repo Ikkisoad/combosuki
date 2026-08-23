@@ -7,6 +7,7 @@ use App\Models\Character;
 use App\Models\Combo;
 use App\Models\Game;
 use App\Models\GameEntry;
+use App\Support\DailyGameClock;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
@@ -19,7 +20,7 @@ use Illuminate\Support\Str;
  * past-date archive isn't exposed here.
  *
  * Unlike DiscordComboWizard, accumulated guesses aren't threaded through
- * custom_id: they need to persist across a user's separate `/combo comble`
+ * custom_id: they need to persist across a user's separate `/csk comble`
  * invocations for the same day, so they're kept server-side in cache, keyed
  * by Discord user id + date — mirroring the web version's per-day cookie,
  * just server-side since Discord interactions carry no cookies. Only the
@@ -133,7 +134,7 @@ class DiscordCombleGame
         $state = $this->decodeState($stateRaw);
         $this->assertOwner($state, $userId);
 
-        $day = now()->startOfDay();
+        $day = DailyGameClock::today();
         $target = $this->dailyCombo->forDate($day);
 
         if (count($this->picks($userId, $day)) >= self::MAX_GUESSES) {
@@ -202,7 +203,9 @@ class DiscordCombleGame
         $stateRaw = $this->encodeState($state);
 
         return [
-            'embeds' => [['title' => 'Comble', 'description' => "**Game:** {$game->name}\nNow choose a character."]],
+            // No "Game: {$game->name}" here — this message is public, and
+            // echoing the pick back would spoil it for everyone watching.
+            'embeds' => [['title' => 'Comble', 'description' => 'Now choose a character.']],
             'components' => [
                 $this->actionRow([$this->select("cb:char::{$stateRaw}", 'Choose a character', $options)]),
             ],
@@ -232,7 +235,9 @@ class DiscordCombleGame
         $stateRaw = $this->encodeState($state);
 
         return [
-            'embeds' => [['title' => 'Comble', 'description' => "**Game:** {$game->name}\n**Character:** {$character->name}\nNow choose a type — you'll be asked to guess the damage next."]],
+            // No "Game"/"Character" line here either — same reasoning as
+            // characterStep(): this message is public.
+            'embeds' => [['title' => 'Comble', 'description' => "Now choose a type — you'll be asked to guess the damage next."]],
             'components' => [
                 $this->actionRow([$this->select("cb:type::{$stateRaw}", 'Choose a type', $options)]),
             ],
@@ -314,7 +319,7 @@ class DiscordCombleGame
     /** Shared progress data behind both publicStatus() and privateSummary(). */
     private function progress(string $userId): array
     {
-        $day = now()->startOfDay();
+        $day = DailyGameClock::today();
         $target = $this->dailyCombo->forDate($day);
         $game = $target->character->game;
 

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Character;
+use App\Models\CharacterQuery;
 use App\Models\Combo;
 use App\Models\Game;
 use App\Models\GameEntry;
@@ -104,7 +105,7 @@ class DiscordInteractionTest extends TestCase
         $response = $this->postInteraction([
             'type' => 2,
             'data' => [
-                'name' => 'combo',
+                'name' => 'csk',
                 'options' => [
                     [
                         'name' => 'search',
@@ -150,7 +151,7 @@ class DiscordInteractionTest extends TestCase
             'type' => 2,
             'channel_id' => '999888777',
             'data' => [
-                'name' => 'combo',
+                'name' => 'csk',
                 'options' => [
                     [
                         'name' => 'search',
@@ -197,7 +198,7 @@ class DiscordInteractionTest extends TestCase
         $response = $this->postInteraction([
             'type' => 2,
             'data' => [
-                'name' => 'combo',
+                'name' => 'csk',
                 'options' => [
                     [
                         'name' => 'search',
@@ -223,7 +224,7 @@ class DiscordInteractionTest extends TestCase
         $response = $this->postInteraction([
             'type' => 2,
             'data' => [
-                'name' => 'combo',
+                'name' => 'csk',
                 'options' => [
                     [
                         'name' => 'search',
@@ -248,7 +249,7 @@ class DiscordInteractionTest extends TestCase
         $response = $this->postInteraction([
             'type' => 2,
             'data' => [
-                'name' => 'combo',
+                'name' => 'csk',
                 'options' => [
                     [
                         'name' => 'search',
@@ -288,7 +289,7 @@ class DiscordInteractionTest extends TestCase
 
         $response = $this->postInteraction([
             'type' => 2,
-            'data' => ['name' => 'combo', 'options' => [['name' => 'browse']]],
+            'data' => ['name' => 'csk', 'options' => [['name' => 'browse']]],
         ]);
 
         $response->assertOk()->assertJson(['type' => 4]);
@@ -488,7 +489,7 @@ class DiscordInteractionTest extends TestCase
 
         $response = $this->postInteraction(array_merge([
             'type' => 2,
-            'data' => ['name' => 'combo', 'options' => [['name' => 'comble']]],
+            'data' => ['name' => 'csk', 'options' => [['name' => 'comble']]],
         ], $this->memberPayload('owner-1')));
 
         $response->assertOk()->assertJson(['type' => 4]);
@@ -503,6 +504,40 @@ class DiscordInteractionTest extends TestCase
         $description = $response->json('data.embeds.0.description');
         $this->assertStringNotContainsString('AAA', $description);
         $this->assertStringNotContainsString('▁', $description);
+    }
+
+    /**
+     * characterStep()/typeStep() update the same public message the game
+     * dropdown lives on, so echoing "Game: X" / "Character: Y" back into it
+     * — as the code used to — would show the whole channel exactly what one
+     * player guessed while they're still mid-guess, well before it's even
+     * scored. Neither intermediate step should name the game or character
+     * just picked.
+     */
+    public function test_combo_comble_intermediate_steps_do_not_reveal_the_players_picks(): void
+    {
+        $game = Game::create(['name' => 'Secret Game Name', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Secret Character Name', 'game_idgame' => $game->idgame]);
+        $type = GameEntry::create(['title' => 'Combo', 'gameid' => $game->idgame, 'order' => 1]);
+        Combo::create([
+            'combo' => 'AAA BBB CCC DDD EEE',
+            'character_idcharacter' => $character->idcharacter,
+            'type' => $type->entryid,
+            'damage' => 3000,
+        ]);
+
+        $owner = 'owner-1';
+
+        $charStep = $this->postComponent('cb:game::u='.$owner, [(string) $game->idgame], $owner);
+        $charStep->assertOk();
+        $this->assertStringNotContainsString($game->name, $charStep->json('data.embeds.0.description'));
+
+        $charSelect = $charStep->json('data.components.0.components.0');
+        $typeStep = $this->postComponent($charSelect['custom_id'], [(string) $character->idcharacter], $owner);
+        $typeStep->assertOk();
+        $typeDescription = $typeStep->json('data.embeds.0.description');
+        $this->assertStringNotContainsString($game->name, $typeDescription);
+        $this->assertStringNotContainsString($character->name, $typeDescription);
     }
 
     public function test_combo_comble_full_flow_records_a_winning_guess(): void
@@ -622,7 +657,7 @@ class DiscordInteractionTest extends TestCase
         // below must reuse for a PATCH instead of another POST.
         $this->postInteraction(array_merge([
             'type' => 2,
-            'data' => ['name' => 'combo', 'options' => [['name' => 'comble']]],
+            'data' => ['name' => 'csk', 'options' => [['name' => 'comble']]],
         ], $this->memberPayload($owner)))->assertOk();
 
         $stateRaw = 'g='.$game->idgame.';c='.$wrongCharacter->idcharacter.';t='.$type->entryid.';u='.$owner;
@@ -692,7 +727,7 @@ class DiscordInteractionTest extends TestCase
 
         $response = $this->postInteraction(array_merge([
             'type' => 2,
-            'data' => ['name' => 'combo', 'options' => [['name' => 'comble']]],
+            'data' => ['name' => 'csk', 'options' => [['name' => 'comble']]],
         ], $this->memberPayload($owner)));
 
         // Public: the prior guess still counts, but only as a square — no name.
@@ -717,5 +752,72 @@ class DiscordInteractionTest extends TestCase
         $response->assertOk()->assertJson(['type' => 4]);
         $this->assertSame(64, $response->json('data.flags'));
         $this->assertStringContainsString("isn't your Comble game", $response->json('data.content'));
+    }
+
+    public function test_challenge_shows_todays_challenge_and_its_current_winning_combo(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Test Character', 'game_idgame' => $game->idgame]);
+        $query = CharacterQuery::create(['game_idgame' => $game->idgame, 'label' => 'Random Assist 1', 'filters' => [], 'order' => 0]);
+        $type = GameEntry::create(['title' => 'Combo', 'gameid' => $game->idgame, 'order' => 1]);
+
+        Combo::create([
+            'combo' => 'A > B > C',
+            'character_idcharacter' => $character->idcharacter,
+            'type' => $type->entryid,
+            'damage' => 1000,
+        ]);
+        $best = Combo::create([
+            'combo' => 'A > D > E',
+            'character_idcharacter' => $character->idcharacter,
+            'type' => $type->entryid,
+            'damage' => 5000,
+        ]);
+
+        $response = $this->postInteraction([
+            'type' => 2,
+            'data' => ['name' => 'csk', 'options' => [['name' => 'challenge']]],
+        ]);
+
+        $response->assertOk()->assertJson(['type' => 4]);
+
+        $title = $response->json('data.embeds.0.title');
+        $this->assertStringContainsString($game->name, $title);
+        $this->assertStringContainsString($character->name, $title);
+        $this->assertStringContainsString($query->label, $title);
+
+        $description = $response->json('data.embeds.0.description');
+        $this->assertStringContainsString('Character: '.$character->name, $description);
+
+        $this->assertSame('Current winning combo', $response->json('data.embeds.0.fields.0.name'));
+        $this->assertSame($best->combo, $response->json('data.embeds.0.fields.0.value'));
+        $this->assertSame('5000', $response->json('data.embeds.0.fields.1.value'));
+    }
+
+    public function test_challenge_invites_the_first_submission_when_no_combo_qualifies_yet(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        Character::create(['name' => 'Test Character', 'game_idgame' => $game->idgame]);
+        CharacterQuery::create(['game_idgame' => $game->idgame, 'label' => 'Random Assist 1', 'filters' => [], 'order' => 0]);
+
+        $response = $this->postInteraction([
+            'type' => 2,
+            'data' => ['name' => 'csk', 'options' => [['name' => 'challenge']]],
+        ]);
+
+        $response->assertOk()->assertJson(['type' => 4]);
+        $this->assertEmpty($response->json('data.embeds.0.fields'));
+        $this->assertStringContainsString('be the first to submit one', $response->json('data.embeds.0.description'));
+    }
+
+    public function test_challenge_reports_none_available_when_no_queries_are_configured(): void
+    {
+        $response = $this->postInteraction([
+            'type' => 2,
+            'data' => ['name' => 'csk', 'options' => [['name' => 'challenge']]],
+        ]);
+
+        $response->assertOk()->assertJson(['type' => 4]);
+        $this->assertStringContainsString('No challenge is available yet', $response->json('data.embeds.0.description'));
     }
 }

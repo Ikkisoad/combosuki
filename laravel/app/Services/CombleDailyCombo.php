@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Combo;
+use App\Support\DailyGameClock;
 use Carbon\CarbonInterface;
 
 class CombleDailyCombo
@@ -16,7 +17,7 @@ class CombleDailyCombo
 
     public function today(): Combo
     {
-        return $this->forDate(now());
+        return $this->forDate(DailyGameClock::today());
     }
 
     /**

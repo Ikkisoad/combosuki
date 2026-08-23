@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\DiscordInteractionUnauthorized;
+use App\Services\DiscordChallenge;
 use App\Services\DiscordCombleGame;
 use App\Services\DiscordComboSearch;
 use App\Services\DiscordComboWizard;
@@ -17,6 +18,7 @@ class DiscordInteractionController extends Controller
         private DiscordComboSearch $comboSearch,
         private DiscordComboWizard $wizard,
         private DiscordCombleGame $comble,
+        private DiscordChallenge $challenge,
     ) {}
 
     public function __invoke(Request $request): JsonResponse
@@ -40,6 +42,10 @@ class DiscordInteractionController extends Controller
         $data = $payload['data'] ?? [];
         $channelId = $payload['channel_id'] ?? null;
         $subcommand = $data['options'][0]['name'] ?? null;
+
+        if ($subcommand === 'challenge') {
+            return response()->json(['type' => 4, 'data' => $this->challenge->handle()]);
+        }
 
         if ($subcommand === 'browse') {
             $data = $this->wizard->start();
@@ -163,7 +169,7 @@ class DiscordInteractionController extends Controller
      * used to sit in front of it — any slowness reaching discord.com there
      * (DNS, TLS, a slow API response) delayed that ack and surfaced to
      * players as "The application did not respond" on every single
-     * `/combo comble` use. afterResponse() runs this only once Discord
+     * `/csk comble` use. afterResponse() runs this only once Discord
      * already has the real response in hand, so the follow-up can be as
      * slow as it wants without threatening the interaction itself.
      */

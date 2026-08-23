@@ -9,7 +9,7 @@ class RegisterDiscordCommands extends Command
 {
     protected $signature = 'discord:register-commands {--guild= : Register to a single guild for instant propagation instead of globally}';
 
-    protected $description = 'Register the /combo search and /combo browse slash commands with Discord';
+    protected $description = 'Register the /csk search, browse, comble, and challenge slash commands with Discord';
 
     public function handle(): int
     {
@@ -30,7 +30,7 @@ class RegisterDiscordCommands extends Command
 
         $response = Http::withToken($botToken, 'Bot')->asJson()->put($url, [
             [
-                'name' => 'combo',
+                'name' => 'csk',
                 'description' => 'Search the combo database',
                 'type' => 1,
                 'options' => [
@@ -67,6 +67,11 @@ class RegisterDiscordCommands extends Command
                     [
                         'name' => 'comble',
                         'description' => 'Play today\'s Comble puzzle — guess the combo behind the mystery notation',
+                        'type' => 1,
+                    ],
+                    [
+                        'name' => 'challenge',
+                        'description' => 'Show today\'s daily challenge and its current winning combo, if any',
                         'type' => 1,
                     ],
                 ],
