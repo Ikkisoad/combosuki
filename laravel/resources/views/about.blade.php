@@ -98,6 +98,12 @@
                             <path d="M5 3l6 5-6 5" />
                         </svg>
                     </a>
+                    <a href="https://replaytheater.app/" target="_blank" class="sidebar-character-link align-items-center gap-1" aria-label="Open Replay Theater">
+                        Replay Theater
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 3l6 5-6 5" />
+                        </svg>
+                    </a>
                 </div>
             </div>
         </div>
