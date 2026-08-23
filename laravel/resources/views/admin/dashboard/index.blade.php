@@ -39,6 +39,15 @@
                     </div>
                 </a>
             </div>
+            <div class="col-md-4">
+                <a href="{{ route('admin.donation.edit') }}" class="text-decoration-none">
+                    <div class="card combosuki-main-reversed text-white text-center p-4 h-100 admin-dashboard-tile">
+                        <div class="display-4 mb-2">💸</div>
+                        <h2 class="h4 mb-1">Donation Progress</h2>
+                        <p class="text-white-50 mb-0">Update the monthly server-costs donation bar</p>
+                    </div>
+                </a>
+            </div>
         </div>
     </div>
 

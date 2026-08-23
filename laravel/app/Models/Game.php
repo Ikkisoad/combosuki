@@ -15,6 +15,7 @@ class Game extends Model
 
     protected $fillable = [
         'name', 'complete', 'image', 'globalPass', 'modPass', 'patch', 'description', 'notation',
+        'matches_enabled', 'matches_url',
     ];
 
     protected $hidden = ['globalPass', 'modPass'];
@@ -23,6 +24,7 @@ class Game extends Model
     {
         return [
             'views' => 'integer',
+            'matches_enabled' => 'boolean',
         ];
     }
 
@@ -113,5 +115,10 @@ class Game extends Model
     public function tierLists(): HasMany
     {
         return $this->hasMany(TierList::class, 'game_idgame');
+    }
+
+    public function matches(): HasMany
+    {
+        return $this->hasMany(GameMatch::class, 'game_idgame');
     }
 }

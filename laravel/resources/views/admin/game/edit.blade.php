@@ -38,6 +38,14 @@
                 <span class="input-group-text">Aliases:</span>
                 <input type="text" name="aliases" class="form-control" maxlength="1000" value="{{ old('aliases', $game->aliases->pluck('alias')->implode(', ')) }}" placeholder="Comma-separated, e.g. SF6, Street Fighter 6">
             </div>
+            <div class="form-check mb-3">
+                <input type="checkbox" name="matches_enabled" id="matches_enabled" class="form-check-input" value="1" @checked(old('matches_enabled', $game->matches_enabled))>
+                <label class="form-check-label" for="matches_enabled">Enable Matches feature</label>
+            </div>
+            <div class="input-group mb-3">
+                <span class="input-group-text">External Matches Database Link:</span>
+                <input type="text" name="matches_url" class="form-control" maxlength="255" value="{{ old('matches_url', $game->matches_url) }}" placeholder="If matches for this game are already tracked elsewhere, link it here.">
+            </div>
             <div class="btn-group">
                 <button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Update</button>
                 <button type="submit" name="action" value="Delete" class="btn btn-danger btn-block" onclick="return confirm('Are you sure you want to delete this game?');">Delete</button>

@@ -43,12 +43,9 @@
             Submissions total: {{ $comboCount }}
 
             <br>You can help me pay server costs by donating through Paypal, there is also other ways to help this project; By submitting your combos and tech you can help not only this database grow, but make it easier for other people to improve their gameplay.
-            <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-                <input type="hidden" name="cmd" value="_s-xclick" />
-                <input type="hidden" name="hosted_button_id" value="JNX6A2HZETH5Y" />
-                <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
-                <img alt="" border="0" src="https://www.paypal.com/en_BR/i/scr/pixel.gif" width="1" height="1" />
-            </form>
+            <div>
+                <x-donation-bar />
+            </div>
 
             <div class="sidebar-backdrop mb-3 d-inline-block">
                 <h3>Other FGC websites</h3>

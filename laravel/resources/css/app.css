@@ -202,3 +202,34 @@ body {
     border-color: #FA591C #FA591C #020202;
     border-bottom-width: 3px;
 }
+
+.donate {
+    display: block;
+    color: white;
+    text-decoration: none;
+}
+
+.donate:hover {
+    color: #FA591C;
+}
+
+.donate__title {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-weight: bold;
+}
+
+.donate__bar {
+    height: 0.9rem;
+    margin-bottom: 0.4rem;
+    background-color: #2E2E2E;
+}
+
+.donate__fill-bar {
+    background-color: #FA591C;
+}
+
+.donate__text--yellow {
+    color: #f1c40f;
+    font-weight: bold;
+}

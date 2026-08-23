@@ -130,6 +130,11 @@
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="damage-stats-tab" data-bs-toggle="tab" data-bs-target="#damage-stats-pane" type="button" role="tab" aria-controls="damage-stats-pane" aria-selected="false">Damage Stats</button>
                     </li>
+                    @if ($game->matches_enabled || $game->matches_url)
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="matches-tab" data-bs-toggle="tab" data-bs-target="#matches-pane" type="button" role="tab" aria-controls="matches-pane" aria-selected="false">Latest Matches</button>
+                        </li>
+                    @endif
                 </ul>
 
                 <div class="tab-content combosuki-main-reversed text-white p-3 border border-top-0" id="game-tabs-content">
@@ -214,6 +219,12 @@
                     <div class="tab-pane fade" id="damage-stats-pane" role="tabpanel" aria-labelledby="damage-stats-tab">
                         <div id="damage-stats-results" data-endpoint="{{ route('games.tabs.damage-stats', $game) }}"></div>
                     </div>
+
+                    @if ($game->matches_enabled || $game->matches_url)
+                        <div class="tab-pane fade" id="matches-pane" role="tabpanel" aria-labelledby="matches-tab">
+                            <div id="matches-results" data-endpoint="{{ route('games.tabs.matches', $game) }}"></div>
+                        </div>
+                    @endif
                 </div>
             </main>
         </div>
@@ -227,6 +238,8 @@
             var mostViewedResults = document.getElementById('most-viewed-results');
             var damageStatsTabButton = document.getElementById('damage-stats-tab');
             var damageStatsResults = document.getElementById('damage-stats-results');
+            var matchesTabButton = document.getElementById('matches-tab');
+            var matchesResults = document.getElementById('matches-results');
             var tierListsTabButton = document.getElementById('tier-lists-tab');
             var tierListsPane = document.getElementById('tier-lists-pane');
             var tierResults = document.getElementById('tier-lists-results');
@@ -303,6 +316,22 @@
                     });
             }
 
+            function loadMatches() {
+                if (matchesResults.dataset.loaded === '1') {
+                    return;
+                }
+                matchesResults.innerHTML = '<p class="text-white-50">Loading&hellip;</p>';
+                fetch(matchesResults.dataset.endpoint)
+                    .then(function (response) { return response.text(); })
+                    .then(function (html) {
+                        matchesResults.innerHTML = html;
+                        matchesResults.dataset.loaded = '1';
+                    })
+                    .catch(function () {
+                        matchesResults.innerHTML = '<p class="text-danger">Failed to load matches.</p>';
+                    });
+            }
+
             function activateTab(tabButton, pane) {
                 document.querySelectorAll('#game-tabs .nav-link').forEach(function (el) {
                     el.classList.remove('active');
@@ -319,6 +348,10 @@
             guidesTabButton.addEventListener('shown.bs.tab', loadGuides);
             mostViewedTabButton.addEventListener('shown.bs.tab', loadMostViewed);
             damageStatsTabButton.addEventListener('shown.bs.tab', loadDamageStats);
+
+            if (matchesTabButton) {
+                matchesTabButton.addEventListener('shown.bs.tab', loadMatches);
+            }
 
             tierListsTabButton.addEventListener('shown.bs.tab', function () {
                 if (tierResults.dataset.loaded !== '1') {

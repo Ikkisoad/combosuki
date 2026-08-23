@@ -9,6 +9,7 @@ use App\Models\CharacterQuery;
 use App\Models\Combo;
 use App\Models\Game;
 use App\Models\GameEntry;
+use App\Models\GameMatch;
 use App\Models\GameResource;
 use App\Models\ListModel;
 use App\Models\ResourceValue;
@@ -203,6 +204,21 @@ class GameController extends Controller
             'topCharacterEntry' => $topCharacterEntry,
             'characterAverages' => $characterAverages,
         ]);
+    }
+
+    public function matchesTab(Game $game): View
+    {
+        $latestMatches = collect();
+
+        if ($game->matches_enabled) {
+            $latestMatches = GameMatch::where('game_idgame', $game->idgame)
+                ->with(['playerOneCharacter', 'playerTwoCharacter', 'playerOneUser', 'playerTwoUser'])
+                ->orderByDesc('played_at')
+                ->limit(5)
+                ->get();
+        }
+
+        return view('games.partials.matches-tab', ['game' => $game, 'latestMatches' => $latestMatches]);
     }
 
     public function tierListsTab(Game $game, Request $request, TierListAggregator $tierListAggregator): View

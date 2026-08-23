@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -12,6 +13,27 @@ class UserController extends Controller
     public function create(): View
     {
         return view('users.create');
+    }
+
+    /**
+     * Nickname typeahead for linking a match participant to their account
+     * (see components.matches.player-fields) without loading every user
+     * into a giant <select>.
+     */
+    public function search(Request $request): JsonResponse
+    {
+        $search = trim($request->string('q'));
+
+        if (mb_strlen($search) < 2) {
+            return response()->json([]);
+        }
+
+        $users = User::where('nickname', 'like', '%'.$search.'%')
+            ->orderBy('nickname')
+            ->limit(10)
+            ->get(['iduser', 'nickname']);
+
+        return response()->json($users);
     }
 
     public function store(Request $request): RedirectResponse

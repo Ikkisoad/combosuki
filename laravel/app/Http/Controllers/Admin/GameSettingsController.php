@@ -28,6 +28,7 @@ class GameSettingsController extends Controller
             'description' => ['nullable', 'string', 'max:255'],
             'notation' => ['nullable', 'string', 'max:1000'],
             'aliases' => ['nullable', 'string', 'max:1000'],
+            'matches_url' => ['nullable', 'string', 'max:255'],
         ]);
 
         // TODO: record which user made this edit once an audit/edit-log exists
@@ -50,6 +51,8 @@ class GameSettingsController extends Controller
                 'patch' => $validated['patch'] ?? null,
                 'description' => $validated['description'] ?? null,
                 'notation' => $validated['notation'] ?? null,
+                'matches_enabled' => $request->boolean('matches_enabled'),
+                'matches_url' => $validated['matches_url'] ?? null,
             ]);
 
             // Matched case-insensitively (mirroring the DB's case-insensitive

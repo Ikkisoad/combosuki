@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\ButtonController;
 use App\Http\Controllers\Admin\CharacterController as AdminCharacterController;
 use App\Http\Controllers\Admin\CharacterQueryController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DonationController;
 use App\Http\Controllers\Admin\GameEntryController;
 use App\Http\Controllers\Admin\GameListController;
 use App\Http\Controllers\Admin\GameResourceController;
@@ -24,6 +25,7 @@ use App\Http\Controllers\ListComboPickerController;
 use App\Http\Controllers\ListController;
 use App\Http\Controllers\ListPageController;
 use App\Http\Controllers\LogController;
+use App\Http\Controllers\MatchController;
 use App\Http\Controllers\PreferenceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TierListController;
@@ -68,6 +70,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/users/{user}/trusted', [AdminUserController::class, 'updateTrusted'])->middleware('throttle:10,1')->name('users.trusted.update');
 
     Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics');
+
+    Route::get('/donation', [DonationController::class, 'edit'])->name('donation.edit');
+    Route::put('/donation', [DonationController::class, 'update'])->middleware('throttle:10,1')->name('donation.update');
 });
 
 Route::middleware(['auth', 'trusted'])->group(function () {
@@ -75,6 +80,7 @@ Route::middleware(['auth', 'trusted'])->group(function () {
     Route::post('/users', [UserController::class, 'store'])->middleware('throttle:10,1')->name('users.store');
 });
 
+Route::get('/users/search', [UserController::class, 'search'])->middleware('auth')->name('users.search');
 Route::get('/users/{user}', [ProfileController::class, 'show'])->name('users.show');
 
 Route::get('/games', [GameController::class, 'index'])->name('games.index');
@@ -85,6 +91,7 @@ Route::get('/games/{game}/tabs/guides', [GameController::class, 'guidesTab'])->n
 Route::get('/games/{game}/tabs/tier-lists', [GameController::class, 'tierListsTab'])->name('games.tabs.tier-lists');
 Route::get('/games/{game}/tabs/most-viewed', [GameController::class, 'mostViewedTab'])->name('games.tabs.most-viewed');
 Route::get('/games/{game}/tabs/damage-stats', [GameController::class, 'damageStatsTab'])->name('games.tabs.damage-stats');
+Route::get('/games/{game}/tabs/matches', [GameController::class, 'matchesTab'])->name('games.tabs.matches');
 
 Route::scopeBindings()->group(function () {
     Route::get('/games/{game}/characters/{character}', [CharacterController::class, 'show'])->name('characters.show');
@@ -100,6 +107,13 @@ Route::post('/combos/{combo}/delete', [ComboController::class, 'destroy'])->midd
 Route::post('/combos/{combo}/lists/{list}', [ComboListController::class, 'store'])->middleware(['auth', 'throttle:60,1'])->name('combos.lists.store');
 Route::post('/combos/{combo}/favorite', [FavoriteController::class, 'store'])->middleware(['auth', 'throttle:60,1'])->name('favorites.store');
 Route::post('/combos/{combo}/unfavorite', [FavoriteController::class, 'destroy'])->middleware(['auth', 'throttle:60,1'])->name('favorites.destroy');
+
+Route::get('/games/{game}/matches', [MatchController::class, 'index'])->name('games.matches.index');
+Route::get('/games/{game}/matches/add', [MatchController::class, 'create'])->middleware('auth')->name('games.matches.create');
+Route::post('/games/{game}/matches', [MatchController::class, 'store'])->middleware(['auth', 'throttle:10,1'])->name('games.matches.store');
+Route::get('/matches/{gameMatch}/edit', [MatchController::class, 'edit'])->middleware('auth')->name('matches.edit');
+Route::post('/matches/{gameMatch}/edit', [MatchController::class, 'update'])->middleware(['auth', 'throttle:10,1'])->name('matches.update');
+Route::post('/matches/{gameMatch}/delete', [MatchController::class, 'destroy'])->middleware(['auth', 'throttle:10,1'])->name('matches.destroy');
 
 Route::get('/lists', [ListController::class, 'index'])->name('lists.index');
 Route::get('/lists/search', [ListController::class, 'search'])->name('lists.search');
@@ -129,8 +143,6 @@ Route::get('/tier-lists', [TierListController::class, 'index'])->name('tier-list
 Route::get('/tier-lists/create', [TierListController::class, 'create'])->middleware('auth')->name('tier-lists.create');
 Route::post('/tier-lists', [TierListController::class, 'store'])->middleware(['auth', 'throttle:10,1'])->name('tier-lists.store');
 Route::get('/tier-lists/{tierList}', [TierListController::class, 'show'])->name('tier-lists.show');
-
-Route::view('/matches', 'matches.index')->name('matches.index');
 
 Route::view('/combo-guidelines', 'combo-guidelines')->name('combo-guidelines');
 
