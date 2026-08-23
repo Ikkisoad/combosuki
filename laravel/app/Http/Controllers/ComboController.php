@@ -45,7 +45,7 @@ class ComboController extends Controller
             ->with(['character', 'listingType', 'resources.resourceValue', 'user'])
             ->whereHas('character', fn (Builder $q) => $q->where('game_idgame', $game->idgame));
 
-        $this->applyFilters($query, $request, $primaryResources);
+        $this->applyFilters($query, $request, $primaryResources, $game);
 
         $this->applyOrdering($query, $request);
 

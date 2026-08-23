@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Concerns;
 
+use App\Models\Button;
 use App\Models\Combo;
 use App\Models\Game;
 use App\Models\GameEntry;
@@ -35,7 +36,7 @@ trait FiltersCombos
             ->with(['character', 'listingType'])
             ->whereHas('character', fn (Builder $q) => $q->where('game_idgame', $game->idgame));
 
-        $this->applyFilters($query, $request, $primaryResources);
+        $this->applyFilters($query, $request, $primaryResources, $game);
         $this->applyOrdering($query, $request);
 
         return $query->limit($limit)->get();
@@ -128,7 +129,7 @@ trait FiltersCombos
         return $descriptions;
     }
 
-    private function applyFilters(Builder $query, Request $request, $primaryResources): void
+    private function applyFilters(Builder $query, Request $request, $primaryResources, Game $game): void
     {
         if ($request->filled('combo')) {
             $mode = $request->integer('combolike', 0);
@@ -140,10 +141,20 @@ trait FiltersCombos
                 default => $value.'%',
             };
 
-            $normalizedPattern = str_replace([' ', '>'], '', $pattern);
+            $ignoredTokens = [
+                ' ',
+                ...Button::where('game_idgame', $game->idgame)->where('ignored', true)->pluck('name'),
+            ];
+
+            $normalizedPattern = str_replace($ignoredTokens, '', $pattern);
             $operator = $mode === 3 ? 'NOT LIKE' : 'LIKE';
 
-            $query->whereRaw("REPLACE(REPLACE(combo, ' ', ''), '>', '') {$operator} ?", [$normalizedPattern]);
+            $comboSql = 'combo';
+            foreach ($ignoredTokens as $token) {
+                $comboSql = "REPLACE({$comboSql}, ?, '')";
+            }
+
+            $query->whereRaw("{$comboSql} {$operator} ?", [...$ignoredTokens, $normalizedPattern]);
         }
 
         if ($request->filled('damage')) {

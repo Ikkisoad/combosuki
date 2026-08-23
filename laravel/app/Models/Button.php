@@ -11,7 +11,14 @@ class Button extends Model
 
     protected $primaryKey = 'idbutton';
 
-    protected $fillable = ['name', 'color', 'match_type', 'game_idgame', 'order'];
+    protected $fillable = ['name', 'color', 'match_type', 'game_idgame', 'order', 'ignored'];
+
+    protected function casts(): array
+    {
+        return [
+            'ignored' => 'boolean',
+        ];
+    }
 
     public function game(): BelongsTo
     {

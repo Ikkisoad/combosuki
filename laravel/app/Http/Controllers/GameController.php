@@ -57,7 +57,12 @@ class GameController extends Controller
             ]);
 
             foreach (self::DEFAULT_BUTTONS as $order => $name) {
-                Button::create(['name' => $name, 'game_idgame' => $game->idgame, 'order' => $order]);
+                Button::create([
+                    'name' => $name,
+                    'game_idgame' => $game->idgame,
+                    'order' => $order,
+                    'ignored' => $name === '>',
+                ]);
             }
 
             Character::create(['name' => 'Combo Chan', 'game_idgame' => $game->idgame]);

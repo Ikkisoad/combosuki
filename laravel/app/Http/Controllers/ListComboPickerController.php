@@ -46,7 +46,7 @@ class ListComboPickerController extends Controller
             ->whereHas('character', fn (Builder $q) => $q->where('game_idgame', $game->idgame))
             ->whereDoesntHave('lists', fn (Builder $q) => $q->where('list.idlist', $list->idlist));
 
-        $this->applyFilters($query, $request, $primaryResources);
+        $this->applyFilters($query, $request, $primaryResources, $game);
         $this->applyOrdering($query, $request);
 
         $combos = $query->paginate(20)->withQueryString();

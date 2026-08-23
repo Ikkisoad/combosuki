@@ -27,6 +27,7 @@ class ButtonController extends Controller
             'color' => ['required_if:action,Add,Update', 'nullable', 'string', 'max:7'],
             'match_type' => ['required_if:action,Add,Update', 'nullable', 'string', 'in:contains,starts_with,ends_with,exact'],
             'order' => ['nullable', 'numeric'],
+            'ignored' => ['nullable', 'boolean'],
             'idbutton' => ['required_if:action,Update,Delete', 'nullable', 'integer'],
         ]);
 
@@ -40,6 +41,7 @@ class ButtonController extends Controller
                 'match_type' => $validated['match_type'],
                 'game_idgame' => $game->idgame,
                 'order' => $validated['order'] ?? null,
+                'ignored' => $request->boolean('ignored'),
             ]);
         } elseif ($validated['action'] === 'Update') {
             Button::where('idbutton', $validated['idbutton'])
@@ -49,6 +51,7 @@ class ButtonController extends Controller
                     'color' => $validated['color'],
                     'match_type' => $validated['match_type'],
                     'order' => $validated['order'] ?? null,
+                    'ignored' => $request->boolean('ignored'),
                 ]);
         } else {
             Button::where('idbutton', $validated['idbutton'])->where('game_idgame', $game->idgame)->delete();
@@ -65,6 +68,7 @@ class ButtonController extends Controller
             'buttons.*.color' => ['required', 'string', 'max:7'],
             'buttons.*.match_type' => ['required', 'string', 'in:contains,starts_with,ends_with,exact'],
             'buttons.*.order' => ['nullable', 'numeric'],
+            'buttons.*.ignored' => ['nullable', 'boolean'],
         ]);
 
         // TODO: record which user made this edit once an audit/edit-log exists
@@ -77,6 +81,7 @@ class ButtonController extends Controller
                         'color' => $row['color'],
                         'match_type' => $row['match_type'],
                         'order' => $row['order'] ?? null,
+                        'ignored' => (bool) ($row['ignored'] ?? false),
                     ]);
             }
         });

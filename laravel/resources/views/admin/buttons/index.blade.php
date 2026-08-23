@@ -28,6 +28,10 @@
                             </select>
                             <input form="bulk-buttons-form" type="color" name="buttons[{{ $button->idbutton }}][color]" class="form-control form-control-color" value="{{ $button->color }}">
                             <input form="bulk-buttons-form" class="form-control" type="number" name="buttons[{{ $button->idbutton }}][order]" value="{{ $button->order }}" step="any">
+                            <div class="input-group-text">
+                                <input form="bulk-buttons-form" type="checkbox" class="form-check-input mt-0 me-1" name="buttons[{{ $button->idbutton }}][ignored]" value="1" @checked($button->ignored) id="ignored-{{ $button->idbutton }}">
+                                <label class="form-check-label" for="ignored-{{ $button->idbutton }}">Ignore in searches</label>
+                            </div>
                             <form method="post" action="{{ route('admin.buttons.store', $game) }}">
                                 @csrf
                                 <input type="hidden" name="idbutton" value="{{ $button->idbutton }}">
@@ -55,6 +59,10 @@
                             </select>
                             <input type="color" name="color" class="form-control form-control-color" value="#ffffff">
                             <input class="form-control" type="number" name="order" step="any">
+                            <div class="input-group-text">
+                                <input type="checkbox" class="form-check-input mt-0 me-1" name="ignored" value="1" id="ignored-new">
+                                <label class="form-check-label" for="ignored-new">Ignore in searches</label>
+                            </div>
                             <button type="submit" name="action" value="Add" class="btn btn-primary">Add</button>
                         </div>
                     </form>
