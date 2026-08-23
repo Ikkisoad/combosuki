@@ -60,7 +60,7 @@ class CharacterShowTest extends TestCase
         $response = $this->get(route('characters.show', [$game, $character]));
 
         $response->assertOk();
-        $response->assertSee('No combo found yet.');
+        $response->assertSee('No combo found yet', false);
     }
 
     public function test_character_belonging_to_a_different_game_404s(): void
