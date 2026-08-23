@@ -13,6 +13,8 @@
         <p class="text-white">
             Search, select, and bulk-delete spam or unwanted entries across content types.
             <a href="{{ route('admin.users.index') }}" class="link-light">Manage Users &rarr;</a>
+            &middot;
+            <a href="{{ route('admin.analytics') }}" class="link-light">View Analytics &rarr;</a>
         </p>
 
         <form method="get" action="{{ route('admin.dashboard') }}" class="card combosuki-main-reversed text-white p-3 mb-3">

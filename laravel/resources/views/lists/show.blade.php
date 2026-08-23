@@ -15,18 +15,17 @@
                 <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar show collapse">
                     <ul class="nav nav-tabs flex-column combosuki-main-reversed">
                         <li class="nav-item">
-                            <a class="nav-link @if ($pageId === 0) active @endif" href="{{ route('lists.show', $list) }}">First Page</a>
+                            <a class="nav-link @if ($pageId === 0) active @endif" data-page-id="0" href="{{ route('lists.show', $list) }}">First Page</a>
                         </li>
                         @foreach ($list->pages->sortBy('order') as $page)
                             <li class="nav-item">
-                                <a class="nav-link @if ($pageId === $page->idListPage) active @endif" href="{{ route('lists.show', $list) }}?page={{ $page->idListPage }}">{{ $page->Title }}</a>
+                                <a class="nav-link @if ($pageId === $page->idListPage) active @endif" data-page-id="{{ $page->idListPage }}" href="{{ route('lists.show', $list) }}?page={{ $page->idListPage }}">{{ $page->Title }}</a>
                             </li>
                         @endforeach
                     </ul>
-                    @php $currentPage = $list->pages->firstWhere('idListPage', $pageId); @endphp
-                    @if ($currentPage?->Description)
-                        <p class="mt-2">{{ $currentPage->Description }}</p>
-                    @endif
+                    <div id="list-page-description">
+                        @include('lists._page-description', ['currentPage' => $currentPage])
+                    </div>
                 </nav>
             @endif
 
@@ -59,41 +58,15 @@
                     </div>
                 @endcan
 
-                @foreach ($grouped as $categoryId => $combos)
-                    <h2 class="mt-3">{{ $categoryId == 0 ? 'No Category' : $categories->get($categoryId)?->title }}</h2>
-                    <table class="table table-hover align-middle caption-top combosuki-main-reversed text-white">
-                        <tr>
-                            <th>Character</th>
-                            <th>Inputs</th>
-                            <th>Damage</th>
-                            <th>Type</th>
-                        </tr>
-                        @foreach ($combos as $combo)
-                            <tr>
-                                <td>
-                                    @if ($combo->comments || $combo->video)
-                                        <button class="btn btn-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ $combo->idcombo }}">{{ $combo->character->name }}</button>
-                                    @else
-                                        {{ $combo->character->name }}
-                                    @endif
-                                </td>
-                                <td style="min-width:400px">
-                                    <x-combo-link :combo="$combo" />
-                                    @if ($combo->comments || $combo->video)
-                                        <div class="collapse" id="collapse{{ $combo->idcombo }}">
-                                            {{ $combo->comments }}
-                                            <x-video-embed :video="$combo->video" />
-                                        </div>
-                                    @endif
-                                </td>
-                                <td>{{ number_format((float) $combo->damage, 0, '', '.') }}</td>
-                                <td>{{ $combo->listingType?->title }}</td>
-                            </tr>
-                        @endforeach
-                    </table>
-                @endforeach
+                <div id="list-page-body">
+                    @include('lists._page-body', ['categories' => $categories, 'grouped' => $grouped])
+                </div>
 
             </main>
         </div>
     </div>
+
+    @if ($list->pages->isNotEmpty())
+        @vite(['resources/js/lists-show.js'])
+    @endif
 </x-layouts.app>

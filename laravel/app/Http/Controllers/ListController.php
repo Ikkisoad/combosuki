@@ -63,20 +63,33 @@ class ListController extends Controller
         return redirect()->route('lists.show', $list);
     }
 
-    public function show(ListModel $list, Request $request): View
+    public function show(ListModel $list, Request $request): View|JsonResponse
     {
         $list->load('game', 'pages', 'user');
-        $list->increment('views');
+
+        if (! $request->wantsJson()) {
+            $list->increment('views');
+        }
 
         $pageId = $request->integer('page', 0);
+        $currentPage = $list->pages->firstWhere('idListPage', $pageId);
 
         [$categories, $grouped] = $this->categoriesAndGroupedCombos($list, $pageId);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'pageId' => $pageId,
+                'description' => view('lists._page-description', ['currentPage' => $currentPage])->render(),
+                'content' => view('lists._page-body', ['categories' => $categories, 'grouped' => $grouped])->render(),
+            ]);
+        }
 
         return view('lists.show', [
             'list' => $list,
             'categories' => $categories,
             'grouped' => $grouped,
             'pageId' => $pageId,
+            'currentPage' => $currentPage,
         ]);
     }
 

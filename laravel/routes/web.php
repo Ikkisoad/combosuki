@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\ButtonController;
 use App\Http\Controllers\Admin\CharacterController as AdminCharacterController;
 use App\Http\Controllers\Admin\CharacterQueryController;
@@ -61,6 +62,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/users', [AdminUserController::class, 'store'])->middleware('throttle:10,1')->name('users.store');
     Route::post('/users/{user}/password', [AdminUserController::class, 'updatePassword'])->middleware('throttle:10,1')->name('users.password.update');
     Route::post('/users/{user}/trusted', [AdminUserController::class, 'updateTrusted'])->middleware('throttle:10,1')->name('users.trusted.update');
+
+    Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics');
 });
 
 Route::middleware(['auth', 'trusted'])->group(function () {
