@@ -47,7 +47,7 @@
                 <td>{{ number_format((float) $combo->damage, 0, '', '.') }}</td>
             </tr>
         </table>
-        <p>Think you can do better? <a href="{{ route('characters.show', [$character->game, $character]) }}" class="link-light">Go beat it &rarr;</a></p>
+        <p>Think you can do better? <a href="{{ route('games.combos.create', $character->game) }}?query={{ $query->idquery }}&characterid={{ $character->idcharacter }}" class="link-light">Go beat it &rarr;</a></p>
     @else
         <p>No combo found for this challenge yet &mdash; <a href="{{ route('games.combos.create', $character->game) }}?query={{ $query->idquery }}&characterid={{ $character->idcharacter }}" class="link-light">be the first to submit one!</a></p>
     @endif

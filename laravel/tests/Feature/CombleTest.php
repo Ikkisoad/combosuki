@@ -308,6 +308,37 @@ class CombleTest extends TestCase
             ->assertSee('background-color: #fd7e14;', false);
     }
 
+    /**
+     * Laravel's global TrimStrings middleware silently strips leading/
+     * trailing whitespace from request input by default — which would
+     * always mark this guess wrong if 'starter' weren't specifically
+     * excluded from it (see bootstrap/app.php), since a 5-character opening
+     * move followed by a space is a completely ordinary combo shape.
+     */
+    public function test_a_starter_guess_with_a_trailing_space_is_compared_correctly(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $type = $this->makeType($game);
+        $this->makeCombo($character, $type, ['combo' => '12345 BBB CCC DDD EEE']);
+
+        $wrongGame = $this->makeGame(['name' => 'Wrong Game']);
+        $wrongCharacter = $this->makeCharacter($wrongGame, 'Wrong Character');
+        $wrongType = $this->makeType($wrongGame);
+
+        // First 6 raw characters are '12345 ' — five digits plus the
+        // trailing space before the next token.
+        $response = $this->submitGuess($this->guessPayload($wrongGame, $wrongCharacter, $wrongType, 3000, '12345 '));
+
+        $html = $this->showPage(cookie: $this->cookieFromResponse($response))->getContent();
+
+        // Game/character/type are all deliberately wrong here, so a
+        // "bg-success" cell in this row can only be the starter one.
+        $this->assertStringContainsString('12345', $html);
+        $this->assertStringContainsString('bg-success', $html);
+        $this->assertStringNotContainsString('#fd7e14', $html);
+    }
+
     public function test_the_starter_guess_is_optional(): void
     {
         $game = $this->makeGame();

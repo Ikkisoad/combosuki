@@ -37,6 +37,7 @@ class CombleController extends Controller
         $guesses = $this->evaluateGuesses($this->picksFromCookie($request, $day), $target);
         $won = collect($guesses)->contains('won', true);
         $finished = $won || count($guesses) >= self::MAX_GUESSES;
+        $lastGuess = $guesses === [] ? null : $guesses[array_key_last($guesses)];
 
         return view('comble.show', [
             'game' => $game,
@@ -51,6 +52,10 @@ class CombleController extends Controller
             'isToday' => $day->isToday(),
             'previousDay' => $day->copy()->subDay(),
             'nextDay' => $day->isToday() ? null : $day->copy()->addDay(),
+            'stickyGameId' => $lastGuess && $lastGuess['game_correct'] ? $lastGuess['game']->idgame : null,
+            'stickyCharacterId' => $lastGuess && $lastGuess['character_correct'] ? $lastGuess['character']->idcharacter : null,
+            'stickyTypeId' => $lastGuess && $lastGuess['type_correct'] ? $lastGuess['listing_type']->entryid : null,
+            'stickyStarter' => $lastGuess && $lastGuess['starter_result'] === 'partial' ? $lastGuess['starter'] : null,
         ]);
     }
 

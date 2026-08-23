@@ -27,7 +27,7 @@ window.resetVideo = function (videoId) {
 
 window.moveNumbers = function (num) {
     const textarea = document.getElementById('comboarea');
-    textarea.value = textarea.value + num + ' ';
+    textarea.value = textarea.value + (num === '>' ? ' > ' : num);
 };
 
 window.backspace = function () {

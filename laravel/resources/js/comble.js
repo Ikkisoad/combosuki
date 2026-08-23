@@ -44,7 +44,19 @@ function initGuessForm() {
         fillOptions(typeSelect, types, 'id', 'title', 'Choose a type…');
         characterSelect.disabled = false;
         typeSelect.disabled = false;
+
+        if (characterSelect.dataset.sticky) {
+            characterSelect.value = characterSelect.dataset.sticky;
+        }
+        if (typeSelect.dataset.sticky) {
+            typeSelect.value = typeSelect.dataset.sticky;
+        }
     });
+
+    if (gameSelect.dataset.sticky) {
+        gameSelect.value = gameSelect.dataset.sticky;
+        gameSelect.dispatchEvent(new Event('change'));
+    }
 }
 
 function legacyCopy(text) {

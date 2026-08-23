@@ -49,7 +49,7 @@
                             </tr>
                         </table>
                     @else
-                        <p>No combo found yet.</p>
+                        <p>No combo found yet &mdash; <a href="{{ route('games.combos.create', $game) }}?query={{ $query->idquery }}&characterid={{ $character->idcharacter }}" class="btn btn-combosuki btn-sm text-white">Submit one</a></p>
                     @endif
                 @endforeach
             </main>

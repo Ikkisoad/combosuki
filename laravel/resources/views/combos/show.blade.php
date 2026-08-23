@@ -26,7 +26,12 @@
 
     <div class="container-fluid px-5 my-3">
         @if (session('status'))
-            <div class="alert alert-success">{{ session('status') }}</div>
+            <div class="alert alert-success d-flex justify-content-between align-items-center">
+                <span>{{ session('status') }}</span>
+                @auth
+                    <a href="{{ route('games.combos.create', $game) }}" class="btn btn-sm btn-success">Submit another combo</a>
+                @endauth
+            </div>
         @endif
         @if (session('error'))
             <div class="alert alert-danger">{{ session('error') }}</div>
