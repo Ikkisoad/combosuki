@@ -93,7 +93,11 @@ class CombleTest extends TestCase
 
         $wrongGame = $this->makeGame(['name' => 'Wrong Game']);
         $wrongCharacter = $this->makeCharacter($wrongGame, 'Vega');
-        $wrongType = $this->makeType($wrongGame);
+        // A different title than the target's default 'Combo', so this
+        // first guess is wrong on all three squares (type is now also
+        // considered correct when its title matches the target's, even
+        // across different games — see test_type_correctness_also_matches_by_title).
+        $wrongType = $this->makeType($wrongGame, 'Okizeme');
 
         $first = $this->submitGuess($this->guessPayload($wrongGame, $wrongCharacter, $wrongType));
         $cookie = $this->cookieFromResponse($first);
@@ -244,6 +248,33 @@ class CombleTest extends TestCase
             ->assertOk()
             ->assertSee('Okizeme')
             ->assertSee('Equal');
+    }
+
+    /**
+     * game_entry rows are per-game, so a "Combo" category in one game and a
+     * "Combo" category in another are literally different entryids — but
+     * they mean the same thing, so guessing a type titled the same as the
+     * target's should count as correct even when it's a different game's
+     * row entirely.
+     */
+    public function test_type_correctness_also_matches_by_title_across_different_games(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $type = $this->makeType($game, 'Combo');
+        $this->makeCombo($character, $type);
+
+        $otherGame = $this->makeGame(['name' => 'Other Game']);
+        $otherCharacter = $this->makeCharacter($otherGame, 'Chun-Li');
+        $otherType = $this->makeType($otherGame, 'Combo');
+
+        $response = $this->submitGuess($this->guessPayload($otherGame, $otherCharacter, $otherType));
+
+        $html = $this->showPage(cookie: $this->cookieFromResponse($response))->getContent();
+
+        // Game/character are deliberately wrong here, so the only
+        // "bg-success" cell in this row can be the type one.
+        $this->assertStringContainsString('bg-success', $html);
     }
 
     public function test_the_damage_guess_shows_a_higher_or_lower_hint(): void

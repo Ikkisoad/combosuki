@@ -83,4 +83,47 @@ class CombleGuessEvaluatorTest extends TestCase
         $this->assertSame('wrong', $evaluator->evaluate($target, $game, $character, $guessedType, null, '999999')['starter_result']);
         $this->assertSame('wrong', $evaluator->evaluate($target, $game, $character, $guessedType, null, null)['starter_result']);
     }
+
+    /**
+     * game_entry rows are per-game, so "Combo" in one game and "Combo" in
+     * another are different entryids entirely — but a guess titled the same
+     * as the target's type should still count as correct, since the
+     * category itself is what's meaningful, not which game's specific row
+     * it happens to be. A different title (even for the *same* entryid,
+     * which can't really happen but exercises the "no accidental match"
+     * path) must still be wrong.
+     */
+    public function test_type_correctness_matches_by_title_even_across_different_entryids(): void
+    {
+        $game = (new Game())->forceFill(['idgame' => 5, 'name' => 'Test Game']);
+        $game->exists = true;
+
+        $character = (new Character())->forceFill(['idcharacter' => 9, 'name' => 'Ryu', 'game_idgame' => 5]);
+        $character->exists = true;
+        $character->setRelation('game', $game);
+
+        $targetType = (new GameEntry())->forceFill(['entryid' => 7, 'title' => 'Combo', 'gameid' => 5]);
+
+        $target = (new Combo())->forceFill([
+            'idcombo' => 1,
+            'combo' => 'AAA',
+            'character_idcharacter' => 9,
+            'type' => 7,
+            'damage' => null,
+        ]);
+        $target->exists = true;
+        $target->setRelation('character', $character);
+        $target->setRelation('listingType', $targetType);
+
+        $evaluator = new CombleGuessEvaluator();
+
+        // Different game, different entryid, same title (case/whitespace
+        // insensitively) — still correct.
+        $sameTitleDifferentEntry = (new GameEntry())->forceFill(['entryid' => 42, 'title' => ' combo ', 'gameid' => 99]);
+        $this->assertTrue($evaluator->evaluate($target, $game, $character, $sameTitleDifferentEntry, null)['type_correct']);
+
+        // Different entryid, different title — genuinely wrong.
+        $differentTitle = (new GameEntry())->forceFill(['entryid' => 43, 'title' => 'Okizeme', 'gameid' => 99]);
+        $this->assertFalse($evaluator->evaluate($target, $game, $character, $differentTitle, null)['type_correct']);
+    }
 }

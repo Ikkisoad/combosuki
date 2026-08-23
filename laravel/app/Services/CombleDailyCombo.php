@@ -40,6 +40,6 @@ class CombleDailyCombo
         $seed = hexdec(substr(hash('sha256', $date->toDateString()), 0, 8));
         $index = $seed % $ids->count();
 
-        return Combo::with('character.game')->findOrFail($ids[$index]);
+        return Combo::with(['character.game', 'listingType'])->findOrFail($ids[$index]);
     }
 }

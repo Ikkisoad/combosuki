@@ -24,7 +24,8 @@ class CombleGuessEvaluator
     {
         $gameCorrect = (int) $guessedGame->idgame === (int) $target->character->game_idgame;
         $characterCorrect = (int) $guessedCharacter->idcharacter === (int) $target->character_idcharacter;
-        $typeCorrect = (int) $guessedType->entryid === (int) $target->type;
+        $typeCorrect = (int) $guessedType->entryid === (int) $target->type
+            || $this->sameTypeTitle($guessedType, $target->listingType);
 
         return [
             'game_correct' => $gameCorrect,
@@ -69,6 +70,23 @@ class CombleGuessEvaluator
         }
 
         return 'wrong';
+    }
+
+    /**
+     * A "Combo"/"Okizeme"/etc. category name is meaningful on its own — each
+     * game defines its own game_entry row per category, so the same title
+     * exists under a *different* entryid in every game. Comparing titles too
+     * (not just entryid) means guessing "Combo" is correct as long as the
+     * target's type is also literally titled "Combo", even for a different
+     * game than the one actually guessed.
+     */
+    private function sameTypeTitle(GameEntry $guessedType, ?GameEntry $targetType): bool
+    {
+        if ($targetType === null) {
+            return false;
+        }
+
+        return mb_strtolower(trim($guessedType->title)) === mb_strtolower(trim($targetType->title));
     }
 
     private function damageHint(Combo $target, ?float $guessedDamage): string
