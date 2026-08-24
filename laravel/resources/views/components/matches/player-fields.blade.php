@@ -1,11 +1,11 @@
-@props(['label', 'nameField', 'userField', 'characterField', 'characters', 'nameValue' => null, 'userValue' => null, 'userLabel' => null, 'characterValue' => null])
+@props(['label', 'nameField', 'userField', 'characterField', 'characters', 'nameValue' => null, 'userValue' => null, 'userLabel' => null, 'characterValue' => null, 'resourcesField' => null, 'resources' => [], 'resourceValues' => []])
 
 <div class="col-md-6">
     <h5>{{ $label }}</h5>
 
     <div class="input-group mb-3">
         <span class="input-group-text">Name/Tag:</span>
-        <input type="text" name="{{ $nameField }}" class="form-control" maxlength="100" required value="{{ old($nameField, $nameValue) }}">
+        <input type="text" name="{{ $nameField }}" class="form-control player-name-input" maxlength="100" required value="{{ old($nameField, $nameValue) }}">
     </div>
 
     <div class="mb-3">
@@ -28,6 +28,18 @@
             @endforeach
         </select>
     </div>
+
+    @foreach ($resources as $resource)
+        <div class="input-group mb-3">
+            <label class="input-group-text">{{ $resource->text_name }}:</label>
+            <select name="{{ $resourcesField }}[{{ $resource->idgame_resources }}]" class="form-select">
+                <option value="">&mdash;</option>
+                @foreach ($resource->values as $value)
+                    <option value="{{ $value->idResources_values }}" @selected(old($resourcesField.'.'.$resource->idgame_resources, $resourceValues[$resource->idgame_resources] ?? null) == $value->idResources_values)>{{ $value->value }}</option>
+                @endforeach
+            </select>
+        </div>
+    @endforeach
 </div>
 
 @once
@@ -38,6 +50,7 @@
                 var hidden = wrapper.querySelector('.user-search-value');
                 var results = wrapper.querySelector('.user-search-results');
                 var clearButton = wrapper.querySelector('.user-search-clear');
+                var nameInput = input.closest('.col-md-6').querySelector('.player-name-input');
                 var debounceTimer;
 
                 function hideResults() {
@@ -65,6 +78,7 @@
                                     event.preventDefault();
                                     hidden.value = user.iduser;
                                     input.value = user.nickname;
+                                    nameInput.value = user.nickname;
                                     hideResults();
                                 });
                                 results.appendChild(item);

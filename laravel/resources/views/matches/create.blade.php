@@ -25,6 +25,8 @@
                     user-field="player_one_user_iduser"
                     character-field="player_one_character_idcharacter"
                     :characters="$characters"
+                    resources-field="player_one_resources"
+                    :resources="$matchResources"
                 />
                 <x-matches.player-fields
                     label="Player 2"
@@ -32,6 +34,8 @@
                     user-field="player_two_user_iduser"
                     character-field="player_two_character_idcharacter"
                     :characters="$characters"
+                    resources-field="player_two_resources"
+                    :resources="$matchResources"
                 />
             </div>
 

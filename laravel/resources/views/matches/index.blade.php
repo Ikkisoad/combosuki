@@ -57,17 +57,44 @@
                     <label class="form-label">Video</label>
                     <input type="text" name="video" class="form-control" value="{{ request('video') }}" placeholder="URL contains&hellip;">
                 </div>
+                @foreach ($matchResources as $resource)
+                    <div class="col-auto">
+                        <label class="form-label">{{ $resource->text_name }}</label>
+                        <select name="resource_{{ $resource->idgame_resources }}_a" class="form-select">
+                            <option value="-">Any {{ $resource->text_name }}</option>
+                            @foreach ($resource->values as $value)
+                                <option value="{{ $value->idResources_values }}" @selected(request('resource_'.$resource->idgame_resources.'_a') == $value->idResources_values)>{{ $value->value }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <label class="form-label">vs {{ $resource->text_name }}</label>
+                        <select name="resource_{{ $resource->idgame_resources }}_b" class="form-select">
+                            <option value="-">Any</option>
+                            @foreach ($resource->values as $value)
+                                <option value="{{ $value->idResources_values }}" @selected(request('resource_'.$resource->idgame_resources.'_b') == $value->idResources_values)>{{ $value->value }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endforeach
             </div>
+
+            @php
+                $filterFields = array_merge(
+                    ['character_a', 'character_b', 'player', 'date_from', 'date_to', 'video'],
+                    $matchResources->flatMap(fn ($resource) => ["resource_{$resource->idgame_resources}_a", "resource_{$resource->idgame_resources}_b"])->all()
+                );
+            @endphp
 
             <div class="mt-3">
                 <button type="submit" class="btn btn-info">Filter</button>
-                @if (request()->anyFilled(['character_a', 'character_b', 'player', 'date_from', 'date_to', 'video']))
+                @if (request()->anyFilled($filterFields))
                     <a href="{{ route('games.matches.index', $game) }}" class="btn btn-outline-light">Clear</a>
                 @endif
             </div>
         </form>
 
-        @if ($matches->total() === 0 && request()->anyFilled(['character_a', 'character_b', 'player', 'date_from', 'date_to', 'video']))
+        @if ($matches->total() === 0 && request()->anyFilled($filterFields))
             <div class="alert alert-warning">No matches found for these filters.</div>
         @endif
 
@@ -86,20 +113,22 @@
                 @foreach ($matches as $match)
                     <tr>
                         <td>
+                            <x-character-icon :character="$match->playerOneCharacter" />
                             @if ($match->playerOneUser)
                                 <a href="{{ route('users.show', $match->playerOneUser) }}">{{ $match->player_one }}</a>
                             @else
                                 {{ $match->player_one }}
                             @endif
-                            ({{ $match->playerOneCharacter->name }})
+                            ({{ $match->playerOneCharacter->name }}@foreach ($match->resources->where('player', 1) as $matchResource), {{ $matchResource->resourceValue->value }}@endforeach)
                         </td>
                         <td>
+                            <x-character-icon :character="$match->playerTwoCharacter" />
                             @if ($match->playerTwoUser)
                                 <a href="{{ route('users.show', $match->playerTwoUser) }}">{{ $match->player_two }}</a>
                             @else
                                 {{ $match->player_two }}
                             @endif
-                            ({{ $match->playerTwoCharacter->name }})
+                            ({{ $match->playerTwoCharacter->name }}@foreach ($match->resources->where('player', 2) as $matchResource), {{ $matchResource->resourceValue->value }}@endforeach)
                         </td>
                         <td style="min-width:300px">
                             <button class="btn btn-dark btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#video-{{ $match->idmatch }}" aria-expanded="false" aria-controls="video-{{ $match->idmatch }}" aria-label="Show video">

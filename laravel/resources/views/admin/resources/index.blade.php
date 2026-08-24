@@ -37,6 +37,10 @@
                                     <option value="1" @selected($resource->primaryORsecundary === 1)>Primary</option>
                                     <option value="0" @selected($resource->primaryORsecundary !== 1)>Secondary</option>
                                 </select>
+                                <div class="input-group-text">
+                                    <input type="checkbox" class="form-check-input mt-0 me-1" name="resources[{{ $resource->idgame_resources }}][include_in_matches]" value="1" @checked($resource->include_in_matches) id="matches-{{ $resource->idgame_resources }}">
+                                    <label class="form-check-label" for="matches-{{ $resource->idgame_resources }}">In matches</label>
+                                </div>
                                 <select name="resources[{{ $resource->idgame_resources }}][characters][]" class="form-select" multiple size="4" style="max-width: 200px;" title="Characters this resource applies to (leave empty for every character)">
                                     @foreach ($characters as $character)
                                         <option value="{{ $character->idcharacter }}" @selected($resource->characters->contains('idcharacter', $character->idcharacter))>{{ $character->name }}</option>
@@ -66,6 +70,10 @@
                     <option value="1">Primary</option>
                     <option value="0">Secondary</option>
                 </select>
+                <div class="input-group-text">
+                    <input type="checkbox" class="form-check-input mt-0 me-1" name="include_in_matches" value="1" id="matches-new">
+                    <label class="form-check-label" for="matches-new">In matches</label>
+                </div>
                 <select name="characters[]" class="form-select" multiple size="4" style="max-width: 200px;" title="Characters this resource applies to (leave empty for every character)">
                     @foreach ($characters as $character)
                         <option value="{{ $character->idcharacter }}">{{ $character->name }}</option>
@@ -82,7 +90,8 @@
             1: List &mdash; a simple list of options, it should have at least one option to work properly.<br>
             2: Number &mdash; in its options, number resources should have its max value.<br>
             3: Duplicated &mdash; for games that have assists, duplicated resources appear twice and allow searches to ignore the order of the assists.<br>
-            Leave a resource's Characters selection empty to show it for every character; select one or more to only show it on the combo form by default for those characters (a button on the combo form can still reveal it for any character).
+            Leave a resource's Characters selection empty to show it for every character; select one or more to only show it on the combo form by default for those characters (a button on the combo form can still reveal it for any character).<br>
+            Primary resources flagged "In matches" let players pick their value per match (e.g. Melty Blood moon type), and can be used to filter the matches list.
         </p>
 
         <x-admin.edit-nav :game="$game" />

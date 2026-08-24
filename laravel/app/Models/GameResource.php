@@ -13,7 +13,7 @@ class GameResource extends Model
 
     protected $primaryKey = 'idgame_resources';
 
-    protected $fillable = ['game_idgame', 'text_name', 'type', 'primaryORsecundary'];
+    protected $fillable = ['game_idgame', 'text_name', 'type', 'primaryORsecundary', 'include_in_matches'];
 
     protected function casts(): array
     {
@@ -21,6 +21,7 @@ class GameResource extends Model
             'game_idgame' => 'integer',
             'type' => 'integer',
             'primaryORsecundary' => 'integer',
+            'include_in_matches' => 'boolean',
         ];
     }
 

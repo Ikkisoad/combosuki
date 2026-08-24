@@ -21,6 +21,7 @@
             @foreach ($latestMatches as $match)
                 <tr>
                     <td>
+                        <x-character-icon :character="$match->playerOneCharacter" />
                         @if ($match->playerOneUser)
                             <a href="{{ route('users.show', $match->playerOneUser) }}">{{ $match->player_one }}</a>
                         @else
@@ -29,6 +30,7 @@
                         ({{ $match->playerOneCharacter->name }})
                     </td>
                     <td>
+                        <x-character-icon :character="$match->playerTwoCharacter" />
                         @if ($match->playerTwoUser)
                             <a href="{{ route('users.show', $match->playerTwoUser) }}">{{ $match->player_two }}</a>
                         @else

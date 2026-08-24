@@ -29,6 +29,9 @@
                     :user-value="$match->player_one_user_iduser"
                     :user-label="$match->playerOneUser?->nickname"
                     :character-value="$match->player_one_character_idcharacter"
+                    resources-field="player_one_resources"
+                    :resources="$matchResources"
+                    :resource-values="$match->resources->where('player', 1)->pluck('resources_values_idResources_values', 'game_resources_idgame_resources')->all()"
                 />
                 <x-matches.player-fields
                     label="Player 2"
@@ -40,6 +43,9 @@
                     :user-value="$match->player_two_user_iduser"
                     :user-label="$match->playerTwoUser?->nickname"
                     :character-value="$match->player_two_character_idcharacter"
+                    resources-field="player_two_resources"
+                    :resources="$matchResources"
+                    :resource-values="$match->resources->where('player', 2)->pluck('resources_values_idResources_values', 'game_resources_idgame_resources')->all()"
                 />
             </div>
 

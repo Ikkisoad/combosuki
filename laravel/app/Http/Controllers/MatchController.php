@@ -7,6 +7,8 @@ use App\Http\Requests\UpdateMatchRequest;
 use App\Models\Character;
 use App\Models\Game;
 use App\Models\GameMatch;
+use App\Models\GameResource;
+use App\Models\MatchResource;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,9 +21,11 @@ class MatchController extends Controller
         abort_unless($game->matches_enabled, 404);
 
         $query = GameMatch::where('game_idgame', $game->idgame)
-            ->with(['playerOneCharacter', 'playerTwoCharacter', 'playerOneUser', 'playerTwoUser', 'user']);
+            ->with(['playerOneCharacter', 'playerTwoCharacter', 'playerOneUser', 'playerTwoUser', 'user', 'resources.resourceValue', 'resources.gameResource']);
 
-        $this->applyMatchFilters($query, $request);
+        $matchResources = $this->matchResourcesFor($game);
+
+        $this->applyMatchFilters($query, $request, $matchResources);
 
         $matches = $query->orderByDesc('played_at')
             ->paginate(20)
@@ -33,10 +37,21 @@ class MatchController extends Controller
             'game' => $game,
             'matches' => $matches,
             'characters' => $characters,
+            'matchResources' => $matchResources,
         ]);
     }
 
-    private function applyMatchFilters(Builder $query, Request $request): void
+    private function matchResourcesFor(Game $game)
+    {
+        return GameResource::where('game_idgame', $game->idgame)
+            ->where('primaryORsecundary', 1)
+            ->where('include_in_matches', true)
+            ->with('values')
+            ->orderBy('text_name')
+            ->get();
+    }
+
+    private function applyMatchFilters(Builder $query, Request $request, $matchResources): void
     {
         $characterA = $request->filled('character_a') && $request->input('character_a') !== '-'
             ? $request->integer('character_a')
@@ -77,6 +92,40 @@ class MatchController extends Controller
         if ($request->filled('video')) {
             $query->where('video', 'like', '%'.$request->string('video').'%');
         }
+
+        foreach ($matchResources as $resource) {
+            $fieldA = "resource_{$resource->idgame_resources}_a";
+            $fieldB = "resource_{$resource->idgame_resources}_b";
+
+            $valueA = $request->filled($fieldA) && $request->input($fieldA) !== '-'
+                ? $request->integer($fieldA)
+                : null;
+            $valueB = $request->filled($fieldB) && $request->input($fieldB) !== '-'
+                ? $request->integer($fieldB)
+                : null;
+
+            if ($valueA === null && $valueB === null) {
+                continue;
+            }
+
+            $hasPlayerValue = fn (Builder $q, int $player, int $value) => $q->whereHas('resources', fn (Builder $r) => $r
+                ->where('game_resources_idgame_resources', $resource->idgame_resources)
+                ->where('resources_values_idResources_values', $value)
+                ->where('player', $player));
+
+            if ($valueA !== null && $valueB !== null) {
+                $query->where(function (Builder $q) use ($hasPlayerValue, $valueA, $valueB) {
+                    $q->where(fn (Builder $q2) => $hasPlayerValue($hasPlayerValue($q2, 1, $valueA), 2, $valueB))
+                        ->orWhere(fn (Builder $q2) => $hasPlayerValue($hasPlayerValue($q2, 1, $valueB), 2, $valueA));
+                });
+            } else {
+                $value = $valueA ?? $valueB;
+
+                $query->whereHas('resources', fn (Builder $r) => $r
+                    ->where('game_resources_idgame_resources', $resource->idgame_resources)
+                    ->where('resources_values_idResources_values', $value));
+            }
+        }
     }
 
     public function create(Game $game): View
@@ -88,6 +137,7 @@ class MatchController extends Controller
         return view('matches.create', [
             'game' => $game,
             'characters' => $characters,
+            'matchResources' => $this->matchResourcesFor($game),
         ]);
     }
 
@@ -97,7 +147,7 @@ class MatchController extends Controller
 
         $validated = $request->validated();
 
-        GameMatch::create([
+        $match = GameMatch::create([
             'game_idgame' => $game->idgame,
             'player_one' => $validated['player_one'],
             'player_one_user_iduser' => $validated['player_one_user_iduser'] ?? null,
@@ -110,6 +160,8 @@ class MatchController extends Controller
             'user_iduser' => auth()->id(),
         ]);
 
+        $this->syncMatchResources($match, $game, $validated);
+
         return redirect()->route('games.matches.index', $game)->with('status', 'Match submitted.');
     }
 
@@ -117,7 +169,7 @@ class MatchController extends Controller
     {
         $this->authorize('update', $gameMatch);
 
-        $gameMatch->load(['playerOneUser', 'playerTwoUser']);
+        $gameMatch->load(['playerOneUser', 'playerTwoUser', 'resources']);
         $game = $gameMatch->game;
 
         $characters = Character::where('game_idgame', $game->idgame)->orderBy('name')->get();
@@ -126,6 +178,7 @@ class MatchController extends Controller
             'game' => $game,
             'match' => $gameMatch,
             'characters' => $characters,
+            'matchResources' => $this->matchResourcesFor($game),
         ]);
     }
 
@@ -144,7 +197,39 @@ class MatchController extends Controller
             'played_at' => $validated['played_at'],
         ]);
 
+        $this->syncMatchResources($gameMatch, $gameMatch->game, $validated);
+
         return redirect()->route('games.matches.index', $gameMatch->game)->with('status', 'Match updated.');
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     */
+    private function syncMatchResources(GameMatch $match, Game $game, array $validated): void
+    {
+        foreach ($this->matchResourcesFor($game) as $resource) {
+            foreach ([1 => 'player_one_resources', 2 => 'player_two_resources'] as $player => $field) {
+                $value = $validated[$field][$resource->idgame_resources] ?? null;
+
+                if ($value === null || $value === '') {
+                    MatchResource::where('match_idmatch', $match->idmatch)
+                        ->where('game_resources_idgame_resources', $resource->idgame_resources)
+                        ->where('player', $player)
+                        ->delete();
+
+                    continue;
+                }
+
+                MatchResource::updateOrCreate(
+                    [
+                        'match_idmatch' => $match->idmatch,
+                        'game_resources_idgame_resources' => $resource->idgame_resources,
+                        'player' => $player,
+                    ],
+                    ['resources_values_idResources_values' => $value]
+                );
+            }
+        }
     }
 
     public function destroy(GameMatch $gameMatch): RedirectResponse

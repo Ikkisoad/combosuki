@@ -34,6 +34,7 @@ class GameResourceController extends Controller
             'type' => ['required_if:action,Add', 'nullable', 'integer', 'in:1,2,3'],
             'primaryORsecundary' => ['nullable', 'integer', 'in:0,1'],
             'primaryorsecundary' => ['nullable', 'integer', 'in:0,1'],
+            'include_in_matches' => ['nullable', 'boolean'],
             'characters' => ['array'],
             'characters.*' => ['integer', 'exists:character,idcharacter,game_idgame,'.$game->idgame],
             'idresource' => ['required_if:action,Delete', 'nullable', 'integer'],
@@ -41,6 +42,7 @@ class GameResourceController extends Controller
             'resources.*.resource' => ['required', 'string', 'max:45'],
             'resources.*.type' => ['required', 'integer', 'in:1,2,3'],
             'resources.*.primaryORsecundary' => ['nullable', 'integer', 'in:0,1'],
+            'resources.*.include_in_matches' => ['nullable', 'boolean'],
             'resources.*.characters' => ['array'],
             'resources.*.characters.*' => ['integer', 'exists:character,idcharacter,game_idgame,'.$game->idgame],
         ]);
@@ -54,6 +56,7 @@ class GameResourceController extends Controller
                 'text_name' => $validated['resource'],
                 'type' => $validated['type'],
                 'primaryORsecundary' => $primary,
+                'include_in_matches' => $primary == 1 && $request->boolean('include_in_matches'),
             ]);
 
             $gameResource->characters()->sync($validated['characters'] ?? []);
@@ -70,10 +73,13 @@ class GameResourceController extends Controller
                     continue;
                 }
 
+                $primary = $data['primaryORsecundary'] ?? 0;
+
                 $gameResource->update([
                     'text_name' => $data['resource'],
                     'type' => $data['type'],
-                    'primaryORsecundary' => $data['primaryORsecundary'] ?? 0,
+                    'primaryORsecundary' => $primary,
+                    'include_in_matches' => $primary == 1 && (bool) ($data['include_in_matches'] ?? false),
                 ]);
 
                 $gameResource->characters()->sync($data['characters'] ?? []);

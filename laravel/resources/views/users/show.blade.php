@@ -88,5 +88,56 @@
                 </table>
             </div>
         @endif
+
+        <h4 class="mb-2 text-white">Recent Matches</h4>
+        @if ($matches->isEmpty())
+            <p class="text-white">No matches submitted yet.</p>
+        @else
+            <div class="table-responsive">
+                <table class="table table-hover align-middle caption-top combosuki-main-reversed text-white">
+                    <tr>
+                        <th>Game</th>
+                        <th>Player 1</th>
+                        <th>Player 2</th>
+                        <th>Video</th>
+                        <th>Played</th>
+                    </tr>
+                    @foreach ($matches as $match)
+                        <tr>
+                            <td><a href="{{ route('games.show', $match->game) }}" class="link-light">{{ $match->game->name }}</a></td>
+                            <td @class(['fw-bold' => $match->playerOneUser?->is($user)])>
+                                <x-character-icon :character="$match->playerOneCharacter" />
+                                @if ($match->playerOneUser)
+                                    <a href="{{ route('users.show', $match->playerOneUser) }}">{{ $match->player_one }}</a>
+                                @else
+                                    {{ $match->player_one }}
+                                @endif
+                                ({{ $match->playerOneCharacter->name }})
+                            </td>
+                            <td @class(['fw-bold' => $match->playerTwoUser?->is($user)])>
+                                <x-character-icon :character="$match->playerTwoCharacter" />
+                                @if ($match->playerTwoUser)
+                                    <a href="{{ route('users.show', $match->playerTwoUser) }}">{{ $match->player_two }}</a>
+                                @else
+                                    {{ $match->player_two }}
+                                @endif
+                                ({{ $match->playerTwoCharacter->name }})
+                            </td>
+                            <td style="min-width:300px">
+                                <button class="btn btn-dark btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#video-{{ $match->idmatch }}" aria-expanded="false" aria-controls="video-{{ $match->idmatch }}" aria-label="Show video">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M3 5l5 6 5-6" />
+                                    </svg>
+                                </button>
+                                <div class="collapse mt-2" id="video-{{ $match->idmatch }}">
+                                    <x-video-embed :video="$match->video" />
+                                </div>
+                            </td>
+                            <td>{{ $match->played_at->format('d-m-y') }}</td>
+                        </tr>
+                    @endforeach
+                </table>
+            </div>
+        @endif
     </div>
 </x-layouts.app>
