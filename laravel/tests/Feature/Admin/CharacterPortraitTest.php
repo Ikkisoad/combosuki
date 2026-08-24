@@ -20,7 +20,9 @@ class CharacterPortraitTest extends TestCase
 
         $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
 
-        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
+        $trusted = User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]);
+        $game->moderators()->attach($trusted->iduser);
+        $this->actingAs($trusted);
 
         $this->post(route('admin.characters.store', $game), [
             'action' => 'Add',
@@ -41,7 +43,9 @@ class CharacterPortraitTest extends TestCase
         $character = Character::create(['name' => 'Valentine', 'game_idgame' => $game->idgame, 'image' => 'character-portraits/existing.jpg']);
         Storage::disk('public')->put('character-portraits/existing.jpg', 'fake-content');
 
-        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
+        $trusted = User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]);
+        $game->moderators()->attach($trusted->iduser);
+        $this->actingAs($trusted);
 
         $this->post(route('admin.characters.store', $game), [
             'action' => 'Update',
@@ -63,7 +67,9 @@ class CharacterPortraitTest extends TestCase
         $character = Character::create(['name' => 'Valentine', 'game_idgame' => $game->idgame, 'image' => 'character-portraits/old.jpg']);
         Storage::disk('public')->put('character-portraits/old.jpg', 'fake-content');
 
-        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
+        $trusted = User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]);
+        $game->moderators()->attach($trusted->iduser);
+        $this->actingAs($trusted);
 
         $this->post(route('admin.characters.store', $game), [
             'action' => 'Update',
@@ -84,7 +90,9 @@ class CharacterPortraitTest extends TestCase
         $character = Character::create(['name' => 'Valentine', 'game_idgame' => $game->idgame, 'image' => 'character-portraits/existing.jpg']);
         Storage::disk('public')->put('character-portraits/existing.jpg', 'fake-content');
 
-        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
+        $trusted = User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]);
+        $game->moderators()->attach($trusted->iduser);
+        $this->actingAs($trusted);
 
         $this->post(route('admin.characters.store', $game), [
             'action' => 'Delete',

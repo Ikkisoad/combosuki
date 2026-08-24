@@ -20,7 +20,9 @@ class CharacterBulkUpdateTest extends TestCase
         $characterA = Character::create(['name' => 'Valentine', 'game_idgame' => $game->idgame]);
         $characterB = Character::create(['name' => 'Painwheel', 'game_idgame' => $game->idgame]);
 
-        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
+        $trusted = User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]);
+        $game->moderators()->attach($trusted->iduser);
+        $this->actingAs($trusted);
 
         $response = $this->get(route('admin.characters.index', $game));
 
@@ -37,7 +39,9 @@ class CharacterBulkUpdateTest extends TestCase
         $characterA = Character::create(['name' => 'Valentine', 'game_idgame' => $game->idgame]);
         $characterB = Character::create(['name' => 'Painwheel', 'game_idgame' => $game->idgame]);
 
-        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
+        $trusted = User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]);
+        $game->moderators()->attach($trusted->iduser);
+        $this->actingAs($trusted);
 
         $response = $this->post(route('admin.characters.bulkUpdate', $game), [
             'characters' => [
@@ -60,7 +64,9 @@ class CharacterBulkUpdateTest extends TestCase
         $character = Character::create(['name' => 'Valentine', 'game_idgame' => $game->idgame, 'image' => 'character-portraits/old.jpg']);
         Storage::disk('public')->put('character-portraits/old.jpg', 'fake-content');
 
-        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
+        $trusted = User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]);
+        $game->moderators()->attach($trusted->iduser);
+        $this->actingAs($trusted);
 
         $this->post(route('admin.characters.bulkUpdate', $game), [
             'characters' => [
@@ -84,7 +90,9 @@ class CharacterBulkUpdateTest extends TestCase
         $character = Character::create(['name' => 'Valentine', 'game_idgame' => $game->idgame, 'image' => 'character-portraits/existing.jpg']);
         Storage::disk('public')->put('character-portraits/existing.jpg', 'fake-content');
 
-        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
+        $trusted = User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]);
+        $game->moderators()->attach($trusted->iduser);
+        $this->actingAs($trusted);
 
         $this->post(route('admin.characters.bulkUpdate', $game), [
             'characters' => [
@@ -104,7 +112,9 @@ class CharacterBulkUpdateTest extends TestCase
         $otherGame = Game::create(['name' => 'Other Game', 'complete' => 1, 'modPass' => 'secret']);
         $foreignCharacter = Character::create(['name' => 'Filia', 'game_idgame' => $otherGame->idgame]);
 
-        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
+        $trusted = User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]);
+        $game->moderators()->attach($trusted->iduser);
+        $this->actingAs($trusted);
 
         $this->post(route('admin.characters.bulkUpdate', $game), [
             'characters' => [

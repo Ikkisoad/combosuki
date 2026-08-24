@@ -69,10 +69,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/data-management', [DashboardController::class, 'index'])->name('data-management');
     Route::post('/data-management/destroy', [DashboardController::class, 'destroy'])->middleware('throttle:10,1')->name('data-management.destroy');
 
-    Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
     Route::post('/users', [AdminUserController::class, 'store'])->middleware('throttle:10,1')->name('users.store');
     Route::post('/users/{user}/password', [AdminUserController::class, 'updatePassword'])->middleware('throttle:10,1')->name('users.password.update');
-    Route::post('/users/{user}/trusted', [AdminUserController::class, 'updateTrusted'])->middleware('throttle:10,1')->name('users.trusted.update');
+    Route::post('/users/{user}/moderator', [AdminUserController::class, 'updateModerator'])->middleware('throttle:10,1')->name('users.moderator.update');
+    Route::get('/users/{user}/moderated-games', [AdminUserController::class, 'editModeratedGames'])->name('users.moderated-games.edit');
+    Route::post('/users/{user}/moderated-games', [AdminUserController::class, 'updateModeratedGames'])->middleware('throttle:10,1')->name('users.moderated-games.update');
 
     Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics');
 
@@ -81,6 +82,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::get('/external-sites', [ExternalSiteController::class, 'index'])->name('external-sites.index');
     Route::post('/external-sites', [ExternalSiteController::class, 'store'])->middleware('throttle:10,1')->name('external-sites.store');
+});
+
+// Shared with moderators: view the user list and toggle a user's trusted
+// flag, without the rest of the admin-only dashboard above.
+Route::middleware(['auth', 'moderator'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+    Route::post('/users/{user}/trusted', [AdminUserController::class, 'updateTrusted'])->middleware('throttle:10,1')->name('users.trusted.update');
 });
 
 Route::middleware(['auth', 'trusted'])->group(function () {
@@ -172,7 +180,7 @@ Route::view('/randomizer/mvc2', 'randomizer.mvc2')->name('randomizer.mvc2');
 Route::view('/randomizer/skullgirls', 'randomizer.skullgirls')->name('randomizer.skullgirls');
 Route::view('/randomizer/dengeki', 'randomizer.dengeki')->name('randomizer.dengeki');
 
-Route::middleware(['auth', 'trusted'])->prefix('games/{game}/edit')->name('admin.')->scopeBindings()->group(function () {
+Route::middleware(['auth', 'can:update,game'])->prefix('games/{game}/edit')->name('admin.')->scopeBindings()->group(function () {
     Route::get('/', [GameSettingsController::class, 'edit'])->name('game.edit');
     Route::post('/', [GameSettingsController::class, 'update'])->middleware('throttle:10,1')->name('game.update');
 

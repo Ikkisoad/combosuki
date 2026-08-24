@@ -19,7 +19,9 @@ class GameLogoTest extends TestCase
 
         $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
 
-        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
+        $trusted = User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]);
+        $game->moderators()->attach($trusted->iduser);
+        $this->actingAs($trusted);
 
         $this->post(route('admin.game.update', $game), [
             'action' => 'Submit',
@@ -40,7 +42,9 @@ class GameLogoTest extends TestCase
         $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret', 'image' => 'game-logos/existing.jpg']);
         Storage::disk('public')->put('game-logos/existing.jpg', 'fake-content');
 
-        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
+        $trusted = User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]);
+        $game->moderators()->attach($trusted->iduser);
+        $this->actingAs($trusted);
 
         $this->post(route('admin.game.update', $game), [
             'action' => 'Submit',
@@ -60,7 +64,9 @@ class GameLogoTest extends TestCase
         $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret', 'image' => 'game-logos/old.jpg']);
         Storage::disk('public')->put('game-logos/old.jpg', 'fake-content');
 
-        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
+        $trusted = User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]);
+        $game->moderators()->attach($trusted->iduser);
+        $this->actingAs($trusted);
 
         $this->post(route('admin.game.update', $game), [
             'action' => 'Submit',
@@ -85,7 +91,9 @@ class GameLogoTest extends TestCase
 
         $this->assertSame('https://example.com/legacy-logo.png', $game->logo_url);
 
-        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
+        $trusted = User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]);
+        $game->moderators()->attach($trusted->iduser);
+        $this->actingAs($trusted);
 
         $this->post(route('admin.game.update', $game), [
             'action' => 'Submit',
@@ -104,7 +112,9 @@ class GameLogoTest extends TestCase
         $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret', 'image' => 'game-logos/existing.jpg']);
         Storage::disk('public')->put('game-logos/existing.jpg', 'fake-content');
 
-        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
+        // Deleting a game is admin-only, unlike the other actions in this
+        // file, which a game's assigned moderator can perform.
+        $this->actingAs(User::create(['nickname' => 'admin', 'password' => 'password123', 'is_admin' => true]));
 
         $this->post(route('admin.game.update', $game), ['action' => 'Delete']);
 

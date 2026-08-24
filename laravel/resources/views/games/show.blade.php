@@ -10,9 +10,9 @@
             <div class="alert alert-danger">{{ session('error') }}</div>
         @endif
 
-        @if (auth()->check() && auth()->user()->isTrusted())
+        @can('update', $game)
             <a href="{{ route('admin.game.edit', $game) }}" class="btn btn-secondary btn-sm mb-2" style="float: right;">Edit Game</a>
-        @endif
+        @endcan
 
         <p class="text-white-50 small mb-2">{{ number_format($game->views) }} {{ \Illuminate\Support\Str::plural('view', $game->views) }}</p>
 

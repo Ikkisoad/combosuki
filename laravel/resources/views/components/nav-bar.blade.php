@@ -58,6 +58,10 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('admin.dashboard') }}">Admin</a>
                         </li>
+                    @elseif (auth()->user()->isModerator())
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('admin.users.index') }}">Manage Users</a>
+                        </li>
                     @endif
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarUserDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">

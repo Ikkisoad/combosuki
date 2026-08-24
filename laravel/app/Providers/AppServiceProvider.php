@@ -3,9 +3,11 @@
 namespace App\Providers;
 
 use App\Models\Combo;
+use App\Models\Game;
 use App\Models\GameMatch;
 use App\Models\ListModel;
 use App\Policies\ComboPolicy;
+use App\Policies\GamePolicy;
 use App\Policies\ListPolicy;
 use App\Policies\MatchPolicy;
 use Illuminate\Database\Schema\Builder;
@@ -35,5 +37,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Combo::class, ComboPolicy::class);
         Gate::policy(ListModel::class, ListPolicy::class);
         Gate::policy(GameMatch::class, MatchPolicy::class);
+        Gate::policy(Game::class, GamePolicy::class);
     }
 }

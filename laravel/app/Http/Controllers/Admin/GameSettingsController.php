@@ -115,6 +115,8 @@ class GameSettingsController extends Controller
                 ->with('status', $complete ? 'Game marked as complete.' : 'Game marked as incomplete.');
         }
 
+        $this->authorize('delete', $game);
+
         // FK cascades handle characters/combos/resources/buttons, but
         // list.game_idgame is nullOnDelete (lists can be cross-game), so the
         // game's own lists need explicit deletion, matching legacy.

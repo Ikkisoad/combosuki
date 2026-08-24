@@ -12,9 +12,12 @@ class AliasManagementTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function trustedUser(): User
+    private function trustedUser(Game $game): User
     {
-        return User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]);
+        $user = User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]);
+        $game->moderators()->attach($user->iduser);
+
+        return $user;
     }
 
     public function test_game_edit_page_shows_current_aliases(): void
@@ -22,7 +25,7 @@ class AliasManagementTest extends TestCase
         // Multi-word name -> auto-generated "TF" alias (see Game::booted()).
         $game = Game::create(['name' => 'Test Fighter', 'complete' => 1, 'modPass' => 'secret']);
 
-        $this->actingAs($this->trustedUser());
+        $this->actingAs($this->trustedUser($game));
 
         $this->get(route('admin.game.edit', $game))->assertOk()->assertSee('TF', false);
     }
@@ -32,7 +35,7 @@ class AliasManagementTest extends TestCase
         $game = Game::create(['name' => 'Test Fighter', 'complete' => 1, 'modPass' => 'secret']);
         $game->aliases()->create(['alias' => 'OLD']);
 
-        $this->actingAs($this->trustedUser());
+        $this->actingAs($this->trustedUser($game));
 
         $this->post(route('admin.game.update', $game), [
             'action' => 'Submit',
@@ -52,7 +55,7 @@ class AliasManagementTest extends TestCase
         // rejected submission below must leave untouched.
         $game = Game::create(['name' => 'Test Fighter', 'complete' => 1, 'modPass' => 'secret']);
 
-        $this->actingAs($this->trustedUser());
+        $this->actingAs($this->trustedUser($game));
 
         $this->post(route('admin.game.update', $game), [
             'action' => 'Submit',
@@ -67,7 +70,7 @@ class AliasManagementTest extends TestCase
     {
         $game = Game::create(['name' => 'Test Fighter', 'complete' => 1, 'modPass' => 'secret']);
 
-        $this->actingAs($this->trustedUser());
+        $this->actingAs($this->trustedUser($game));
 
         $this->post(route('admin.characters.store', $game), [
             'action' => 'Add',
@@ -85,7 +88,7 @@ class AliasManagementTest extends TestCase
         $existing = Character::create(['name' => 'Valentine', 'game_idgame' => $game->idgame]);
         $existing->aliases()->create(['alias' => 'V', 'game_idgame' => $game->idgame]);
 
-        $this->actingAs($this->trustedUser());
+        $this->actingAs($this->trustedUser($game));
 
         $this->post(route('admin.characters.store', $game), [
             'action' => 'Add',
@@ -103,7 +106,7 @@ class AliasManagementTest extends TestCase
         $characterA = Character::create(['name' => 'Valentine', 'game_idgame' => $gameA->idgame]);
         $characterA->aliases()->create(['alias' => 'V', 'game_idgame' => $gameA->idgame]);
 
-        $this->actingAs($this->trustedUser());
+        $this->actingAs($this->trustedUser($gameB));
 
         $this->post(route('admin.characters.store', $gameB), [
             'action' => 'Add',

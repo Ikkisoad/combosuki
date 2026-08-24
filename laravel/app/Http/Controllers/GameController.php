@@ -46,7 +46,7 @@ class GameController extends Controller
             'image' => ['required', 'string', 'max:255'],
         ]);
 
-        $game = DB::transaction(function () use ($validated) {
+        $game = DB::transaction(function () use ($validated, $request) {
             $game = Game::create([
                 'name' => $validated['name'],
                 'image' => $validated['image'],
@@ -56,6 +56,11 @@ class GameController extends Controller
                 // NOT NULL by the schema, so it's never surfaced or checked.
                 'modPass' => bcrypt(Str::random(32)),
             ]);
+
+            // Game editing is scoped per-game (see GamePolicy), so the
+            // creator needs an explicit assignment to keep editing their own
+            // creation afterwards.
+            $game->moderators()->attach($request->user()->iduser);
 
             foreach (self::DEFAULT_BUTTONS as $order => $name) {
                 Button::create([

@@ -15,8 +15,10 @@ class CharacterQueryManagementTest extends TestCase
     public function test_trusted_user_can_add_update_and_delete_a_default_query(): void
     {
         $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $trusted = User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]);
+        $game->moderators()->attach($trusted->iduser);
 
-        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
+        $this->actingAs($trusted);
 
         $this->post(route('admin.queries.store', $game), [
             'action' => 'Add',

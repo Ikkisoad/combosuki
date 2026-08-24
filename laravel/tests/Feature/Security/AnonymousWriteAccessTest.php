@@ -351,7 +351,6 @@ class AnonymousWriteAccessTest extends TestCase
 
         $this->get(route('games.create'))->assertOk();
         $this->get(route('users.create'))->assertOk();
-        $this->get(route('admin.game.edit', $this->game))->assertOk();
 
         $response = $this->post(route('users.store'), ['nickname' => 'plain', 'password' => 'password123', 'password_confirmation' => 'password123', 'is_admin' => 1, 'trusted_user' => 1]);
         $response->assertRedirect();
@@ -359,5 +358,34 @@ class AnonymousWriteAccessTest extends TestCase
         $created = User::where('nickname', 'plain')->firstOrFail();
         $this->assertFalse($created->is_admin);
         $this->assertFalse($created->trusted_user);
+    }
+
+    /**
+     * Being trusted no longer grants blanket game-edit access — a trusted
+     * user who wasn't assigned to (or didn't create) a game is blocked the
+     * same as any other authenticated user (see GamePolicy::update).
+     */
+    public function test_trusted_users_without_a_game_assignment_cannot_edit_that_game(): void
+    {
+        $this->actingAs($this->trustedUser);
+
+        $this->get(route('admin.game.edit', $this->game))->assertRedirect()->assertSessionHas('error');
+        $this->post(route('admin.game.update', $this->game), ['action' => 'Submit', 'title' => 'Hacked Game'])
+            ->assertRedirect()->assertSessionHas('error');
+
+        $this->assertSame('Test Game', $this->game->fresh()->name);
+    }
+
+    public function test_a_games_assigned_moderator_can_edit_it(): void
+    {
+        $this->game->moderators()->attach($this->trustedUser->iduser);
+
+        $this->actingAs($this->trustedUser);
+
+        $this->get(route('admin.game.edit', $this->game))->assertOk();
+        $this->post(route('admin.game.update', $this->game), ['action' => 'Submit', 'title' => 'Renamed Game'])
+            ->assertRedirect(route('admin.game.edit', $this->game));
+
+        $this->assertSame('Renamed Game', $this->game->fresh()->name);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -12,7 +13,7 @@ class User extends Authenticatable
 
     protected $primaryKey = 'iduser';
 
-    protected $fillable = ['nickname', 'trusted_user', 'password', 'is_admin'];
+    protected $fillable = ['nickname', 'trusted_user', 'password', 'is_admin', 'is_moderator'];
 
     protected $hidden = ['password'];
 
@@ -21,13 +22,33 @@ class User extends Authenticatable
         return [
             'is_admin' => 'boolean',
             'trusted_user' => 'boolean',
+            'is_moderator' => 'boolean',
             'password' => 'hashed',
         ];
     }
 
+    /**
+     * Trusted-level access to everything except game editing, which is
+     * scoped per-game via moderatedGames() (see GamePolicy).
+     */
     public function isTrusted(): bool
     {
-        return $this->is_admin || $this->trusted_user;
+        return $this->is_admin || $this->trusted_user || $this->is_moderator;
+    }
+
+    /**
+     * Gates the admin-user-management carve-outs a moderator gets (viewing
+     * the user list, toggling another user's trusted flag) without granting
+     * the rest of the admin dashboard.
+     */
+    public function isModerator(): bool
+    {
+        return $this->is_admin || $this->is_moderator;
+    }
+
+    public function moderatedGames(): BelongsToMany
+    {
+        return $this->belongsToMany(Game::class, 'game_moderator', 'iduser', 'idgame');
     }
 
     public function combos(): HasMany

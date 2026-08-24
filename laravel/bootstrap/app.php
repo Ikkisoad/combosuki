@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
             'trusted' => \App\Http\Middleware\EnsureUserIsTrusted::class,
+            'moderator' => \App\Http\Middleware\EnsureUserIsModerator::class,
         ]);
         // Comble's "starter" guess is compared character-for-character
         // (including spaces) against the combo's raw notation; the global

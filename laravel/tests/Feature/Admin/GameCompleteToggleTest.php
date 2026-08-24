@@ -66,7 +66,10 @@ class GameCompleteToggleTest extends TestCase
         $this->actingAs($this->admin());
         $this->get(route('admin.game.edit', $game))->assertOk()->assertSee('Mark Complete');
 
-        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
+        $trusted = User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]);
+        $game->moderators()->attach($trusted->iduser);
+
+        $this->actingAs($trusted);
         $this->get(route('admin.game.edit', $game))->assertOk()->assertDontSee('Mark Complete');
     }
 

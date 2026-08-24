@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Game;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -62,5 +63,44 @@ class UserController extends Controller
         $status = $user->trusted_user ? 'trusted' : 'no longer trusted';
 
         return redirect()->route('admin.users.index')->with('status', "\"{$user->nickname}\" is now {$status}.");
+    }
+
+    public function updateModerator(User $user): RedirectResponse
+    {
+        $user->update(['is_moderator' => ! $user->is_moderator]);
+
+        $status = $user->is_moderator ? 'a moderator' : 'no longer a moderator';
+
+        // Freshly made a moderator: send the admin straight into assigning
+        // games, since a moderator with no games can't edit anything yet.
+        if ($user->is_moderator) {
+            return redirect()->route('admin.users.moderated-games.edit', $user)
+                ->with('status', "\"{$user->nickname}\" is now {$status}. Choose which games they can moderate below.");
+        }
+
+        return redirect()->route('admin.users.index')->with('status', "\"{$user->nickname}\" is now {$status}.");
+    }
+
+    public function editModeratedGames(User $user): View
+    {
+        $games = Game::orderBy('name')->get();
+
+        return view('admin.users.moderated-games', [
+            'user' => $user,
+            'games' => $games,
+            'moderatedGameIds' => $user->moderatedGames()->pluck('game.idgame')->all(),
+        ]);
+    }
+
+    public function updateModeratedGames(Request $request, User $user): RedirectResponse
+    {
+        $validated = $request->validate([
+            'game_ids' => ['sometimes', 'array'],
+            'game_ids.*' => ['integer', 'exists:game,idgame'],
+        ]);
+
+        $user->moderatedGames()->sync($validated['game_ids'] ?? []);
+
+        return redirect()->route('admin.users.moderated-games.edit', $user)->with('status', "Updated games \"{$user->nickname}\" can moderate.");
     }
 }

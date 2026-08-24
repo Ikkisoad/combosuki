@@ -48,7 +48,9 @@
             </div>
             <div class="btn-group">
                 <button type="submit" name="action" value="Submit" class="btn btn-primary btn-block">Update</button>
-                <button type="submit" name="action" value="Delete" class="btn btn-danger btn-block" onclick="return confirm('Are you sure you want to delete this game?');">Delete</button>
+                @can('delete', $game)
+                    <button type="submit" name="action" value="Delete" class="btn btn-danger btn-block" onclick="return confirm('Are you sure you want to delete this game?');">Delete</button>
+                @endcan
                 @if ($game->isLocked())
                     <button type="submit" name="action" value="Unlock" class="btn btn-secondary">Unlock</button>
                 @else
