@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Character;
 use App\Models\Game;
 use App\Models\GameResource;
 use App\Models\ResourceValue;
@@ -15,42 +16,68 @@ class GameResourceController extends Controller
     public function index(Game $game): View
     {
         $resources = GameResource::where('game_idgame', $game->idgame)
+            ->with('characters')
             ->orderByDesc('primaryORsecundary')
             ->orderBy('text_name')
             ->get();
 
-        return view('admin.resources.index', ['game' => $game, 'resources' => $resources]);
+        $characters = Character::where('game_idgame', $game->idgame)->orderBy('name')->get();
+
+        return view('admin.resources.index', ['game' => $game, 'resources' => $resources, 'characters' => $characters]);
     }
 
     public function store(Request $request, Game $game): RedirectResponse
     {
         $validated = $request->validate([
-            'action' => ['required', 'in:Add,Update,Delete'],
-            'resource' => ['required_if:action,Add,Update', 'nullable', 'string', 'max:45'],
-            'type' => ['required_if:action,Add,Update', 'nullable', 'integer', 'in:1,2,3'],
+            'action' => ['required', 'in:Add,SaveAll,Delete'],
+            'resource' => ['required_if:action,Add', 'nullable', 'string', 'max:45'],
+            'type' => ['required_if:action,Add', 'nullable', 'integer', 'in:1,2,3'],
             'primaryORsecundary' => ['nullable', 'integer', 'in:0,1'],
             'primaryorsecundary' => ['nullable', 'integer', 'in:0,1'],
-            'idresource' => ['required_if:action,Update,Delete', 'nullable', 'integer'],
+            'characters' => ['array'],
+            'characters.*' => ['integer', 'exists:character,idcharacter,game_idgame,'.$game->idgame],
+            'idresource' => ['required_if:action,Delete', 'nullable', 'integer'],
+            'resources' => ['required_if:action,SaveAll', 'array'],
+            'resources.*.resource' => ['required', 'string', 'max:45'],
+            'resources.*.type' => ['required', 'integer', 'in:1,2,3'],
+            'resources.*.primaryORsecundary' => ['nullable', 'integer', 'in:0,1'],
+            'resources.*.characters' => ['array'],
+            'resources.*.characters.*' => ['integer', 'exists:character,idcharacter,game_idgame,'.$game->idgame],
         ]);
 
         // TODO: record which user made this edit once an audit/edit-log exists
-        $primary = $validated['primaryORsecundary'] ?? $validated['primaryorsecundary'] ?? 0;
-
         if ($validated['action'] === 'Add') {
-            GameResource::create([
+            $primary = $validated['primaryORsecundary'] ?? $validated['primaryorsecundary'] ?? 0;
+
+            $gameResource = GameResource::create([
                 'game_idgame' => $game->idgame,
                 'text_name' => $validated['resource'],
                 'type' => $validated['type'],
                 'primaryORsecundary' => $primary,
             ]);
-        } elseif ($validated['action'] === 'Update') {
-            GameResource::where('idgame_resources', $validated['idresource'])
-                ->where('game_idgame', $game->idgame)
-                ->update([
-                    'text_name' => $validated['resource'],
-                    'type' => $validated['type'],
-                    'primaryORsecundary' => $primary,
+
+            $gameResource->characters()->sync($validated['characters'] ?? []);
+        } elseif ($validated['action'] === 'SaveAll') {
+            $gameResources = GameResource::where('game_idgame', $game->idgame)
+                ->whereIn('idgame_resources', array_keys($validated['resources']))
+                ->get()
+                ->keyBy('idgame_resources');
+
+            foreach ($validated['resources'] as $idResource => $data) {
+                $gameResource = $gameResources->get((int) $idResource);
+
+                if (! $gameResource) {
+                    continue;
+                }
+
+                $gameResource->update([
+                    'text_name' => $data['resource'],
+                    'type' => $data['type'],
+                    'primaryORsecundary' => $data['primaryORsecundary'] ?? 0,
                 ]);
+
+                $gameResource->characters()->sync($data['characters'] ?? []);
+            }
         } else {
             $resource = GameResource::where('idgame_resources', $validated['idresource'])
                 ->where('game_idgame', $game->idgame)

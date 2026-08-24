@@ -120,4 +120,41 @@ class ComboSubmissionTest extends TestCase
             ->assertSee('value="'.$comboType->entryid.'" selected', false)
             ->assertSee('value="'.$corner->idResources_values.'" selected', false);
     }
+
+    public function test_secondary_resources_render_with_their_linked_characters_for_the_combo_forms_toggle(): void
+    {
+        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
+
+        $this->post(route('games.store'), [
+            'name' => 'New Fighter',
+            'image' => 'https://example.com/new-fighter.png',
+        ]);
+
+        $game = Game::where('name', 'New Fighter')->firstOrFail();
+        $character = Character::where('game_idgame', $game->idgame)->firstOrFail();
+
+        $linkedResource = GameResource::create([
+            'game_idgame' => $game->idgame,
+            'text_name' => 'Assist',
+            'type' => 1,
+            'primaryORsecundary' => 0,
+        ]);
+        ResourceValue::create(['value' => 'Type A', 'game_resources_idgame_resources' => $linkedResource->idgame_resources]);
+        $linkedResource->characters()->attach($character->idcharacter);
+
+        $unrestrictedResource = GameResource::create([
+            'game_idgame' => $game->idgame,
+            'text_name' => 'Position',
+            'type' => 1,
+            'primaryORsecundary' => 0,
+        ]);
+        ResourceValue::create(['value' => 'Corner', 'game_resources_idgame_resources' => $unrestrictedResource->idgame_resources]);
+
+        $response = $this->get(route('games.combos.create', $game));
+
+        $response->assertOk()
+            ->assertSee('data-characters="'.$character->idcharacter.'"', false)
+            ->assertSee('data-characters=""', false)
+            ->assertSee('Show all secondary resources');
+    }
 }

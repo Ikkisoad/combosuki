@@ -45,6 +45,41 @@ window.backspace = function () {
     textarea.value = txt;
 };
 
+let showAllSecondaryResources = false;
+
+window.filterSecondaryResources = function () {
+    const select = document.querySelector('select[name="character_idcharacter"]');
+    const characterId = select ? select.value : '';
+
+    document.querySelectorAll('.secondary-resource-col').forEach((col) => {
+        const restricted = col.dataset.characters;
+        const visible = showAllSecondaryResources || !restricted || restricted.split(',').includes(characterId);
+        col.style.display = visible ? '' : 'none';
+    });
+};
+
+window.toggleSecondaryResources = function () {
+    showAllSecondaryResources = !showAllSecondaryResources;
+
+    const button = document.getElementById('toggle-secondary-resources');
+    if (button) {
+        button.textContent = showAllSecondaryResources ? 'Show relevant only' : 'Show all secondary resources';
+    }
+
+    window.filterSecondaryResources();
+};
+
+window.initSecondaryResources = function (forceShow) {
+    showAllSecondaryResources = forceShow;
+
+    const button = document.getElementById('toggle-secondary-resources');
+    if (button) {
+        button.textContent = showAllSecondaryResources ? 'Show relevant only' : 'Show all secondary resources';
+    }
+
+    window.filterSecondaryResources();
+};
+
 window.change_display = function () {
     const line = document.getElementById('combo_line');
     const text = document.getElementById('combo_text');

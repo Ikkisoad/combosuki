@@ -24,7 +24,7 @@
 
             <div class="input-group mb-3">
                 <label class="input-group-text">Character:</label>
-                <select name="character_idcharacter" class="form-select" required>
+                <select name="character_idcharacter" class="form-select" required onchange="filterSecondaryResources()">
                     @foreach ($characters as $character)
                         <option value="{{ $character->idcharacter }}" @selected(old('character_idcharacter', $combo->character_idcharacter) == $character->idcharacter)>{{ $character->name }}</option>
                     @endforeach
@@ -96,10 +96,15 @@
             @endif
 
             @if ($resources->where('primaryORsecundary', 0)->isNotEmpty())
-                <h3>Secondary Resources:</h3>
+                <div class="d-flex align-items-center gap-2">
+                    <h3 class="mb-0">Secondary Resources:</h3>
+                    @if ($resources->where('primaryORsecundary', 0)->contains(fn ($resource) => $resource->characters->isNotEmpty()))
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="toggle-secondary-resources" onclick="toggleSecondaryResources()">Show all secondary resources</button>
+                    @endif
+                </div>
                 <div class="row align-items-center">
                     @foreach ($resources->where('primaryORsecundary', 0) as $resource)
-                        <div class="col">
+                        <div class="col secondary-resource-col" data-characters="{{ $resource->characters->pluck('idcharacter')->implode(',') }}">
                             @if ($resource->type === 1)
                                 <div class="input-group mb-3 flex-nowrap">
                                     <label class="input-group-text">{{ $resource->text_name }}</label>
@@ -148,4 +153,8 @@
             <button type="submit" class="btn btn-danger">Delete Combo</button>
         </form>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => initSecondaryResources({{ $forceShowSecondaryResources ? 'true' : 'false' }}));
+    </script>
 </x-layouts.app>

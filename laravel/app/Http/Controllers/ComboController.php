@@ -167,7 +167,7 @@ class ComboController extends Controller
 
         $resources = GameResource::where('game_idgame', $game->idgame)
             ->whereIn('type', [1, 2])
-            ->with('values')
+            ->with(['values', 'characters'])
             ->orderByDesc('primaryORsecundary')
             ->orderBy('text_name')
             ->get();
@@ -284,7 +284,7 @@ class ComboController extends Controller
 
         $resources = GameResource::where('game_idgame', $game->idgame)
             ->whereIn('type', [1, 2])
-            ->with('values')
+            ->with(['values', 'characters'])
             ->orderByDesc('primaryORsecundary')
             ->orderBy('text_name')
             ->get();
@@ -304,6 +304,15 @@ class ComboController extends Controller
             ];
         }
 
+        // If the combo already has a secondary resource value that's scoped
+        // to characters not including its own, the toggle must start engaged
+        // so editing the combo doesn't silently hide (and risk losing) it.
+        $forceShowSecondaryResources = $resources
+            ->where('primaryORsecundary', 0)
+            ->whereIn('idgame_resources', array_keys($selectedResources))
+            ->contains(fn (GameResource $resource) => $resource->characters->isNotEmpty()
+                && ! $resource->characters->contains('idcharacter', $combo->character_idcharacter));
+
         return view('combos.edit', [
             'game' => $game,
             'combo' => $combo,
@@ -311,6 +320,7 @@ class ComboController extends Controller
             'listingTypes' => $listingTypes,
             'resources' => $resources,
             'selectedResources' => $selectedResources,
+            'forceShowSecondaryResources' => $forceShowSecondaryResources,
         ]);
     }
 

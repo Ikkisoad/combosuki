@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Support\AliasGenerator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
@@ -60,5 +61,10 @@ class Character extends Model
     public function aliases(): HasMany
     {
         return $this->hasMany(CharacterAlias::class, 'character_idcharacter');
+    }
+
+    public function gameResources(): BelongsToMany
+    {
+        return $this->belongsToMany(GameResource::class, 'character_game_resources', 'character_idcharacter', 'game_resources_idgame_resources');
     }
 }
