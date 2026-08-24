@@ -21,6 +21,56 @@
             </div>
         @endif
 
+        <form method="get" action="{{ route('games.matches.index', $game) }}" class="card combosuki-main-reversed text-white p-3 mb-3">
+            <div class="row g-2 align-items-end">
+                <div class="col-auto">
+                    <label class="form-label">Character</label>
+                    <select name="character_a" class="form-select">
+                        <option value="-">Any Character</option>
+                        @foreach ($characters as $character)
+                            <option value="{{ $character->idcharacter }}" @selected(request('character_a') == $character->idcharacter)>{{ $character->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <label class="form-label">vs Character</label>
+                    <select name="character_b" class="form-select">
+                        <option value="-">Any</option>
+                        @foreach ($characters as $character)
+                            <option value="{{ $character->idcharacter }}" @selected(request('character_b') == $character->idcharacter)>{{ $character->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <label class="form-label">Player</label>
+                    <input type="text" name="player" class="form-control" value="{{ request('player') }}" placeholder="Name or tag">
+                </div>
+                <div class="col-auto">
+                    <label class="form-label">From</label>
+                    <input type="date" name="date_from" class="form-control" value="{{ request('date_from') }}">
+                </div>
+                <div class="col-auto">
+                    <label class="form-label">To</label>
+                    <input type="date" name="date_to" class="form-control" value="{{ request('date_to') }}">
+                </div>
+                <div class="col-auto">
+                    <label class="form-label">Video</label>
+                    <input type="text" name="video" class="form-control" value="{{ request('video') }}" placeholder="URL contains&hellip;">
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <button type="submit" class="btn btn-info">Filter</button>
+                @if (request()->anyFilled(['character_a', 'character_b', 'player', 'date_from', 'date_to', 'video']))
+                    <a href="{{ route('games.matches.index', $game) }}" class="btn btn-outline-light">Clear</a>
+                @endif
+            </div>
+        </form>
+
+        @if ($matches->total() === 0 && request()->anyFilled(['character_a', 'character_b', 'player', 'date_from', 'date_to', 'video']))
+            <div class="alert alert-warning">No matches found for these filters.</div>
+        @endif
+
         <div class="table-responsive">
             <table class="table table-hover align-middle caption-top combosuki-main-reversed text-white">
                 <caption>{{ $matches->total() }} match(es)</caption>
