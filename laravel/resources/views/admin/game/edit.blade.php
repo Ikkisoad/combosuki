@@ -9,7 +9,7 @@
             <div class="alert alert-danger">{{ session('error') }}</div>
         @endif
 
-        <form method="post" action="{{ route('admin.game.update', $game) }}">
+        <form method="post" action="{{ route('admin.game.update', $game) }}" enctype="multipart/form-data">
             @csrf
             <div class="input-group mb-3">
                 <span class="input-group-text">Title:</span>
@@ -20,11 +20,11 @@
                 <input type="text" maxlength="10" name="patch" class="form-control" value="{{ $game->patch }}">
             </div>
             <div class="input-group mb-3">
-                <span class="input-group-text">Image:</span>
-                <input type="text" name="image" class="form-control" value="{{ $game->image }}">
+                <span class="input-group-text">Logo:</span>
+                <input type="file" name="image" accept="image/*" class="form-control">
             </div>
-            @if ($game->image)
-                <img src="{{ $game->image }}" height="250" class="mb-3">
+            @if ($game->logo_url)
+                <img src="{{ $game->logo_url }}" height="250" class="mb-3">
             @endif
             <div class="input-group mb-3">
                 <span class="input-group-text">Description:</span>

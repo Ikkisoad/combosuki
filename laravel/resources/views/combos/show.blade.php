@@ -12,7 +12,7 @@
     $ogImage = $ogVideo['image'] ?? null;
 
     if (! $ogImage) {
-        $ogImage = $game->image ?: null;
+        $ogImage = $game->logo_url;
     }
 @endphp
 <x-layouts.app
@@ -209,6 +209,23 @@
                         <td>{{ $combo->submited?->format('d-m-Y') }}</td>
                     </tr>
                 </table>
+
+                @if ($similarCombos->isNotEmpty())
+                    <table class="table table-hover align-middle combosuki-main-reversed text-white">
+                        <tr>
+                            <th>Similar combos</th>
+                        </tr>
+                        @foreach ($similarCombos as $similarCombo)
+                            <tr>
+                                <td>
+                                    <a href="{{ route('combos.show', $similarCombo) }}" class="text-white">
+                                        {{ \Illuminate\Support\Str::limit($similarCombo->combo, 40) }}
+                                    </a>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </table>
+                @endif
 
                 <a href="{{ route('games.show', $game) }}" class="btn btn-dark">Back to {{ $game->name }}</a>
             </nav>

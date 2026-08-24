@@ -313,9 +313,12 @@ class AnonymousWriteAccessTest extends TestCase
         $this->post(route('admin.data-management.destroy'), ['combo_ids' => [$this->combo->idcombo]])->assertRedirect()->assertSessionHas('error');
         $this->get(route('admin.users.index'))->assertRedirect()->assertSessionHas('error');
         $this->post(route('admin.users.store'), ['nickname' => 'hacker', 'password' => 'password123', 'password_confirmation' => 'password123'])->assertRedirect()->assertSessionHas('error');
+        $this->get(route('admin.external-sites.index'))->assertRedirect()->assertSessionHas('error');
+        $this->post(route('admin.external-sites.store'), ['action' => 'Add', 'title' => 'Hacked', 'url' => 'https://hacked.example/'])->assertRedirect()->assertSessionHas('error');
 
         $this->assertSame(2, User::count());
         $this->assertDatabaseHas('combo', ['idcombo' => $this->combo->idcombo]);
+        $this->assertDatabaseMissing('external_site', ['title' => 'Hacked']);
     }
 
     public function test_authenticated_users_can_reach_the_forms_guests_were_blocked_from(): void

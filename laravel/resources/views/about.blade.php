@@ -50,60 +50,14 @@
             <div class="sidebar-backdrop mb-3 d-inline-block">
                 <h3>Other FGC websites</h3>
                 <div class="d-flex flex-wrap column-gap-4 row-gap-2">
-                    <a href="https://supercombo.gg/" target="_blank" class="sidebar-character-link align-items-center gap-1" aria-label="Open SuperCombo.gg">
-                        SuperCombo.gg
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M5 3l6 5-6 5" />
-                        </svg>
-                    </a>
-                    <a href="https://glossary.infil.net/" target="_blank" class="sidebar-character-link align-items-center gap-1" aria-label="Open The Fighting Game Glossary">
-                        The Fighting Game Glossary
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M5 3l6 5-6 5" />
-                        </svg>
-                    </a>
-                    <a href="http://www.dustloop.com/" target="_blank" class="sidebar-character-link align-items-center gap-1" aria-label="Open Dustloop wiki">
-                        Dustloop wiki
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M5 3l6 5-6 5" />
-                        </svg>
-                    </a>
-                    <a href="https://wiki.gbl.gg/" target="_blank" class="sidebar-character-link align-items-center gap-1" aria-label="Open Mizuumi wiki">
-                        Mizuumi wiki
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M5 3l6 5-6 5" />
-                        </svg>
-                    </a>
-                    <a href="https://www.dreamcancel.com/" target="_blank" class="sidebar-character-link align-items-center gap-1" aria-label="Open Dream Cancel wiki">
-                        Dream Cancel wiki
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M5 3l6 5-6 5" />
-                        </svg>
-                    </a>
-                    <a href="https://srk.shib.live/w/Main_Page" target="_blank" class="sidebar-character-link align-items-center gap-1" aria-label="Open Shoryuken wiki">
-                        Shoryuken wiki
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M5 3l6 5-6 5" />
-                        </svg>
-                    </a>
-                    <a href="https://fgcombo.com/" target="_blank" class="sidebar-character-link align-items-center gap-1" aria-label="Open FGCombo">
-                        FGCombo
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M5 3l6 5-6 5" />
-                        </svg>
-                    </a>
-                    <a href="https://www.top8er.com/" target="_blank" class="sidebar-character-link align-items-center gap-1" aria-label="Open Top8er">
-                        Top8er
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M5 3l6 5-6 5" />
-                        </svg>
-                    </a>
-                    <a href="https://replaytheater.app/" target="_blank" class="sidebar-character-link align-items-center gap-1" aria-label="Open Replay Theater">
-                        Replay Theater
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M5 3l6 5-6 5" />
-                        </svg>
-                    </a>
+                    @foreach ($externalSites as $site)
+                        <a href="{{ $site->url }}" target="_blank" class="sidebar-character-link align-items-center gap-1" aria-label="Open {{ $site->title }}">
+                            {{ $site->title }}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M5 3l6 5-6 5" />
+                            </svg>
+                        </a>
+                    @endforeach
                 </div>
             </div>
         </div>

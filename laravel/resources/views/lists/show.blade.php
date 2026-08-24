@@ -47,7 +47,7 @@
                 @if ($list->game)
                     <div class="row mb-2">
                         <div class="col">
-                            <img src="{{ $list->game->image }}" height="19" title="{{ $list->game->name }}">
+                            <img src="{{ $list->game->logo_url }}" height="19" title="{{ $list->game->name }}">
                             {{ $list->game->name }} list
                         </div>
                     </div>

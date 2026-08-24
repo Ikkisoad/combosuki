@@ -8,6 +8,7 @@ use App\Models\GameAlias;
 use App\Support\AliasGenerator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -23,7 +24,7 @@ class GameSettingsController extends Controller
         $validated = $request->validate([
             'action' => ['required', 'in:Submit,Delete,Lock,Unlock,Complete,Incomplete'],
             'title' => ['required_if:action,Submit', 'nullable', 'string', 'max:100'],
-            'image' => ['nullable', 'string', 'max:255'],
+            'image' => ['nullable', 'image', 'max:5120'],
             'patch' => ['nullable', 'string', 'max:10'],
             'description' => ['nullable', 'string', 'max:255'],
             'notation' => ['nullable', 'string', 'max:1000'],
@@ -45,15 +46,24 @@ class GameSettingsController extends Controller
                 }
             }
 
-            $game->update([
+            $attributes = [
                 'name' => $validated['title'],
-                'image' => $validated['image'] ?? null,
                 'patch' => $validated['patch'] ?? null,
                 'description' => $validated['description'] ?? null,
                 'notation' => $validated['notation'] ?? null,
                 'matches_enabled' => $request->boolean('matches_enabled'),
                 'matches_url' => $validated['matches_url'] ?? null,
-            ]);
+            ];
+
+            if ($request->hasFile('image')) {
+                if ($game->image && ! Str::startsWith($game->image, ['http://', 'https://'])) {
+                    Storage::disk('public')->delete($game->image);
+                }
+
+                $attributes['image'] = $request->file('image')->store('game-logos', 'public');
+            }
+
+            $game->update($attributes);
 
             // Matched case-insensitively (mirroring the DB's case-insensitive
             // unique index) so re-submitting an existing alias with different
@@ -113,6 +123,10 @@ class GameSettingsController extends Controller
             $list->categories()->delete();
             $list->delete();
         });
+
+        if ($game->image && ! Str::startsWith($game->image, ['http://', 'https://'])) {
+            Storage::disk('public')->delete($game->image);
+        }
 
         $game->delete();
 

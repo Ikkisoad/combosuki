@@ -14,6 +14,7 @@ use App\Models\GameResource;
 use App\Models\ListModel;
 use App\Models\Resource;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -73,6 +74,8 @@ class ComboController extends Controller
         $secondaryResources = $combo->resources
             ->filter(fn ($resource) => $resource->resourceValue?->gameResource?->primaryORsecundary === 0);
 
+        $similarCombos = $this->similarCombos($combo);
+
         $canEdit = Gate::allows('update', $combo);
 
         $characters = $listingTypes = $buttons = collect();
@@ -114,7 +117,46 @@ class ComboController extends Controller
             'userLists' => $userLists,
             'comboListIds' => $comboListIds,
             'isFavorited' => $isFavorited,
+            'similarCombos' => $similarCombos,
         ]);
+    }
+
+    /**
+     * Other combos for the same character and listing type with the exact
+     * same set of resource values configured (e.g. same position, same
+     * starter, same assists) as $combo.
+     */
+    private function similarCombos(Combo $combo): Collection
+    {
+        $resourceValueIds = $combo->resources
+            ->pluck('Resources_values_idResources_values')
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values();
+
+        if ($resourceValueIds->isEmpty()) {
+            return new Collection();
+        }
+
+        $resourceValueIdList = $resourceValueIds->implode(',');
+
+        return Combo::query()
+            ->where('character_idcharacter', $combo->character_idcharacter)
+            ->where('type', $combo->type)
+            ->where('idcombo', '!=', $combo->idcombo)
+            ->whereIn('idcombo', function ($query) use ($resourceValueIdList) {
+                $query->select('combo_idcombo')
+                    ->from('resources')
+                    ->groupBy('combo_idcombo')
+                    ->havingRaw(
+                        'GROUP_CONCAT(DISTINCT Resources_values_idResources_values ORDER BY Resources_values_idResources_values) = ?',
+                        [$resourceValueIdList]
+                    );
+            })
+            ->orderByDesc('damage')
+            ->limit(8)
+            ->get();
     }
 
     public function create(Game $game, Request $request): View

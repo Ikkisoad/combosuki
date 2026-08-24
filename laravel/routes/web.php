@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\CharacterController as AdminCharacterController;
 use App\Http\Controllers\Admin\CharacterQueryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DonationController;
+use App\Http\Controllers\Admin\ExternalSiteController;
 use App\Http\Controllers\Admin\GameEntryController;
 use App\Http\Controllers\Admin\GameListController;
 use App\Http\Controllers\Admin\GameResourceController;
@@ -32,6 +33,7 @@ use App\Http\Controllers\TierListController;
 use App\Http\Controllers\TimelineController;
 use App\Http\Controllers\UserController;
 use App\Models\Combo;
+use App\Models\ExternalSite;
 use App\Models\Game;
 use App\Services\DailyChallenge;
 use Illuminate\Support\Facades\Route;
@@ -44,7 +46,10 @@ Route::get('/', function () {
 })->name('home');
 
 Route::get('/about', function () {
-    return view('about', ['comboCount' => Combo::count()]);
+    return view('about', [
+        'comboCount' => Combo::count(),
+        'externalSites' => ExternalSite::orderBy('order')->orderBy('title')->get(),
+    ]);
 })->name('about');
 
 Route::middleware('guest')->group(function () {
@@ -73,6 +78,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::get('/donation', [DonationController::class, 'edit'])->name('donation.edit');
     Route::put('/donation', [DonationController::class, 'update'])->middleware('throttle:10,1')->name('donation.update');
+
+    Route::get('/external-sites', [ExternalSiteController::class, 'index'])->name('external-sites.index');
+    Route::post('/external-sites', [ExternalSiteController::class, 'store'])->middleware('throttle:10,1')->name('external-sites.store');
 });
 
 Route::middleware(['auth', 'trusted'])->group(function () {

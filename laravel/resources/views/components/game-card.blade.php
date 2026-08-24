@@ -7,7 +7,7 @@
                style="width:200px; height:200px;">
                 <img class="rounded"
                      style="max-height:100%; max-width:100%; height:auto; width:auto; object-fit:contain;"
-                     src="{{ $game->image }}" alt="{{ $game->name }}">
+                     src="{{ $game->logo_url }}" alt="{{ $game->name }}">
             </a>
         </div>
         <div class="card-body">
