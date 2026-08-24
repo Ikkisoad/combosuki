@@ -174,7 +174,7 @@ class GameController extends Controller
 
         $characters = Character::where('game_idgame', $game->idgame)->get();
 
-        $characterAverages = $characters
+        $allCharacterAverages = $characters
             ->map(function (Character $character) use ($game, $queries) {
                 $damages = $queries
                     ->map(fn (CharacterQuery $query) => $this->searchCombos(
@@ -189,13 +189,22 @@ class GameController extends Controller
                     'character' => $character,
                     'average' => $damages->isNotEmpty() ? $damages->avg() : null,
                 ];
-            })
+            });
+
+        $charactersWithData = $allCharacterAverages
             ->filter(fn (array $entry) => $entry['average'] !== null)
             ->sortByDesc('average')
             ->values();
 
-        $gameAverageDamage = $characterAverages->isNotEmpty() ? $characterAverages->avg('average') : null;
-        $topCharacterEntry = $characterAverages->first();
+        $charactersWithoutData = $allCharacterAverages
+            ->filter(fn (array $entry) => $entry['average'] === null)
+            ->sortBy(fn (array $entry) => $entry['character']->name)
+            ->values();
+
+        $characterAverages = $charactersWithData->concat($charactersWithoutData)->values();
+
+        $gameAverageDamage = $charactersWithData->isNotEmpty() ? $charactersWithData->avg('average') : null;
+        $topCharacterEntry = $charactersWithData->first();
 
         return view('games.partials.damage-stats-tab', [
             'game' => $game,
