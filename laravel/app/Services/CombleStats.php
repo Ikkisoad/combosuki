@@ -3,17 +3,19 @@
 namespace App\Services;
 
 use App\Models\CombleAttempt;
+use Illuminate\Support\Carbon;
 
 class CombleStats
 {
     /**
-     * Global, all-time distribution across every Comble puzzle ever played
-     * (not scoped to a single day) — the community equivalent of Wordle's
+     * Distribution across every Comble attempt for one specific day only
+     * (not an all-time total) — the community equivalent of Wordle's
      * per-player stats, since Comble has no persistent player identity.
      */
-    public function summary(): array
+    public function summary(Carbon $day): array
     {
         $rows = CombleAttempt::query()
+            ->where('day', $day->toDateString())
             ->selectRaw('guesses, won, COUNT(*) as total')
             ->groupBy('guesses', 'won')
             ->get();
@@ -30,7 +32,7 @@ class CombleStats
 
         $totalAttempts = array_sum($distribution);
         $totalWins = $totalAttempts - $distribution['lost'];
-        $totalPerfect = CombleAttempt::where('perfect', true)->count();
+        $totalPerfect = CombleAttempt::where('day', $day->toDateString())->where('perfect', true)->count();
 
         return [
             'totalAttempts' => $totalAttempts,

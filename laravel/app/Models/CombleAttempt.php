@@ -18,7 +18,11 @@ class CombleAttempt extends Model
     protected function casts(): array
     {
         return [
-            'day' => 'date',
+            // Deliberately NOT cast to 'date' — see the identical comment on
+            // CombleDayView::casts() for why: the date-cast setter reformats
+            // to a full datetime string on write, which MySQL's DATE column
+            // truncates away but SQLite stores verbatim, breaking day-string
+            // equality lookups (e.g. CombleStats::summary()) under tests.
             'guesses' => 'integer',
             'won' => 'boolean',
             'perfect' => 'boolean',

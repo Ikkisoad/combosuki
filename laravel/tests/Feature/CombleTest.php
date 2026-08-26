@@ -156,6 +156,57 @@ class CombleTest extends TestCase
             ->assertSee('<'.route('comble.show').'>');
     }
 
+    /**
+     * The page submits guesses via fetch (see resources/js/comble.js) so it
+     * can update in place instead of reloading. An Accept: application/json
+     * request must get the rendered fragment back directly, not a redirect.
+     */
+    public function test_a_guess_via_ajax_returns_updated_html_without_a_redirect(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $type = $this->makeType($game);
+        $this->makeCombo($character, $type);
+
+        $response = $this->postJson(route('comble.guess'), $this->guessPayload($game, $character, $type));
+
+        $response->assertOk();
+        $response->assertJsonStructure(['html']);
+        $this->assertStringContainsString('You got it!', $response->json('html'));
+        $this->assertNotNull($this->cookieFromResponse($response, allowMissing: true));
+    }
+
+    public function test_an_ajax_guess_on_a_finished_puzzle_returns_a_json_error(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $type = $this->makeType($game);
+        $this->makeCombo($character, $type);
+
+        $winResponse = $this->submitGuess($this->guessPayload($game, $character, $type));
+        $cookie = $this->cookieFromResponse($winResponse);
+
+        $response = $this->withCookie($cookie['name'], $cookie['value'])
+            ->withCredentials()
+            ->postJson(route('comble.guess'), $this->guessPayload($game, $character, $type));
+
+        $response->assertStatus(409);
+        $response->assertJson(['error' => 'That Comble puzzle is already finished.']);
+    }
+
+    public function test_an_ajax_guess_with_invalid_input_returns_json_validation_errors(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $type = $this->makeType($game);
+        $this->makeCombo($character, $type);
+
+        $response = $this->postJson(route('comble.guess'), []);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['game_id', 'character_id', 'listing_type_id', 'damage']);
+    }
+
     public function test_a_wrong_guess_keeps_the_puzzle_in_progress(): void
     {
         $game = $this->makeGame();

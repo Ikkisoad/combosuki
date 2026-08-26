@@ -80,13 +80,9 @@ function legacyCopy(text) {
     return copied;
 }
 
-function initShareButton() {
-    const shareBtn = document.getElementById('comble-share-btn');
+function copyShareText(shareBtn) {
     const feedback = document.getElementById('comble-share-feedback');
-
-    if (! shareBtn) {
-        return;
-    }
+    const text = shareBtn.dataset.shareText;
 
     const showFeedback = function (success) {
         if (! feedback) return;
@@ -95,21 +91,105 @@ function initShareButton() {
         feedback.style.display = 'inline';
     };
 
-    shareBtn.addEventListener('click', function () {
-        const text = shareBtn.dataset.shareText;
+    if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) {
+        navigator.clipboard.writeText(text)
+            .then(function () { showFeedback(true); })
+            .catch(function () { showFeedback(legacyCopy(text)); });
+        return;
+    }
 
-        if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) {
-            navigator.clipboard.writeText(text)
-                .then(function () { showFeedback(true); })
-                .catch(function () { showFeedback(legacyCopy(text)); });
-            return;
-        }
+    showFeedback(legacyCopy(text));
+}
 
-        showFeedback(legacyCopy(text));
-    });
+function showGuessError(message) {
+    const errorEl = document.getElementById('comble-guess-error');
+
+    if (! errorEl) {
+        return;
+    }
+
+    errorEl.textContent = message;
+    errorEl.style.display = message ? 'block' : 'none';
+}
+
+/**
+ * Submits a guess via fetch instead of a normal form POST, so a correct or
+ * wrong guess updates the reveal/table/stats in place instead of reloading
+ * the whole page. Falls back to a normal submit (full page reload) if fetch
+ * throws before it can even reach the network, e.g. in very old browsers.
+ */
+function submitGuessForm(form) {
+    showGuessError('');
+
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn ? submitBtn.textContent : null;
+
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Guessing…';
+    }
+
+    fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { Accept: 'application/json' },
+    })
+        .then(function (response) {
+            return response.json().then(function (data) {
+                return { ok: response.ok, status: response.status, data: data };
+            });
+        })
+        .then(function (result) {
+            if (result.ok) {
+                const container = document.getElementById('comble-game-state');
+
+                if (container) {
+                    container.outerHTML = result.data.html;
+                }
+
+                initGuessForm();
+
+                return;
+            }
+
+            if (result.status === 422 && result.data.errors) {
+                showGuessError(Object.values(result.data.errors).flat().join(' '));
+
+                return;
+            }
+
+            showGuessError(result.data.error || result.data.message || 'Something went wrong. Please try again.');
+        })
+        .catch(function () {
+            showGuessError('Network error. Please try again.');
+        })
+        .finally(function () {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        });
 }
 
 document.addEventListener('DOMContentLoaded', function () {
     initGuessForm();
-    initShareButton();
+
+    document.addEventListener('submit', function (event) {
+        const form = event.target.closest('#comble-guess-form');
+
+        if (! form) {
+            return;
+        }
+
+        event.preventDefault();
+        submitGuessForm(form);
+    });
+
+    document.addEventListener('click', function (event) {
+        const shareBtn = event.target.closest('#comble-share-btn');
+
+        if (shareBtn) {
+            copyShareText(shareBtn);
+        }
+    });
 });

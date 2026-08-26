@@ -36,6 +36,8 @@ return Application::configure(basePath: dirname(__DIR__))
                 'lists.entries.reassign',
                 'lists.manage.pages.bulk',
                 'lists.manage.categories.bulk',
+                'comble.guess',
+                'comble.guess.date',
             ]),
         );
 

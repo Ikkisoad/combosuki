@@ -12,6 +12,7 @@ use App\Services\CombleDailyCombo;
 use App\Services\CombleGuessEvaluator;
 use App\Services\CombleStats;
 use App\Support\DailyGameClock;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -42,35 +43,22 @@ class CombleController extends Controller
         $game = $target->character->game;
 
         $guesses = $this->evaluateGuesses($this->picksFromCookie($request, $day), $target);
-        $won = collect($guesses)->contains('won', true);
-        $finished = $won || count($guesses) >= self::MAX_GUESSES;
-        $lastGuess = $guesses === [] ? null : $guesses[array_key_last($guesses)];
 
-        return view('comble.show', [
-            'game' => $game,
-            'target' => $target,
-            'guesses' => $guesses,
-            'finished' => $finished,
-            'won' => $won,
-            'remaining' => self::MAX_GUESSES - count($guesses),
-            'catalog' => $this->catalog(),
-            'shareText' => $finished ? $this->shareText($guesses, $won, $day) : null,
-            'day' => $day,
-            'isToday' => $day->isToday(),
-            'previousDay' => $day->copy()->subDay(),
-            'nextDay' => $day->isToday() ? null : $day->copy()->addDay(),
-            'stickyGameId' => $lastGuess && $lastGuess['game_correct'] ? $lastGuess['game']->idgame : null,
-            'stickyCharacterId' => $lastGuess && $lastGuess['character_correct'] ? $lastGuess['character']->idcharacter : null,
-            'stickyTypeId' => $lastGuess && $lastGuess['type_correct'] ? $lastGuess['listing_type']->entryid : null,
-            'stickyStarter' => $lastGuess && $lastGuess['starter_result'] === 'partial' ? $lastGuess['starter'] : null,
-            'stats' => $this->stats->summary(),
-        ]);
+        return view('comble.show', array_merge(
+            $this->gameState($day, $target, $game, $guesses),
+            [
+                'catalog' => $this->catalog(),
+                'previousDay' => $day->copy()->subDay(),
+                'nextDay' => $day->isToday() ? null : $day->copy()->addDay(),
+            ],
+        ));
     }
 
-    public function guess(Request $request, ?string $date = null): RedirectResponse
+    public function guess(Request $request, ?string $date = null): RedirectResponse|JsonResponse
     {
         $day = $this->resolveDate($date);
         $target = $this->dailyCombo->forDate($day);
+        $game = $target->character->game;
 
         $redirectRoute = $day->isToday() ? 'comble.show' : 'comble.show.date';
         $redirectParams = $day->isToday() ? [] : ['date' => $day->toDateString()];
@@ -80,6 +68,10 @@ class CombleController extends Controller
         $finished = collect($guesses)->contains('won', true) || count($guesses) >= self::MAX_GUESSES;
 
         if ($finished) {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'That Comble puzzle is already finished.'], 409);
+            }
+
             return redirect()->route($redirectRoute, $redirectParams)->with('error', 'That Comble puzzle is already finished.');
         }
 
@@ -105,18 +97,55 @@ class CombleController extends Controller
             $validated['starter'] ?? null,
         ];
 
+        $guesses = $this->evaluateGuesses($picks, $target);
+
         $this->attemptRecorder->recordIfFinished(
             $day,
             $request->session()->getId(),
             auth()->id(),
-            $this->evaluateGuesses($picks, $target),
+            $guesses,
             self::MAX_GUESSES,
         );
 
         $cookiePayload = json_encode(['picks' => $picks]);
+        $cookie = cookie($this->cookieName($day), $cookiePayload, self::COOKIE_MINUTES);
 
-        return redirect()->route($redirectRoute, $redirectParams)
-            ->cookie($this->cookieName($day), $cookiePayload, self::COOKIE_MINUTES);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'html' => view('comble._game', $this->gameState($day, $target, $game, $guesses))->render(),
+            ])->cookie($cookie);
+        }
+
+        return redirect()->route($redirectRoute, $redirectParams)->cookie($cookie);
+    }
+
+    /**
+     * The view data for just the guessing widget — reveal, guess table,
+     * form/result panel and stats — shared by the full-page show() render
+     * and the guess() AJAX response, so the two never drift out of sync.
+     */
+    private function gameState(Carbon $day, Combo $target, Game $game, array $guesses): array
+    {
+        $won = collect($guesses)->contains('won', true);
+        $finished = $won || count($guesses) >= self::MAX_GUESSES;
+        $lastGuess = $guesses === [] ? null : $guesses[array_key_last($guesses)];
+
+        return [
+            'game' => $game,
+            'target' => $target,
+            'guesses' => $guesses,
+            'finished' => $finished,
+            'won' => $won,
+            'remaining' => self::MAX_GUESSES - count($guesses),
+            'shareText' => $finished ? $this->shareText($guesses, $won, $day) : null,
+            'day' => $day,
+            'isToday' => $day->isToday(),
+            'stickyGameId' => $lastGuess && $lastGuess['game_correct'] ? $lastGuess['game']->idgame : null,
+            'stickyCharacterId' => $lastGuess && $lastGuess['character_correct'] ? $lastGuess['character']->idcharacter : null,
+            'stickyTypeId' => $lastGuess && $lastGuess['type_correct'] ? $lastGuess['listing_type']->entryid : null,
+            'stickyStarter' => $lastGuess && $lastGuess['starter_result'] === 'partial' ? $lastGuess['starter'] : null,
+            'stats' => $this->stats->summary($day),
+        ];
     }
 
     /**
