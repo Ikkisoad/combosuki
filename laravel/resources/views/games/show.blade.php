@@ -43,7 +43,7 @@
                         @if ($resource->type === 1)
                             <select name="{{ $field }}" class="form-select">
                                 <option value="-">{{ $resource->text_name }}</option>
-                                @foreach ($resource->values->sortBy('order') as $value)
+                                @foreach ($resource->values->sortBy([['order', 'asc'], ['value', 'asc']]) as $value)
                                     <option value="{{ $value->idResources_values }}">{{ $value->value }}</option>
                                 @endforeach
                             </select>
@@ -54,7 +54,7 @@
                             @for ($i = 0; $i < 2; $i++)
                                 <select name="{{ $field }}[]" class="form-select d-inline-block w-auto">
                                     <option value="-">{{ $resource->text_name }}</option>
-                                    @foreach ($resource->values->sortBy('order') as $value)
+                                    @foreach ($resource->values->sortBy([['order', 'asc'], ['value', 'asc']]) as $value)
                                         <option value="{{ $value->idResources_values }}">{{ $value->value }}</option>
                                     @endforeach
                                 </select>

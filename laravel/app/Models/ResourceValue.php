@@ -11,7 +11,7 @@ class ResourceValue extends Model
 
     protected $primaryKey = 'idResources_values';
 
-    protected $fillable = ['value', 'order', 'game_resources_idgame_resources'];
+    protected $fillable = ['value', 'order', 'icon', 'game_resources_idgame_resources'];
 
     public function gameResource(): BelongsTo
     {

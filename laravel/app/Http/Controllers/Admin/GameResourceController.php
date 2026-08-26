@@ -9,6 +9,7 @@ use App\Models\GameResource;
 use App\Models\ResourceValue;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class GameResourceController extends Controller
@@ -89,7 +90,13 @@ class GameResourceController extends Controller
                 ->where('game_idgame', $game->idgame)
                 ->first();
 
-            $resource?->values->each(fn ($value) => $value->delete());
+            $resource?->values->each(function ($value) {
+                if ($value->icon) {
+                    Storage::disk('public')->delete($value->icon);
+                }
+
+                $value->delete();
+            });
             $resource?->delete();
         }
 
@@ -112,6 +119,7 @@ class GameResourceController extends Controller
         $rules = [
             'action' => ['required', 'in:EditAdd,EditUpdate,EditDelete'],
             'order' => ['nullable', 'numeric'],
+            'icon' => ['nullable', 'image', 'max:5120'],
             'idresourcevalue' => ['required_if:action,EditUpdate,EditDelete', 'nullable', 'integer'],
         ];
 
@@ -126,16 +134,35 @@ class GameResourceController extends Controller
             ResourceValue::create([
                 'value' => $validated['resourcevalue'],
                 'order' => $validated['order'] ?? null,
+                'icon' => $request->hasFile('icon') ? $request->file('icon')->store('resource-value-icons', 'public') : null,
                 'game_resources_idgame_resources' => $resource->idgame_resources,
             ]);
         } elseif ($validated['action'] === 'EditUpdate') {
-            ResourceValue::where('idResources_values', $validated['idresourcevalue'])
+            $value = ResourceValue::where('idResources_values', $validated['idresourcevalue'])
                 ->where('game_resources_idgame_resources', $resource->idgame_resources)
-                ->update(['value' => $validated['resourcevalue'], 'order' => $validated['order'] ?? null]);
+                ->first();
+
+            $attributes = ['value' => $validated['resourcevalue'], 'order' => $validated['order'] ?? null];
+
+            if ($request->hasFile('icon')) {
+                if ($value?->icon) {
+                    Storage::disk('public')->delete($value->icon);
+                }
+
+                $attributes['icon'] = $request->file('icon')->store('resource-value-icons', 'public');
+            }
+
+            $value?->update($attributes);
         } else {
-            ResourceValue::where('idResources_values', $validated['idresourcevalue'])
+            $value = ResourceValue::where('idResources_values', $validated['idresourcevalue'])
                 ->where('game_resources_idgame_resources', $resource->idgame_resources)
-                ->delete();
+                ->first();
+
+            if ($value?->icon) {
+                Storage::disk('public')->delete($value->icon);
+            }
+
+            $value?->delete();
         }
 
         return redirect()->route('admin.resources.values', [$game, $resource])->with('status', 'Saved.');

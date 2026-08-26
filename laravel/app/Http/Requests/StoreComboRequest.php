@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\GameResource;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreComboRequest extends FormRequest
@@ -18,7 +19,7 @@ class StoreComboRequest extends FormRequest
     {
         $game = $this->route('game');
 
-        return [
+        $rules = [
             'character_idcharacter' => ['required', 'integer', 'exists:character,idcharacter,game_idgame,'.$game->idgame],
             'listingtype' => ['required', 'integer', 'exists:game_entry,entryid,gameid,'.$game->idgame],
             'combo' => ['required', 'string'],
@@ -28,6 +29,47 @@ class StoreComboRequest extends FormRequest
             'video' => ['nullable', 'string', 'max:255'],
             'resources' => ['array'],
             'resources.*' => ['nullable'],
+            'resources.*.*' => ['nullable'],
         ];
+
+        $this->addPrimaryResourceRules($rules, $game);
+
+        return $rules;
+    }
+
+    /**
+     * Primary resources are always shown on the form with no blank option
+     * (List/Duplicated default to their first value by admin-configured
+     * order, Number defaults to 0), so submitting one empty only happens by
+     * bypassing the form entirely — reject that rather than silently
+     * dropping the resource.
+     *
+     * @param  array<string, mixed>  $rules
+     */
+    protected function addPrimaryResourceRules(array &$rules, $game): void
+    {
+        $primaryResources = GameResource::where('game_idgame', $game->idgame)
+            ->where('primaryORsecundary', 1)
+            ->whereIn('type', [1, 2, 3])
+            ->get();
+
+        foreach ($primaryResources as $resource) {
+            if ($resource->type === 2) {
+                $rules['resources.'.$resource->idgame_resources] = ['required', 'numeric'];
+
+                continue;
+            }
+
+            $exists = 'exists:resources_values,idResources_values,game_resources_idgame_resources,'.$resource->idgame_resources;
+
+            if ($resource->type === 3) {
+                $rules['resources.'.$resource->idgame_resources.'.0'] = ['required', 'integer', $exists];
+                $rules['resources.'.$resource->idgame_resources.'.1'] = ['required', 'integer', $exists];
+
+                continue;
+            }
+
+            $rules['resources.'.$resource->idgame_resources] = ['required', 'integer', $exists];
+        }
     }
 }

@@ -80,10 +80,12 @@
                         @foreach ($primaryResources as $resource)
                             @php $matches = $comboResourcesByGameResource->get($resource->idgame_resources, collect()); @endphp
                             @if ($resource->type === 3)
-                                <td>{{ $matches->get(0)?->resourceValue?->value }}</td>
-                                <td>{{ $matches->get(1)?->resourceValue?->value }}</td>
+                                <td><x-resource-value-icon :value="$matches->get(0)?->resourceValue" />{{ $matches->get(0)?->resourceValue?->value }}</td>
+                                <td><x-resource-value-icon :value="$matches->get(1)?->resourceValue" />{{ $matches->get(1)?->resourceValue?->value }}</td>
+                            @elseif ($resource->type === 2)
+                                <td>{{ $matches->first()?->number_value }}</td>
                             @else
-                                <td>{{ $resource->type === 2 ? $matches->first()?->number_value : $matches->first()?->resourceValue?->value }}</td>
+                                <td><x-resource-value-icon :value="$matches->first()?->resourceValue" />{{ $matches->first()?->resourceValue?->value }}</td>
                             @endif
                         @endforeach
                     </tr>

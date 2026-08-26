@@ -166,7 +166,7 @@ class ComboController extends Controller
         $listingTypes = GameEntry::where('gameid', $game->idgame)->orderBy('order')->orderBy('title')->get();
 
         $resources = GameResource::where('game_idgame', $game->idgame)
-            ->whereIn('type', [1, 2])
+            ->whereIn('type', [1, 2, 3])
             ->with(['values', 'characters'])
             ->orderByDesc('primaryORsecundary')
             ->orderBy('text_name')
@@ -283,7 +283,7 @@ class ComboController extends Controller
         $listingTypes = GameEntry::where('gameid', $game->idgame)->orderBy('order')->orderBy('title')->get();
 
         $resources = GameResource::where('game_idgame', $game->idgame)
-            ->whereIn('type', [1, 2])
+            ->whereIn('type', [1, 2, 3])
             ->with(['values', 'characters'])
             ->orderByDesc('primaryORsecundary')
             ->orderBy('text_name')
@@ -291,6 +291,9 @@ class ComboController extends Controller
 
         $selectedResources = [];
 
+        // A "Duplicated" (type 3) resource can have two rows for the same
+        // game resource (e.g. two assists), so value_ids collects all of
+        // them while value_id/number_value keep the first for types 1/2.
         foreach ($combo->resources as $resource) {
             $gameResourceId = $resource->resourceValue?->game_resources_idgame_resources;
 
@@ -298,10 +301,9 @@ class ComboController extends Controller
                 continue;
             }
 
-            $selectedResources[$gameResourceId] = [
-                'value_id' => $resource->Resources_values_idResources_values,
-                'number_value' => $resource->number_value,
-            ];
+            $selectedResources[$gameResourceId]['value_id'] ??= $resource->Resources_values_idResources_values;
+            $selectedResources[$gameResourceId]['number_value'] ??= $resource->number_value;
+            $selectedResources[$gameResourceId]['value_ids'][] = $resource->Resources_values_idResources_values;
         }
 
         // If the combo already has a secondary resource value that's scoped
@@ -390,6 +392,18 @@ class ComboController extends Controller
                         'combo_idcombo' => $combo->idcombo,
                         'Resources_values_idResources_values' => $resourceValue->idResources_values,
                         'number_value' => (float) $value,
+                    ]);
+                }
+            } elseif ($gameResource->type === 3) {
+                foreach ((array) $value as $valueId) {
+                    if ($valueId === null || $valueId === '' || $valueId === '-') {
+                        continue;
+                    }
+
+                    Resource::create([
+                        'combo_idcombo' => $combo->idcombo,
+                        'Resources_values_idResources_values' => (int) $valueId,
+                        'number_value' => null,
                     ]);
                 }
             }

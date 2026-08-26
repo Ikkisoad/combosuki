@@ -74,20 +74,30 @@
                             @if ($resource->type === 1)
                                 <div class="input-group mb-3 flex-nowrap">
                                     <label class="input-group-text">{{ $resource->text_name }}</label>
-                                    <select name="resources[{{ $resource->idgame_resources }}]" class="form-select">
-                                        <option value="-">-</option>
-                                        @foreach ($resource->values->sortBy('order') as $value)
+                                    <select name="resources[{{ $resource->idgame_resources }}]" class="form-select" required>
+                                        @foreach ($resource->values->sortBy([['order', 'asc'], ['value', 'asc']]) as $value)
                                             <option value="{{ $value->idResources_values }}" @selected(($selectedResources[$resource->idgame_resources]['value_id'] ?? null) == $value->idResources_values)>{{ $value->value }}</option>
                                         @endforeach
                                     </select>
+                                </div>
+                            @elseif ($resource->type === 3)
+                                <div class="input-group mb-3 flex-nowrap">
+                                    <label class="input-group-text">{{ $resource->text_name }}</label>
+                                    @for ($slot = 0; $slot < 2; $slot++)
+                                        <select name="resources[{{ $resource->idgame_resources }}][]" class="form-select" required>
+                                            @foreach ($resource->values->sortBy([['order', 'asc'], ['value', 'asc']]) as $value)
+                                                <option value="{{ $value->idResources_values }}" @selected((($selectedResources[$resource->idgame_resources]['value_ids'] ?? [])[$slot] ?? null) == $value->idResources_values)>{{ $value->value }}</option>
+                                            @endforeach
+                                        </select>
+                                    @endfor
                                 </div>
                             @else
                                 @php $bound = $resource->values->first()?->value; @endphp
                                 <div class="input-group mb-3 flex-nowrap">
                                     <span class="input-group-text">{{ $resource->text_name }}</span>
                                     <input class="form-control" type="number" name="resources[{{ $resource->idgame_resources }}]"
-                                           max="{{ $bound }}" min="-{{ $bound }}" step="any"
-                                           value="{{ $selectedResources[$resource->idgame_resources]['number_value'] ?? '' }}">
+                                           max="{{ $bound }}" min="-{{ $bound }}" step="any" required
+                                           value="{{ $selectedResources[$resource->idgame_resources]['number_value'] ?? 0 }}">
                                 </div>
                             @endif
                         </div>
@@ -110,10 +120,22 @@
                                     <label class="input-group-text">{{ $resource->text_name }}</label>
                                     <select name="resources[{{ $resource->idgame_resources }}]" class="form-select">
                                         <option value="-">-</option>
-                                        @foreach ($resource->values->sortBy('order') as $value)
+                                        @foreach ($resource->values->sortBy([['order', 'asc'], ['value', 'asc']]) as $value)
                                             <option value="{{ $value->idResources_values }}" @selected(($selectedResources[$resource->idgame_resources]['value_id'] ?? null) == $value->idResources_values)>{{ $value->value }}</option>
                                         @endforeach
                                     </select>
+                                </div>
+                            @elseif ($resource->type === 3)
+                                <div class="input-group mb-3 flex-nowrap">
+                                    <label class="input-group-text">{{ $resource->text_name }}</label>
+                                    @for ($slot = 0; $slot < 2; $slot++)
+                                        <select name="resources[{{ $resource->idgame_resources }}][]" class="form-select">
+                                            <option value="-">-</option>
+                                            @foreach ($resource->values->sortBy([['order', 'asc'], ['value', 'asc']]) as $value)
+                                                <option value="{{ $value->idResources_values }}" @selected((($selectedResources[$resource->idgame_resources]['value_ids'] ?? [])[$slot] ?? null) == $value->idResources_values)>{{ $value->value }}</option>
+                                            @endforeach
+                                        </select>
+                                    @endfor
                                 </div>
                             @else
                                 @php $bound = $resource->values->first()?->value; @endphp

@@ -34,12 +34,16 @@
                 @foreach ($values as $value)
                     <tr>
                         <td>
-                            <form method="post" action="{{ route('admin.resources.values.store', [$game, $resource]) }}">
+                            <form method="post" action="{{ route('admin.resources.values.store', [$game, $resource]) }}" enctype="multipart/form-data">
                                 @csrf
                                 <div class="input-group">
                                     <button class="btn btn-secondary" disabled>ID: {{ $value->idResources_values }}</button>
+                                    <span class="input-group-text p-1">
+                                        <x-resource-value-icon :value="$value" />
+                                    </span>
                                     <textarea name="resourcevalue" maxlength="45" class="form-control" rows="1">{{ $value->value }}</textarea>
                                     <input class="form-control" type="number" name="order" value="{{ $value->order }}" step="any">
+                                    <input type="file" name="icon" accept="image/*" class="form-control" title="Icon (optional)" style="max-width: 200px;">
                                     <input type="hidden" name="idresourcevalue" value="{{ $value->idResources_values }}">
                                     <button type="submit" name="action" value="EditUpdate" class="btn btn-primary">Update</button>
                                     <button type="submit" name="action" value="EditDelete" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this resource value?');">Delete</button>
@@ -50,11 +54,12 @@
                 @endforeach
                 <tr>
                     <td>
-                        <form method="post" action="{{ route('admin.resources.values.store', [$game, $resource]) }}">
+                        <form method="post" action="{{ route('admin.resources.values.store', [$game, $resource]) }}" enctype="multipart/form-data">
                             @csrf
                             <div class="input-group">
                                 <textarea name="resourcevalue" maxlength="45" class="form-control" rows="1" placeholder="Resource Value" autofocus></textarea>
                                 <input class="form-control" type="number" name="order" step="any">
+                                <input type="file" name="icon" accept="image/*" class="form-control" title="Icon (optional)" style="max-width: 200px;">
                                 <button type="submit" name="action" value="EditAdd" class="btn btn-primary">Add</button>
                             </div>
                         </form>

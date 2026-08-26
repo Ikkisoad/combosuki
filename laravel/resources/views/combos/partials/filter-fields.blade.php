@@ -79,7 +79,7 @@
                 @if ($resource->type === 1)
                     <select name="{{ $field }}" class="form-select">
                         <option value="-">{{ $resource->text_name }}</option>
-                        @foreach ($resource->values->sortBy('order') as $value)
+                        @foreach ($resource->values->sortBy([['order', 'asc'], ['value', 'asc']]) as $value)
                             <option value="{{ $value->idResources_values }}" @selected(($values[$field] ?? null) == $value->idResources_values)>{{ $value->value }}</option>
                         @endforeach
                     </select>
@@ -98,7 +98,7 @@
                         @for ($i = 0; $i < 2; $i++)
                             <select name="{{ $field }}[]" class="form-select">
                                 <option value="-">{{ $resource->text_name }}</option>
-                                @foreach ($resource->values->sortBy('order') as $value)
+                                @foreach ($resource->values->sortBy([['order', 'asc'], ['value', 'asc']]) as $value)
                                     <option value="{{ $value->idResources_values }}" @selected((($values[$field] ?? [])[$i] ?? null) == $value->idResources_values)>{{ $value->value }}</option>
                                 @endforeach
                             </select>

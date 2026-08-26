@@ -119,7 +119,7 @@
                             @else
                                 {{ $match->player_one }}
                             @endif
-                            ({{ $match->playerOneCharacter->name }}@foreach ($match->resources->where('player', 1) as $matchResource), {{ $matchResource->resourceValue->value }}@endforeach)
+                            ({{ $match->playerOneCharacter->name }}@foreach ($match->resources->where('player', 1) as $matchResource), <x-resource-value-icon :value="$matchResource->resourceValue" size="16" />{{ $matchResource->resourceValue->value }}@endforeach)
                         </td>
                         <td>
                             <x-character-icon :character="$match->playerTwoCharacter" />
@@ -128,7 +128,7 @@
                             @else
                                 {{ $match->player_two }}
                             @endif
-                            ({{ $match->playerTwoCharacter->name }}@foreach ($match->resources->where('player', 2) as $matchResource), {{ $matchResource->resourceValue->value }}@endforeach)
+                            ({{ $match->playerTwoCharacter->name }}@foreach ($match->resources->where('player', 2) as $matchResource), <x-resource-value-icon :value="$matchResource->resourceValue" size="16" />{{ $matchResource->resourceValue->value }}@endforeach)
                         </td>
                         <td style="min-width:300px">
                             <button class="btn btn-dark btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#video-{{ $match->idmatch }}" aria-expanded="false" aria-controls="video-{{ $match->idmatch }}" aria-label="Show video">
