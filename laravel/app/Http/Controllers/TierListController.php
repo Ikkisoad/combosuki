@@ -47,16 +47,32 @@ class TierListController extends Controller
 
     public function create(): View
     {
-        $games = Game::with(['characters' => function ($query) {
-            $query->orderBy('name');
-        }])->orderBy('name')->get();
+        $games = Game::with([
+            'characters' => function ($query) {
+                $query->orderBy('name');
+            },
+            'tierListResource.values' => function ($query) {
+                $query->orderBy('order')->orderBy('value');
+            },
+        ])->orderBy('name')->get();
 
         $catalog = $games->mapWithKeys(fn (Game $game) => [
-            $game->idgame => $game->characters->map(fn ($character) => [
-                'idcharacter' => $character->idcharacter,
-                'name' => $character->name,
-                'image' => $character->image ? Storage::url($character->image) : null,
-            ]),
+            $game->idgame => [
+                'characters' => $game->characters->map(fn ($character) => [
+                    'idcharacter' => $character->idcharacter,
+                    'name' => $character->name,
+                    'image' => $character->image ? Storage::url($character->image) : null,
+                ])->values(),
+                'resource' => $game->tierListResource ? [
+                    'idgame_resources' => $game->tierListResource->idgame_resources,
+                    'text_name' => $game->tierListResource->text_name,
+                    'values' => $game->tierListResource->values->map(fn ($value) => [
+                        'idResources_values' => $value->idResources_values,
+                        'value' => $value->value,
+                        'icon' => $value->icon ? Storage::url($value->icon) : null,
+                    ])->values(),
+                ] : null,
+            ],
         ]);
 
         $users = auth()->user()?->is_admin
@@ -87,6 +103,7 @@ class TierListController extends Controller
             foreach ($validated['entries'] ?? [] as $order => $entry) {
                 $tierList->entries()->create([
                     'character_idcharacter' => $entry['character_idcharacter'],
+                    'resources_values_idResources_values' => $entry['resources_values_idResources_values'] ?? null,
                     'tier' => $entry['tier'],
                     'order' => $order,
                 ]);
@@ -100,7 +117,7 @@ class TierListController extends Controller
 
     public function show(TierList $tierList): View
     {
-        $tierList->load('game', 'user', 'entries.character');
+        $tierList->load('game', 'user', 'entries.character', 'entries.resourceValue');
         $tierList->increment('views');
 
         return view('tier-lists.show', ['tierList' => $tierList]);

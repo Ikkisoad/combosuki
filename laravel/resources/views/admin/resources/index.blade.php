@@ -41,6 +41,10 @@
                                     <input type="checkbox" class="form-check-input mt-0 me-1" name="resources[{{ $resource->idgame_resources }}][include_in_matches]" value="1" @checked($resource->include_in_matches) id="matches-{{ $resource->idgame_resources }}">
                                     <label class="form-check-label" for="matches-{{ $resource->idgame_resources }}">In matches</label>
                                 </div>
+                                <div class="input-group-text">
+                                    <input type="checkbox" class="form-check-input mt-0 me-1" name="resources[{{ $resource->idgame_resources }}][include_in_tier_lists]" value="1" @checked($resource->include_in_tier_lists) id="tier-lists-{{ $resource->idgame_resources }}">
+                                    <label class="form-check-label" for="tier-lists-{{ $resource->idgame_resources }}">In tier lists</label>
+                                </div>
                                 <select name="resources[{{ $resource->idgame_resources }}][characters][]" class="form-select" multiple size="4" style="max-width: 200px;" title="Characters this resource applies to (leave empty for every character)">
                                     @foreach ($characters as $character)
                                         <option value="{{ $character->idcharacter }}" @selected($resource->characters->contains('idcharacter', $character->idcharacter))>{{ $character->name }}</option>
@@ -74,6 +78,10 @@
                     <input type="checkbox" class="form-check-input mt-0 me-1" name="include_in_matches" value="1" id="matches-new">
                     <label class="form-check-label" for="matches-new">In matches</label>
                 </div>
+                <div class="input-group-text">
+                    <input type="checkbox" class="form-check-input mt-0 me-1" name="include_in_tier_lists" value="1" id="tier-lists-new">
+                    <label class="form-check-label" for="tier-lists-new">In tier lists</label>
+                </div>
                 <select name="characters[]" class="form-select" multiple size="4" style="max-width: 200px;" title="Characters this resource applies to (leave empty for every character)">
                     @foreach ($characters as $character)
                         <option value="{{ $character->idcharacter }}">{{ $character->name }}</option>
@@ -91,7 +99,8 @@
             2: Number &mdash; in its options, number resources should have its max value.<br>
             3: Duplicated &mdash; for games that have assists, duplicated resources appear twice and allow searches to ignore the order of the assists.<br>
             Leave a resource's Characters selection empty to show it for every character; select one or more to only show it on the combo form by default for those characters (a button on the combo form can still reveal it for any character).<br>
-            Primary resources flagged "In matches" let players pick their value per match (e.g. Melty Blood moon type), and can be used to filter the matches list.
+            Primary resources flagged "In matches" let players pick their value per match (e.g. Melty Blood moon type), and can be used to filter the matches list.<br>
+            Primary resources flagged "In tier lists" become mandatory for every tier list made for this game &mdash; characters get one entry per resource value, tagged with that value's icon. Only one resource per game can be flagged this way; checking it on a resource clears it from any other.
         </p>
 
         <x-admin.edit-nav :game="$game" />

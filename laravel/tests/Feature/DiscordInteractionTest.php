@@ -9,6 +9,7 @@ use App\Models\Combo;
 use App\Models\Game;
 use App\Models\GameEntry;
 use App\Models\GameResource;
+use App\Models\ListModel;
 use App\Models\ResourceValue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -294,6 +295,119 @@ class DiscordInteractionTest extends TestCase
                         'options' => [
                             ['name' => 'game', 'value' => 'Empty Game'],
                             ['name' => 'query', 'value' => 'nothing'],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $response->assertOk();
+        $this->assertSame(64, $response->json('data.flags'));
+    }
+
+    public function test_guide_search_returns_matching_guide_as_embed(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $guide = ListModel::create(['list_name' => 'Combo Theory Guide', 'game_idgame' => $game->idgame, 'password' => 'secret', 'type' => 1]);
+
+        $response = $this->postInteraction([
+            'type' => 2,
+            'data' => [
+                'name' => 'csk',
+                'options' => [
+                    [
+                        'name' => 'guide',
+                        'options' => [
+                            ['name' => 'game', 'value' => 'Test Game'],
+                            ['name' => 'name', 'value' => 'Combo Theory'],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $response->assertOk()->assertJson(['type' => 4]);
+        $this->assertSame($guide->list_name, $response->json('data.embeds.0.title'));
+        $this->assertSame($game->name, $response->json('data.embeds.0.fields.0.value'));
+    }
+
+    public function test_guide_search_with_no_options_returns_top_guides_by_views(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+
+        // 'views' isn't mass-assignable (see ListModel::$fillable), so set it
+        // directly rather than through create()'s array, which would
+        // silently drop it and leave both guides tied at the default 0.
+        $popular = ListModel::create(['list_name' => 'Popular Guide', 'game_idgame' => $game->idgame, 'password' => 'secret', 'type' => 1]);
+        $popular->views = 100;
+        $popular->save();
+
+        $lessPopular = ListModel::create(['list_name' => 'Less Popular Guide', 'game_idgame' => $game->idgame, 'password' => 'secret', 'type' => 1]);
+        $lessPopular->views = 10;
+        $lessPopular->save();
+
+        $response = $this->postInteraction([
+            'type' => 2,
+            'data' => ['name' => 'csk', 'options' => [['name' => 'guide']]],
+        ]);
+
+        $response->assertOk()->assertJson(['type' => 4]);
+        $this->assertSame($popular->list_name, $response->json('data.embeds.0.title'));
+    }
+
+    public function test_guide_search_filters_by_game_only(): void
+    {
+        $wanted = Game::create(['name' => 'Wanted Game', 'complete' => 1, 'modPass' => 'secret']);
+        $other = Game::create(['name' => 'Other Game', 'complete' => 1, 'modPass' => 'secret']);
+
+        $guide = ListModel::create(['list_name' => 'A Guide', 'game_idgame' => $wanted->idgame, 'password' => 'secret', 'type' => 1]);
+        ListModel::create(['list_name' => 'Another Guide', 'game_idgame' => $other->idgame, 'password' => 'secret', 'type' => 1]);
+
+        $response = $this->postInteraction([
+            'type' => 2,
+            'data' => [
+                'name' => 'csk',
+                'options' => [
+                    ['name' => 'guide', 'options' => [['name' => 'game', 'value' => 'Wanted Game']]],
+                ],
+            ],
+        ]);
+
+        $response->assertOk();
+        $this->assertCount(1, $response->json('data.embeds'));
+        $this->assertSame($guide->list_name, $response->json('data.embeds.0.title'));
+    }
+
+    public function test_guide_search_with_unknown_game_returns_ephemeral_message(): void
+    {
+        $response = $this->postInteraction([
+            'type' => 2,
+            'data' => [
+                'name' => 'csk',
+                'options' => [
+                    ['name' => 'guide', 'options' => [['name' => 'game', 'value' => 'Nobody Game']]],
+                ],
+            ],
+        ]);
+
+        $response->assertOk();
+        $this->assertSame(64, $response->json('data.flags'));
+    }
+
+    public function test_guide_search_with_no_matches_returns_ephemeral_message(): void
+    {
+        $game = Game::create(['name' => 'Empty Game', 'complete' => 1, 'modPass' => 'secret']);
+
+        $response = $this->postInteraction([
+            'type' => 2,
+            'data' => [
+                'name' => 'csk',
+                'options' => [
+                    [
+                        'name' => 'guide',
+                        'options' => [
+                            ['name' => 'game', 'value' => 'Empty Game'],
+                            ['name' => 'name', 'value' => 'nothing'],
                         ],
                     ],
                 ],
@@ -807,6 +921,7 @@ class DiscordInteractionTest extends TestCase
         $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
         $character = Character::create(['name' => 'Test Character', 'game_idgame' => $game->idgame]);
         $query = CharacterQuery::create(['game_idgame' => $game->idgame, 'label' => 'Random Assist 1', 'filters' => [], 'order' => 0]);
+        $query->forceFill(['created_at' => now()->subDay()])->save();
         $type = GameEntry::create(['title' => 'Combo', 'gameid' => $game->idgame, 'order' => 1]);
 
         Combo::create([
@@ -846,7 +961,8 @@ class DiscordInteractionTest extends TestCase
     {
         $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
         Character::create(['name' => 'Test Character', 'game_idgame' => $game->idgame]);
-        CharacterQuery::create(['game_idgame' => $game->idgame, 'label' => 'Random Assist 1', 'filters' => [], 'order' => 0]);
+        $query = CharacterQuery::create(['game_idgame' => $game->idgame, 'label' => 'Random Assist 1', 'filters' => [], 'order' => 0]);
+        $query->forceFill(['created_at' => now()->subDay()])->save();
 
         $response = $this->postInteraction([
             'type' => 2,

@@ -27,6 +27,11 @@ class DailyChallenge
      * section of the home page, so an empty pair list returns all-null
      * values instead of aborting — the home page must keep working even
      * before any CharacterQuery rows exist.
+     *
+     * Queries created on or after the challenge date are excluded from the
+     * pool: since the pool's size drives `$seed % $pairs->count()`, adding a
+     * new default query would otherwise shift the pick for every date
+     * (past, present, and future) the instant it's saved.
      */
     public function forDate(CarbonInterface $date): array
     {
@@ -34,6 +39,7 @@ class DailyChallenge
             ->join('character', 'character.game_idgame', '=', 'character_default_queries.game_idgame')
             ->join('game', 'game.idgame', '=', 'character.game_idgame')
             ->where('game.complete', '>', 0)
+            ->where('character_default_queries.created_at', '<', $date->copy()->setTimezone('UTC'))
             ->orderBy('character_default_queries.idquery')
             ->orderBy('character.idcharacter')
             ->get([

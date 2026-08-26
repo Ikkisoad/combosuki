@@ -81,6 +81,28 @@ class DailyChallengeTest extends TestCase
         $this->assertSame($eligibleCharacter->idcharacter, $challenge['character']->idcharacter);
     }
 
+    public function test_a_query_created_today_is_excluded_from_todays_pick(): void
+    {
+        $game = $this->makeGame();
+        $this->makeCharacter($game);
+        $establishedQuery = $this->makeQuery($game, 'Established Query');
+
+        $before = app(DailyChallenge::class)->today();
+
+        // Created "now" — i.e. on the same day as the challenge being served.
+        CharacterQuery::create([
+            'game_idgame' => $game->idgame,
+            'label' => 'Brand New Query',
+            'filters' => [],
+            'order' => 0,
+        ]);
+
+        $after = app(DailyChallenge::class)->today();
+
+        $this->assertSame($establishedQuery->idquery, $before['query']->idquery);
+        $this->assertSame($establishedQuery->idquery, $after['query']->idquery);
+    }
+
     public function test_the_home_page_still_works_when_no_queries_are_configured(): void
     {
         $this->get('/')
@@ -132,12 +154,19 @@ class DailyChallengeTest extends TestCase
 
     private function makeQuery(Game $game, string $label = 'Random Assist 1', array $filters = []): CharacterQuery
     {
-        return CharacterQuery::create([
+        $query = CharacterQuery::create([
             'game_idgame' => $game->idgame,
             'label' => $label,
             'filters' => $filters,
             'order' => 0,
         ]);
+
+        // Backdated so it's already eligible for the fixed "today" used throughout
+        // these tests — see test_a_query_created_today_is_excluded_from_todays_pick
+        // for fixtures that need to represent a query created "just now" instead.
+        $query->forceFill(['created_at' => Carbon::parse('2026-08-01 00:00:00')])->save();
+
+        return $query;
     }
 
     private function makeType(Game $game, string $title = 'Combo'): GameEntry

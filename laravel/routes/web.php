@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\LinkController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\CombleController;
 use App\Http\Controllers\ComboController;
@@ -168,6 +169,9 @@ Route::get('/preferences', [PreferenceController::class, 'edit'])->name('prefere
 Route::post('/preferences', [PreferenceController::class, 'update'])->middleware('throttle:20,1')->name('preferences.update');
 
 Route::get('/timeline', [TimelineController::class, 'index'])->name('timeline.index');
+
+Route::get('/challenge', [ChallengeController::class, 'show'])->name('challenge.show');
+Route::get('/challenge/{date}', [ChallengeController::class, 'show'])->where('date', '\d{4}-\d{2}-\d{2}')->name('challenge.show.date');
 
 Route::get('/comble', [CombleController::class, 'show'])->name('comble.show');
 Route::post('/comble/guess', [CombleController::class, 'guess'])->middleware('throttle:20,1')->name('comble.guess');

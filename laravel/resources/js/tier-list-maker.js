@@ -13,18 +13,36 @@ document.addEventListener('DOMContentLoaded', function () {
     const catalog = JSON.parse(catalogEl.textContent || '{}');
     let draggedCard = null;
 
-    function makeCard(character) {
+    function makeCard(character, resourceValue) {
         const card = document.createElement('div');
         card.className = 'character-card';
         card.draggable = true;
         card.dataset.characterId = character.idcharacter;
 
+        if (resourceValue) {
+            card.dataset.resourceValueId = resourceValue.idResources_values;
+        }
+
+        const iconWrap = document.createElement('div');
+        iconWrap.className = 'character-icon-wrap';
+
         if (character.image) {
             const img = document.createElement('img');
             img.src = character.image;
             img.alt = character.name;
-            card.appendChild(img);
+            img.className = 'character-icon';
+            iconWrap.appendChild(img);
         }
+
+        if (resourceValue && resourceValue.icon) {
+            const badge = document.createElement('img');
+            badge.src = resourceValue.icon;
+            badge.alt = resourceValue.value;
+            badge.className = 'resource-badge';
+            iconWrap.appendChild(badge);
+        }
+
+        card.appendChild(iconWrap);
 
         const label = document.createElement('div');
         label.className = 'small text-center';
@@ -94,14 +112,23 @@ document.addEventListener('DOMContentLoaded', function () {
         pool.innerHTML = '';
         document.querySelectorAll('#tier-board .tier-dropzone').forEach((zone) => { zone.innerHTML = ''; });
 
-        const characters = catalog[gameSelect.value] || [];
+        const gameData = catalog[gameSelect.value] || { characters: [], resource: null };
+        const characters = gameData.characters || [];
+        const resource = gameData.resource || null;
 
         if (characters.length === 0) {
             board.style.display = 'none';
             return;
         }
 
-        characters.forEach((character) => pool.appendChild(makeCard(character)));
+        if (resource) {
+            characters.forEach((character) => {
+                resource.values.forEach((value) => pool.appendChild(makeCard(character, value)));
+            });
+        } else {
+            characters.forEach((character) => pool.appendChild(makeCard(character)));
+        }
+
         board.style.display = '';
     });
 
@@ -126,6 +153,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 entriesContainer.appendChild(characterInput);
                 entriesContainer.appendChild(tierInput);
+
+                if (card.dataset.resourceValueId) {
+                    const valueInput = document.createElement('input');
+                    valueInput.type = 'hidden';
+                    valueInput.name = `entries[${index}][resources_values_idResources_values]`;
+                    valueInput.value = card.dataset.resourceValueId;
+                    entriesContainer.appendChild(valueInput);
+                }
 
                 index++;
             });

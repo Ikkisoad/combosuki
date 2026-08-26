@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\GameResource;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -25,6 +27,12 @@ class StoreTierListRequest extends FormRequest
      */
     public function rules(): array
     {
+        $tierListResource = $this->filled('game_idgame')
+            ? GameResource::where('game_idgame', $this->input('game_idgame'))
+                ->where('include_in_tier_lists', true)
+                ->first()
+            : null;
+
         $rules = [
             'title' => ['required', 'string', 'max:100'],
             'game_idgame' => ['required', 'integer', 'exists:game,idgame'],
@@ -32,9 +40,16 @@ class StoreTierListRequest extends FormRequest
             'entries.*.character_idcharacter' => [
                 'required',
                 'integer',
-                'distinct',
                 Rule::exists('character', 'idcharacter')->where('game_idgame', $this->input('game_idgame')),
             ],
+            'entries.*.resources_values_idResources_values' => $tierListResource
+                ? [
+                    'required',
+                    'integer',
+                    Rule::exists('resources_values', 'idResources_values')
+                        ->where('game_resources_idgame_resources', $tierListResource->idgame_resources),
+                ]
+                : ['prohibited'],
             'entries.*.tier' => ['required', 'string', Rule::in(['S', 'A', 'B', 'C', 'D', 'F'])],
         ];
 
@@ -44,5 +59,24 @@ class StoreTierListRequest extends FormRequest
         }
 
         return $rules;
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator) {
+            $seen = [];
+
+            foreach ($this->input('entries', []) as $entry) {
+                $key = ($entry['character_idcharacter'] ?? '').'-'.($entry['resources_values_idResources_values'] ?? '');
+
+                if (isset($seen[$key])) {
+                    $validator->errors()->add('entries', 'Each character (and resource value, if applicable) can only appear once.');
+
+                    return;
+                }
+
+                $seen[$key] = true;
+            }
+        });
     }
 }

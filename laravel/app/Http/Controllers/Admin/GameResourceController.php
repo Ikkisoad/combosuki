@@ -36,6 +36,7 @@ class GameResourceController extends Controller
             'primaryORsecundary' => ['nullable', 'integer', 'in:0,1'],
             'primaryorsecundary' => ['nullable', 'integer', 'in:0,1'],
             'include_in_matches' => ['nullable', 'boolean'],
+            'include_in_tier_lists' => ['nullable', 'boolean'],
             'characters' => ['array'],
             'characters.*' => ['integer', 'exists:character,idcharacter,game_idgame,'.$game->idgame],
             'idresource' => ['required_if:action,Delete', 'nullable', 'integer'],
@@ -44,6 +45,7 @@ class GameResourceController extends Controller
             'resources.*.type' => ['required', 'integer', 'in:1,2,3'],
             'resources.*.primaryORsecundary' => ['nullable', 'integer', 'in:0,1'],
             'resources.*.include_in_matches' => ['nullable', 'boolean'],
+            'resources.*.include_in_tier_lists' => ['nullable', 'boolean'],
             'resources.*.characters' => ['array'],
             'resources.*.characters.*' => ['integer', 'exists:character,idcharacter,game_idgame,'.$game->idgame],
         ]);
@@ -51,6 +53,13 @@ class GameResourceController extends Controller
         // TODO: record which user made this edit once an audit/edit-log exists
         if ($validated['action'] === 'Add') {
             $primary = $validated['primaryORsecundary'] ?? $validated['primaryorsecundary'] ?? 0;
+            $includeInTierLists = $primary == 1 && $request->boolean('include_in_tier_lists');
+
+            if ($includeInTierLists) {
+                GameResource::where('game_idgame', $game->idgame)
+                    ->where('include_in_tier_lists', true)
+                    ->update(['include_in_tier_lists' => false]);
+            }
 
             $gameResource = GameResource::create([
                 'game_idgame' => $game->idgame,
@@ -58,6 +67,7 @@ class GameResourceController extends Controller
                 'type' => $validated['type'],
                 'primaryORsecundary' => $primary,
                 'include_in_matches' => $primary == 1 && $request->boolean('include_in_matches'),
+                'include_in_tier_lists' => $includeInTierLists,
             ]);
 
             $gameResource->characters()->sync($validated['characters'] ?? []);
@@ -66,6 +76,19 @@ class GameResourceController extends Controller
                 ->whereIn('idgame_resources', array_keys($validated['resources']))
                 ->get()
                 ->keyBy('idgame_resources');
+
+            // Only one resource per game may be flagged for tier lists — if
+            // more than one is checked in this submission, the last one in
+            // submission order wins.
+            $tierListWinner = null;
+
+            foreach ($validated['resources'] as $idResource => $data) {
+                $primary = $data['primaryORsecundary'] ?? 0;
+
+                if ($primary == 1 && (bool) ($data['include_in_tier_lists'] ?? false)) {
+                    $tierListWinner = (int) $idResource;
+                }
+            }
 
             foreach ($validated['resources'] as $idResource => $data) {
                 $gameResource = $gameResources->get((int) $idResource);
@@ -81,6 +104,7 @@ class GameResourceController extends Controller
                     'type' => $data['type'],
                     'primaryORsecundary' => $primary,
                     'include_in_matches' => $primary == 1 && (bool) ($data['include_in_matches'] ?? false),
+                    'include_in_tier_lists' => $tierListWinner === (int) $idResource,
                 ]);
 
                 $gameResource->characters()->sync($data['characters'] ?? []);

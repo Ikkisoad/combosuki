@@ -8,12 +8,11 @@
             <div class="tier-label tier-{{ strtolower($tier) }} d-flex align-items-center justify-content-center fw-bold">{{ $tier }}</div>
             <div class="tier-dropzone flex-grow-1 d-flex flex-wrap gap-2 p-2">
                 @forelse ($tierListAggregate['tiers'][$tier] as $entry)
-                    <div class="character-card" title="{{ $entry['votes'] }} {{ \Illuminate\Support\Str::plural('vote', $entry['votes']) }}">
-                        @if ($entry['character']->image)
-                            <img src="{{ \Illuminate\Support\Facades\Storage::url($entry['character']->image) }}" alt="{{ $entry['character']->name }}">
-                        @endif
-                        <div class="small text-center">{{ $entry['character']->name }}</div>
-                    </div>
+                    <x-tier-list-character-card
+                        :character="$entry['character']"
+                        :resource-value="$entry['resourceValue'] ?? null"
+                        :title="$entry['votes'].' '.\Illuminate\Support\Str::plural('vote', $entry['votes'])"
+                    />
                 @empty
                     <span class="text-white-50 small">&mdash;</span>
                 @endforelse

@@ -16,7 +16,7 @@ class TierListAggregator
         $tierRank = array_flip(self::TIER_ORDER);
 
         $entries = TierListEntry::query()
-            ->with('character')
+            ->with('character', 'resourceValue')
             ->whereHas('tierList', function ($query) use ($game, $from, $to) {
                 $query->where('game_idgame', $game->idgame);
 
@@ -32,7 +32,7 @@ class TierListAggregator
 
         $tierListCount = $entries->pluck('tier_list_idtier_list')->unique()->count();
 
-        $characters = $entries->groupBy('character_idcharacter')
+        $characters = $entries->groupBy(fn ($entry) => $entry->character_idcharacter.'|'.($entry->resources_values_idResources_values ?? ''))
             ->map(function (Collection $characterEntries) use ($tierRank) {
                 $ranks = $characterEntries
                     ->map(fn ($entry) => $tierRank[$entry->tier] ?? null)
@@ -54,6 +54,7 @@ class TierListAggregator
 
                 return [
                     'character' => $characterEntries->first()->character,
+                    'resourceValue' => $characterEntries->first()->resourceValue,
                     'tier' => self::TIER_ORDER[$medianRank],
                     'votes' => $count,
                 ];
@@ -63,7 +64,7 @@ class TierListAggregator
 
         $tiers = collect(self::TIER_ORDER)->mapWithKeys(fn ($tier) => [
             $tier => $characters->where('tier', $tier)
-                ->sortBy(fn ($entry) => $entry['character']->name)
+                ->sortBy(fn ($entry) => $entry['character']->name.'-'.str_pad((string) ($entry['resourceValue']->order ?? 0), 5, '0', STR_PAD_LEFT))
                 ->values(),
         ]);
 

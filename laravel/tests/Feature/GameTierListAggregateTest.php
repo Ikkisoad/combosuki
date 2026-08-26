@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\Character;
 use App\Models\Game;
+use App\Models\GameResource;
 use App\Models\ListModel;
+use App\Models\ResourceValue;
 use App\Models\TierList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -155,5 +157,47 @@ class GameTierListAggregateTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Median of 1 community tier list');
+    }
+
+    public function test_tier_lists_tab_endpoint_splits_a_character_into_separate_rows_per_resource_value(): void
+    {
+        $game = Game::create(['name' => 'Melty Blood', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Sion', 'game_idgame' => $game->idgame]);
+
+        $resource = GameResource::create([
+            'game_idgame' => $game->idgame,
+            'text_name' => 'Moon Type',
+            'type' => 1,
+            'primaryORsecundary' => 1,
+            'include_in_tier_lists' => true,
+        ]);
+        $crescent = ResourceValue::create(['value' => 'Crescent', 'order' => 1, 'game_resources_idgame_resources' => $resource->idgame_resources]);
+        $full = ResourceValue::create(['value' => 'Full', 'order' => 2, 'game_resources_idgame_resources' => $resource->idgame_resources]);
+
+        $list = TierList::create(['title' => 'Moon Type List', 'game_idgame' => $game->idgame]);
+        $list->entries()->create(['character_idcharacter' => $character->idcharacter, 'resources_values_idResources_values' => $crescent->idResources_values, 'tier' => 'S', 'order' => 0]);
+        $list->entries()->create(['character_idcharacter' => $character->idcharacter, 'resources_values_idResources_values' => $full->idResources_values, 'tier' => 'F', 'order' => 1]);
+
+        $response = $this->get(route('games.tabs.tier-lists', $game));
+
+        $response->assertOk();
+
+        // The character's S and F rows must not merge into a single median tier.
+        $content = $response->getContent();
+        $sRowPos = strpos($content, 'tier-s');
+        $aRowPos = strpos($content, 'tier-a');
+        $fRowPos = strpos($content, 'tier-f');
+        $namePositions = [];
+        $offset = 0;
+
+        while (($pos = strpos($content, 'Sion', $offset)) !== false) {
+            $namePositions[] = $pos;
+            $offset = $pos + 1;
+        }
+
+        $this->assertCount(2, $namePositions);
+        $this->assertGreaterThan($sRowPos, $namePositions[0]);
+        $this->assertLessThan($aRowPos, $namePositions[0]);
+        $this->assertGreaterThan($fRowPos, $namePositions[1]);
     }
 }

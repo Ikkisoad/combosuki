@@ -7,6 +7,7 @@ use App\Services\DiscordChallenge;
 use App\Services\DiscordCombleGame;
 use App\Services\DiscordComboSearch;
 use App\Services\DiscordComboWizard;
+use App\Services\DiscordGuideSearch;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -19,6 +20,7 @@ class DiscordInteractionController extends Controller
         private DiscordComboWizard $wizard,
         private DiscordCombleGame $comble,
         private DiscordChallenge $challenge,
+        private DiscordGuideSearch $guideSearch,
     ) {}
 
     public function __invoke(Request $request): JsonResponse
@@ -45,6 +47,10 @@ class DiscordInteractionController extends Controller
 
         if ($subcommand === 'challenge') {
             return response()->json(['type' => 4, 'data' => $this->challenge->handle()]);
+        }
+
+        if ($subcommand === 'guide') {
+            return response()->json(['type' => 4, 'data' => $this->guideSearch->handle($data)]);
         }
 
         if ($subcommand === 'browse') {

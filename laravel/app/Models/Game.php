@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -147,6 +148,16 @@ class Game extends Model
     public function tierLists(): HasMany
     {
         return $this->hasMany(TierList::class, 'game_idgame');
+    }
+
+    /**
+     * The single primary resource (if any) flagged to expand tier lists by
+     * value — e.g. one character card per moon type. At most one resource
+     * per game may carry this flag.
+     */
+    public function tierListResource(): HasOne
+    {
+        return $this->hasOne(GameResource::class, 'game_idgame')->where('include_in_tier_lists', true);
     }
 
     public function matches(): HasMany
