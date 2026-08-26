@@ -31,6 +31,13 @@ class CombleGuessEvaluator
             'game_correct' => $gameCorrect,
             'character_correct' => $characterCorrect,
             'type_correct' => $typeCorrect,
+            // "correct"/"partial"/"wrong" for display (orange for a close but
+            // wrong guess, e.g. "Street Fighter V" guessed for "Street
+            // Fighter 6", or "Ibuki" guessed in the wrong game). game_correct/
+            // character_correct above stay plain booleans since they gate the
+            // win condition and drive the share-text squares.
+            'game_result' => $gameCorrect ? 'correct' : ($this->isSimilarName($guessedGame->name, $target->character->game->name) ? 'partial' : 'wrong'),
+            'character_result' => $characterCorrect ? 'correct' : ($this->isSimilarName($guessedCharacter->name, $target->character->name) ? 'partial' : 'wrong'),
             'starter_result' => $this->starterResult($target, $guessedStarter),
             'damage_hint' => $this->damageHint($target, $guessedDamage),
             'won' => $gameCorrect && $characterCorrect,
@@ -87,6 +94,43 @@ class CombleGuessEvaluator
         }
 
         return mb_strtolower(trim($guessedType->title)) === mb_strtolower(trim($targetType->title));
+    }
+
+    /**
+     * How much of the shorter name's significant words also appear in the
+     * other name — used to give partial ("orange") credit for a close but
+     * wrong game/character guess, e.g. "Street Fighter V" guessed for
+     * "Street Fighter 6", or "Ibuki" guessed in the wrong game. A ratio of at
+     * least half the shorter name's words is treated as similar; below that,
+     * two names sharing only an incidental word (e.g. "The") stay "wrong".
+     */
+    private function isSimilarName(string $a, string $b): bool
+    {
+        $wordsA = $this->nameWords($a);
+        $wordsB = $this->nameWords($b);
+
+        if ($wordsA === [] || $wordsB === []) {
+            return false;
+        }
+
+        $shared = count(array_intersect($wordsA, $wordsB));
+
+        return $shared / min(count($wordsA), count($wordsB)) >= 0.5;
+    }
+
+    /**
+     * Lowercased, punctuation-stripped significant words from a name, with
+     * common connector words dropped so two otherwise-unrelated titles don't
+     * count as similar just for both containing "the" or "vs".
+     */
+    private function nameWords(string $name): array
+    {
+        $stopwords = ['the', 'a', 'an', 'of', 'and', 'vs', 'in', 'on'];
+
+        $normalized = mb_strtolower(preg_replace('/[^\p{L}\p{N}]+/u', ' ', $name));
+        $words = array_filter(explode(' ', trim($normalized)), fn ($word) => $word !== '' && ! in_array($word, $stopwords, true));
+
+        return array_values($words);
     }
 
     private function damageHint(Combo $target, ?float $guessedDamage): string

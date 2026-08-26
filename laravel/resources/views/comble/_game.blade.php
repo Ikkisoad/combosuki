@@ -28,8 +28,14 @@
                 @foreach ($guesses as $index => $guess)
                     <tr>
                         <td>{{ $index + 1 }}</td>
-                        <td class="{{ $guess['game_correct'] ? 'bg-success' : 'bg-danger' }}">{{ $guess['game']->name }}</td>
-                        <td class="{{ $guess['character_correct'] ? 'bg-success' : 'bg-danger' }}">{{ $guess['character']->name }}</td>
+                        <td
+                            class="{{ match ($guess['game_result']) { 'correct' => 'bg-success', 'partial' => '', default => 'bg-danger' } }}"
+                            style="{{ $guess['game_result'] === 'partial' ? 'background-color: #fd7e14;' : '' }}"
+                        >{{ $guess['game']->name }}</td>
+                        <td
+                            class="{{ match ($guess['character_result']) { 'correct' => 'bg-success', 'partial' => '', default => 'bg-danger' } }}"
+                            style="{{ $guess['character_result'] === 'partial' ? 'background-color: #fd7e14;' : '' }}"
+                        >{{ $guess['character']->name }}</td>
                         <td class="{{ $guess['type_correct'] ? 'bg-success' : 'bg-danger' }}">{{ $guess['listing_type']->title }}</td>
                         <td
                             class="{{ match ($guess['starter_result']) { 'correct' => 'bg-success', 'partial' => '', default => 'bg-danger' } }}"

@@ -278,4 +278,80 @@ class CombleGuessEvaluatorTest extends TestCase
         $this->assertTrue($result['game_correct']);
         $this->assertTrue($result['character_correct']);
     }
+
+    /**
+     * A wrong game/character guess still gets a visual "close" hint (orange,
+     * like the starter column) when the name is clearly related to the
+     * answer — e.g. guessing "Street Fighter V" for "Street Fighter 6", or
+     * guessing "Ibuki" from the wrong game when the answer is also Ibuki.
+     * game_correct/character_correct (the win-gating booleans) must stay
+     * false either way — only the display-only *_result fields go orange.
+     */
+    public function test_a_similar_but_wrong_game_or_character_name_is_marked_partial(): void
+    {
+        $targetGame = (new Game())->forceFill(['idgame' => 5, 'name' => 'Street Fighter 6']);
+        $targetGame->exists = true;
+
+        $targetCharacter = (new Character())->forceFill(['idcharacter' => 9, 'name' => 'Ibuki', 'game_idgame' => 5]);
+        $targetCharacter->exists = true;
+        $targetCharacter->setRelation('game', $targetGame);
+
+        $target = (new Combo())->forceFill([
+            'idcombo' => 1, 'combo' => 'AAA', 'character_idcharacter' => 9, 'type' => 7, 'damage' => null,
+        ]);
+        $target->exists = true;
+        $target->setRelation('character', $targetCharacter);
+
+        $guessedGame = (new Game())->forceFill(['idgame' => 2, 'name' => 'Street Fighter V']);
+        $guessedGame->exists = true;
+
+        // Same name as the target's character, but a different game/id — a
+        // different combo row entirely, not the answer itself.
+        $guessedCharacter = (new Character())->forceFill(['idcharacter' => 3, 'name' => 'Ibuki', 'game_idgame' => 2]);
+        $guessedCharacter->exists = true;
+
+        $guessedType = (new GameEntry())->forceFill(['entryid' => 7, 'title' => 'Combo', 'gameid' => 2]);
+
+        $result = (new CombleGuessEvaluator())->evaluate($target, $guessedGame, $guessedCharacter, $guessedType, null);
+
+        $this->assertFalse($result['game_correct']);
+        $this->assertSame('partial', $result['game_result']);
+        $this->assertFalse($result['character_correct']);
+        $this->assertSame('partial', $result['character_result']);
+        $this->assertFalse($result['won']);
+    }
+
+    /**
+     * Sanity check for the other side of the same feature: two names that
+     * share no meaningful words (only maybe a filtered-out connector like
+     * "the") must stay plain "wrong", not partial.
+     */
+    public function test_an_unrelated_game_or_character_name_is_marked_wrong_not_partial(): void
+    {
+        $targetGame = (new Game())->forceFill(['idgame' => 5, 'name' => 'Street Fighter 6']);
+        $targetGame->exists = true;
+
+        $targetCharacter = (new Character())->forceFill(['idcharacter' => 9, 'name' => 'Ibuki', 'game_idgame' => 5]);
+        $targetCharacter->exists = true;
+        $targetCharacter->setRelation('game', $targetGame);
+
+        $target = (new Combo())->forceFill([
+            'idcombo' => 1, 'combo' => 'AAA', 'character_idcharacter' => 9, 'type' => 7, 'damage' => null,
+        ]);
+        $target->exists = true;
+        $target->setRelation('character', $targetCharacter);
+
+        $guessedGame = (new Game())->forceFill(['idgame' => 2, 'name' => 'Guilty Gear -Strive-']);
+        $guessedGame->exists = true;
+
+        $guessedCharacter = (new Character())->forceFill(['idcharacter' => 3, 'name' => 'Sol Badguy', 'game_idgame' => 2]);
+        $guessedCharacter->exists = true;
+
+        $guessedType = (new GameEntry())->forceFill(['entryid' => 7, 'title' => 'Combo', 'gameid' => 2]);
+
+        $result = (new CombleGuessEvaluator())->evaluate($target, $guessedGame, $guessedCharacter, $guessedType, null);
+
+        $this->assertSame('wrong', $result['game_result']);
+        $this->assertSame('wrong', $result['character_result']);
+    }
 }

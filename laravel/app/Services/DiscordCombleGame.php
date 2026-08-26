@@ -356,10 +356,10 @@ class DiscordCombleGame
     private function squaresLine(array $guess): string
     {
         return implode(' ', [
-            $guess['game_correct'] ? '🟩' : '🟥',
-            $guess['character_correct'] ? '🟩' : '🟥',
+            $this->tristateEmoji($guess['game_result']),
+            $this->tristateEmoji($guess['character_result']),
             $guess['type_correct'] ? '🟩' : '🟥',
-            $this->starterResultEmoji($guess['starter_result']),
+            $this->tristateEmoji($guess['starter_result']),
             $this->damageHintEmoji($guess['damage_hint']),
         ]);
     }
@@ -367,20 +367,20 @@ class DiscordCombleGame
     private function detailedLine(array $guess): string
     {
         return implode(' ', [
-            $guess['game_correct'] ? '🟩' : '🟥',
+            $this->tristateEmoji($guess['game_result']),
             $guess['game']->name,
-            $guess['character_correct'] ? '🟩' : '🟥',
+            $this->tristateEmoji($guess['character_result']),
             $guess['character']->name,
             $guess['type_correct'] ? '🟩' : '🟥',
             $guess['listing_type']->title,
-            $this->starterResultEmoji($guess['starter_result']),
+            $this->tristateEmoji($guess['starter_result']),
             $guess['starter'] ?? '—',
             $this->damageHintEmoji($guess['damage_hint']),
             $guess['damage'] !== null ? number_format($guess['damage'], 0, '', '.') : '—',
         ]);
     }
 
-    private function starterResultEmoji(string $result): string
+    private function tristateEmoji(string $result): string
     {
         return match ($result) {
             'correct' => '🟩',
