@@ -179,6 +179,42 @@ window.toggleFavorite = function (button, comboId) {
         });
 };
 
+window.copyQueryInto = function (select) {
+    const sourceId = select.value;
+    const targetForm = select.closest('form');
+    if (! sourceId || ! targetForm) {
+        return;
+    }
+
+    const sourceForm = document.querySelector(`form[data-query-id="${sourceId}"]`);
+    if (! sourceForm) {
+        return;
+    }
+
+    const nameCounts = {};
+
+    sourceForm.querySelectorAll('input[name], select[name], textarea[name]').forEach((sourceField) => {
+        if (sourceField.name === 'idquery' || sourceField.name === '_token') {
+            return;
+        }
+
+        const index = nameCounts[sourceField.name] || 0;
+        nameCounts[sourceField.name] = index + 1;
+
+        const targetField = targetForm.querySelectorAll(`[name="${sourceField.name}"]`)[index];
+        if (! targetField) {
+            return;
+        }
+
+        if (sourceField.type === 'checkbox' || sourceField.type === 'radio') {
+            targetField.checked = sourceField.checked;
+            targetField.dispatchEvent(new Event('change'));
+        } else {
+            targetField.value = sourceField.value;
+        }
+    });
+};
+
 window.showDIV = function (divId) {
     const el = document.getElementById(divId);
     if (el.style.display === 'none') {

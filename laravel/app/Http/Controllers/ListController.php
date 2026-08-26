@@ -19,7 +19,7 @@ class ListController extends Controller
     public function index(): View
     {
         $games = Game::orderBy('name')->get();
-        $lists = ListModel::with(['user', 'game'])->where('is_favorite_guide', false)->orderByDesc('idlist')->limit(50)->get();
+        $lists = ListModel::with(['user', 'game'])->where('is_favorite_guide', false)->orderByDesc('views')->orderByDesc('idlist')->limit(50)->get();
 
         return view('lists.index', ['games' => $games, 'lists' => $lists]);
     }

@@ -25,9 +25,24 @@ class TierListController extends Controller
             $query->where('game_idgame', $request->integer('game_idgame'));
         }
 
+        if ($request->filled('author')) {
+            $author = '%'.$request->string('author').'%';
+            $query->whereHas('user', fn ($q) => $q->where('nickname', 'like', $author));
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->string('date_from'));
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->string('date_to'));
+        }
+
         $tierLists = $query->paginate(30)->withQueryString();
 
-        return view('tier-lists.index', ['tierLists' => $tierLists, 'game' => $game]);
+        $games = Game::orderBy('name')->get(['idgame', 'name']);
+
+        return view('tier-lists.index', ['tierLists' => $tierLists, 'game' => $game, 'games' => $games]);
     }
 
     public function create(): View

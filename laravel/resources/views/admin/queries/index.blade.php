@@ -24,7 +24,7 @@
         </p>
 
         @foreach ($queries as $query)
-            <form method="post" action="{{ route('admin.queries.store', $game) }}" class="card combosuki-main-reversed text-white p-3 mb-3">
+            <form method="post" action="{{ route('admin.queries.store', $game) }}" class="card combosuki-main-reversed text-white p-3 mb-3" data-query-id="{{ $query->idquery }}">
                 @csrf
                 <input type="hidden" name="idquery" value="{{ $query->idquery }}">
                 <div class="row g-2 align-items-end">
@@ -55,6 +55,17 @@
         <form method="post" action="{{ route('admin.queries.store', $game) }}" class="card combosuki-main-reversed text-white p-3 mb-3">
             @csrf
             <div class="row g-2 align-items-end">
+                @if ($queries->isNotEmpty())
+                    <div class="col-auto">
+                        <label class="form-label">Copy from</label>
+                        <select class="form-select" onchange="copyQueryInto(this)">
+                            <option value="">— none —</option>
+                            @foreach ($queries as $query)
+                                <option value="{{ $query->idquery }}">{{ $query->label !== '' ? $query->label : 'Query #'.$query->idquery }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
                 <div class="col-auto">
                     <label class="form-label">Label</label>
                     <input type="text" name="label" maxlength="150" class="form-control" placeholder="e.g. 2LK starter, no meter" autofocus>

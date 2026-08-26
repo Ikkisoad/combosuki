@@ -56,6 +56,27 @@ class CharacterQueryManagementTest extends TestCase
         $this->assertDatabaseMissing('character_default_queries', ['idquery' => $query->idquery]);
     }
 
+    public function test_index_offers_existing_queries_as_copy_sources(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $query = CharacterQuery::create([
+            'game_idgame' => $game->idgame,
+            'label' => '2LK starter, no meter',
+            'filters' => ['combo' => '2LK'],
+            'order' => 0,
+        ]);
+
+        $trusted = User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]);
+        $game->moderators()->attach($trusted->iduser);
+        $this->actingAs($trusted);
+
+        $response = $this->get(route('admin.queries.index', $game));
+
+        $response->assertOk();
+        $response->assertSee('data-query-id="'.$query->idquery.'"', false);
+        $response->assertSee('<option value="'.$query->idquery.'">2LK starter, no meter</option>', false);
+    }
+
     public function test_non_trusted_user_cannot_manage_queries(): void
     {
         // Non-JSON 403s are converted to a redirect + flash error by the

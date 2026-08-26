@@ -208,4 +208,5 @@ Route::middleware(['auth', 'can:update,game'])->prefix('games/{game}/edit')->nam
 
     Route::get('/lists', [GameListController::class, 'index'])->name('lists.index');
     Route::post('/lists', [GameListController::class, 'store'])->middleware('throttle:10,1')->name('lists.store');
+    Route::post('/lists/bulk', [GameListController::class, 'bulkUpdate'])->middleware('throttle:10,1')->name('lists.bulkUpdate');
 });

@@ -176,7 +176,9 @@ class GameController extends Controller
      * default query" data the character page shows. Surfaces the game-wide
      * average of those per-character averages, the character with the
      * highest one, and the full per-character breakdown (sorted desc) for
-     * the comparison graph.
+     * the comparison graph — plus, per query, the average damage across
+     * characters and the character with the highest damage for that
+     * specific query, so each default query can get its own tab.
      */
     public function damageStatsTab(Game $game): View
     {
@@ -187,16 +189,26 @@ class GameController extends Controller
 
         $characters = Character::where('game_idgame', $game->idgame)->get();
 
+        // idquery => (idcharacter => top damage for that query, or null)
+        $damageMatrix = $queries->mapWithKeys(function (CharacterQuery $query) use ($game, $characters) {
+            $perCharacter = $characters->mapWithKeys(function (Character $character) use ($game, $query) {
+                $damage = $this->searchCombos(
+                    $game,
+                    array_merge($query->filters ?? [], ['characterid' => $character->idcharacter]),
+                    1
+                )->first()?->damage;
+
+                return [$character->idcharacter => $damage !== null ? (float) $damage : null];
+            });
+
+            return [$query->idquery => $perCharacter];
+        });
+
         $allCharacterAverages = $characters
-            ->map(function (Character $character) use ($game, $queries) {
+            ->map(function (Character $character) use ($queries, $damageMatrix) {
                 $damages = $queries
-                    ->map(fn (CharacterQuery $query) => $this->searchCombos(
-                        $game,
-                        array_merge($query->filters ?? [], ['characterid' => $character->idcharacter]),
-                        1
-                    )->first()?->damage)
-                    ->filter(fn ($damage) => $damage !== null)
-                    ->map(fn ($damage) => (float) $damage);
+                    ->map(fn (CharacterQuery $query) => $damageMatrix[$query->idquery][$character->idcharacter])
+                    ->filter(fn ($damage) => $damage !== null);
 
                 return [
                     'character' => $character,
@@ -219,12 +231,30 @@ class GameController extends Controller
         $gameAverageDamage = $charactersWithData->isNotEmpty() ? $charactersWithData->avg('average') : null;
         $topCharacterEntry = $charactersWithData->first();
 
+        $queryStats = $queries->map(function (CharacterQuery $query) use ($characters, $damageMatrix) {
+            $entries = $characters->map(fn (Character $character) => [
+                'character' => $character,
+                'damage' => $damageMatrix[$query->idquery][$character->idcharacter],
+            ]);
+
+            $entriesWithData = $entries->filter(fn (array $entry) => $entry['damage'] !== null)->sortByDesc('damage')->values();
+            $entriesWithoutData = $entries->filter(fn (array $entry) => $entry['damage'] === null)->sortBy(fn (array $entry) => $entry['character']->name)->values();
+
+            return [
+                'query' => $query,
+                'average' => $entriesWithData->isNotEmpty() ? $entriesWithData->avg('damage') : null,
+                'topEntry' => $entriesWithData->first(),
+                'characterDamages' => $entriesWithData->concat($entriesWithoutData)->values(),
+            ];
+        });
+
         return view('games.partials.damage-stats-tab', [
             'game' => $game,
             'queriesCount' => $queries->count(),
             'gameAverageDamage' => $gameAverageDamage,
             'topCharacterEntry' => $topCharacterEntry,
             'characterAverages' => $characterAverages,
+            'queryStats' => $queryStats,
         ]);
     }
 

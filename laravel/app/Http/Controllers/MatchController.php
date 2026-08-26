@@ -12,6 +12,8 @@ use App\Models\MatchResource;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class MatchController extends Controller
@@ -38,7 +40,107 @@ class MatchController extends Controller
             'matches' => $matches,
             'characters' => $characters,
             'matchResources' => $matchResources,
+            'characterPickCounts' => $this->characterPickCounts($game, $characters),
+            'topMatchups' => $this->topMatchups($game, $characters),
+            'characterResourceUsage' => $this->characterResourceUsage($game, $characters, $matchResources),
         ]);
+    }
+
+    /**
+     * How many matches each character appears in, on either side, across
+     * the game's full match history (not affected by the index filters).
+     */
+    private function characterPickCounts(Game $game, Collection $characters): Collection
+    {
+        $counts = array_fill_keys($characters->pluck('idcharacter')->all(), 0);
+
+        foreach (['player_one_character_idcharacter', 'player_two_character_idcharacter'] as $column) {
+            GameMatch::where('game_idgame', $game->idgame)
+                ->selectRaw("{$column} as character_id, COUNT(*) as picks")
+                ->groupBy($column)
+                ->pluck('picks', 'character_id')
+                ->each(function ($picks, $characterId) use (&$counts) {
+                    $counts[$characterId] = ($counts[$characterId] ?? 0) + $picks;
+                });
+        }
+
+        return $characters
+            ->map(fn (Character $character) => [
+                'character' => $character,
+                'picks' => $counts[$character->idcharacter] ?? 0,
+            ])
+            ->sortByDesc('picks')
+            ->values();
+    }
+
+    /**
+     * The most frequently played character-vs-character pairings (order
+     * ignored, so "A vs B" and "B vs A" are counted together).
+     */
+    private function topMatchups(Game $game, Collection $characters, int $limit = 10): Collection
+    {
+        $charactersById = $characters->keyBy('idcharacter');
+
+        return GameMatch::where('game_idgame', $game->idgame)
+            ->get(['player_one_character_idcharacter', 'player_two_character_idcharacter'])
+            ->map(function (GameMatch $match) {
+                $pair = [$match->player_one_character_idcharacter, $match->player_two_character_idcharacter];
+                sort($pair);
+
+                return implode('-', $pair);
+            })
+            ->countBy()
+            ->sortDesc()
+            ->take($limit)
+            ->map(function ($count, $key) use ($charactersById) {
+                [$idA, $idB] = explode('-', $key);
+
+                return [
+                    'characterA' => $charactersById->get($idA),
+                    'characterB' => $charactersById->get($idB),
+                    'count' => $count,
+                ];
+            })
+            ->values();
+    }
+
+    /**
+     * For each character and each match-tracked resource, the value used
+     * most often when that character was played (e.g. which "shell"/stance
+     * a character is usually played with). Empty when the game has no
+     * resources configured for match tracking.
+     */
+    private function characterResourceUsage(Game $game, Collection $characters, Collection $matchResources): Collection
+    {
+        if ($matchResources->isEmpty()) {
+            return collect();
+        }
+
+        $charactersById = $characters->keyBy('idcharacter');
+        $resourcesById = $matchResources->keyBy('idgame_resources');
+        $valuesById = $matchResources->flatMap(fn (GameResource $resource) => $resource->values)->keyBy('idResources_values');
+
+        $rows = DB::table('match_resources')
+            ->join('matches', 'match_resources.match_idmatch', '=', 'matches.idmatch')
+            ->where('matches.game_idgame', $game->idgame)
+            ->selectRaw('CASE match_resources.player WHEN 1 THEN matches.player_one_character_idcharacter ELSE matches.player_two_character_idcharacter END as character_id, match_resources.game_resources_idgame_resources as resource_id, match_resources.resources_values_idResources_values as value_id, COUNT(*) as uses')
+            ->groupBy('character_id', 'resource_id', 'value_id')
+            ->get();
+
+        return $rows
+            ->groupBy(fn ($row) => $row->character_id.'-'.$row->resource_id)
+            ->map(fn ($group) => $group->sortByDesc('uses')->first())
+            ->map(function ($row) use ($charactersById, $resourcesById, $valuesById) {
+                return [
+                    'character' => $charactersById->get($row->character_id),
+                    'resource' => $resourcesById->get($row->resource_id),
+                    'value' => $valuesById->get($row->value_id),
+                    'uses' => $row->uses,
+                ];
+            })
+            ->filter(fn (array $entry) => $entry['character'] && $entry['resource'] && $entry['value'])
+            ->sortBy(fn (array $entry) => $entry['character']->name)
+            ->values();
     }
 
     private function matchResourcesFor(Game $game)

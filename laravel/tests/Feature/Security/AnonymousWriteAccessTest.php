@@ -240,6 +240,11 @@ class AnonymousWriteAccessTest extends TestCase
                 'payload' => ['action' => 'Delete', 'idlist' => $this->list->idlist],
                 'assertUnchanged' => fn () => $this->assertDatabaseHas('list', ['idlist' => $this->list->idlist]),
             ],
+            'game list bulk update' => [
+                'url' => route('admin.lists.bulkUpdate', $this->game),
+                'payload' => ['lists' => [$this->list->idlist => ['list_name' => 'Hacked', 'type' => 0]]],
+                'assertUnchanged' => fn () => $this->assertSame('Test List', $this->list->fresh()->list_name),
+            ],
             'trusted create user' => [
                 'url' => route('users.store'),
                 'payload' => ['nickname' => 'hacker', 'password' => 'password123', 'password_confirmation' => 'password123'],

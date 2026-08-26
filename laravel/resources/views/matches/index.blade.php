@@ -21,6 +21,18 @@
             </div>
         @endif
 
+        <ul class="nav nav-tabs mb-3" id="matches-view-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="matches-list-tab" data-bs-toggle="tab" data-bs-target="#matches-list-pane" type="button" role="tab" aria-controls="matches-list-pane" aria-selected="true">Matches</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="matches-stats-tab" data-bs-toggle="tab" data-bs-target="#matches-stats-pane" type="button" role="tab" aria-controls="matches-stats-pane" aria-selected="false">Stats</button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="matches-view-tabs-content">
+        <div class="tab-pane fade show active" id="matches-list-pane" role="tabpanel" aria-labelledby="matches-list-tab">
+
         <form method="get" action="{{ route('games.matches.index', $game) }}" class="card combosuki-main-reversed text-white p-3 mb-3">
             <div class="row g-2 align-items-end">
                 <div class="col-auto">
@@ -154,5 +166,13 @@
         </div>
 
         {{ $matches->links() }}
+
+        </div>
+
+        <div class="tab-pane fade" id="matches-stats-pane" role="tabpanel" aria-labelledby="matches-stats-tab">
+            @include('matches.partials.stats-tab')
+        </div>
+
+        </div>
     </div>
 </x-layouts.app>
