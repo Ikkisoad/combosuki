@@ -126,4 +126,156 @@ class CombleGuessEvaluatorTest extends TestCase
         $differentTitle = (new GameEntry())->forceFill(['entryid' => 43, 'title' => 'Okizeme', 'gameid' => 99]);
         $this->assertFalse($evaluator->evaluate($target, $game, $character, $differentTitle, null)['type_correct']);
     }
+
+    public function test_empty_string_starter_guess_is_wrong_distinct_from_a_null_guess(): void
+    {
+        $game = (new Game())->forceFill(['idgame' => 5, 'name' => 'Test Game']);
+        $game->exists = true;
+
+        $character = (new Character())->forceFill(['idcharacter' => 9, 'name' => 'Ryu', 'game_idgame' => 5]);
+        $character->exists = true;
+        $character->setRelation('game', $game);
+
+        $target = (new Combo())->forceFill([
+            'idcombo' => 1,
+            'combo' => '2LP 5MP 2HP',
+            'character_idcharacter' => 9,
+            'type' => 7,
+            'damage' => null,
+        ]);
+        $target->exists = true;
+        $target->setRelation('character', $character);
+
+        $guessedType = (new GameEntry())->forceFill(['entryid' => 7, 'title' => 'Combo', 'gameid' => 5]);
+        $evaluator = new CombleGuessEvaluator();
+
+        $this->assertSame('wrong', $evaluator->evaluate($target, $game, $character, $guessedType, null, '')['starter_result']);
+    }
+
+    public function test_damage_hint_is_unknown_when_either_side_is_missing_damage(): void
+    {
+        $game = (new Game())->forceFill(['idgame' => 5, 'name' => 'Test Game']);
+        $game->exists = true;
+
+        $character = (new Character())->forceFill(['idcharacter' => 9, 'name' => 'Ryu', 'game_idgame' => 5]);
+        $character->exists = true;
+        $character->setRelation('game', $game);
+
+        $guessedType = (new GameEntry())->forceFill(['entryid' => 7, 'title' => 'Combo', 'gameid' => 5]);
+        $evaluator = new CombleGuessEvaluator();
+
+        $targetWithoutDamage = (new Combo())->forceFill([
+            'idcombo' => 1, 'combo' => 'AAA', 'character_idcharacter' => 9, 'type' => 7, 'damage' => null,
+        ]);
+        $targetWithoutDamage->exists = true;
+        $targetWithoutDamage->setRelation('character', $character);
+
+        $this->assertSame('unknown', $evaluator->evaluate($targetWithoutDamage, $game, $character, $guessedType, 500.0)['damage_hint']);
+
+        $targetWithDamage = (new Combo())->forceFill([
+            'idcombo' => 2, 'combo' => 'AAA', 'character_idcharacter' => 9, 'type' => 7, 'damage' => 500,
+        ]);
+        $targetWithDamage->exists = true;
+        $targetWithDamage->setRelation('character', $character);
+
+        $this->assertSame('unknown', $evaluator->evaluate($targetWithDamage, $game, $character, $guessedType, null)['damage_hint']);
+    }
+
+    /**
+     * abs($diff) < 0.01 is the "equal" boundary. A diff of exactly 0.01 (or
+     * anything at/over it) must NOT be treated as equal.
+     */
+    public function test_damage_hint_epsilon_boundary_is_exclusive(): void
+    {
+        $game = (new Game())->forceFill(['idgame' => 5, 'name' => 'Test Game']);
+        $game->exists = true;
+
+        $character = (new Character())->forceFill(['idcharacter' => 9, 'name' => 'Ryu', 'game_idgame' => 5]);
+        $character->exists = true;
+        $character->setRelation('game', $game);
+
+        $guessedType = (new GameEntry())->forceFill(['entryid' => 7, 'title' => 'Combo', 'gameid' => 5]);
+        $evaluator = new CombleGuessEvaluator();
+
+        $target = (new Combo())->forceFill([
+            'idcombo' => 1, 'combo' => 'AAA', 'character_idcharacter' => 9, 'type' => 7, 'damage' => 500.0,
+        ]);
+        $target->exists = true;
+        $target->setRelation('character', $character);
+
+        // Just under the 0.01 threshold: still counted as equal.
+        $this->assertSame('equal', $evaluator->evaluate($target, $game, $character, $guessedType, 500.005)['damage_hint']);
+
+        // Clearly over the 0.01 threshold (kept away from the exact boundary to avoid float
+        // rounding noise): no longer equal, direction reflects the sign of the diff.
+        $this->assertSame('lower', $evaluator->evaluate($target, $game, $character, $guessedType, 500.02)['damage_hint']);
+        $this->assertSame('higher', $evaluator->evaluate($target, $game, $character, $guessedType, 499.98)['damage_hint']);
+    }
+
+    public function test_type_guess_correct_by_id_alone_even_when_title_and_game_differ(): void
+    {
+        $game = (new Game())->forceFill(['idgame' => 5, 'name' => 'Test Game']);
+        $game->exists = true;
+
+        $character = (new Character())->forceFill(['idcharacter' => 9, 'name' => 'Ryu', 'game_idgame' => 5]);
+        $character->exists = true;
+        $character->setRelation('game', $game);
+
+        // The target's own listingType relation is deliberately different in title from the
+        // guessed GameEntry, so a title-based match would fail — only the entryid should matter.
+        $targetType = (new GameEntry())->forceFill(['entryid' => 7, 'title' => 'Combo', 'gameid' => 5]);
+
+        $target = (new Combo())->forceFill([
+            'idcombo' => 1, 'combo' => 'AAA', 'character_idcharacter' => 9, 'type' => 7, 'damage' => null,
+        ]);
+        $target->exists = true;
+        $target->setRelation('character', $character);
+        $target->setRelation('listingType', $targetType);
+
+        // Same entryid (7) as the target, but a different title and a different game entirely.
+        $sameIdDifferentTitle = (new GameEntry())->forceFill(['entryid' => 7, 'title' => 'Okizeme', 'gameid' => 99]);
+
+        $evaluator = new CombleGuessEvaluator();
+
+        $this->assertTrue($evaluator->evaluate($target, $game, $character, $sameIdDifferentTitle, null)['type_correct']);
+    }
+
+    /**
+     * gameCorrect and characterCorrect share the exact same int-cast comparison
+     * pattern as the already-regression-tested type_correct field (see the
+     * first test in this class) — extend the same string/int PDO-type split to
+     * character_idcharacter and idgame so a future refactor can't silently drop
+     * the cast on just one of the three fields.
+     */
+    public function test_game_and_character_correctness_are_not_broken_by_a_string_vs_int_id_mismatch(): void
+    {
+        $game = (new Game())->forceFill(['idgame' => '5', 'name' => 'Test Game']);
+        $game->exists = true;
+
+        $character = (new Character())->forceFill(['idcharacter' => '9', 'name' => 'Ryu', 'game_idgame' => 5]);
+        $character->exists = true;
+        $character->setRelation('game', $game);
+
+        $target = (new Combo())->forceFill([
+            'idcombo' => 1,
+            'combo' => 'AAA',
+            'character_idcharacter' => 9,
+            'type' => 7,
+            'damage' => null,
+        ]);
+        $target->exists = true;
+        $target->setRelation('character', (new Character())->forceFill(['idcharacter' => 9, 'game_idgame' => '5']));
+
+        $guessedGame = (new Game())->forceFill(['idgame' => 5, 'name' => 'Test Game']);
+        $guessedGame->exists = true;
+        $guessedCharacter = (new Character())->forceFill(['idcharacter' => 9, 'name' => 'Ryu', 'game_idgame' => 5]);
+        $guessedCharacter->exists = true;
+
+        $guessedType = (new GameEntry())->forceFill(['entryid' => 7, 'title' => 'Combo', 'gameid' => 5]);
+
+        $result = (new CombleGuessEvaluator())->evaluate($target, $guessedGame, $guessedCharacter, $guessedType, null);
+
+        $this->assertTrue($result['game_correct']);
+        $this->assertTrue($result['character_correct']);
+    }
 }

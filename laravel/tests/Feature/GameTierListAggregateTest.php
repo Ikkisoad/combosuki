@@ -103,4 +103,57 @@ class GameTierListAggregateTest extends TestCase
         $response->assertOk();
         $response->assertSee('No tier lists for this game yet in the selected range.');
     }
+
+    /**
+     * An even number of votes has no single middle rank: the median is the
+     * average of the two middle ranks, rounded to the nearest whole rank via
+     * round(). S=0, A=1: two S votes and one A vote sorted is [S, S, A] (odd,
+     * trivial); to force an even count we need 2 votes exactly, e.g. one S
+     * (rank 0) and one B (rank 2) -> average rank 1 -> A, not a tie between
+     * the two original tiers.
+     */
+    public function test_tier_lists_tab_endpoint_rounds_an_even_vote_count_median_to_the_nearest_rank(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Valentine', 'game_idgame' => $game->idgame]);
+
+        $listA = TierList::create(['title' => 'List A', 'game_idgame' => $game->idgame]);
+        $listA->entries()->create(['character_idcharacter' => $character->idcharacter, 'tier' => 'S', 'order' => 0]);
+
+        $listB = TierList::create(['title' => 'List B', 'game_idgame' => $game->idgame]);
+        $listB->entries()->create(['character_idcharacter' => $character->idcharacter, 'tier' => 'B', 'order' => 0]);
+
+        $response = $this->get(route('games.tabs.tier-lists', $game));
+
+        $response->assertOk();
+
+        // Median of S (rank 0) and B (rank 2) is rank 1 = A.
+        $content = $response->getContent();
+        $aRowPos = strpos($content, 'tier-a');
+        $bRowPos = strpos($content, 'tier-b');
+        $namePos = strpos($content, 'Valentine');
+
+        $this->assertNotFalse($namePos);
+        $this->assertGreaterThan($aRowPos, $namePos);
+        $this->assertLessThan($bRowPos, $namePos);
+    }
+
+    public function test_tier_lists_tab_endpoint_date_range_boundaries_are_inclusive(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Valentine', 'game_idgame' => $game->idgame]);
+
+        $list = TierList::create(['title' => 'Boundary List', 'game_idgame' => $game->idgame]);
+        $list->entries()->create(['character_idcharacter' => $character->idcharacter, 'tier' => 'S', 'order' => 0]);
+        $list->forceFill(['created_at' => now()->startOfDay()])->save();
+
+        $response = $this->get(route('games.tabs.tier-lists', [
+            'game' => $game,
+            'tier_from' => now()->toDateString(),
+            'tier_to' => now()->toDateString(),
+        ]));
+
+        $response->assertOk();
+        $response->assertSee('Median of 1 community tier list');
+    }
 }
