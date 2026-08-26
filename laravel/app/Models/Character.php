@@ -63,6 +63,11 @@ class Character extends Model
         return $this->hasMany(CharacterAlias::class, 'character_idcharacter');
     }
 
+    public function links(): HasMany
+    {
+        return $this->hasMany(CharacterLink::class, 'character_idcharacter')->orderBy('order');
+    }
+
     public function gameResources(): BelongsToMany
     {
         return $this->belongsToMany(GameResource::class, 'character_game_resources', 'character_idcharacter', 'game_resources_idgame_resources');

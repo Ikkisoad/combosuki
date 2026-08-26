@@ -109,6 +109,7 @@
                     <thead>
                         <tr>
                             <th>Title</th>
+                            <th>Description</th>
                             <th>Page</th>
                             <th style="width:100px">Order</th>
                             <th></th>
@@ -118,6 +119,7 @@
                         @forelse ($categories as $category)
                             <tr data-category-id="{{ $category->idlist_category }}">
                                 <td><input type="text" data-field="title" maxlength="50" class="form-control form-control-sm" value="{{ $category->title }}"></td>
+                                <td><input type="text" data-field="description" maxlength="1000" class="form-control form-control-sm" value="{{ $category->description }}"></td>
                                 <td>
                                     <select data-field="idPage" class="form-select form-select-sm">
                                         <option value="">No Page</option>
@@ -132,7 +134,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="4">No categories yet.</td></tr>
+                            <tr><td colspan="5">No categories yet.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -149,6 +151,9 @@
                 @csrf
                 <div class="col-auto">
                     <input type="text" name="title" maxlength="50" placeholder="Title" class="form-control" required>
+                </div>
+                <div class="col-auto">
+                    <input type="text" name="description" maxlength="1000" placeholder="Description (optional)" class="form-control">
                 </div>
                 <div class="col-auto">
                     <select name="idPage" class="form-select">

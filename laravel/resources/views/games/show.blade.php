@@ -186,7 +186,6 @@
                     </div>
 
                     <div class="tab-pane fade" id="guides-pane" role="tabpanel" aria-labelledby="guides-tab">
-                        <h4 class="mb-2">Guides</h4>
                         <div id="guides-results" data-endpoint="{{ route('games.tabs.guides', $game) }}"></div>
                     </div>
 

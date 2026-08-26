@@ -1,4 +1,4 @@
-<x-layouts.app :title="'Moderate Lists - '.$game->name">
+<x-layouts.app :title="'Guides - '.$game->name">
     <x-nav-bar :game="$game" />
 
     <div class="container-fluid my-3">
@@ -10,7 +10,7 @@
         @endif
 
         <table class="table table-hover align-middle caption-top combosuki-main-reversed text-white">
-            <tr><th>List</th></tr>
+            <tr><th>Guide</th></tr>
             @foreach ($lists as $list)
                 <tr>
                     <td>
@@ -22,7 +22,7 @@
                                 <select name="type" class="form-select">
                                     <option value="1" @selected($list->type === 1)>Normal</option>
                                     <option value="2" @selected($list->type === 2)>Verified</option>
-                                    <option value="3" @selected($list->type === 3)>Moderated</option>
+                                    <option value="3" @selected($list->type === 3)>Featured</option>
                                     <option value="0" @selected($list->type === 0)>Hidden</option>
                                 </select>
                                 <input type="hidden" name="idlist" value="{{ $list->idlist }}">

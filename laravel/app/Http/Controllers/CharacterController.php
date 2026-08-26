@@ -16,6 +16,7 @@ class CharacterController extends Controller
     public function show(Game $game, Character $character): View
     {
         $character->increment('views');
+        $character->load('links');
 
         $queries = CharacterQuery::where('game_idgame', $game->idgame)
             ->orderBy('order')

@@ -32,11 +32,6 @@
             <main class="{{ $list->pages->isNotEmpty() ? 'col-md-9 ms-sm-auto col-lg-10' : 'col-12' }} px-md-4">
                 <h3 class="mt-3">
                     {{ $list->list_name }}
-                    @if ($list->type === 2)
-                        <img src="{{ asset('img/misc/verified.png') }}" height="13" title="Verified List">
-                    @elseif ($list->type === 3)
-                        <img src="{{ asset('img/misc/mod.png') }}" height="19" title="Moderated List">
-                    @endif
                 </h3>
                 <p class="text-white-50 mb-2">
                     By {{ $list->user?->nickname ?? 'Anonymous' }}

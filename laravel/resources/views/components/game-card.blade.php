@@ -12,6 +12,9 @@
         </div>
         <div class="card-body">
             <a class="card-title text-white" href="{{ route('games.show', $game) }}">{{ $game->name }}</a>
+            @if ($game->combos_count !== null)
+                <div class="text-muted small">{{ trans_choice('{0} No submissions|{1} 1 submission|[2,*] :count submissions', $game->combos_count, ['count' => $game->combos_count]) }}</div>
+            @endif
         </div>
     </div>
 </div>

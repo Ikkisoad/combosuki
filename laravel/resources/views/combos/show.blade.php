@@ -214,6 +214,7 @@
                     <table class="table table-hover align-middle combosuki-main-reversed text-white">
                         <tr>
                             <th>Similar combos</th>
+                            <th>Damage</th>
                         </tr>
                         @foreach ($similarCombos as $similarCombo)
                             <tr>
@@ -222,6 +223,7 @@
                                         {{ \Illuminate\Support\Str::limit($similarCombo->combo, 40) }}
                                     </a>
                                 </td>
+                                <td>{{ number_format((float) $similarCombo->damage, 0, '', '.') }}</td>
                             </tr>
                         @endforeach
                     </table>

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -89,6 +90,18 @@ class Game extends Model
     public function characters(): HasMany
     {
         return $this->hasMany(Character::class, 'game_idgame');
+    }
+
+    public function combos(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            Combo::class,
+            Character::class,
+            'game_idgame',
+            'character_idcharacter',
+            'idgame',
+            'idcharacter',
+        );
     }
 
     public function buttons(): HasMany

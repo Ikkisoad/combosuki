@@ -14,6 +14,20 @@
                     <p class="text-white-50 small">{{ number_format((float) $averageDamage, 0, '', '.') }} avg. damage</p>
                 @endif
                 <a href="{{ route('games.combos.index', $game) }}?characterid={{ $character->idcharacter }}" class="btn btn-secondary btn-sm">View all combos</a>
+
+                @if ($character->links->isNotEmpty())
+                    <h3 class="mt-3">Related Links</h3>
+                    <div class="d-flex flex-wrap column-gap-4 row-gap-2">
+                        @foreach ($character->links as $link)
+                            <a href="{{ $link->url }}" target="_blank" rel="noopener noreferrer" class="sidebar-character-link align-items-center gap-1" aria-label="Open {{ $link->label }}">
+                                {{ $link->label }}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M5 3l6 5-6 5" />
+                                </svg>
+                            </a>
+                        @endforeach
+                    </div>
+                @endif
             </nav>
 
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">

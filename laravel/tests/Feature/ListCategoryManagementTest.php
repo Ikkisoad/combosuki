@@ -51,19 +51,22 @@ class ListCategoryManagementTest extends TestCase
 
         $this->post(route('lists.manage.categories.store', $this->list), [
             'title' => 'Category One',
+            'description' => 'Combos that use meter.',
         ])->assertRedirect(route('lists.manage.index', $this->list));
 
         $category = ListCategory::where('list_idlist', $this->list->idlist)->firstOrFail();
         $this->assertSame('Category One', $category->title);
+        $this->assertSame('Combos that use meter.', $category->description);
         $this->assertNull($category->idPage);
 
         $this->postJson(route('lists.manage.categories.bulk', $this->list), [
             'categories' => [
-                $category->idlist_category => ['title' => 'Renamed', 'idPage' => null, 'order' => null],
+                $category->idlist_category => ['title' => 'Renamed', 'description' => 'Updated description.', 'idPage' => null, 'order' => null],
             ],
         ])->assertOk()->assertJson(['status' => 'ok']);
 
         $this->assertSame('Renamed', $category->fresh()->title);
+        $this->assertSame('Updated description.', $category->fresh()->description);
 
         $this->post(route('lists.manage.categories.destroy', [$this->list, $category]))
             ->assertRedirect(route('lists.manage.index', $this->list));
@@ -152,6 +155,25 @@ class ListCategoryManagementTest extends TestCase
             'idlist' => $this->list->idlist,
             'list_category_idlist_category' => null,
         ]);
+    }
+
+    public function test_category_description_is_shown_on_the_public_list_page(): void
+    {
+        $category = ListCategory::create([
+            'title' => 'Category One',
+            'description' => 'Combos that use meter.',
+            'list_idlist' => $this->list->idlist,
+        ]);
+
+        $combo = Combo::create([
+            'combo' => 'A > B > C',
+            'character_idcharacter' => $this->character->idcharacter,
+            'type' => 0,
+        ]);
+
+        $this->list->combos()->attach($combo->idcombo, ['list_category_idlist_category' => $category->idlist_category]);
+
+        $this->get(route('lists.show', $this->list))->assertSee('Combos that use meter.');
     }
 
     public function test_guest_cannot_bulk_save_categories(): void

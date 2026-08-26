@@ -1,5 +1,8 @@
 @foreach ($grouped as $categoryId => $combos)
     <h2 class="mt-3">{{ $categoryId == 0 ? 'No Category' : $categories->get($categoryId)?->title }}</h2>
+    @if ($categoryId != 0 && $categories->get($categoryId)?->description)
+        <p class="text-white-50">{{ $categories->get($categoryId)->description }}</p>
+    @endif
     <table class="table table-hover align-middle caption-top combosuki-main-reversed text-white">
         <tr>
             <th>Character</th>

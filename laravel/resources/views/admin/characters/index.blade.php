@@ -34,6 +34,7 @@
                             @endif
                             <textarea form="bulk-characters-form" name="characters[{{ $character->idcharacter }}][name]" maxlength="45" class="form-control" rows="1">{{ $character->name }}</textarea>
                             <input form="bulk-characters-form" type="text" name="characters[{{ $character->idcharacter }}][aliases]" maxlength="1000" class="form-control" placeholder="Aliases" value="{{ $character->aliases->pluck('alias')->implode(', ') }}">
+                            <textarea form="bulk-characters-form" name="characters[{{ $character->idcharacter }}][links]" maxlength="2000" class="form-control" rows="1" placeholder="Links: Label|https://url.com, one per line">{{ $character->links->map(fn ($link) => "{$link->label}|{$link->url}")->implode("\n") }}</textarea>
                             <input form="bulk-characters-form" type="file" name="characters[{{ $character->idcharacter }}][image]" accept="image/*" class="form-control">
                             <form method="post" action="{{ route('admin.characters.store', $game) }}">
                                 @csrf
@@ -56,6 +57,7 @@
                         <div class="input-group">
                             <textarea name="character" maxlength="45" class="form-control" rows="1" placeholder="Character Name" autofocus></textarea>
                             <input type="text" name="aliases" maxlength="1000" class="form-control" placeholder="Aliases (comma-separated)">
+                            <textarea name="links" maxlength="2000" class="form-control" rows="1" placeholder="Links: Label|https://url.com, one per line"></textarea>
                             <input type="file" name="image" accept="image/*" class="form-control">
                             <button type="submit" name="action" value="Add" class="btn btn-primary">Add</button>
                         </div>

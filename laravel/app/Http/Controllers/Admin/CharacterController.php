@@ -17,7 +17,7 @@ class CharacterController extends Controller
 {
     public function index(Game $game): View
     {
-        $characters = Character::where('game_idgame', $game->idgame)->with('aliases')->orderBy('name')->get();
+        $characters = Character::where('game_idgame', $game->idgame)->with('aliases', 'links')->orderBy('name')->get();
 
         return view('admin.characters.index', ['game' => $game, 'characters' => $characters]);
     }
@@ -30,6 +30,7 @@ class CharacterController extends Controller
             'image' => ['nullable', 'image', 'max:5120'],
             'idcharacter' => ['required_if:action,Update,Delete', 'nullable', 'integer'],
             'aliases' => ['nullable', 'string', 'max:1000'],
+            'links' => ['nullable', 'string', 'max:2000'],
         ]);
 
         // TODO: record which user made this edit once an audit/edit-log exists
@@ -51,6 +52,7 @@ class CharacterController extends Controller
             ]);
 
             $this->syncAliases($character, $game, $aliases);
+            $this->syncLinks($character, $validated['links'] ?? '');
         } elseif ($validated['action'] === 'Update') {
             $character = Character::where('idcharacter', $validated['idcharacter'])
                 ->where('game_idgame', $game->idgame)
@@ -80,6 +82,7 @@ class CharacterController extends Controller
 
             if ($character) {
                 $this->syncAliases($character, $game, $aliases);
+                $this->syncLinks($character, $validated['links'] ?? '');
             }
         } else {
             $character = Character::where('idcharacter', $validated['idcharacter'])
@@ -108,6 +111,7 @@ class CharacterController extends Controller
             'characters.*.name' => ['required', 'string', 'max:45'],
             'characters.*.image' => ['nullable', 'image', 'max:5120'],
             'characters.*.aliases' => ['nullable', 'string', 'max:1000'],
+            'characters.*.links' => ['nullable', 'string', 'max:2000'],
         ]);
 
         $aliasesByCharacter = [];
@@ -162,6 +166,7 @@ class CharacterController extends Controller
                 $character->update($attributes);
 
                 $this->syncAliases($character, $game, $aliasesByCharacter[$idcharacter]);
+                $this->syncLinks($character, $row['links'] ?? '');
             }
         });
 
@@ -208,6 +213,39 @@ class CharacterController extends Controller
             if (! in_array($key, $existingKeys, true)) {
                 $character->aliases()->create(['alias' => $alias, 'game_idgame' => $game->idgame]);
             }
+        }
+    }
+
+    /**
+     * Replace $character's links with the ones parsed from $raw (one
+     * "Label|https://url" per line). Links have no identity worth
+     * preserving across edits, so it's simplest to just delete and
+     * recreate them in the submitted order.
+     */
+    private function syncLinks(Character $character, string $raw): void
+    {
+        $character->links()->delete();
+
+        $order = 0;
+
+        foreach (preg_split('/\r\n|\r|\n/', $raw) as $line) {
+            $line = trim($line);
+
+            if ($line === '' || ! str_contains($line, '|')) {
+                continue;
+            }
+
+            [$label, $url] = array_map('trim', explode('|', $line, 2));
+
+            if ($label === '' || $url === '') {
+                continue;
+            }
+
+            $character->links()->create([
+                'label' => mb_substr($label, 0, 100),
+                'url' => mb_substr($url, 0, 255),
+                'order' => $order++,
+            ]);
         }
     }
 }

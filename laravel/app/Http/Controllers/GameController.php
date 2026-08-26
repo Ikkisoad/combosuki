@@ -29,7 +29,7 @@ class GameController extends Controller
 
     public function index(): View
     {
-        $games = Game::orderBy('name')->get();
+        $games = Game::withCount('combos')->orderBy('name')->get();
 
         return view('games.index', ['games' => $games]);
     }
@@ -130,14 +130,22 @@ class GameController extends Controller
 
     public function guidesTab(Game $game): View
     {
+        $featuredGuides = ListModel::where('game_idgame', $game->idgame)
+            ->where('type', 3)
+            ->with('user')
+            ->orderByDesc('idlist')
+            ->limit(10)
+            ->get();
+
         $guides = ListModel::where('game_idgame', $game->idgame)
+            ->where('type', '!=', 3)
             ->with('user')
             ->orderByDesc('type')
             ->orderByDesc('idlist')
             ->limit(10)
             ->get();
 
-        return view('games.partials.guides-tab', ['game' => $game, 'guides' => $guides]);
+        return view('games.partials.guides-tab', ['game' => $game, 'guides' => $guides, 'featuredGuides' => $featuredGuides]);
     }
 
     public function mostViewedTab(Game $game): View

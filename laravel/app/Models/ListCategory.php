@@ -11,7 +11,7 @@ class ListCategory extends Model
 
     protected $primaryKey = 'idlist_category';
 
-    protected $fillable = ['title', 'list_idlist', 'order', 'idPage'];
+    protected $fillable = ['title', 'description', 'list_idlist', 'order', 'idPage'];
 
     public function list(): BelongsTo
     {

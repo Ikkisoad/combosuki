@@ -21,6 +21,7 @@ class ListCategoryController extends Controller
         // TODO: record which user made this edit once an audit/edit-log exists
         ListCategory::create([
             'title' => $validated['title'],
+            'description' => $validated['description'] ?? null,
             'list_idlist' => $list->idlist,
             'idPage' => $validated['idPage'] ?? null,
             'order' => $validated['order'] ?? null,
@@ -52,6 +53,7 @@ class ListCategoryController extends Controller
         $validated = $request->validate([
             'categories' => ['required', 'array'],
             'categories.*.title' => ['required', 'string', 'max:50'],
+            'categories.*.description' => ['nullable', 'string', 'max:1000'],
             'categories.*.idPage' => ['nullable', 'integer', Rule::exists('list_page', 'idListPage')->where('idList', $list->idlist)],
             'categories.*.order' => ['nullable', 'numeric'],
         ]);
@@ -63,6 +65,7 @@ class ListCategoryController extends Controller
                     ->where('list_idlist', $list->idlist)
                     ->update([
                         'title' => $row['title'],
+                        'description' => $row['description'] ?? null,
                         'idPage' => $row['idPage'] ?? null,
                         'order' => $row['order'] ?? null,
                     ]);
@@ -79,6 +82,7 @@ class ListCategoryController extends Controller
     {
         return $request->validate([
             'title' => ['required', 'string', 'max:50'],
+            'description' => ['nullable', 'string', 'max:1000'],
             'idPage' => ['nullable', 'integer', Rule::exists('list_page', 'idListPage')->where('idList', $list->idlist)],
             'order' => ['nullable', 'numeric'],
         ]);
