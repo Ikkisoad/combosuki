@@ -370,6 +370,33 @@ class CombleTest extends TestCase
         $this->assertStringContainsString('bg-success', $html);
     }
 
+    /**
+     * A correct type guess only matches by id within the game it was
+     * guessed from (game_entry rows are per-game), so prefilling the next
+     * guess's Type field by that id would silently fail to reselect
+     * anything the moment the player switches to a different game. The
+     * category name itself ("Combo") is what's actually correct, so the
+     * sticky title must be rendered too — resources/js/comble.js falls back
+     * to matching the new game's options by title when the id doesn't stick.
+     */
+    public function test_a_correct_type_guess_across_games_exposes_a_sticky_title_not_just_an_id(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $type = $this->makeType($game, 'Combo');
+        $this->makeCombo($character, $type);
+
+        $otherGame = $this->makeGame(['name' => 'Other Game']);
+        $otherCharacter = $this->makeCharacter($otherGame, 'Chun-Li');
+        $otherType = $this->makeType($otherGame, 'Combo');
+
+        $response = $this->submitGuess($this->guessPayload($otherGame, $otherCharacter, $otherType));
+
+        $html = $this->showPage(cookie: $this->cookieFromResponse($response))->getContent();
+
+        $this->assertStringContainsString('data-sticky-title="Combo"', $html);
+    }
+
     public function test_the_damage_guess_shows_a_higher_or_lower_hint(): void
     {
         $game = $this->makeGame();

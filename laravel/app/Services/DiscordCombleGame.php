@@ -393,8 +393,10 @@ class DiscordCombleGame
     {
         return match ($hint) {
             'equal' => '🎯',
-            'higher' => '⬆️',
-            'lower' => '⬇️',
+            'higher_close' => '⬆️',
+            'higher_far' => '⏫',
+            'lower_close' => '⬇️',
+            'lower_far' => '⏬',
             default => '❔',
         };
     }

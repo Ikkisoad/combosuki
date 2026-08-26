@@ -143,6 +143,14 @@ class CombleController extends Controller
             'stickyGameId' => $lastGuess && $lastGuess['game_correct'] ? $lastGuess['game']->idgame : null,
             'stickyCharacterId' => $lastGuess && $lastGuess['character_correct'] ? $lastGuess['character']->idcharacter : null,
             'stickyTypeId' => $lastGuess && $lastGuess['type_correct'] ? $lastGuess['listing_type']->entryid : null,
+            // A correct type guess is only a match by entryid within the
+            // same game the player picked it from — switching to a different
+            // game changes the option list entirely, so the id sticky can
+            // never re-select anything there. The title ("Combo", "Okizeme",
+            // etc.) is what's actually meaningful (see
+            // CombleGuessEvaluator::sameTypeTitle()), so the JS falls back to
+            // matching the new game's options by title when the id doesn't.
+            'stickyTypeTitle' => $lastGuess && $lastGuess['type_correct'] ? $lastGuess['listing_type']->title : null,
             'stickyStarter' => $lastGuess && $lastGuess['starter_result'] === 'partial' ? $lastGuess['starter'] : null,
             'stats' => $this->stats->summary($day),
         ];
@@ -249,8 +257,10 @@ class CombleController extends Controller
             },
             match ($guess['damage_hint']) {
                 'equal' => '🎯',
-                'higher' => '⬆️',
-                'lower' => '⬇️',
+                'higher_close' => '⬆️',
+                'higher_far' => '⏫',
+                'lower_close' => '⬇️',
+                'lower_far' => '⏬',
                 default => '❔',
             },
         ]), $guesses);

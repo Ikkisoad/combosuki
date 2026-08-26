@@ -44,11 +44,17 @@
                         <td>
                             {{ $guess['damage'] !== null ? number_format($guess['damage'], 0, '', '.') : '—' }}
                             @switch($guess['damage_hint'])
-                                @case('higher')
+                                @case('higher_close')
                                     &uarr; Higher
                                     @break
-                                @case('lower')
+                                @case('higher_far')
+                                    &#8648; Much Higher
+                                    @break
+                                @case('lower_close')
                                     &darr; Lower
+                                    @break
+                                @case('lower_far')
+                                    &#8650; Much Lower
                                     @break
                                 @case('equal')
                                     &check; Equal
@@ -102,7 +108,7 @@
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">Type</label>
-                    <select name="listing_type_id" id="comble-type" class="form-select" required disabled data-sticky="{{ $stickyTypeId }}">
+                    <select name="listing_type_id" id="comble-type" class="form-select" required disabled data-sticky="{{ $stickyTypeId }}" data-sticky-title="{{ $stickyTypeTitle }}">
                         <option value="">Choose a game first&hellip;</option>
                     </select>
                 </div>

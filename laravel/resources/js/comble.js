@@ -48,8 +48,27 @@ function initGuessForm() {
         if (characterSelect.dataset.sticky) {
             characterSelect.value = characterSelect.dataset.sticky;
         }
+
         if (typeSelect.dataset.sticky) {
             typeSelect.value = typeSelect.dataset.sticky;
+        }
+
+        // A correct type guess only matches by id within the game it was
+        // guessed from — every game defines its own row per category, so
+        // switching games above never finds that id among the new options
+        // and the select above silently falls back to the placeholder. The
+        // category name itself ("Combo", "Okizeme", ...) is what's actually
+        // correct (see CombleGuessEvaluator::sameTypeTitle()), so re-select
+        // by matching title text instead whenever the id didn't stick.
+        if (typeSelect.value === '' && typeSelect.dataset.stickyTitle) {
+            const stickyTitle = typeSelect.dataset.stickyTitle.trim().toLowerCase();
+            const match = Array.from(typeSelect.options).find(
+                (option) => option.textContent.trim().toLowerCase() === stickyTitle
+            );
+
+            if (match) {
+                typeSelect.value = match.value;
+            }
         }
     });
 

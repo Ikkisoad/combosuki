@@ -133,18 +133,49 @@ class CombleGuessEvaluator
         return array_values($words);
     }
 
+    /**
+     * Direction ("higher"/"lower") plus a closeness tier ("close"/"far"), so
+     * the UI can show a single arrow for a near miss and a double arrow for
+     * a wild guess — turning damage into something you can actually home in
+     * on over several guesses, instead of a coin-flip direction hint.
+     */
     private function damageHint(Combo $target, ?float $guessedDamage): string
     {
         if ($target->damage === null || $guessedDamage === null) {
             return 'unknown';
         }
 
-        $diff = (float) $target->damage - $guessedDamage;
+        $actual = (float) $target->damage;
+        $diff = $actual - $guessedDamage;
 
         if (abs($diff) < 0.01) {
             return 'equal';
         }
 
-        return $diff > 0 ? 'higher' : 'lower';
+        return ($diff > 0 ? 'higher' : 'lower').'_'.$this->damageCloseness($actual, $guessedDamage);
+    }
+
+    /**
+     * Combo damage in this dataset spans from double digits to well over a
+     * million, so "close" can't be a fixed percentage of the actual value:
+     * that band is impossibly tight for a small combo (e.g. ±15% of 18 is
+     * ±2.7) and trivially wide for a huge one (±15% of 1,000,000 is
+     * ±150,000) — which is exactly why "close" was barely ever reachable in
+     * practice. Comparing the two values as a ratio instead (whichever is
+     * bigger divided by whichever is smaller) reads the same regardless of
+     * scale: "within 50% either way" is achievable whether the answer is in
+     * the hundreds or the hundred-thousands. Falls back to an absolute
+     * 500-damage cutoff when either side is zero, since a ratio against zero
+     * is undefined.
+     */
+    private function damageCloseness(float $actual, float $guessedDamage): string
+    {
+        $smaller = min($actual, $guessedDamage);
+
+        if ($smaller <= 0) {
+            return abs($actual - $guessedDamage) <= 500 ? 'close' : 'far';
+        }
+
+        return max($actual, $guessedDamage) / $smaller <= 1.5 ? 'close' : 'far';
     }
 }

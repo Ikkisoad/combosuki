@@ -207,9 +207,118 @@ class CombleGuessEvaluatorTest extends TestCase
         $this->assertSame('equal', $evaluator->evaluate($target, $game, $character, $guessedType, 500.005)['damage_hint']);
 
         // Clearly over the 0.01 threshold (kept away from the exact boundary to avoid float
-        // rounding noise): no longer equal, direction reflects the sign of the diff.
-        $this->assertSame('lower', $evaluator->evaluate($target, $game, $character, $guessedType, 500.02)['damage_hint']);
-        $this->assertSame('higher', $evaluator->evaluate($target, $game, $character, $guessedType, 499.98)['damage_hint']);
+        // rounding noise): no longer equal, direction reflects the sign of the diff. Both are
+        // a tiny fraction of a percent off, so closeness is "close".
+        $this->assertSame('lower_close', $evaluator->evaluate($target, $game, $character, $guessedType, 500.02)['damage_hint']);
+        $this->assertSame('higher_close', $evaluator->evaluate($target, $game, $character, $guessedType, 499.98)['damage_hint']);
+    }
+
+    /**
+     * The damage hint's direction ("higher"/"lower") is paired with a
+     * closeness tier ("close"/"far") so the player can tell a near miss from
+     * a wild guess. Closeness is a ratio (bigger value / smaller value), not
+     * a percentage of the actual value — combo damage in the real dataset
+     * spans from double digits to over a million, so a fixed percentage of
+     * the actual value is either impossibly tight for a small combo or
+     * trivially wide for a huge one. "Within 50% either way" (ratio <= 1.5)
+     * is "close" (one arrow); anything wider is "far" (double arrow).
+     */
+    public function test_damage_hint_closeness_reflects_ratio_distance_from_the_actual_value(): void
+    {
+        $game = (new Game())->forceFill(['idgame' => 5, 'name' => 'Test Game']);
+        $game->exists = true;
+
+        $character = (new Character())->forceFill(['idcharacter' => 9, 'name' => 'Ryu', 'game_idgame' => 5]);
+        $character->exists = true;
+        $character->setRelation('game', $game);
+
+        $guessedType = (new GameEntry())->forceFill(['entryid' => 7, 'title' => 'Combo', 'gameid' => 5]);
+        $evaluator = new CombleGuessEvaluator();
+
+        $target = (new Combo())->forceFill([
+            'idcombo' => 1, 'combo' => 'AAA', 'character_idcharacter' => 9, 'type' => 7, 'damage' => 1200.0,
+        ]);
+        $target->exists = true;
+        $target->setRelation('character', $character);
+
+        // Exactly at the 1.5x boundary (1200 / 800 = 1.5, 1800 / 1200 = 1.5): still "close".
+        $this->assertSame('higher_close', $evaluator->evaluate($target, $game, $character, $guessedType, 800.0)['damage_hint']);
+        $this->assertSame('lower_close', $evaluator->evaluate($target, $game, $character, $guessedType, 1800.0)['damage_hint']);
+
+        // Just past the boundary: "far".
+        $this->assertSame('higher_far', $evaluator->evaluate($target, $game, $character, $guessedType, 799.0)['damage_hint']);
+        $this->assertSame('lower_far', $evaluator->evaluate($target, $game, $character, $guessedType, 1801.0)['damage_hint']);
+
+        // A wildly wrong guess is still just "far", not some further tier.
+        $this->assertSame('higher_far', $evaluator->evaluate($target, $game, $character, $guessedType, 10.0)['damage_hint']);
+    }
+
+    /**
+     * The ratio metric must behave the same regardless of the actual
+     * value's magnitude — a small combo (tens of damage) shouldn't need a
+     * tighter absolute guess than a huge one (hundreds of thousands) to
+     * count as "close".
+     */
+    public function test_damage_hint_closeness_ratio_is_consistent_across_wildly_different_magnitudes(): void
+    {
+        $game = (new Game())->forceFill(['idgame' => 5, 'name' => 'Test Game']);
+        $game->exists = true;
+
+        $character = (new Character())->forceFill(['idcharacter' => 9, 'name' => 'Ryu', 'game_idgame' => 5]);
+        $character->exists = true;
+        $character->setRelation('game', $game);
+
+        $guessedType = (new GameEntry())->forceFill(['entryid' => 7, 'title' => 'Combo', 'gameid' => 5]);
+        $evaluator = new CombleGuessEvaluator();
+
+        // A tiny combo: guessing 24 for an actual of 18 is a ratio of
+        // 24/18 = 1.33 — comfortably "close" despite the small absolute gap.
+        $tinyTarget = (new Combo())->forceFill([
+            'idcombo' => 1, 'combo' => 'AAA', 'character_idcharacter' => 9, 'type' => 7, 'damage' => 18.0,
+        ]);
+        $tinyTarget->exists = true;
+        $tinyTarget->setRelation('character', $character);
+
+        $this->assertSame('lower_close', $evaluator->evaluate($tinyTarget, $game, $character, $guessedType, 24.0)['damage_hint']);
+
+        // A huge combo: guessing 1,000,000 for an actual of 1,500,000 is the
+        // same 1.5 ratio — "close" for exactly the same reason, even though
+        // the absolute gap (500,000) is far bigger than the tiny combo's
+        // entire damage value.
+        $hugeTarget = (new Combo())->forceFill([
+            'idcombo' => 2, 'combo' => 'AAA', 'character_idcharacter' => 9, 'type' => 7, 'damage' => 1500000.0,
+        ]);
+        $hugeTarget->exists = true;
+        $hugeTarget->setRelation('character', $character);
+
+        $this->assertSame('higher_close', $evaluator->evaluate($hugeTarget, $game, $character, $guessedType, 1000000.0)['damage_hint']);
+    }
+
+    /**
+     * A target damage of 0 makes a relative-error ratio meaningless (any
+     * nonzero guess is "infinitely" far off by that measure), so closeness
+     * falls back to an absolute cutoff instead.
+     */
+    public function test_damage_hint_closeness_falls_back_to_an_absolute_cutoff_when_actual_damage_is_zero(): void
+    {
+        $game = (new Game())->forceFill(['idgame' => 5, 'name' => 'Test Game']);
+        $game->exists = true;
+
+        $character = (new Character())->forceFill(['idcharacter' => 9, 'name' => 'Ryu', 'game_idgame' => 5]);
+        $character->exists = true;
+        $character->setRelation('game', $game);
+
+        $guessedType = (new GameEntry())->forceFill(['entryid' => 7, 'title' => 'Combo', 'gameid' => 5]);
+        $evaluator = new CombleGuessEvaluator();
+
+        $target = (new Combo())->forceFill([
+            'idcombo' => 1, 'combo' => 'AAA', 'character_idcharacter' => 9, 'type' => 7, 'damage' => 0.0,
+        ]);
+        $target->exists = true;
+        $target->setRelation('character', $character);
+
+        $this->assertSame('lower_close', $evaluator->evaluate($target, $game, $character, $guessedType, 200.0)['damage_hint']);
+        $this->assertSame('lower_far', $evaluator->evaluate($target, $game, $character, $guessedType, 800.0)['damage_hint']);
     }
 
     public function test_type_guess_correct_by_id_alone_even_when_title_and_game_differ(): void
