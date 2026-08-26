@@ -72,6 +72,29 @@ class MatchSubmissionTest extends TestCase
         ]);
     }
 
+    public function test_match_submission_requires_a_value_for_each_primary_match_resource(): void
+    {
+        [$game, $characterOne, $characterTwo, $resource] = $this->makeGameWithResource();
+
+        $this->actingAs(User::create(['nickname' => 'submitter', 'password' => 'password123']));
+
+        $response = $this->post(route('games.matches.store', $game), [
+            'player_one' => 'Alice',
+            'player_one_character_idcharacter' => $characterOne->idcharacter,
+            'player_two' => 'Bob',
+            'player_two_character_idcharacter' => $characterTwo->idcharacter,
+            'video' => 'https://example.com/video',
+            'played_at' => now()->toDateString(),
+            'player_one_resources' => [$resource->idgame_resources => ''],
+        ]);
+
+        $response->assertSessionHasErrors([
+            'player_one_resources.'.$resource->idgame_resources,
+            'player_two_resources.'.$resource->idgame_resources,
+        ]);
+        $this->assertDatabaseMissing('matches', ['player_one' => 'Alice']);
+    }
+
     public function test_match_edit_form_preselects_and_update_persists_changed_players_characters_and_resources(): void
     {
         [$game, $characterOne, $characterTwo, $resource, $valueOne, $valueTwo] = $this->makeGameWithResource();

@@ -9,6 +9,8 @@ class StoreMatchRequest extends FormRequest
 {
     public function authorize(): bool
     {
+        abort_unless($this->route('game')->matches_enabled, 404);
+
         return true;
     }
 
@@ -38,8 +40,8 @@ class StoreMatchRequest extends FormRequest
         foreach ($matchResources as $resource) {
             $exists = 'exists:resources_values,idResources_values,game_resources_idgame_resources,'.$resource->idgame_resources;
 
-            $rules['player_one_resources.'.$resource->idgame_resources] = ['nullable', 'integer', $exists];
-            $rules['player_two_resources.'.$resource->idgame_resources] = ['nullable', 'integer', $exists];
+            $rules['player_one_resources.'.$resource->idgame_resources] = ['required', 'integer', $exists];
+            $rules['player_two_resources.'.$resource->idgame_resources] = ['required', 'integer', $exists];
         }
 
         return $rules;

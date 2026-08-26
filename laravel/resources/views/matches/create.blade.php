@@ -27,6 +27,7 @@
                     :characters="$characters"
                     resources-field="player_one_resources"
                     :resources="$matchResources"
+                    :require-resources="true"
                 />
                 <x-matches.player-fields
                     label="Player 2"
@@ -36,6 +37,7 @@
                     :characters="$characters"
                     resources-field="player_two_resources"
                     :resources="$matchResources"
+                    :require-resources="true"
                 />
             </div>
 

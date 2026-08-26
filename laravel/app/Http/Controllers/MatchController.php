@@ -143,8 +143,6 @@ class MatchController extends Controller
 
     public function store(StoreMatchRequest $request, Game $game): RedirectResponse
     {
-        abort_unless($game->matches_enabled, 404);
-
         $validated = $request->validated();
 
         $match = GameMatch::create([

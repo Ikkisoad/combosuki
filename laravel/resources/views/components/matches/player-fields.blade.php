@@ -1,4 +1,4 @@
-@props(['label', 'nameField', 'userField', 'characterField', 'characters', 'nameValue' => null, 'userValue' => null, 'userLabel' => null, 'characterValue' => null, 'resourcesField' => null, 'resources' => [], 'resourceValues' => []])
+@props(['label', 'nameField', 'userField', 'characterField', 'characters', 'nameValue' => null, 'userValue' => null, 'userLabel' => null, 'characterValue' => null, 'resourcesField' => null, 'resources' => [], 'resourceValues' => [], 'requireResources' => false])
 
 <div class="col-md-6">
     <h5>{{ $label }}</h5>
@@ -32,7 +32,7 @@
     @foreach ($resources as $resource)
         <div class="input-group mb-3">
             <label class="input-group-text">{{ $resource->text_name }}:</label>
-            <select name="{{ $resourcesField }}[{{ $resource->idgame_resources }}]" class="form-select">
+            <select name="{{ $resourcesField }}[{{ $resource->idgame_resources }}]" class="form-select" @required($requireResources)>
                 <option value="">&mdash;</option>
                 @foreach ($resource->values as $value)
                     <option value="{{ $value->idResources_values }}" @selected(old($resourcesField.'.'.$resource->idgame_resources, $resourceValues[$resource->idgame_resources] ?? null) == $value->idResources_values)>{{ $value->value }}</option>
