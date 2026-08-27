@@ -40,6 +40,15 @@ return [
         'application_id' => env('DISCORD_APPLICATION_ID'),
         'bot_token' => env('DISCORD_BOT_TOKEN'),
         'guild_id' => env('DISCORD_GUILD_ID'),
+
+        // OAuth2 (account linking). Socialite reads these three key names
+        // verbatim. The redirect is set explicitly rather than derived from
+        // route() because the site is served from the repo root through an
+        // index.php/.htaccess bridge into laravel/public, and Discord
+        // requires the redirect_uri to match the portal entry exactly.
+        'client_id' => env('DISCORD_CLIENT_ID'),
+        'client_secret' => env('DISCORD_CLIENT_SECRET'),
+        'redirect' => env('DISCORD_REDIRECT_URI'),
     ],
 
 ];

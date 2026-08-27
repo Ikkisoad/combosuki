@@ -39,6 +39,10 @@
                         <button type="submit" class="btn btn-primary btn-block">Update Password</button>
                     </div>
                 </form>
+
+                <p class="mt-3 mb-0">
+                    <a href="{{ route('connections.edit') }}">Connected accounts</a>
+                </p>
             </div>
         </div>
     </div>

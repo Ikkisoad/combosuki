@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\GameSettingsController;
 use App\Http\Controllers\Admin\LinkController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\ConnectionController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\CharacterController;
@@ -62,6 +63,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/account/password', [PasswordController::class, 'edit'])->name('password.edit');
     Route::post('/account/password', [PasswordController::class, 'update'])->name('password.update');
+
+    Route::get('/account/connections', [ConnectionController::class, 'edit'])->name('connections.edit');
+    // The two routes that take a password get login's throttle budget rather
+    // than the usual write-route 10,1 — they can be used to test passwords.
+    Route::post('/account/connections/discord', [ConnectionController::class, 'redirectToDiscord'])
+        ->middleware('throttle:5,1')->name('connections.discord.redirect');
+    Route::get('/account/connections/discord/callback', [ConnectionController::class, 'discordCallback'])
+        ->middleware('throttle:10,1')->name('connections.discord.callback');
+    Route::post('/account/connections/discord/delete', [ConnectionController::class, 'destroyDiscord'])
+        ->middleware('throttle:5,1')->name('connections.discord.destroy');
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {

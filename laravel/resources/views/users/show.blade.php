@@ -13,7 +13,10 @@
                 @endif
             </h2>
             @if ($isOwnProfile)
-                <a href="{{ route('password.edit') }}" class="btn btn-combosuki">Change Password</a>
+                <div class="d-flex gap-2">
+                    <a href="{{ route('connections.edit') }}" class="btn btn-combosuki">Connected Accounts</a>
+                    <a href="{{ route('password.edit') }}" class="btn btn-combosuki">Change Password</a>
+                </div>
             @endif
         </div>
 
