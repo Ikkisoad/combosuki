@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Exceptions\AccountLinkRejected;
 use App\Http\Controllers\Concerns\ConfirmsPassword;
 use App\Http\Controllers\Controller;
+use App\Models\SiteSetting;
 use App\Services\DiscordAccountLinker;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,6 +37,7 @@ class ConnectionController extends Controller
         return view('account.connections', [
             'discordAccount' => $request->user()->discordAccount,
             'hasPassword' => $request->user()->hasUsablePassword(),
+            'integrationEnabled' => SiteSetting::discordIntegrationEnabled(),
         ]);
     }
 
@@ -109,6 +111,14 @@ class ConnectionController extends Controller
 
     public function destroyDiscord(Request $request, DiscordAccountLinker $linker): RedirectResponse
     {
+        // Explicit, not incidental. passwordConfirmed() would already refuse a
+        // passwordless account, but silently and with a misleading "Incorrect
+        // password." Disconnecting the only way into an account that has no
+        // email and no password reset would strand the user for good.
+        if (! $request->user()->hasUsablePassword()) {
+            return back()->with('error', 'Set a password first — Discord is currently the only way into your account.');
+        }
+
         $request->validate(['current_password' => ['required', 'string']]);
 
         if (! $this->passwordConfirmed($request)) {

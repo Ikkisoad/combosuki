@@ -35,6 +35,20 @@
                         <button type="submit" class="btn btn-primary btn-block">Log In</button>
                     </div>
                 </form>
+
+                @if (\App\Models\SiteSetting::discordIntegrationEnabled())
+                    <hr>
+
+                    <form method="post" action="{{ route('auth.discord.redirect') }}">
+                        @csrf
+                        <button type="submit" class="btn btn-combosuki btn-block">Continue with Discord</button>
+                    </form>
+
+                    <p class="form-text mt-2 mb-0">
+                        New here? Continuing with Discord creates your account. Your Discord account
+                        needs a verified email address.
+                    </p>
+                @endif
             </div>
         </div>
     </div>

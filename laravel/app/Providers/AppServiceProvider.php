@@ -6,6 +6,7 @@ use App\Models\Combo;
 use App\Models\Game;
 use App\Models\GameMatch;
 use App\Models\ListModel;
+use App\Models\SiteSetting;
 use App\Policies\ComboPolicy;
 use App\Policies\GamePolicy;
 use App\Policies\ListPolicy;
@@ -34,6 +35,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Builder::defaultStringLength(191);
+
+        // SiteSetting::current() memoises for the life of the request; boot()
+        // runs once per request (and once per test), so this is where the memo
+        // gets a clean slate.
+        SiteSetting::forgetCurrent();
 
         Paginator::useBootstrapFive();
 

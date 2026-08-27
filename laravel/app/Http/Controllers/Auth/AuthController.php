@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,6 +23,17 @@ class AuthController extends Controller
             'nickname' => ['required', 'string'],
             'password' => ['required', 'string'],
         ]);
+
+        // A Discord-registered account has no password at all. Auth::attempt
+        // would already fail on an empty hash, but that is a side effect of
+        // the hasher rather than a rule — make it explicit, and reuse the
+        // same generic message so this can't be used to find out which
+        // accounts are Discord-only.
+        $existing = User::where('nickname', $credentials['nickname'])->first();
+
+        if ($existing && ! $existing->hasUsablePassword()) {
+            return back()->withInput($request->only('nickname'))->with('error', 'Incorrect nickname or password.');
+        }
 
         try {
             $authenticated = Auth::attempt($credentials);

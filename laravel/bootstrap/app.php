@@ -1,10 +1,16 @@
 <?php
 
+use App\Http\Middleware\EnsureDiscordIntegrationEnabled;
+use App\Http\Middleware\EnsureUserIsAdmin;
+use App\Http\Middleware\EnsureUserIsModerator;
+use App\Http\Middleware\EnsureUserIsTrusted;
+use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -16,11 +22,12 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+        $middleware->append(SecurityHeaders::class);
         $middleware->alias([
-            'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
-            'trusted' => \App\Http\Middleware\EnsureUserIsTrusted::class,
-            'moderator' => \App\Http\Middleware\EnsureUserIsModerator::class,
+            'admin' => EnsureUserIsAdmin::class,
+            'trusted' => EnsureUserIsTrusted::class,
+            'moderator' => EnsureUserIsModerator::class,
+            'discord.web' => EnsureDiscordIntegrationEnabled::class,
         ]);
         // Comble's "starter" guess is compared character-for-character
         // (including spaces) against the combo's raw notation; the global
@@ -41,7 +48,7 @@ return Application::configure(basePath: dirname(__DIR__))
             ]),
         );
 
-        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpExceptionInterface $e, Request $request) {
+        $exceptions->render(function (HttpExceptionInterface $e, Request $request) {
             if ($e->getStatusCode() !== 403 || $request->expectsJson()) {
                 return null;
             }

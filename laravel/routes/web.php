@@ -12,9 +12,11 @@ use App\Http\Controllers\Admin\GameListController;
 use App\Http\Controllers\Admin\GameResourceController;
 use App\Http\Controllers\Admin\GameSettingsController;
 use App\Http\Controllers\Admin\LinkController;
+use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\ConnectionController;
+use App\Http\Controllers\Auth\DiscordAuthController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\CharacterController;
@@ -57,6 +59,20 @@ Route::get('/about', function () {
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1')->name('login.attempt');
+
+    // Sign in / sign up with Discord. Guest-only and behind the admin kill
+    // switch. Registration is the first guest-reachable POST in this app that
+    // creates rows, hence login's throttle budget rather than the usual 10,1.
+    Route::middleware('discord.web')->group(function () {
+        Route::post('/auth/discord', [DiscordAuthController::class, 'redirect'])
+            ->middleware('throttle:5,1')->name('auth.discord.redirect');
+        Route::get('/auth/discord/callback', [DiscordAuthController::class, 'callback'])
+            ->middleware('throttle:10,1')->name('auth.discord.callback');
+        Route::get('/register/discord', [DiscordAuthController::class, 'showRegister'])
+            ->name('auth.discord.register');
+        Route::post('/register/discord', [DiscordAuthController::class, 'store'])
+            ->middleware('throttle:5,1')->name('auth.discord.register.store');
+    });
 });
 
 Route::middleware('auth')->group(function () {
@@ -67,12 +83,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/account/connections', [ConnectionController::class, 'edit'])->name('connections.edit');
     // The two routes that take a password get login's throttle budget rather
     // than the usual write-route 10,1 — they can be used to test passwords.
-    Route::post('/account/connections/discord', [ConnectionController::class, 'redirectToDiscord'])
-        ->middleware('throttle:5,1')->name('connections.discord.redirect');
-    Route::get('/account/connections/discord/callback', [ConnectionController::class, 'discordCallback'])
-        ->middleware('throttle:10,1')->name('connections.discord.callback');
-    Route::post('/account/connections/discord/delete', [ConnectionController::class, 'destroyDiscord'])
-        ->middleware('throttle:5,1')->name('connections.discord.destroy');
+    // `discord.web` is on the actions but deliberately NOT on the page above:
+    // with the integration off, someone who already linked must still be able
+    // to see that the link exists.
+    Route::middleware('discord.web')->group(function () {
+        Route::post('/account/connections/discord', [ConnectionController::class, 'redirectToDiscord'])
+            ->middleware('throttle:5,1')->name('connections.discord.redirect');
+        Route::get('/account/connections/discord/callback', [ConnectionController::class, 'discordCallback'])
+            ->middleware('throttle:10,1')->name('connections.discord.callback');
+        Route::post('/account/connections/discord/delete', [ConnectionController::class, 'destroyDiscord'])
+            ->middleware('throttle:5,1')->name('connections.discord.destroy');
+    });
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -86,6 +107,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/users/{user}/moderator', [AdminUserController::class, 'updateModerator'])->middleware('throttle:10,1')->name('users.moderator.update');
     Route::get('/users/{user}/moderated-games', [AdminUserController::class, 'editModeratedGames'])->name('users.moderated-games.edit');
     Route::post('/users/{user}/moderated-games', [AdminUserController::class, 'updateModeratedGames'])->middleware('throttle:10,1')->name('users.moderated-games.update');
+
+    Route::get('/settings', [SettingsController::class, 'edit'])->name('settings.edit');
+    Route::post('/settings', [SettingsController::class, 'update'])->middleware('throttle:10,1')->name('settings.update');
 
     Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics');
 

@@ -49,6 +49,11 @@ return [
         'client_id' => env('DISCORD_CLIENT_ID'),
         'client_secret' => env('DISCORD_CLIENT_SECRET'),
         'redirect' => env('DISCORD_REDIRECT_URI'),
+
+        // Sign-in/sign-up uses a second, separate callback so the guest flow
+        // and the authenticated linking flow never share an endpoint. Both
+        // URLs must be registered in the Discord portal.
+        'auth_redirect' => env('DISCORD_AUTH_REDIRECT_URI'),
     ],
 
 ];

@@ -28,10 +28,19 @@
                 <div class="card combosuki-main-reversed text-white p-3">
                     <h5 class="mb-2">Discord</h5>
 
-                    @if (! $hasPassword)
-                        <p class="mb-0">
+                    @unless ($integrationEnabled)
+                        <div class="alert alert-warning mb-3">
+                            Discord integration is currently unavailable. Any existing connection is
+                            kept, but it can't be changed right now.
+                        </div>
+                    @endunless
+
+                    @if (! $hasPassword && ! $discordAccount)
+                        <p class="mb-1">No Discord account connected.</p>
+                        <p class="text-white-50 mb-0">
                             Your account doesn't have a password set yet, so there's no way to confirm
-                            it's you. Ask an admin to set one for you before connecting Discord.
+                            it's you. <a class="link-light" href="{{ route('password.edit') }}">Set a password</a>
+                            before connecting Discord.
                         </p>
                     @elseif ($discordAccount)
                         <p class="mb-1">
@@ -41,14 +50,22 @@
                             Connected {{ $discordAccount->created_at?->format('M j, Y') }}
                         </p>
 
-                        <form method="post" action="{{ route('connections.discord.destroy') }}">
-                            @csrf
-                            <div class="mb-2">
-                                <label class="form-label">Confirm your password to disconnect</label>
-                                <input type="password" name="current_password" class="form-control" required>
-                            </div>
-                            <button type="submit" class="btn btn-outline-light">Disconnect Discord</button>
-                        </form>
+                        @if (! $hasPassword)
+                            <p class="text-white-50 mb-0">
+                                Discord is currently the only way into your account, so it can't be
+                                disconnected. <a class="link-light" href="{{ route('password.edit') }}">Set a password</a>
+                                first.
+                            </p>
+                        @elseif ($integrationEnabled)
+                            <form method="post" action="{{ route('connections.discord.destroy') }}">
+                                @csrf
+                                <div class="mb-2">
+                                    <label class="form-label">Confirm your password to disconnect</label>
+                                    <input type="password" name="current_password" class="form-control" required>
+                                </div>
+                                <button type="submit" class="btn btn-outline-light">Disconnect Discord</button>
+                            </form>
+                        @endif
                     @else
                         <p class="mb-1">No Discord account connected.</p>
                         <p class="text-white-50 mb-3">
@@ -56,14 +73,16 @@
                             connected to one Combo好き account.
                         </p>
 
-                        <form method="post" action="{{ route('connections.discord.redirect') }}">
-                            @csrf
-                            <div class="mb-2">
-                                <label class="form-label">Confirm your password to continue</label>
-                                <input type="password" name="current_password" class="form-control" required>
-                            </div>
-                            <button type="submit" class="btn btn-combosuki">Connect Discord</button>
-                        </form>
+                        @if ($integrationEnabled)
+                            <form method="post" action="{{ route('connections.discord.redirect') }}">
+                                @csrf
+                                <div class="mb-2">
+                                    <label class="form-label">Confirm your password to continue</label>
+                                    <input type="password" name="current_password" class="form-control" required>
+                                </div>
+                                <button type="submit" class="btn btn-combosuki">Connect Discord</button>
+                            </form>
+                        @endif
                     @endif
                 </div>
 
