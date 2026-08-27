@@ -1,7 +1,33 @@
 # Creating and managing users
 
-There is no sign-up page — accounts are created manually. Login is by `nickname` +
-`password`, not email.
+Accounts are created three ways: **self-service sign-up with Discord**, by a trusted user
+via `/users/create`, or manually via tinker. Login is by `nickname` + `password`, or with
+Discord — never by email, since there is no email column.
+
+## Discord accounts have no password
+
+Signing up with Discord creates an account with `password = null`. Such an account:
+
+- **cannot log in with a password.** `AuthController::login` refuses it explicitly, using
+  the same generic "Incorrect nickname or password." as any other failure, so the login
+  form doesn't become a "which accounts are Discord-only?" oracle.
+- **can set a first password itself** at `/account/password`, which drops the
+  current-password field when there is nothing to confirm. That branch is chosen from the
+  database, never from request input.
+- **cannot disconnect Discord** until it has a password — doing so would remove the only
+  way into an account with no email and no password reset.
+
+An admin can still set a password for anyone from `/admin/users`.
+
+The whole web-facing integration (sign-in, sign-up and connecting) can be switched off at
+`/admin/settings`. **Turning it off locks out every account whose only credential is
+Discord.** The Discord bot is unaffected by that flag.
+
+Nicknames chosen through Discord sign-up are validated more strictly than the ones trusted
+users create: 3-45 characters, `A-Z a-z 0-9 _ . -` only, no reserved staff names, and
+uniqueness compared case-insensitively (see `App\Services\NicknamePolicy`). The restricted
+character set is what makes homoglyph impersonation impossible — `nickname` is both the
+login identifier and the public display name shown beside the Admin/Trusted badges.
 
 **Always go through `php artisan tinker` (or other Eloquent code), never a raw SQL
 `INSERT`/`UPDATE`.** `App\Models\User::$password` has a `hashed` cast, which bcrypts

@@ -78,4 +78,25 @@ class User extends Authenticatable
     {
         return $this->hasMany(TierList::class, 'user_iduser');
     }
+
+    public function connectedAccounts(): HasMany
+    {
+        return $this->hasMany(UserConnectedAccount::class, 'user_iduser');
+    }
+
+    public function discordAccount(): HasOne
+    {
+        return $this->hasOne(UserConnectedAccount::class, 'user_iduser')->where('provider', 'discord');
+    }
+
+    /**
+     * Accounts predating the password column (and any row whose password was
+     * cleared) can't satisfy the current-password check that gates account
+     * linking, so the connections page offers them a "set a password first"
+     * message instead of a form that could only ever fail.
+     */
+    public function hasUsablePassword(): bool
+    {
+        return is_string($this->password) && $this->password !== '';
+    }
 }

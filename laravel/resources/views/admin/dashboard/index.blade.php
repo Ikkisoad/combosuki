@@ -57,6 +57,15 @@
                     </div>
                 </a>
             </div>
+            <div class="col-md-4">
+                <a href="{{ route('admin.settings.edit') }}" class="text-decoration-none">
+                    <div class="card combosuki-main-reversed text-white text-center p-4 h-100 admin-dashboard-tile">
+                        <div class="display-4 mb-2">⚙️</div>
+                        <h2 class="h4 mb-1">Site Settings</h2>
+                        <p class="text-white-50 mb-0">Turn site-wide features on or off</p>
+                    </div>
+                </a>
+            </div>
         </div>
     </div>
 
