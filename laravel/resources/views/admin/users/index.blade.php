@@ -88,6 +88,7 @@
                                         <th>Moderator</th>
                                     @endif
                                     <th>Joined</th>
+                                    <th>Last Login</th>
                                     @if (auth()->user()->is_admin)
                                         <th>Password</th>
                                     @endif
@@ -123,6 +124,7 @@
                                             </td>
                                         @endif
                                         <td>{{ $user->created_at?->format('Y-m-d') }}</td>
+                                        <td>{{ $user->last_login_at?->format('Y-m-d H:i') ?? 'Never' }}</td>
                                         @if (auth()->user()->is_admin)
                                             <td>
                                                 <details>

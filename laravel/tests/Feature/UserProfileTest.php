@@ -58,11 +58,32 @@ class UserProfileTest extends TestCase
             'type' => $this->listingType->entryid, 'user_iduser' => $otherUser->iduser,
         ])->increment('views', 100);
 
+        // Viewed as the profile owner: an untrusted user's own unverified
+        // combos are hidden from other visitors (see ComboVisibilityScopeTest),
+        // but this test is about owner-filtering and view-ordering, not
+        // verification, so it views its own profile as itself.
+        $this->actingAs($this->user);
+
         $response = $this->get(route('users.show', $this->user))->assertOk();
         $content = $response->getContent();
 
         $this->assertStringNotContainsString('Other Users Combo', $content);
         $this->assertTrue(strpos($content, 'High Views') < strpos($content, 'Low Views'));
+    }
+
+    public function test_profile_hides_unverified_combos_from_other_visitors(): void
+    {
+        Combo::create([
+            'combo' => 'Unproven Combo', 'character_idcharacter' => $this->character->idcharacter,
+            'type' => $this->listingType->entryid, 'user_iduser' => $this->user->iduser,
+        ]);
+
+        $stranger = User::create(['nickname' => 'stranger', 'password' => 'password123']);
+        $this->actingAs($stranger);
+
+        $this->get(route('users.show', $this->user))
+            ->assertOk()
+            ->assertDontSee('Unproven Combo');
     }
 
     public function test_profile_stats_identify_the_most_submitted_game_and_character(): void

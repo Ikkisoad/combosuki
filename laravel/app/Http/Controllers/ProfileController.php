@@ -14,6 +14,7 @@ class ProfileController extends Controller
     {
         $mostViewedCombos = Combo::where('user_iduser', $user->iduser)
             ->with(['character.game', 'listingType'])
+            ->visibleTo(auth()->user())
             ->orderByDesc('views')
             ->limit(10)
             ->get();

@@ -16,4 +16,9 @@ class ComboPolicy
     {
         return $user->isTrusted() || $user->iduser === $combo->user_iduser;
     }
+
+    public function verify(User $user, Combo $combo): bool
+    {
+        return $user->isTrusted();
+    }
 }

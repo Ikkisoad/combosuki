@@ -31,12 +31,14 @@ class CharacterController extends Controller
 
         $topDamageCombos = Combo::with('listingType')
             ->where('character_idcharacter', $character->idcharacter)
+            ->visibleTo(auth()->user())
             ->orderByDesc('damage')
             ->limit(3)
             ->get();
 
         $averageDamage = Combo::where('character_idcharacter', $character->idcharacter)
             ->whereNotNull('damage')
+            ->visibleTo(auth()->user())
             ->avg('damage');
 
         return view('characters.show', [

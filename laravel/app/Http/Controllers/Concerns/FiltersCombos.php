@@ -34,7 +34,8 @@ trait FiltersCombos
 
         $query = Combo::query()
             ->with(['character', 'listingType'])
-            ->whereHas('character', fn (Builder $q) => $q->where('game_idgame', $game->idgame));
+            ->whereHas('character', fn (Builder $q) => $q->where('game_idgame', $game->idgame))
+            ->visibleTo(auth()->user());
 
         $this->applyFilters($query, $request, $primaryResources, $game);
         $this->applyOrdering($query, $request);

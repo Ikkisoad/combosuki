@@ -29,7 +29,26 @@ class GameController extends Controller
 
     public function index(): View
     {
-        $games = Game::withCount('combos')->orderBy('name')->get();
+        $viewer = auth()->user();
+        $moderatedGameIds = $viewer?->moderatedGames()->pluck('game.idgame')->all() ?? [];
+
+        $games = Game::withCount([
+            'combos',
+            'combos as unverified_combos_count' => fn ($query) => $query
+                ->whereNotNull('user_iduser')
+                ->where(fn ($q) => $q->whereNull('verified')->orWhere('verified', 0)),
+        ])
+            ->orderBy('name')
+            ->get()
+            ->each(function (Game $game) use ($viewer, $moderatedGameIds) {
+                // isTrusted() is intentionally not used here: it also returns
+                // true for a bare is_moderator, which would wrongly grant the
+                // "every game" highlight to a moderator who should only see
+                // it on games they specifically moderate (the pivot check).
+                $game->show_unverified_highlight = $game->unverified_combos_count > 0
+                    && $viewer !== null
+                    && ($viewer->is_admin || $viewer->trusted_user || in_array($game->idgame, $moderatedGameIds, true));
+            });
 
         return view('games.index', ['games' => $games]);
     }
@@ -105,6 +124,7 @@ class GameController extends Controller
 
         $latestCombos = Combo::with(['character', 'listingType', 'user'])
             ->whereHas('character', fn ($query) => $query->where('game_idgame', $game->idgame))
+            ->visibleTo(auth()->user())
             ->orderByDesc('submited')
             ->limit(5)
             ->get();
@@ -152,6 +172,7 @@ class GameController extends Controller
     {
         $mostViewedCombos = Combo::with(['character', 'listingType', 'user'])
             ->whereHas('character', fn ($query) => $query->where('game_idgame', $game->idgame))
+            ->visibleTo(auth()->user())
             ->orderByDesc('views')
             ->limit(3)
             ->get();
@@ -295,5 +316,4 @@ class GameController extends Controller
             return null;
         }
     }
-
 }

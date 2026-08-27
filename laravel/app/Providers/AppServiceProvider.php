@@ -11,6 +11,7 @@ use App\Policies\ComboPolicy;
 use App\Policies\GamePolicy;
 use App\Policies\ListPolicy;
 use App\Policies\MatchPolicy;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Database\Schema\Builder;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Event;
@@ -52,6 +53,12 @@ class AppServiceProvider extends ServiceProvider
         // one through this event rather than a config entry.
         Event::listen(function (SocialiteWasCalled $event) {
             $event->extendSocialite('discord', Provider::class);
+        });
+
+        // Fires for both password login (Auth::attempt) and Discord login
+        // (Auth::login), so this one listener covers every sign-in path.
+        Event::listen(function (Login $event) {
+            $event->user->forceFill(['last_login_at' => now()])->saveQuietly();
         });
     }
 }

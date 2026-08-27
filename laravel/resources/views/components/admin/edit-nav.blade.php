@@ -8,5 +8,6 @@
     <a href="{{ route('admin.links.index', $game) }}" class="btn btn-secondary">Links</a>
     <a href="{{ route('admin.entries.index', $game) }}" class="btn btn-secondary">Entries</a>
     <a href="{{ route('admin.lists.index', $game) }}" class="btn btn-secondary">Guides</a>
+    <a href="{{ route('admin.unverified-combos.index', $game) }}" class="btn btn-secondary">Unverified Combos</a>
     <a href="{{ route('admin.game.edit', $game) }}" class="btn btn-secondary">Game Settings</a>
 </div>

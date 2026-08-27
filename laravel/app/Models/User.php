@@ -24,6 +24,7 @@ class User extends Authenticatable
             'trusted_user' => 'boolean',
             'is_moderator' => 'boolean',
             'password' => 'hashed',
+            'last_login_at' => 'datetime',
         ];
     }
 

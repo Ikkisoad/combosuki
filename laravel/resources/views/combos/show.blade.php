@@ -208,7 +208,21 @@
                         <th>Submitted:</th>
                         <td>{{ $combo->submited?->format('d-m-Y') }}</td>
                     </tr>
+                    @if ($combo->verified)
+                        <tr>
+                            <th>Verified by:</th>
+                            <td>{{ $combo->verifier?->nickname ?? 'Staff' }}</td>
+                        </tr>
+                    @endif
                 </table>
+
+                @if ($canVerify && ! $combo->verified)
+                    <form method="post" action="{{ route('combos.verify', $combo) }}"
+                          onsubmit="return confirm('Mark this combo as verified? This confirms it is a legitimate submission.');">
+                        @csrf
+                        <button type="submit" class="btn btn-success mb-3">Verify Combo</button>
+                    </form>
+                @endif
 
                 @if ($similarCombos->isNotEmpty())
                     <table class="table table-hover align-middle combosuki-main-reversed text-white">

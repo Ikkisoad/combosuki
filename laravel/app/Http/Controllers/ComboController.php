@@ -44,7 +44,8 @@ class ComboController extends Controller
 
         $query = Combo::query()
             ->with(['character', 'listingType', 'resources.resourceValue', 'user'])
-            ->whereHas('character', fn (Builder $q) => $q->where('game_idgame', $game->idgame));
+            ->whereHas('character', fn (Builder $q) => $q->where('game_idgame', $game->idgame))
+            ->visibleTo(auth()->user());
 
         $this->applyFilters($query, $request, $primaryResources, $game);
 
@@ -63,7 +64,7 @@ class ComboController extends Controller
 
     public function show(Combo $combo): View
     {
-        $combo->load(['character.game', 'listingType', 'resources.resourceValue.gameResource', 'user']);
+        $combo->load(['character.game', 'listingType', 'resources.resourceValue.gameResource', 'user', 'verifier']);
         $combo->increment('views');
 
         $game = $combo->character->game;
@@ -77,6 +78,7 @@ class ComboController extends Controller
         $similarCombos = $this->similarCombos($combo);
 
         $canEdit = Gate::allows('update', $combo);
+        $canVerify = Gate::allows('verify', $combo);
 
         $characters = $listingTypes = $buttons = collect();
 
@@ -111,6 +113,7 @@ class ComboController extends Controller
             'primaryResources' => $primaryResources,
             'secondaryResources' => $secondaryResources,
             'canEdit' => $canEdit,
+            'canVerify' => $canVerify,
             'characters' => $characters,
             'listingTypes' => $listingTypes,
             'buttons' => $buttons,
@@ -136,7 +139,7 @@ class ComboController extends Controller
             ->values();
 
         if ($resourceValueIds->isEmpty()) {
-            return new Collection();
+            return new Collection;
         }
 
         $resourceValueIdList = $resourceValueIds->implode(',');

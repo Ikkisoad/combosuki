@@ -27,11 +27,15 @@ class CombleDailyCombo
      */
     public function forDate(CarbonInterface $date): Combo
     {
+        // Pinned to guest-level visibility (null viewer), never the request's
+        // actual auth()->user(): every player must see the same puzzle for a
+        // given date, so the eligible set can't vary by who's asking.
         $ids = Combo::query()
             ->join('character', 'character.idcharacter', '=', 'combo.character_idcharacter')
             ->join('game', 'game.idgame', '=', 'character.game_idgame')
             ->where('game.complete', '>', 0)
             ->whereRaw("(LENGTH(combo.combo) - LENGTH(REPLACE(combo.combo, ' ', ''))) + 1 >= ?", [self::MIN_TOKENS])
+            ->visibleTo(null)
             ->orderBy('combo.idcombo')
             ->pluck('combo.idcombo');
 

@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\GameResourceController;
 use App\Http\Controllers\Admin\GameSettingsController;
 use App\Http\Controllers\Admin\LinkController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\UnverifiedCombosController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\ConnectionController;
@@ -23,6 +24,7 @@ use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\CombleController;
 use App\Http\Controllers\ComboController;
 use App\Http\Controllers\ComboListController;
+use App\Http\Controllers\ComboVerificationController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\ListCategoryController;
@@ -159,6 +161,7 @@ Route::get('/combos/{combo}', [ComboController::class, 'show'])->name('combos.sh
 Route::get('/combos/{combo}/edit', [ComboController::class, 'edit'])->middleware('auth')->name('combos.edit');
 Route::post('/combos/{combo}/edit', [ComboController::class, 'update'])->middleware(['auth', 'throttle:10,1'])->name('combos.update');
 Route::post('/combos/{combo}/delete', [ComboController::class, 'destroy'])->middleware(['auth', 'throttle:10,1'])->name('combos.destroy');
+Route::post('/combos/{combo}/verify', [ComboVerificationController::class, 'store'])->middleware(['auth', 'throttle:10,1'])->name('combos.verify');
 Route::post('/combos/{combo}/lists/{list}', [ComboListController::class, 'store'])->middleware(['auth', 'throttle:60,1'])->name('combos.lists.store');
 Route::post('/combos/{combo}/favorite', [FavoriteController::class, 'store'])->middleware(['auth', 'throttle:60,1'])->name('favorites.store');
 Route::post('/combos/{combo}/unfavorite', [FavoriteController::class, 'destroy'])->middleware(['auth', 'throttle:60,1'])->name('favorites.destroy');
@@ -251,4 +254,6 @@ Route::middleware(['auth', 'can:update,game'])->prefix('games/{game}/edit')->nam
     Route::get('/lists', [GameListController::class, 'index'])->name('lists.index');
     Route::post('/lists', [GameListController::class, 'store'])->middleware('throttle:10,1')->name('lists.store');
     Route::post('/lists/bulk', [GameListController::class, 'bulkUpdate'])->middleware('throttle:10,1')->name('lists.bulkUpdate');
+
+    Route::get('/unverified-combos', [UnverifiedCombosController::class, 'index'])->name('unverified-combos.index');
 });

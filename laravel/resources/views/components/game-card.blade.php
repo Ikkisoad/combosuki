@@ -15,6 +15,9 @@
             @if ($game->combos_count !== null)
                 <div class="text-muted small">{{ trans_choice('{0} No submissions|{1} 1 submission|[2,*] :count submissions', $game->combos_count, ['count' => $game->combos_count]) }}</div>
             @endif
+            @if ($game->show_unverified_highlight ?? false)
+                <span class="badge bg-warning text-dark">Has unverified combos</span>
+            @endif
         </div>
     </div>
 </div>

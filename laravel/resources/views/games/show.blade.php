@@ -144,7 +144,7 @@
                             <a href="{{ route('games.combos.create', $game) }}" class="btn btn-combosuki text-white btn-sm">Submit a combo</a>
                         </div>
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle caption-top">
+                            <table class="table table-hover align-middle caption-top text-white">
                                 <caption>Click the character name to see comments if the entry has them.</caption>
                                 <tr>
                                     <th>Character</th>
