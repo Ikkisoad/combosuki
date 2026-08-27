@@ -118,4 +118,87 @@ class UnverifiedCombosTest extends TestCase
 
         $this->assertNull($this->unverified->fresh()->verified);
     }
+
+    public function test_trusted_moderator_can_bulk_verify_selected_combos(): void
+    {
+        $secondUnverified = Combo::create([
+            'combo' => 'D > E > F',
+            'character_idcharacter' => $this->character->idcharacter,
+            'type' => $this->listingType->entryid,
+            'user_iduser' => $this->author->iduser,
+        ]);
+
+        $moderator = User::create(['nickname' => 'mod', 'password' => 'password123', 'is_moderator' => true]);
+        $this->game->moderators()->attach($moderator->iduser);
+        $this->actingAs($moderator);
+
+        $this->post(route('admin.unverified-combos.bulkVerify', $this->game), [
+            'combo_ids' => [$this->unverified->idcombo, $secondUnverified->idcombo],
+        ])
+            ->assertRedirect(route('admin.unverified-combos.index', $this->game))
+            ->assertSessionHas('status');
+
+        $this->assertSame(1, (int) $this->unverified->fresh()->verified);
+        $this->assertSame(1, (int) $secondUnverified->fresh()->verified);
+        $this->assertSame($moderator->iduser, $this->unverified->fresh()->verified_by_iduser);
+    }
+
+    public function test_bulk_verify_ignores_combos_outside_the_game_or_without_permission(): void
+    {
+        $otherGame = Game::create(['name' => 'Other Game', 'complete' => 1, 'modPass' => 'secret']);
+        $otherCharacter = Character::create(['name' => 'Other Character', 'game_idgame' => $otherGame->idgame]);
+        $otherListingType = GameEntry::create(['title' => 'Combo', 'gameid' => $otherGame->idgame, 'order' => 1]);
+
+        $comboInOtherGame = Combo::create([
+            'combo' => 'X > Y > Z',
+            'character_idcharacter' => $otherCharacter->idcharacter,
+            'type' => $otherListingType->entryid,
+            'user_iduser' => $this->author->iduser,
+        ]);
+
+        $admin = User::create(['nickname' => 'admin', 'password' => 'password123', 'is_admin' => true]);
+        $this->actingAs($admin);
+
+        $this->post(route('admin.unverified-combos.bulkVerify', $this->game), [
+            'combo_ids' => [$this->unverified->idcombo, $comboInOtherGame->idcombo],
+        ])->assertRedirect(route('admin.unverified-combos.index', $this->game));
+
+        $this->assertSame(1, (int) $this->unverified->fresh()->verified);
+        $this->assertNull($comboInOtherGame->fresh()->verified);
+    }
+
+    public function test_bulk_verify_denies_a_per_game_moderator_without_global_trust(): void
+    {
+        $gameOnlyModerator = User::create(['nickname' => 'gamemod', 'password' => 'password123']);
+        $this->game->moderators()->attach($gameOnlyModerator->iduser);
+        $this->actingAs($gameOnlyModerator);
+
+        $this->post(route('admin.unverified-combos.bulkVerify', $this->game), [
+            'combo_ids' => [$this->unverified->idcombo],
+        ])
+            ->assertRedirect(route('admin.unverified-combos.index', $this->game))
+            ->assertSessionHas('error');
+
+        $this->assertNull($this->unverified->fresh()->verified);
+    }
+
+    public function test_bulk_verify_requires_at_least_one_combo_id(): void
+    {
+        $admin = User::create(['nickname' => 'admin', 'password' => 'password123', 'is_admin' => true]);
+        $this->actingAs($admin);
+
+        $this->post(route('admin.unverified-combos.bulkVerify', $this->game), ['combo_ids' => []])
+            ->assertSessionHasErrors('combo_ids');
+    }
+
+    public function test_bulk_verify_bar_hidden_when_viewer_cannot_verify_anything(): void
+    {
+        $gameOnlyModerator = User::create(['nickname' => 'gamemod', 'password' => 'password123']);
+        $this->game->moderators()->attach($gameOnlyModerator->iduser);
+        $this->actingAs($gameOnlyModerator);
+
+        $this->get(route('admin.unverified-combos.index', $this->game))
+            ->assertOk()
+            ->assertDontSee('Verify Selected');
+    }
 }

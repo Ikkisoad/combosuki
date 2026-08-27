@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AnalyticsController;
+use App\Http\Controllers\Admin\ButtonAliasController;
 use App\Http\Controllers\Admin\ButtonController;
 use App\Http\Controllers\Admin\CharacterController as AdminCharacterController;
 use App\Http\Controllers\Admin\CharacterQueryController;
@@ -246,6 +247,10 @@ Route::middleware(['auth', 'can:update,game'])->prefix('games/{game}/edit')->nam
     Route::post('/buttons', [ButtonController::class, 'store'])->middleware('throttle:10,1')->name('buttons.store');
     Route::post('/buttons/bulk', [ButtonController::class, 'bulkUpdate'])->middleware('throttle:10,1')->name('buttons.bulkUpdate');
 
+    Route::get('/button-aliases', [ButtonAliasController::class, 'index'])->name('button-aliases.index');
+    Route::post('/button-aliases', [ButtonAliasController::class, 'store'])->middleware('throttle:10,1')->name('button-aliases.store');
+    Route::post('/button-aliases/bulk', [ButtonAliasController::class, 'bulkUpdate'])->middleware('throttle:10,1')->name('button-aliases.bulkUpdate');
+
     Route::get('/resources', [GameResourceController::class, 'index'])->name('resources.index');
     Route::post('/resources', [GameResourceController::class, 'store'])->middleware('throttle:10,1')->name('resources.store');
     Route::get('/resources/{resource}', [GameResourceController::class, 'values'])->name('resources.values');
@@ -256,4 +261,5 @@ Route::middleware(['auth', 'can:update,game'])->prefix('games/{game}/edit')->nam
     Route::post('/lists/bulk', [GameListController::class, 'bulkUpdate'])->middleware('throttle:10,1')->name('lists.bulkUpdate');
 
     Route::get('/unverified-combos', [UnverifiedCombosController::class, 'index'])->name('unverified-combos.index');
+    Route::post('/unverified-combos/verify', [UnverifiedCombosController::class, 'bulkVerify'])->middleware('throttle:10,1')->name('unverified-combos.bulkVerify');
 });

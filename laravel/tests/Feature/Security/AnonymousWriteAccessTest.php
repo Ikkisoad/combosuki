@@ -3,6 +3,7 @@
 namespace Tests\Feature\Security;
 
 use App\Models\Button;
+use App\Models\ButtonAlias;
 use App\Models\Character;
 use App\Models\Combo;
 use App\Models\Game;
@@ -40,6 +41,8 @@ class AnonymousWriteAccessTest extends TestCase
     private GameEntry $gameEntry;
 
     private Button $button;
+
+    private ButtonAlias $buttonAlias;
 
     private User $user;
 
@@ -104,6 +107,12 @@ class AnonymousWriteAccessTest extends TestCase
             'match_type' => 'exact',
             'game_idgame' => $this->game->idgame,
             'order' => 1,
+        ]);
+
+        $this->buttonAlias = ButtonAlias::create([
+            'alias' => 'Throw',
+            'button_idbutton' => $this->button->idbutton,
+            'game_idgame' => $this->game->idgame,
         ]);
 
         $this->user = User::create([
@@ -225,6 +234,16 @@ class AnonymousWriteAccessTest extends TestCase
                 'payload' => ['buttons' => [$this->button->idbutton => ['name' => 'Hacked', 'color' => '#000000', 'match_type' => 'exact']]],
                 'assertUnchanged' => fn () => $this->assertSame('L', $this->button->fresh()->name),
             ],
+            'button alias store' => [
+                'url' => route('admin.button-aliases.store', $this->game),
+                'payload' => ['action' => 'Add', 'alias' => 'Evil', 'button_idbutton' => $this->button->idbutton],
+                'assertUnchanged' => fn () => $this->assertSame(1, ButtonAlias::count()),
+            ],
+            'button alias bulk update' => [
+                'url' => route('admin.button-aliases.bulkUpdate', $this->game),
+                'payload' => ['aliases' => [$this->buttonAlias->idbuttonalias => ['alias' => 'Hacked', 'button_idbutton' => $this->button->idbutton]]],
+                'assertUnchanged' => fn () => $this->assertSame('Throw', $this->buttonAlias->fresh()->alias),
+            ],
             'game resource store' => [
                 'url' => route('admin.resources.store', $this->game),
                 'payload' => ['action' => 'Add', 'resource' => 'Evil', 'type' => 1],
@@ -272,6 +291,7 @@ class AnonymousWriteAccessTest extends TestCase
             'links admin index' => route('admin.links.index', $this->game),
             'entries admin index' => route('admin.entries.index', $this->game),
             'buttons admin index' => route('admin.buttons.index', $this->game),
+            'button aliases admin index' => route('admin.button-aliases.index', $this->game),
             'resources admin index' => route('admin.resources.index', $this->game),
             'resource values admin index' => route('admin.resources.values', [$this->game, $this->gameResource]),
             'game lists admin index' => route('admin.lists.index', $this->game),

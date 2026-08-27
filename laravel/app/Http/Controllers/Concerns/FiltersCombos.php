@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Concerns;
 
 use App\Models\Button;
+use App\Models\ButtonAlias;
 use App\Models\Combo;
 use App\Models\Game;
 use App\Models\GameEntry;
@@ -142,6 +143,23 @@ trait FiltersCombos
                 default => $value.'%',
             };
 
+            // Longest alias first so a short alias that happens to be a
+            // substring of a longer one can't clobber it mid-replacement.
+            // Each alias expands to the name of an existing Button already
+            // configured for this game, not arbitrary text, so it can't
+            // point at notation the game doesn't actually use.
+            $buttonAliases = ButtonAlias::where('game_idgame', $game->idgame)
+                ->with('button:idbutton,name')
+                ->get()
+                ->sortByDesc(fn (ButtonAlias $alias) => mb_strlen($alias->alias))
+                ->values();
+
+            // Case-insensitive: aliases are admin-defined words (e.g.
+            // "Throw"), so a searcher typing "throw" should still match.
+            foreach ($buttonAliases as $alias) {
+                $pattern = str_ireplace($alias->alias, $alias->button->name, $pattern);
+            }
+
             $ignoredTokens = [
                 ' ',
                 ...Button::where('game_idgame', $game->idgame)->where('ignored', true)->pluck('name'),
@@ -150,12 +168,25 @@ trait FiltersCombos
             $normalizedPattern = str_replace($ignoredTokens, '', $pattern);
             $operator = $mode === 3 ? 'NOT LIKE' : 'LIKE';
 
+            // Aliases are expanded first (innermost) so stored notation that
+            // literally uses an alias word normalizes the same way the
+            // search pattern above just did, then ignored tokens are
+            // stripped from the result exactly as before.
             $comboSql = 'combo';
+            foreach ($buttonAliases as $alias) {
+                $comboSql = "REPLACE({$comboSql}, ?, ?)";
+            }
             foreach ($ignoredTokens as $token) {
                 $comboSql = "REPLACE({$comboSql}, ?, '')";
             }
 
-            $query->whereRaw("{$comboSql} {$operator} ?", [...$ignoredTokens, $normalizedPattern]);
+            $aliasBindings = [];
+            foreach ($buttonAliases as $alias) {
+                $aliasBindings[] = $alias->alias;
+                $aliasBindings[] = $alias->button->name;
+            }
+
+            $query->whereRaw("{$comboSql} {$operator} ?", [...$aliasBindings, ...$ignoredTokens, $normalizedPattern]);
         }
 
         if ($request->filled('damage')) {

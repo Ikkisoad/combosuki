@@ -110,6 +110,11 @@ class Game extends Model
         return $this->hasMany(Button::class, 'game_idgame');
     }
 
+    public function buttonAliases(): HasMany
+    {
+        return $this->hasMany(ButtonAlias::class, 'game_idgame');
+    }
+
     public function gameResources(): HasMany
     {
         return $this->hasMany(GameResource::class, 'game_idgame');
