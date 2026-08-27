@@ -61,6 +61,7 @@ class DiscordAuthSecurityTest extends TestCase
     {
         $provider = Mockery::mock();
         $provider->shouldReceive('redirectUrl')->andReturnSelf();
+        $provider->shouldReceive('setHttpClient')->andReturnSelf();
         $provider->shouldReceive('user')->andReturn($user);
 
         Socialite::shouldReceive('driver')->with('discord')->andReturn($provider);

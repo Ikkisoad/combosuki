@@ -65,6 +65,21 @@ class AuthPasswordTest extends TestCase
         $this->assertSame('Incorrect nickname or password.', $noSuchUser->getSession()->get('error'));
     }
 
+    /**
+     * The passwordless short-circuit looks the nickname up case-insensitively,
+     * matching NicknamePolicy::isTaken() and MySQL's _ci collation in
+     * production — see the typing note in CLAUDE.md.
+     */
+    public function test_the_refusal_matches_regardless_of_nickname_case(): void
+    {
+        $this->passwordlessUser('DiscordOnly');
+
+        $this->post(route('login.attempt'), ['nickname' => 'discordonly', 'password' => 'anything'])
+            ->assertSessionHas('error', 'Incorrect nickname or password.');
+
+        $this->assertFalse(Auth::check());
+    }
+
     /** An empty-string password must be treated the same as null. */
     public function test_an_empty_password_string_cannot_be_logged_into(): void
     {
@@ -193,6 +208,23 @@ class AuthPasswordTest extends TestCase
             ->assertSessionHas('error', 'Set a password first — Discord is currently the only way into your account.');
 
         $this->assertDatabaseCount('user_connected_account', 1);
+    }
+
+    /**
+     * redirectToDiscord() carries the same guard as destroyDiscord() above —
+     * a passwordless account reaching it (the UI hides the form, but a
+     * direct POST still can) must get the accurate message, not
+     * passwordConfirmed()'s generic "Incorrect password." for a hash that
+     * doesn't exist.
+     */
+    public function test_linking_a_second_discord_account_is_refused_for_a_passwordless_user(): void
+    {
+        $user = $this->passwordlessUser();
+
+        $this->actingAs($user)
+            ->post(route('connections.discord.redirect'), ['current_password' => ''])
+            ->assertRedirect()
+            ->assertSessionHas('error', 'Set a password first — Discord is currently the only way into your account.');
     }
 
     public function test_the_connections_page_points_a_passwordless_user_at_setting_one(): void

@@ -30,8 +30,8 @@
 
                     @unless ($integrationEnabled)
                         <div class="alert alert-warning mb-3">
-                            Discord integration is currently unavailable. Any existing connection is
-                            kept, but it can't be changed right now.
+                            Discord integration is currently unavailable. You can't connect a new
+                            account right now, but an existing connection can still be removed.
                         </div>
                     @endunless
 
@@ -56,7 +56,7 @@
                                 disconnected. <a class="link-light" href="{{ route('password.edit') }}">Set a password</a>
                                 first.
                             </p>
-                        @elseif ($integrationEnabled)
+                        @else
                             <form method="post" action="{{ route('connections.discord.destroy') }}">
                                 @csrf
                                 <div class="mb-2">

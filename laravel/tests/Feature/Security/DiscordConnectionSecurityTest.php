@@ -71,6 +71,7 @@ class DiscordConnectionSecurityTest extends TestCase
     private function mockSocialiteUser(SocialiteUser $user): void
     {
         $provider = Mockery::mock();
+        $provider->shouldReceive('setHttpClient')->andReturnSelf();
         $provider->shouldReceive('user')->andReturn($user);
         Socialite::shouldReceive('driver')->with('discord')->andReturn($provider);
     }
@@ -333,6 +334,11 @@ class DiscordConnectionSecurityTest extends TestCase
     /**
      * A user with no usable password can't confirm anything, so they must not
      * be able to link by POSTing straight past the UI's blocked state.
+     *
+     * redirectToDiscord() checks hasUsablePassword() before validation even
+     * runs (same guard as destroyDiscord()), so both requests get the
+     * accurate "set a password first" message rather than a validation error
+     * on a field that couldn't be checked either way.
      */
     public function test_a_passwordless_user_cannot_link_by_posting_directly(): void
     {
@@ -340,11 +346,11 @@ class DiscordConnectionSecurityTest extends TestCase
 
         $this->actingAs($this->victim->fresh())
             ->post(route('connections.discord.redirect'), ['current_password' => ''])
-            ->assertSessionHasErrors('current_password');
+            ->assertSessionHas('error', 'Set a password first — Discord is currently the only way into your account.');
 
         $this->actingAs($this->victim->fresh())
             ->post(route('connections.discord.redirect'), ['current_password' => 'anything'])
-            ->assertSessionHas('error');
+            ->assertSessionHas('error', 'Set a password first — Discord is currently the only way into your account.');
 
         $this->assertNull(session('discord_link_intent'));
     }

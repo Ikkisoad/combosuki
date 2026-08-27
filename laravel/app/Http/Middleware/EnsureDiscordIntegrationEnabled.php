@@ -14,10 +14,11 @@ use Symfony\Component\HttpFoundation\Response;
  * (MatchController does `abort_unless($game->matches_enabled, 404)`): a
  * switched-off feature should look absent, not forbidden.
  *
- * Deliberately NOT applied to GET /account/connections — a user who already
- * linked an account still needs to see that the link exists while the
- * integration is off, so that page renders an unavailable notice instead.
- * The Discord bot (routes/discord.php) is out of scope for this flag.
+ * Deliberately NOT applied to GET /account/connections or to disconnecting an
+ * existing link — a user who already linked an account still needs to see
+ * that the link exists while the integration is off, and to remove it, so
+ * the page renders an unavailable notice but stays fully usable. The
+ * Discord bot (routes/discord.php) is out of scope for this flag.
  */
 class EnsureDiscordIntegrationEnabled
 {

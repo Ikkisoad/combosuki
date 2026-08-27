@@ -43,6 +43,15 @@ class ConnectionController extends Controller
 
     public function redirectToDiscord(Request $request): RedirectResponse
     {
+        // Explicit, not incidental — see the identical guard on
+        // destroyDiscord(). A passwordless account reaching this action (the
+        // page hides the form for them, but a stale page or a direct POST
+        // still can) would otherwise get a misleading "Incorrect password."
+        // from passwordConfirmed() refusing an empty hash.
+        if (! $request->user()->hasUsablePassword()) {
+            return back()->with('error', 'Set a password first — Discord is currently the only way into your account.');
+        }
+
         $request->validate(['current_password' => ['required', 'string']]);
 
         if (! $this->passwordConfirmed($request)) {
@@ -76,7 +85,13 @@ class ConnectionController extends Controller
         }
 
         try {
-            $discordUser = Socialite::driver('discord')->user();
+            $discordUser = Socialite::driver('discord')
+                // Nothing else in this request hangs on an external call
+                // without a timeout — revokeToken() below already sets one.
+                // Without this, an unresponsive Discord API holds the worker
+                // until max_execution_time instead of failing fast.
+                ->setHttpClient(new \GuzzleHttp\Client(['timeout' => 5, 'connect_timeout' => 5]))
+                ->user();
         } catch (\Throwable $e) {
             // Covers InvalidStateException and anything Discord or the
             // provider's user-mapping throws. Reported, never shown — the

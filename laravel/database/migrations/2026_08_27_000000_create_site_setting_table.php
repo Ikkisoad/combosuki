@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -20,6 +21,18 @@ return new class extends Migration
 
             $table->timestamps();
         });
+
+        // Seeded here rather than left for SiteSetting::current()'s
+        // firstOrCreate([]) to create lazily: with no unique constraint on
+        // this single-row table, two concurrent first-ever requests could
+        // otherwise both pass the "no row found" check and both insert,
+        // leaving two rows with no guarantee which one later reads/writes
+        // land on. Seeding means that race window never opens.
+        DB::table('site_setting')->insert([
+            'discord_integration_enabled' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     public function down(): void

@@ -40,9 +40,14 @@ class SiteSettingTest extends TestCase
         $this->assertTrue(SiteSetting::discordIntegrationEnabled());
     }
 
-    public function test_current_creates_the_row_without_a_seeder(): void
+    /**
+     * The migration seeds the single row itself (rather than leaving
+     * current()'s firstOrCreate([]) to create it lazily) so two concurrent
+     * first-ever requests can't both insert and leave two rows behind.
+     */
+    public function test_the_row_is_seeded_by_the_migration(): void
     {
-        $this->assertDatabaseCount('site_setting', 0);
+        $this->assertDatabaseCount('site_setting', 1);
 
         SiteSetting::current();
 
@@ -98,7 +103,7 @@ class SiteSettingTest extends TestCase
 
     // ------------------------------------------------- effect of the flag
 
-    public function test_disabling_the_flag_404s_the_link_actions(): void
+    public function test_disabling_the_flag_404s_the_connect_actions(): void
     {
         $this->disableDiscord();
 
@@ -109,10 +114,30 @@ class SiteSettingTest extends TestCase
         $this->actingAs($this->regular)
             ->get(route('connections.discord.callback'))
             ->assertNotFound();
+    }
+
+    /**
+     * The kill switch is meant to stop new sign-ins, not trap someone into
+     * keeping a connection they no longer want — disconnecting has to keep
+     * working even while the flag is off.
+     */
+    public function test_disabling_the_flag_does_not_block_disconnecting(): void
+    {
+        UserConnectedAccount::create([
+            'provider' => 'discord',
+            'provider_user_id' => '123456789012345678',
+            'provider_nickname' => 'fanuser',
+            'user_iduser' => $this->regular->iduser,
+        ]);
+
+        $this->disableDiscord();
 
         $this->actingAs($this->regular)
             ->post(route('connections.discord.destroy'), ['current_password' => 'password123'])
-            ->assertNotFound();
+            ->assertRedirect(route('connections.edit'))
+            ->assertSessionHas('status');
+
+        $this->assertDatabaseCount('user_connected_account', 0);
     }
 
     /**

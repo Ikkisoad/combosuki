@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\UserConnectedAccount;
 use App\Services\DiscordAccountLinker;
 use App\Services\NicknamePolicy;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -75,6 +76,11 @@ class DiscordAuthController extends Controller
         try {
             $discordUser = Socialite::driver('discord')
                 ->redirectUrl($this->callbackUrl())
+                // Nothing else in this request hangs on an external call
+                // without a timeout — revokeToken() below already sets one.
+                // Without this, an unresponsive Discord API holds the worker
+                // until max_execution_time instead of failing fast.
+                ->setHttpClient(new \GuzzleHttp\Client(['timeout' => 5, 'connect_timeout' => 5]))
                 ->user();
         } catch (\Throwable $e) {
             // Covers InvalidStateException and anything Discord or the
@@ -169,6 +175,21 @@ class DiscordAuthController extends Controller
             });
         } catch (AccountLinkRejected $e) {
             return back()->withInput()->with('error', $e->getMessage());
+        } catch (QueryException $e) {
+            // NicknamePolicy::isTaken() is a read before this write, so two
+            // concurrent registrations can both pass validation for the same
+            // nickname; the unique index on user.nickname is what actually
+            // stops the second one. Narrowed to 23000 for the same reason
+            // DiscordAccountLinker::link() narrows its own catch: anything
+            // else is a real failure that should surface, not be reported as
+            // a taken nickname.
+            if ($e->getCode() !== '23000') {
+                throw $e;
+            }
+
+            report($e);
+
+            return back()->withInput()->with('error', 'That nickname is already taken.');
         }
 
         $request->session()->forget(self::IDENTITY_KEY);

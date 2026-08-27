@@ -60,6 +60,7 @@ class DiscordConnectionTest extends TestCase
     private function mockSocialiteUser(SocialiteUser $user): void
     {
         $provider = Mockery::mock();
+        $provider->shouldReceive('setHttpClient')->andReturnSelf();
         $provider->shouldReceive('user')->andReturn($user);
 
         Socialite::shouldReceive('driver')->with('discord')->andReturn($provider);

@@ -83,16 +83,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/account/connections', [ConnectionController::class, 'edit'])->name('connections.edit');
     // The two routes that take a password get login's throttle budget rather
     // than the usual write-route 10,1 — they can be used to test passwords.
-    // `discord.web` is on the actions but deliberately NOT on the page above:
-    // with the integration off, someone who already linked must still be able
-    // to see that the link exists.
+    // `discord.web` gates connecting a new account only: with the integration
+    // off, someone who already linked must still be able to both see that the
+    // link exists (the page above) and remove it (below) — the kill switch is
+    // meant to stop new sign-ins, not trap a user into keeping a connection
+    // they no longer want.
+    Route::post('/account/connections/discord/delete', [ConnectionController::class, 'destroyDiscord'])
+        ->middleware('throttle:5,1')->name('connections.discord.destroy');
+
     Route::middleware('discord.web')->group(function () {
         Route::post('/account/connections/discord', [ConnectionController::class, 'redirectToDiscord'])
             ->middleware('throttle:5,1')->name('connections.discord.redirect');
         Route::get('/account/connections/discord/callback', [ConnectionController::class, 'discordCallback'])
             ->middleware('throttle:10,1')->name('connections.discord.callback');
-        Route::post('/account/connections/discord/delete', [ConnectionController::class, 'destroyDiscord'])
-            ->middleware('throttle:5,1')->name('connections.discord.destroy');
     });
 });
 

@@ -97,6 +97,18 @@ class DiscordAccountLinker
 
             report($e);
 
+            // Two different unique indexes can raise 23000 here — provider_user_id
+            // (someone else's callback beat this one) and user_iduser+provider
+            // (this same user's own concurrent request, e.g. a double-submit).
+            // The pre-write checks above already ran as separate reads before
+            // this write, so re-check post-race rather than assuming it was
+            // always "someone else" — that message would be simply wrong for
+            // the second case.
+            if ($user->discordAccount()->exists()) {
+                $this->reject($user, $discordId, 'unique_violation',
+                    'That Discord account is already connected to your account.');
+            }
+
             $this->reject($user, $discordId, 'unique_violation',
                 'That Discord account is already connected to another Combo好き account.');
         }
