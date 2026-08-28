@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\DiscordInteractionUnauthorized;
+use App\Services\DiscordCharacterPage;
 use App\Services\DiscordChallenge;
 use App\Services\DiscordCombleGame;
 use App\Services\DiscordComboSearch;
@@ -25,6 +26,7 @@ class DiscordInteractionController extends Controller
         private DiscordGuideSearch $guideSearch,
         private DiscordComboSubmit $comboSubmit,
         private DiscordTierListImage $tierListImage,
+        private DiscordCharacterPage $characterPage,
     ) {}
 
     public function __invoke(Request $request): JsonResponse
@@ -81,6 +83,10 @@ class DiscordInteractionController extends Controller
 
         if ($subcommand === 'tierlist') {
             return $this->handleTierList($payload);
+        }
+
+        if ($subcommand === 'character') {
+            return response()->json(['type' => 4, 'data' => $this->characterPage->handle($data)]);
         }
 
         return response()->json([

@@ -9,7 +9,7 @@ class RegisterDiscordCommands extends Command
 {
     protected $signature = 'discord:register-commands {--guild= : Register to a single guild for instant propagation instead of globally}';
 
-    protected $description = 'Register the /csk search, guide, browse, comble, challenge, submit, and tierlist slash commands with Discord';
+    protected $description = 'Register the /csk search, guide, browse, comble, challenge, submit, tierlist, and character slash commands with Discord';
 
     public function handle(): int
     {
@@ -120,6 +120,25 @@ class RegisterDiscordCommands extends Command
                                 'description' => 'Only include tier lists submitted on or before this date',
                                 'type' => 3,
                                 'required' => false,
+                            ],
+                        ],
+                    ],
+                    [
+                        'name' => 'character',
+                        'description' => 'Show a character\'s page',
+                        'type' => 1,
+                        'options' => [
+                            [
+                                'name' => 'game',
+                                'description' => 'Game name',
+                                'type' => 3,
+                                'required' => true,
+                            ],
+                            [
+                                'name' => 'character',
+                                'description' => 'Character name',
+                                'type' => 3,
+                                'required' => true,
                             ],
                         ],
                     ],

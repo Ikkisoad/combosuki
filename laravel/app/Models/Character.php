@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use App\Support\AliasGenerator;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class Character extends Model
@@ -46,6 +48,22 @@ class Character extends Model
                 ]);
             }
         });
+    }
+
+    /**
+     * The `image` column holds either a legacy external URL (free-text input,
+     * before uploads existed) or a `public` disk path (from an admin upload).
+     * This normalizes both into a displayable URL, mirroring Game::logoUrl().
+     */
+    protected function imageUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => match (true) {
+                ! $this->image => null,
+                Str::startsWith($this->image, ['http://', 'https://']) => $this->image,
+                default => Storage::url($this->image),
+            },
+        );
     }
 
     public function game(): BelongsTo

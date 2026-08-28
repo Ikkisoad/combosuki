@@ -422,6 +422,135 @@ class DiscordInteractionTest extends TestCase
         $this->assertSame(64, $response->json('data.flags'));
     }
 
+    public function test_character_page_returns_matching_character_as_embed(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Test Character', 'game_idgame' => $game->idgame, 'image' => 'https://example.com/portrait.png']);
+
+        $response = $this->postInteraction([
+            'type' => 2,
+            'data' => [
+                'name' => 'csk',
+                'options' => [
+                    [
+                        'name' => 'character',
+                        'options' => [
+                            ['name' => 'game', 'value' => 'Test Game'],
+                            ['name' => 'character', 'value' => 'Test Character'],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $response->assertOk()->assertJson(['type' => 4]);
+        $this->assertSame($character->name, $response->json('data.embeds.0.title'));
+        $this->assertSame($game->name, $response->json('data.embeds.0.fields.0.value'));
+        $this->assertStringContainsString(
+            route('characters.show', [$game, $character], absolute: false),
+            $response->json('data.embeds.0.url')
+        );
+        $this->assertSame('https://example.com/portrait.png', $response->json('data.embeds.0.thumbnail.url'));
+    }
+
+    public function test_character_page_resolves_game_and_character_by_alias(): void
+    {
+        // Auto-generated on create (see Game/Character::booted()): "Street
+        // Fighter 6" -> "SF6", "Wanted Character" -> "WC".
+        $game = Game::create(['name' => 'Street Fighter 6', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Wanted Character', 'game_idgame' => $game->idgame]);
+
+        $response = $this->postInteraction([
+            'type' => 2,
+            'data' => [
+                'name' => 'csk',
+                'options' => [
+                    [
+                        'name' => 'character',
+                        'options' => [
+                            ['name' => 'game', 'value' => 'sf6'],
+                            ['name' => 'character', 'value' => 'wc'],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $response->assertOk()->assertJson(['type' => 4]);
+        $this->assertSame($character->name, $response->json('data.embeds.0.title'));
+    }
+
+    public function test_character_page_with_unknown_game_returns_ephemeral_message(): void
+    {
+        $response = $this->postInteraction([
+            'type' => 2,
+            'data' => [
+                'name' => 'csk',
+                'options' => [
+                    [
+                        'name' => 'character',
+                        'options' => [
+                            ['name' => 'game', 'value' => 'Nobody Game'],
+                            ['name' => 'character', 'value' => 'Anyone'],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $response->assertOk();
+        $this->assertSame(64, $response->json('data.flags'));
+        $this->assertStringContainsString('No game found matching', $response->json('data.content'));
+    }
+
+    public function test_character_page_with_unknown_character_returns_ephemeral_message(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+
+        $response = $this->postInteraction([
+            'type' => 2,
+            'data' => [
+                'name' => 'csk',
+                'options' => [
+                    [
+                        'name' => 'character',
+                        'options' => [
+                            ['name' => 'game', 'value' => 'Test Game'],
+                            ['name' => 'character', 'value' => 'Nobody'],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $response->assertOk();
+        $this->assertSame(64, $response->json('data.flags'));
+        $this->assertStringContainsString('No character found matching', $response->json('data.content'));
+    }
+
+    public function test_character_page_without_a_character_option_returns_ephemeral_message(): void
+    {
+        Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+
+        $response = $this->postInteraction([
+            'type' => 2,
+            'data' => [
+                'name' => 'csk',
+                'options' => [
+                    [
+                        'name' => 'character',
+                        'options' => [
+                            ['name' => 'game', 'value' => 'Test Game'],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $response->assertOk();
+        $this->assertSame(64, $response->json('data.flags'));
+    }
+
     private function postComponent(string $customId, array $values, ?string $userId = null): TestResponse
     {
         return $this->postInteraction(array_merge([
