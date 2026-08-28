@@ -255,6 +255,8 @@ Route::middleware(['auth', 'can:update,game'])->prefix('games/{game}/edit')->nam
     Route::post('/resources', [GameResourceController::class, 'store'])->middleware('throttle:10,1')->name('resources.store');
     Route::get('/resources/{resource}', [GameResourceController::class, 'values'])->name('resources.values');
     Route::post('/resources/{resource}', [GameResourceController::class, 'storeValue'])->middleware('throttle:10,1')->name('resources.values.store');
+    Route::get('/resources/{resource}/aliases', [GameResourceController::class, 'aliases'])->name('resources.aliases');
+    Route::post('/resources/{resource}/aliases', [GameResourceController::class, 'storeAliases'])->middleware('throttle:10,1')->name('resources.aliases.store');
 
     Route::get('/lists', [GameListController::class, 'index'])->name('lists.index');
     Route::post('/lists', [GameListController::class, 'store'])->middleware('throttle:10,1')->name('lists.store');

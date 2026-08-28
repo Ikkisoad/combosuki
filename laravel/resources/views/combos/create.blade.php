@@ -10,6 +10,8 @@
     <div class="container-fluid my-3">
         <h2>Submit a combo</h2>
 
+        <script id="resource-value-aliases" type="application/json">@json($resourceValueAliases)</script>
+
         @if ($errors->any())
             <div class="alert alert-danger">
                 <ul class="mb-0">
@@ -25,7 +27,7 @@
 
             <div class="input-group mb-3">
                 <label class="input-group-text">Character:</label>
-                <select name="character_idcharacter" class="form-select" required onchange="filterSecondaryResources()">
+                <select name="character_idcharacter" class="form-select" required onchange="filterSecondaryResources(); updateResourceValueAliases();">
                     @foreach ($characters as $character)
                         <option value="{{ $character->idcharacter }}" @selected(old('character_idcharacter', $defaults['character_idcharacter'] ?? null) == $character->idcharacter)>{{ $character->name }}</option>
                     @endforeach
@@ -86,9 +88,9 @@
                             @if ($resource->type === 1)
                                 <div class="input-group mb-3 flex-nowrap">
                                     <label class="input-group-text">{{ $resource->text_name }}</label>
-                                    <select name="resources[{{ $resource->idgame_resources }}]" class="form-select" required>
+                                    <select name="resources[{{ $resource->idgame_resources }}]" class="form-select resource-value-select" required>
                                         @foreach ($resource->values->sortBy([['order', 'asc'], ['value', 'asc']]) as $value)
-                                            <option value="{{ $value->idResources_values }}" @selected(old("resources.{$resource->idgame_resources}", $defaults['resources'][$resource->idgame_resources] ?? null) == $value->idResources_values)>{{ $value->value }}</option>
+                                            <option value="{{ $value->idResources_values }}" @selected(old("resources.{$resource->idgame_resources}", $defaults['resources'][$resource->idgame_resources] ?? null) == $value->idResources_values) data-default-label="{{ $value->value }}">{{ $value->value }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -96,9 +98,9 @@
                                 <div class="input-group mb-3 flex-nowrap">
                                     <label class="input-group-text">{{ $resource->text_name }}</label>
                                     @for ($slot = 0; $slot < 2; $slot++)
-                                        <select name="resources[{{ $resource->idgame_resources }}][]" class="form-select" required>
+                                        <select name="resources[{{ $resource->idgame_resources }}][]" class="form-select resource-value-select" required>
                                             @foreach ($resource->values->sortBy([['order', 'asc'], ['value', 'asc']]) as $value)
-                                                <option value="{{ $value->idResources_values }}" @selected(old("resources.{$resource->idgame_resources}.{$slot}", $defaults['resources'][$resource->idgame_resources][$slot] ?? null) == $value->idResources_values)>{{ $value->value }}</option>
+                                                <option value="{{ $value->idResources_values }}" @selected(old("resources.{$resource->idgame_resources}.{$slot}", $defaults['resources'][$resource->idgame_resources][$slot] ?? null) == $value->idResources_values) data-default-label="{{ $value->value }}">{{ $value->value }}</option>
                                             @endforeach
                                         </select>
                                     @endfor
@@ -130,10 +132,10 @@
                             @if ($resource->type === 1)
                                 <div class="input-group mb-3 flex-nowrap">
                                     <label class="input-group-text">{{ $resource->text_name }}</label>
-                                    <select name="resources[{{ $resource->idgame_resources }}]" class="form-select">
+                                    <select name="resources[{{ $resource->idgame_resources }}]" class="form-select resource-value-select">
                                         <option value="-">-</option>
                                         @foreach ($resource->values->sortBy([['order', 'asc'], ['value', 'asc']]) as $value)
-                                            <option value="{{ $value->idResources_values }}" @selected(old("resources.{$resource->idgame_resources}", $defaults['resources'][$resource->idgame_resources] ?? null) == $value->idResources_values)>{{ $value->value }}</option>
+                                            <option value="{{ $value->idResources_values }}" @selected(old("resources.{$resource->idgame_resources}", $defaults['resources'][$resource->idgame_resources] ?? null) == $value->idResources_values) data-default-label="{{ $value->value }}">{{ $value->value }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -141,10 +143,10 @@
                                 <div class="input-group mb-3 flex-nowrap">
                                     <label class="input-group-text">{{ $resource->text_name }}</label>
                                     @for ($slot = 0; $slot < 2; $slot++)
-                                        <select name="resources[{{ $resource->idgame_resources }}][]" class="form-select">
+                                        <select name="resources[{{ $resource->idgame_resources }}][]" class="form-select resource-value-select">
                                             <option value="-">-</option>
                                             @foreach ($resource->values->sortBy([['order', 'asc'], ['value', 'asc']]) as $value)
-                                                <option value="{{ $value->idResources_values }}" @selected(old("resources.{$resource->idgame_resources}.{$slot}", $defaults['resources'][$resource->idgame_resources][$slot] ?? null) == $value->idResources_values)>{{ $value->value }}</option>
+                                                <option value="{{ $value->idResources_values }}" @selected(old("resources.{$resource->idgame_resources}.{$slot}", $defaults['resources'][$resource->idgame_resources][$slot] ?? null) == $value->idResources_values) data-default-label="{{ $value->value }}">{{ $value->value }}</option>
                                             @endforeach
                                         </select>
                                     @endfor
@@ -183,6 +185,9 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => initSecondaryResources(false));
+        document.addEventListener('DOMContentLoaded', () => {
+            initSecondaryResources(false);
+            updateResourceValueAliases();
+        });
     </script>
 </x-layouts.app>

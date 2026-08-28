@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Character;
+use App\Models\CharacterResourceValueAlias;
 use App\Models\Game;
 use App\Models\GameResource;
 use App\Models\ResourceValue;
@@ -190,5 +191,98 @@ class GameResourceController extends Controller
         }
 
         return redirect()->route('admin.resources.values', [$game, $resource])->with('status', 'Saved.');
+    }
+
+    /**
+     * Per-character overrides of this resource's value display (alias text
+     * and/or icon) — e.g. a "Support" resource whose values are 1/2/3 but
+     * each character calls them something different. Only meaningful for
+     * List-type resources, since Number/Duplicated values aren't the kind
+     * of fixed, nameable options a character would rename.
+     */
+    public function aliases(Game $game, GameResource $resource): View
+    {
+        abort_if($resource->game_idgame !== $game->idgame, 404);
+        abort_if($resource->type !== 1, 404);
+
+        $values = $resource->values()->orderBy('order')->orderBy('value')->get();
+        $characters = Character::where('game_idgame', $game->idgame)->orderBy('name')->get();
+
+        $aliases = CharacterResourceValueAlias::whereIn('resources_values_idResources_values', $values->pluck('idResources_values'))
+            ->get()
+            ->groupBy(fn ($row) => $row->character_idcharacter.'-'.$row->resources_values_idResources_values);
+
+        return view('admin.resources.aliases', [
+            'game' => $game,
+            'resource' => $resource,
+            'values' => $values,
+            'characters' => $characters,
+            'aliases' => $aliases,
+        ]);
+    }
+
+    public function storeAliases(Request $request, Game $game, GameResource $resource): RedirectResponse
+    {
+        abort_if($resource->game_idgame !== $game->idgame, 404);
+        abort_if($resource->type !== 1, 404);
+
+        $valueIds = $resource->values()->pluck('idResources_values')->all();
+        $characterIds = Character::where('game_idgame', $game->idgame)->pluck('idcharacter')->all();
+
+        $request->validate([
+            'aliases' => ['array'],
+            'aliases.*.*.alias' => ['nullable', 'string', 'max:45'],
+            'aliases.*.*.icon' => ['nullable', 'image', 'max:5120'],
+        ]);
+
+        $cells = $request->input('aliases', []);
+        $icons = $request->file('aliases', []);
+
+        $existing = CharacterResourceValueAlias::whereIn('resources_values_idResources_values', $valueIds)
+            ->whereIn('character_idcharacter', $characterIds)
+            ->get()
+            ->keyBy(fn ($row) => $row->character_idcharacter.'-'.$row->resources_values_idResources_values);
+
+        // TODO: record which user made this edit once an audit/edit-log exists
+        foreach ($characterIds as $characterId) {
+            foreach ($valueIds as $valueId) {
+                $row = $existing->get($characterId.'-'.$valueId);
+                $aliasText = trim((string) ($cells[$characterId][$valueId]['alias'] ?? ''));
+                $iconFile = $icons[$characterId][$valueId]['icon'] ?? null;
+
+                if ($aliasText === '') {
+                    if ($row) {
+                        if ($row->icon) {
+                            Storage::disk('public')->delete($row->icon);
+                        }
+
+                        $row->delete();
+                    }
+
+                    continue;
+                }
+
+                $attributes = ['alias' => $aliasText];
+
+                if ($iconFile) {
+                    if ($row?->icon) {
+                        Storage::disk('public')->delete($row->icon);
+                    }
+
+                    $attributes['icon'] = $iconFile->store('resource-value-icons', 'public');
+                }
+
+                if ($row) {
+                    $row->update($attributes);
+                } else {
+                    CharacterResourceValueAlias::create($attributes + [
+                        'character_idcharacter' => $characterId,
+                        'resources_values_idResources_values' => $valueId,
+                    ]);
+                }
+            }
+        }
+
+        return redirect()->route('admin.resources.aliases', [$game, $resource])->with('status', 'Saved.');
     }
 }

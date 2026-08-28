@@ -14,12 +14,15 @@ class ChallengeController extends Controller
     public function show(?string $date = null): View
     {
         $day = $this->resolveDate($date);
+        $earliestDay = $this->dailyChallenge->earliestDate();
+        $previousDay = $day->copy()->subDay();
 
         return view('challenge.show', [
             'challenge' => $this->dailyChallenge->forDate($day),
             'day' => $day,
             'isToday' => $day->isToday(),
-            'previousDay' => $day->copy()->subDay(),
+            'earliestDay' => $earliestDay,
+            'previousDay' => $earliestDay !== null && $previousDay->gte($earliestDay) ? $previousDay : null,
             'nextDay' => $day->isToday() ? null : $day->copy()->addDay(),
         ]);
     }

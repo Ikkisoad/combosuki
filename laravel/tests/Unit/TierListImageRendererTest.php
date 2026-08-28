@@ -3,9 +3,12 @@
 namespace Tests\Unit;
 
 use App\Models\Character;
+use App\Models\CharacterResourceValueAlias;
+use App\Models\ResourceValue;
 use App\Services\TierListImageRenderer;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class TierListImageRendererTest extends TestCase
@@ -58,6 +61,55 @@ class TierListImageRendererTest extends TestCase
         $png = (new TierListImageRenderer)->render(['tiers' => $this->emptyTiers(), 'tierListCount' => 0], 'Test Game', null, null);
 
         $this->assertStringStartsWith(self::PNG_SIGNATURE, $png);
+    }
+
+    /**
+     * The badge should use the viewing character's alias icon in preference
+     * to the resource value's own (global) icon. Points the value's own
+     * icon at a path that doesn't exist, so if drawEntry() ever fell back to
+     * it instead, loadSquare() would fail to decode it and skip the badge
+     * entirely — leaving the badge area background-colored rather than the
+     * alias icon's solid red, which is what this test samples for.
+     */
+    public function test_badge_prefers_the_characters_alias_icon_over_the_resource_values_default_icon(): void
+    {
+        Storage::fake('public');
+
+        $badge = imagecreatetruecolor(4, 4);
+        imagefill($badge, 0, 0, imagecolorallocate($badge, 255, 0, 0));
+        ob_start();
+        imagepng($badge);
+        Storage::disk('public')->put('resource-value-icons/alias.png', ob_get_clean());
+        imagedestroy($badge);
+
+        $character = (new Character)->forceFill(['idcharacter' => 1, 'name' => 'Ryu', 'image' => null]);
+        $character->exists = true;
+
+        $resourceValue = (new ResourceValue)->forceFill(['idResources_values' => 1, 'value' => '1', 'icon' => 'resource-value-icons/does-not-exist.png']);
+        $resourceValue->exists = true;
+
+        $alias = (new CharacterResourceValueAlias)->forceFill([
+            'character_idcharacter' => 1,
+            'resources_values_idResources_values' => 1,
+            'alias' => 'A',
+            'icon' => 'resource-value-icons/alias.png',
+        ]);
+        $resourceValue->setRelation('characterAliases', collect([$alias]));
+
+        $tiers = $this->emptyTiers();
+        $tiers['S'] = collect([['character' => $character, 'resourceValue' => $resourceValue, 'tier' => 'S', 'votes' => 1]]);
+
+        $png = (new TierListImageRenderer)->render(['tiers' => $tiers, 'tierListCount' => 1], 'Test Game', null, null);
+
+        $image = imagecreatefromstring($png);
+        // The badge is drawn at the thumbnail's bottom-right corner (see
+        // BADGE_SIZE/THUMB_SIZE/PADDING/LABEL_WIDTH/TITLE_HEIGHT in
+        // TierListImageRenderer); (150, 95) sits inside that badge area for
+        // the first entry of the first non-empty tier.
+        $color = imagecolorsforindex($image, imagecolorat($image, 150, 95));
+        imagedestroy($image);
+
+        $this->assertSame(['red' => 255, 'green' => 0, 'blue' => 0, 'alpha' => 0], $color);
     }
 
     public function test_render_with_a_date_range_still_produces_a_valid_png(): void

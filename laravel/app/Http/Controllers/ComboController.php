@@ -45,7 +45,7 @@ class ComboController extends Controller
             ->get();
 
         $query = Combo::query()
-            ->with(['character', 'listingType', 'resources.resourceValue', 'user'])
+            ->with(['character', 'listingType', 'resources.resourceValue.characterAliases', 'user'])
             ->whereHas('character', fn (Builder $q) => $q->where('game_idgame', $game->idgame))
             ->visibleTo(auth()->user());
 
@@ -66,7 +66,7 @@ class ComboController extends Controller
 
     public function show(Combo $combo): View
     {
-        $combo->load(['character.game', 'listingType', 'resources.resourceValue.gameResource', 'user', 'verifier']);
+        $combo->load(['character.game', 'listingType', 'resources.resourceValue.gameResource', 'resources.resourceValue.characterAliases', 'user', 'verifier']);
         $combo->increment('views');
 
         $game = $combo->character->game;
@@ -172,7 +172,7 @@ class ComboController extends Controller
 
         $resources = GameResource::where('game_idgame', $game->idgame)
             ->whereIn('type', [1, 2, 3])
-            ->with(['values', 'characters'])
+            ->with(['values.characterAliases', 'characters'])
             ->orderByDesc('primaryORsecundary')
             ->orderBy('text_name')
             ->get();
@@ -182,8 +182,36 @@ class ComboController extends Controller
             'characters' => $characters,
             'listingTypes' => $listingTypes,
             'resources' => $resources,
+            'resourceValueAliases' => $this->resourceValueAliasesByCharacter($resources),
             'defaults' => $this->defaultsFromChallenge($game, $resources, $request),
         ]);
+    }
+
+    /**
+     * The character select on the create form is client-side only (no
+     * server round-trip on change — see filterSecondaryResources() in
+     * app.js), so the primary/secondary "List"/"Duplicated" resource
+     * <option> labels can't be rendered per-character server-side. Instead
+     * this ships every character's alias overrides as {characterId: {
+     * resourceValueId: aliasText }} for app.js to swap in on change.
+     */
+    private function resourceValueAliasesByCharacter(iterable $resources): array
+    {
+        $aliases = [];
+
+        foreach ($resources as $resource) {
+            if (! in_array($resource->type, [1, 3], true)) {
+                continue;
+            }
+
+            foreach ($resource->values as $value) {
+                foreach ($value->characterAliases as $alias) {
+                    $aliases[$alias->character_idcharacter][$value->idResources_values] = $alias->alias;
+                }
+            }
+        }
+
+        return $aliases;
     }
 
     /**
@@ -285,7 +313,7 @@ class ComboController extends Controller
 
         $resources = GameResource::where('game_idgame', $game->idgame)
             ->whereIn('type', [1, 2, 3])
-            ->with(['values', 'characters'])
+            ->with(['values.characterAliases', 'characters'])
             ->orderByDesc('primaryORsecundary')
             ->orderBy('text_name')
             ->get();
@@ -322,6 +350,7 @@ class ComboController extends Controller
             'characters' => $characters,
             'listingTypes' => $listingTypes,
             'resources' => $resources,
+            'resourceValueAliases' => $this->resourceValueAliasesByCharacter($resources),
             'selectedResources' => $selectedResources,
             'forceShowSecondaryResources' => $forceShowSecondaryResources,
         ]);

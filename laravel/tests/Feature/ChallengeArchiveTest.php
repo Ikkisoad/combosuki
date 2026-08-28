@@ -79,6 +79,35 @@ class ChallengeArchiveTest extends TestCase
             ->assertSee(route('challenge.show.date', ['date' => '2026-08-19']), false);
     }
 
+    public function test_the_previous_day_link_is_hidden_on_the_earliest_available_challenge_day(): void
+    {
+        $game = $this->makeGame();
+        $this->makeCharacter($game);
+        $this->makeQuery($game);
+
+        // makeQuery backdates created_at to 2026-08-01 00:00:00 UTC, which is
+        // still 2026-07-31 in the challenge's America/Sao_Paulo clock, so the
+        // pool first becomes non-empty on 2026-08-01.
+        $this->get(route('challenge.show.date', ['date' => '2026-08-01']))
+            ->assertOk()
+            ->assertDontSee(route('challenge.show.date', ['date' => '2026-07-31']), false);
+
+        $this->get(route('challenge.show.date', ['date' => '2026-08-02']))
+            ->assertOk()
+            ->assertSee(route('challenge.show.date', ['date' => '2026-08-01']), false);
+    }
+
+    public function test_the_date_pickers_minimum_matches_the_earliest_available_challenge_day(): void
+    {
+        $game = $this->makeGame();
+        $this->makeCharacter($game);
+        $this->makeQuery($game);
+
+        $this->get(route('challenge.show'))
+            ->assertOk()
+            ->assertSee('min="2026-08-01"', false);
+    }
+
     public function test_a_future_date_404s(): void
     {
         $this->get(route('challenge.show.date', ['date' => '2026-08-20']))

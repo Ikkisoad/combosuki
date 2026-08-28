@@ -183,7 +183,7 @@
                     @foreach ($primaryResources as $resource)
                         <tr>
                             <th>{{ $resource->resourceValue->gameResource->text_name }}</th>
-                            <td><x-resource-value-icon :value="$resource->resourceValue" />{{ $resource->number_value ?? $resource->resourceValue->value }}</td>
+                            <td><x-resource-value-icon :value="$resource->resourceValue" :character="$combo->character" />{{ $resource->number_value ?? $resource->resourceValue->aliasFor($combo->character)?->alias ?? $resource->resourceValue->value }}</td>
                         </tr>
                     @endforeach
                 </table>
@@ -193,7 +193,7 @@
                         @foreach ($secondaryResources as $resource)
                             <tr>
                                 <th>{{ $resource->resourceValue->gameResource->text_name }}</th>
-                                <td><x-resource-value-icon :value="$resource->resourceValue" />{{ $resource->number_value ?? $resource->resourceValue->value }}</td>
+                                <td><x-resource-value-icon :value="$resource->resourceValue" :character="$combo->character" />{{ $resource->number_value ?? $resource->resourceValue->aliasFor($combo->character)?->alias ?? $resource->resourceValue->value }}</td>
                             </tr>
                         @endforeach
                     </table>

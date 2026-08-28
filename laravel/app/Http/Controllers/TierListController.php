@@ -54,6 +54,7 @@ class TierListController extends Controller
             'tierListResource.values' => function ($query) {
                 $query->orderBy('order')->orderBy('value');
             },
+            'tierListResource.values.characterAliases',
         ])->orderBy('name')->get();
 
         $catalog = $games->mapWithKeys(fn (Game $game) => [
@@ -62,15 +63,19 @@ class TierListController extends Controller
                     'idcharacter' => $character->idcharacter,
                     'name' => $character->name,
                     'image' => $character->image ? Storage::url($character->image) : null,
+                    'resourceValues' => $game->tierListResource?->values->map(function ($value) use ($character) {
+                        $alias = $value->aliasFor($character);
+
+                        return [
+                            'idResources_values' => $value->idResources_values,
+                            'value' => $alias?->alias ?? $value->value,
+                            'icon' => ($alias?->icon ?? $value->icon) ? Storage::url($alias?->icon ?? $value->icon) : null,
+                        ];
+                    })->values() ?? collect(),
                 ])->values(),
                 'resource' => $game->tierListResource ? [
                     'idgame_resources' => $game->tierListResource->idgame_resources,
                     'text_name' => $game->tierListResource->text_name,
-                    'values' => $game->tierListResource->values->map(fn ($value) => [
-                        'idResources_values' => $value->idResources_values,
-                        'value' => $value->value,
-                        'icon' => $value->icon ? Storage::url($value->icon) : null,
-                    ])->values(),
                 ] : null,
             ],
         ]);
@@ -117,7 +122,7 @@ class TierListController extends Controller
 
     public function show(TierList $tierList): View
     {
-        $tierList->load('game', 'user', 'entries.character', 'entries.resourceValue');
+        $tierList->load('game', 'user', 'entries.character', 'entries.resourceValue.characterAliases');
         $tierList->increment('views');
 
         return view('tier-lists.show', ['tierList' => $tierList]);

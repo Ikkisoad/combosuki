@@ -9,11 +9,15 @@
         <h2>Challenge</h2>
 
         <div class="d-flex justify-content-between align-items-center mb-2">
-            <a href="{{ route('challenge.show.date', ['date' => $previousDay->toDateString()]) }}" class="btn btn-sm btn-outline-light">&larr; {{ $previousDay->format('M j') }}</a>
+            @if ($previousDay)
+                <a href="{{ route('challenge.show.date', ['date' => $previousDay->toDateString()]) }}" class="btn btn-sm btn-outline-light">&larr; {{ $previousDay->format('M j') }}</a>
+            @else
+                <span class="btn btn-sm btn-outline-light disabled" style="visibility: hidden;">&larr;</span>
+            @endif
 
             <div class="text-center">
                 <div>{{ $isToday ? "Today's challenge" : $day->format('F j, Y') }}</div>
-                <input type="date" class="form-control form-control-sm mt-1" value="{{ $day->toDateString() }}" max="{{ now()->toDateString() }}" onchange="if (this.value) window.location.href = '{{ url('/challenge') }}/' + this.value">
+                <input type="date" class="form-control form-control-sm mt-1" value="{{ $day->toDateString() }}" @if ($earliestDay) min="{{ $earliestDay->toDateString() }}" @endif max="{{ now()->toDateString() }}" onchange="if (this.value) window.location.href = '{{ url('/challenge') }}/' + this.value">
             </div>
 
             @if ($nextDay)

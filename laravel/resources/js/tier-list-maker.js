@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (resource) {
             characters.forEach((character) => {
-                resource.values.forEach((value) => pool.appendChild(makeCard(character, value)));
+                (character.resourceValues || []).forEach((value) => pool.appendChild(makeCard(character, value)));
             });
         } else {
             characters.forEach((character) => pool.appendChild(makeCard(character)));

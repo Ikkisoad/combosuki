@@ -53,6 +53,9 @@
                                 <button type="submit" form="delete-resource-{{ $resource->idgame_resources }}" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this resource?');">Delete</button>
                             </div>
                             <a href="{{ route('admin.resources.values', [$game, $resource]) }}" class="btn btn-secondary mt-1">Edit values</a>
+                            @if ($resource->type === 1)
+                                <a href="{{ route('admin.resources.aliases', [$game, $resource]) }}" class="btn btn-secondary mt-1">Character aliases</a>
+                            @endif
                         </td>
                     </tr>
                 @endforeach
@@ -100,7 +103,8 @@
             3: Duplicated &mdash; for games that have assists, duplicated resources appear twice and allow searches to ignore the order of the assists.<br>
             Leave a resource's Characters selection empty to show it for every character; select one or more to only show it on the combo form by default for those characters (a button on the combo form can still reveal it for any character).<br>
             Primary resources flagged "In matches" let players pick their value per match (e.g. Melty Blood moon type), and can be used to filter the matches list.<br>
-            Primary resources flagged "In tier lists" become mandatory for every tier list made for this game &mdash; characters get one entry per resource value, tagged with that value's icon. Only one resource per game can be flagged this way; checking it on a resource clears it from any other.
+            Primary resources flagged "In tier lists" become mandatory for every tier list made for this game &mdash; characters get one entry per resource value, tagged with that value's icon. Only one resource per game can be flagged this way; checking it on a resource clears it from any other.<br>
+            List resources also have a "Character aliases" page &mdash; use it when different characters call the same values by different names (e.g. a shared "Support" resource whose options are really named differently per character), with its own icon per character.
         </p>
 
         <x-admin.edit-nav :game="$game" />

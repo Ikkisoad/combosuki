@@ -7,6 +7,7 @@ use App\Models\Character;
 use App\Models\CharacterQuery;
 use App\Support\DailyGameClock;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Carbon;
 
 class DailyChallenge
 {
@@ -15,6 +16,32 @@ class DailyChallenge
     public function today(): array
     {
         return $this->forDate(DailyGameClock::today());
+    }
+
+    /**
+     * The first date whose challenge pool is non-empty, or null if no
+     * eligible query/character pair exists yet. Mirrors the eligibility
+     * join in forDate() (minus its date cutoff): a query created on day X
+     * only enters the pool starting day X+1, so the earliest usable day is
+     * always the calendar day (in DailyGameClock's timezone) after the
+     * earliest eligible query's creation, never that day itself.
+     */
+    public function earliestDate(): ?CarbonInterface
+    {
+        $earliestCreatedAt = CharacterQuery::query()
+            ->join('character', 'character.game_idgame', '=', 'character_default_queries.game_idgame')
+            ->join('game', 'game.idgame', '=', 'character.game_idgame')
+            ->where('game.complete', '>', 0)
+            ->min('character_default_queries.created_at');
+
+        if ($earliestCreatedAt === null) {
+            return null;
+        }
+
+        return Carbon::parse($earliestCreatedAt, 'UTC')
+            ->setTimezone(DailyGameClock::TIMEZONE)
+            ->startOfDay()
+            ->addDay();
     }
 
     /**

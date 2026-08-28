@@ -72,4 +72,9 @@ class Character extends Model
     {
         return $this->belongsToMany(GameResource::class, 'character_game_resources', 'character_idcharacter', 'game_resources_idgame_resources');
     }
+
+    public function resourceValueAliases(): HasMany
+    {
+        return $this->hasMany(CharacterResourceValueAlias::class, 'character_idcharacter');
+    }
 }

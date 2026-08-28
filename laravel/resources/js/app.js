@@ -80,6 +80,29 @@ window.initSecondaryResources = function (forceShow) {
     window.filterSecondaryResources();
 };
 
+/**
+ * The combo form's character select has no server round-trip (see
+ * filterSecondaryResources above), so a resource value's per-character alias
+ * (e.g. a "Support" resource whose options are really named differently per
+ * character) has to be swapped into the <option> labels client-side instead
+ * of being rendered server-side.
+ */
+window.updateResourceValueAliases = function () {
+    const aliasesEl = document.getElementById('resource-value-aliases');
+    const characterSelect = document.querySelector('select[name="character_idcharacter"]');
+
+    if (! aliasesEl || ! characterSelect) {
+        return;
+    }
+
+    const aliases = JSON.parse(aliasesEl.textContent || '{}');
+    const characterAliases = aliases[characterSelect.value] || {};
+
+    document.querySelectorAll('select.resource-value-select option[data-default-label]').forEach((option) => {
+        option.textContent = characterAliases[option.value] || option.dataset.defaultLabel;
+    });
+};
+
 window.change_display = function () {
     const line = document.getElementById('combo_line');
     const text = document.getElementById('combo_text');

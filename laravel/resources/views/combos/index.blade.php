@@ -80,12 +80,12 @@
                         @foreach ($primaryResources as $resource)
                             @php $matches = $comboResourcesByGameResource->get($resource->idgame_resources, collect()); @endphp
                             @if ($resource->type === 3)
-                                <td><x-resource-value-icon :value="$matches->get(0)?->resourceValue" />{{ $matches->get(0)?->resourceValue?->value }}</td>
-                                <td><x-resource-value-icon :value="$matches->get(1)?->resourceValue" />{{ $matches->get(1)?->resourceValue?->value }}</td>
+                                <td><x-resource-value-icon :value="$matches->get(0)?->resourceValue" :character="$combo->character" />{{ $matches->get(0)?->resourceValue?->aliasFor($combo->character)?->alias ?? $matches->get(0)?->resourceValue?->value }}</td>
+                                <td><x-resource-value-icon :value="$matches->get(1)?->resourceValue" :character="$combo->character" />{{ $matches->get(1)?->resourceValue?->aliasFor($combo->character)?->alias ?? $matches->get(1)?->resourceValue?->value }}</td>
                             @elseif ($resource->type === 2)
                                 <td>{{ $matches->first()?->number_value }}</td>
                             @else
-                                <td><x-resource-value-icon :value="$matches->first()?->resourceValue" />{{ $matches->first()?->resourceValue?->value }}</td>
+                                <td><x-resource-value-icon :value="$matches->first()?->resourceValue" :character="$combo->character" />{{ $matches->first()?->resourceValue?->aliasFor($combo->character)?->alias ?? $matches->first()?->resourceValue?->value }}</td>
                             @endif
                         @endforeach
                     </tr>

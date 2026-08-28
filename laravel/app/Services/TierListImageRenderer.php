@@ -145,8 +145,10 @@ class TierListImageRenderer
         imagecopy($image, $thumb, $x, $y, 0, 0, self::THUMB_SIZE, self::THUMB_SIZE);
         imagedestroy($thumb);
 
-        if ($resourceValue?->icon) {
-            $badge = $this->loadSquare($resourceValue->icon, self::BADGE_SIZE);
+        $badgeIcon = $resourceValue?->aliasFor($character)?->icon ?? $resourceValue?->icon;
+
+        if ($badgeIcon) {
+            $badge = $this->loadSquare($badgeIcon, self::BADGE_SIZE);
 
             if ($badge) {
                 $badgeX = $x + self::THUMB_SIZE - self::BADGE_SIZE;

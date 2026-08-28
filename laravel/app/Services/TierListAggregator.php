@@ -16,7 +16,7 @@ class TierListAggregator
         $tierRank = array_flip(self::TIER_ORDER);
 
         $entries = TierListEntry::query()
-            ->with('character', 'resourceValue')
+            ->with('character', 'resourceValue.characterAliases')
             ->whereHas('tierList', function ($query) use ($game, $from, $to) {
                 $query->where('game_idgame', $game->idgame);
 

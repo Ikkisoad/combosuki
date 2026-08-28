@@ -6,6 +6,7 @@ use App\Models\Button;
 use App\Models\ButtonAlias;
 use App\Models\Character;
 use App\Models\CharacterQuery;
+use App\Models\CharacterResourceValueAlias;
 use App\Models\Combo;
 use App\Models\Game;
 use App\Models\GameEntry;
@@ -507,5 +508,83 @@ class ComboSubmissionTest extends TestCase
 
         $response->assertRedirect(route('combos.show', $combo));
         $this->assertSame('5A > 5B > 5C', $combo->fresh()->combo);
+    }
+
+    /**
+     * The character select on the create form has no server round-trip
+     * (see filterSecondaryResources()/updateResourceValueAliases() in
+     * app.js), so per-character resource value aliases can't be rendered
+     * into the <option> text server-side. Instead the form ships every
+     * character's overrides as a {characterId: {resourceValueId: alias}}
+     * JSON blob, plus a data-default-label on each <option> to fall back to.
+     */
+    public function test_combo_creation_form_embeds_resource_value_aliases_for_client_side_swapping(): void
+    {
+        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
+
+        $this->post(route('games.store'), [
+            'name' => 'New Fighter',
+            'image' => 'https://example.com/new-fighter.png',
+        ]);
+
+        $game = Game::where('name', 'New Fighter')->firstOrFail();
+        $character = Character::where('game_idgame', $game->idgame)->firstOrFail();
+
+        $support = GameResource::create([
+            'game_idgame' => $game->idgame,
+            'text_name' => 'Support',
+            'type' => 1,
+            'primaryORsecundary' => 1,
+        ]);
+        $one = ResourceValue::create(['value' => '1', 'game_resources_idgame_resources' => $support->idgame_resources]);
+
+        CharacterResourceValueAlias::create([
+            'alias' => 'A',
+            'character_idcharacter' => $character->idcharacter,
+            'resources_values_idResources_values' => $one->idResources_values,
+        ]);
+
+        $response = $this->get(route('games.combos.create', $game));
+
+        $response->assertOk()
+            ->assertSee('id="resource-value-aliases"', false)
+            ->assertSee('"'.$one->idResources_values.'":"A"', false)
+            ->assertSee('class="form-select resource-value-select"', false)
+            ->assertSee('data-default-label="1"', false);
+    }
+
+    public function test_combo_show_page_displays_the_characters_resource_value_alias(): void
+    {
+        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
+
+        $this->post(route('games.store'), [
+            'name' => 'New Fighter',
+            'image' => 'https://example.com/new-fighter.png',
+        ]);
+
+        $game = Game::where('name', 'New Fighter')->firstOrFail();
+        $character = Character::where('game_idgame', $game->idgame)->firstOrFail();
+        $comboType = GameEntry::where('gameid', $game->idgame)->where('title', 'Combo')->firstOrFail();
+        $whereResource = GameResource::where('game_idgame', $game->idgame)->where('text_name', 'Where?')->firstOrFail();
+        $midscreen = ResourceValue::where('game_resources_idgame_resources', $whereResource->idgame_resources)->where('value', 'Midscreen')->firstOrFail();
+
+        CharacterResourceValueAlias::create([
+            'alias' => 'Screen Center',
+            'character_idcharacter' => $character->idcharacter,
+            'resources_values_idResources_values' => $midscreen->idResources_values,
+        ]);
+
+        $combo = Combo::create([
+            'combo' => '5A > 5B',
+            'character_idcharacter' => $character->idcharacter,
+            'submited' => now(),
+            'type' => $comboType->entryid,
+        ]);
+        $combo->resources()->create(['Resources_values_idResources_values' => $midscreen->idResources_values]);
+
+        $this->get(route('combos.show', $combo))
+            ->assertOk()
+            ->assertSee('Screen Center')
+            ->assertDontSee('>Midscreen<', false);
     }
 }
