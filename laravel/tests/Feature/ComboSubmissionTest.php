@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Button;
+use App\Models\ButtonAlias;
 use App\Models\Character;
 use App\Models\CharacterQuery;
 use App\Models\Combo;
@@ -47,6 +49,42 @@ class ComboSubmissionTest extends TestCase
         $combo = Combo::firstOrFail();
         $response->assertRedirect(route('combos.show', $combo));
         $this->assertSame($okizeme->entryid, $combo->type);
+    }
+
+    public function test_combo_creation_form_offers_button_aliases_behind_a_reveal_link(): void
+    {
+        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
+
+        $this->post(route('games.store'), [
+            'name' => 'New Fighter',
+            'image' => 'https://example.com/new-fighter.png',
+        ]);
+
+        $game = Game::where('name', 'New Fighter')->firstOrFail();
+        $button = Button::where('game_idgame', $game->idgame)->firstOrFail();
+        ButtonAlias::create(['alias' => 'Throw', 'button_idbutton' => $button->idbutton, 'game_idgame' => $game->idgame]);
+
+        $this->get(route('games.combos.create', $game))
+            ->assertOk()
+            ->assertSee('Other button names&hellip;', false)
+            ->assertSee('onclick="moveNumbers(\''.$button->name.'\')"', false)
+            ->assertSee('>Throw<', false);
+    }
+
+    public function test_combo_creation_form_hides_the_alias_reveal_link_when_no_aliases_exist(): void
+    {
+        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
+
+        $this->post(route('games.store'), [
+            'name' => 'New Fighter',
+            'image' => 'https://example.com/new-fighter.png',
+        ]);
+
+        $game = Game::where('name', 'New Fighter')->firstOrFail();
+
+        $this->get(route('games.combos.create', $game))
+            ->assertOk()
+            ->assertDontSee('Other button names&hellip;', false);
     }
 
     public function test_combo_edit_form_preselects_and_updates_the_listing_type(): void

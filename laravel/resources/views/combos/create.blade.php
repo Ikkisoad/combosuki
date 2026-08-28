@@ -1,5 +1,6 @@
 @php
     $buttons = $game->buttons()->orderBy('order')->get();
+    $buttonAliases = $game->buttonAliases()->with('button')->orderBy('alias')->get();
 @endphp
 
 <x-layouts.app :title="'Add Combo - '.$game->name">
@@ -46,6 +47,17 @@
                 @endforeach
                 <button type="button" class="btn btn-sm btn-secondary" onclick="backspace()">&#9003; Backspace</button>
             </div>
+
+            @if ($buttonAliases->isNotEmpty())
+                <div class="mb-2">
+                    <a href="#button-aliases" class="d-inline-block mb-1" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="button-aliases">Other button names&hellip;</a>
+                    <div class="collapse" id="button-aliases">
+                        @foreach ($buttonAliases as $buttonAlias)
+                            <button type="button" class="btn btn-sm" style="margin-left:0.25em;margin-bottom:0.5em;background-color: {{ $buttonAlias->button->color }};" onclick="moveNumbers('{{ $buttonAlias->button->name }}')">{{ $buttonAlias->alias }}</button>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
 
             <textarea name="combo" class="form-control" id="comboarea" rows="4"
                       placeholder="{{ $game->notation }}" required>{{ old('combo', $defaults['combo'] ?? '') }}</textarea>

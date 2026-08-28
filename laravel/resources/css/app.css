@@ -16,6 +16,14 @@ body {
     background-size: cover;
 }
 
+a {
+    color: #FA591C;
+}
+
+a:hover {
+    color: #ffffff;
+}
+
 .combosuki-main {
     background-color: #C62114;
     border-style: solid;
