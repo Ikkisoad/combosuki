@@ -12,7 +12,7 @@ use App\Models\Game;
 use App\Models\GameEntry;
 use App\Models\GameResource;
 use App\Models\ListModel;
-use App\Models\Resource;
+use App\Services\ComboSubmissionService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
@@ -23,6 +23,8 @@ use Illuminate\View\View;
 class ComboController extends Controller
 {
     use FiltersCombos;
+
+    public function __construct(private ComboSubmissionService $comboSubmission) {}
 
     /**
      * Browse/search combos for a game. Mirrors legacy's forms.php (search
@@ -257,19 +259,15 @@ class ComboController extends Controller
     {
         $validated = $request->validated();
 
-        $combo = Combo::create([
+        $combo = $this->comboSubmission->create($game, [
             'combo' => $validated['combo'],
             'comments' => $validated['comments'] ?? null,
             'video' => $validated['video'] ?? null,
             'character_idcharacter' => $validated['character_idcharacter'],
-            'submited' => now(),
             'damage' => $validated['damage'] ?? null,
             'type' => $validated['listingtype'],
             'patch' => $validated['patch'] ?? null,
-            'user_iduser' => auth()->id(),
-        ]);
-
-        $this->syncResources($combo, $game, $validated['resources'] ?? []);
+        ], $validated['resources'] ?? [], auth()->id());
 
         return redirect()->route('combos.show', $combo)->with('status', 'Combo submitted.');
     }
@@ -350,7 +348,7 @@ class ComboController extends Controller
         // resources when the submitted form actually included them, so a quick
         // edit doesn't wipe out the combo's existing resource values.
         if ($request->has('resources')) {
-            $this->syncResources($combo, $game, $validated['resources'] ?? []);
+            $this->comboSubmission->syncResources($combo, $game, $validated['resources'] ?? []);
         }
 
         return redirect()->route('combos.show', $combo)->with('status', 'Combo updated.');
@@ -366,50 +364,5 @@ class ComboController extends Controller
         $combo->delete();
 
         return redirect()->route('games.combos.index', $game)->with('status', 'Combo deleted.');
-    }
-
-    private function syncResources(Combo $combo, Game $game, array $resources): void
-    {
-        $combo->resources()->delete();
-
-        foreach ($resources as $idGameResources => $value) {
-            if ($value === null || $value === '' || $value === '-') {
-                continue;
-            }
-
-            $gameResource = GameResource::find($idGameResources);
-
-            if (! $gameResource || $gameResource->game_idgame !== $game->idgame) {
-                continue;
-            }
-
-            if ($gameResource->type === 1) {
-                Resource::create([
-                    'combo_idcombo' => $combo->idcombo,
-                    'Resources_values_idResources_values' => (int) $value,
-                    'number_value' => null,
-                ]);
-            } elseif ($gameResource->type === 2) {
-                foreach ($gameResource->values as $resourceValue) {
-                    Resource::create([
-                        'combo_idcombo' => $combo->idcombo,
-                        'Resources_values_idResources_values' => $resourceValue->idResources_values,
-                        'number_value' => (float) $value,
-                    ]);
-                }
-            } elseif ($gameResource->type === 3) {
-                foreach ((array) $value as $valueId) {
-                    if ($valueId === null || $valueId === '' || $valueId === '-') {
-                        continue;
-                    }
-
-                    Resource::create([
-                        'combo_idcombo' => $combo->idcombo,
-                        'Resources_values_idResources_values' => (int) $valueId,
-                        'number_value' => null,
-                    ]);
-                }
-            }
-        }
     }
 }

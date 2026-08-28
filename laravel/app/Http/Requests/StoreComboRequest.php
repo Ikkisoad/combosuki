@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Game;
 use App\Models\GameResource;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -17,8 +18,19 @@ class StoreComboRequest extends FormRequest
      */
     public function rules(): array
     {
-        $game = $this->route('game');
+        return self::rulesFor($this->route('game'));
+    }
 
+    /**
+     * The same rules rules() builds from the route, exposed statically so a
+     * caller with no HTTP route to pull {game} from (e.g. the Discord
+     * `/csk submit` wizard) can validate against the same source of truth
+     * rather than hand-rolling a second, driftable copy.
+     *
+     * @return array<string, mixed>
+     */
+    public static function rulesFor(Game $game): array
+    {
         $rules = [
             'character_idcharacter' => ['required', 'integer', 'exists:character,idcharacter,game_idgame,'.$game->idgame],
             'listingtype' => ['required', 'integer', 'exists:game_entry,entryid,gameid,'.$game->idgame],
@@ -32,7 +44,7 @@ class StoreComboRequest extends FormRequest
             'resources.*.*' => ['nullable'],
         ];
 
-        $this->addPrimaryResourceRules($rules, $game);
+        self::addPrimaryResourceRules($rules, $game);
 
         return $rules;
     }
@@ -46,7 +58,7 @@ class StoreComboRequest extends FormRequest
      *
      * @param  array<string, mixed>  $rules
      */
-    protected function addPrimaryResourceRules(array &$rules, $game): void
+    protected static function addPrimaryResourceRules(array &$rules, Game $game): void
     {
         $primaryResources = GameResource::where('game_idgame', $game->idgame)
             ->where('primaryORsecundary', 1)

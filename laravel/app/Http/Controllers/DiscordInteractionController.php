@@ -6,6 +6,7 @@ use App\Exceptions\DiscordInteractionUnauthorized;
 use App\Services\DiscordChallenge;
 use App\Services\DiscordCombleGame;
 use App\Services\DiscordComboSearch;
+use App\Services\DiscordComboSubmit;
 use App\Services\DiscordComboWizard;
 use App\Services\DiscordGuideSearch;
 use Illuminate\Http\JsonResponse;
@@ -21,6 +22,7 @@ class DiscordInteractionController extends Controller
         private DiscordCombleGame $comble,
         private DiscordChallenge $challenge,
         private DiscordGuideSearch $guideSearch,
+        private DiscordComboSubmit $comboSubmit,
     ) {}
 
     public function __invoke(Request $request): JsonResponse
@@ -68,6 +70,13 @@ class DiscordInteractionController extends Controller
             return response()->json(['type' => 4, 'data' => $this->comble->start($userId)]);
         }
 
+        if ($subcommand === 'submit') {
+            $data = $this->comboSubmit->start($this->discordUserId($payload));
+            $data['flags'] = 64;
+
+            return response()->json(['type' => 4, 'data' => $data]);
+        }
+
         return response()->json([
             'type' => 4,
             'data' => $this->comboSearch->handle($data, $channelId),
@@ -89,6 +98,22 @@ class DiscordInteractionController extends Controller
 
         if (str_starts_with($customId, 'cb:')) {
             return $this->handleCombleComponent($customId, $data['values'] ?? [], $payload);
+        }
+
+        // "Enter combo details" and "More details" both open a Modal, which
+        // needs its own interaction response type (9) instead of the
+        // UPDATE_MESSAGE (7) every other submit-wizard click uses.
+        if (str_starts_with($customId, 'sub:details:') || str_starts_with($customId, 'sub:more:')) {
+            return response()->json(['type' => 9, 'data' => $this->comboSubmit->buildModal($customId)]);
+        }
+
+        if (str_starts_with($customId, 'sub:')) {
+            $userId = $this->discordUserId($payload);
+
+            return response()->json([
+                'type' => 7,
+                'data' => $this->comboSubmit->handleComponent($customId, $data['values'] ?? [], $userId),
+            ]);
         }
 
         return response()->json([
@@ -141,6 +166,13 @@ class DiscordInteractionController extends Controller
             } catch (DiscordInteractionUnauthorized $e) {
                 return $this->unauthorizedResponse($e);
             }
+        }
+
+        if (str_starts_with($customId, 'sub:')) {
+            return response()->json([
+                'type' => 7,
+                'data' => $this->comboSubmit->handleModalSubmit($customId, $data['components'] ?? []),
+            ]);
         }
 
         return response()->json([
