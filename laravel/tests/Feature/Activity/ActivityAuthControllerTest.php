@@ -20,6 +20,12 @@ class ActivityAuthControllerTest extends TestCase
             'services.discord.client_id' => 'client-id-123',
             'services.discord.client_secret' => 'client-secret-123',
         ]);
+
+        // discord_activity_enabled defaults to false (see
+        // EnsureDiscordActivityEnabled) — this suite is about the token
+        // exchange's own behavior once turned on.
+        SiteSetting::current()->update(['discord_activity_enabled' => true]);
+        SiteSetting::forgetCurrent();
     }
 
     public function test_a_valid_code_returns_a_bearer_token_and_the_discord_access_token(): void

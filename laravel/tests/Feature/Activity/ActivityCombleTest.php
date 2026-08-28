@@ -28,6 +28,13 @@ class ActivityCombleTest extends TestCase
         // The "array" cache store (see phpunit.xml) lives for the whole test
         // process, not just one test — see CombleDiscordProgress.
         Cache::flush();
+
+        // discord_activity_enabled defaults to false (see
+        // EnsureDiscordActivityEnabled) — this suite is about the routes'
+        // own behavior once turned on; the flag itself is covered by
+        // tests/Feature/Admin/SiteSettingTest.php.
+        SiteSetting::current()->update(['discord_activity_enabled' => true]);
+        SiteSetting::forgetCurrent();
     }
 
     protected function tearDown(): void

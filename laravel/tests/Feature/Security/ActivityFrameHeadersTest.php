@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Security;
 
+use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,6 +16,17 @@ use Tests\TestCase;
 class ActivityFrameHeadersTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // discord_activity_enabled defaults to false (see
+        // EnsureDiscordActivityEnabled) — the point of this test is the CSP
+        // header on the route's real 200 response, not its flag-off 404.
+        SiteSetting::current()->update(['discord_activity_enabled' => true]);
+        SiteSetting::forgetCurrent();
+    }
 
     public function test_the_activity_route_allows_discord_to_frame_it(): void
     {

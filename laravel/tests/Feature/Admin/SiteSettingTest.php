@@ -30,6 +30,12 @@ class SiteSettingTest extends TestCase
         SiteSetting::forgetCurrent();
     }
 
+    private function enableActivity(): void
+    {
+        SiteSetting::current()->update(['discord_activity_enabled' => true]);
+        SiteSetting::forgetCurrent();
+    }
+
     /**
      * The integration is already live in production with real linked accounts,
      * so the migration's default must not switch it off.
@@ -38,6 +44,16 @@ class SiteSettingTest extends TestCase
     {
         $this->assertTrue(SiteSetting::current()->discord_integration_enabled);
         $this->assertTrue(SiteSetting::discordIntegrationEnabled());
+    }
+
+    /**
+     * Unlike discord_integration_enabled, the Activity is brand new (not
+     * already live in production), so its migration must not switch it on.
+     */
+    public function test_the_discord_activity_defaults_to_disabled(): void
+    {
+        $this->assertFalse(SiteSetting::current()->discord_activity_enabled);
+        $this->assertFalse(SiteSetting::discordActivityEnabled());
     }
 
     /**
@@ -78,7 +94,8 @@ class SiteSettingTest extends TestCase
             ->assertOk()
             ->assertSee('Enable Discord integration')
             // The lockout consequence has to be on the screen, not just in a doc.
-            ->assertSee('locks out accounts that only have Discord', false);
+            ->assertSee('locks out accounts that only have Discord', false)
+            ->assertSee('Enable the Comble Discord Activity');
 
         $this->actingAs($this->admin)
             ->post(route('admin.settings.update'), [])
@@ -90,6 +107,22 @@ class SiteSettingTest extends TestCase
         $this->actingAs($this->admin)
             ->post(route('admin.settings.update'), ['discord_integration_enabled' => 1]);
 
+        $this->assertTrue(SiteSetting::current()->fresh()->discord_integration_enabled);
+    }
+
+    /** Independent from discord_integration_enabled: toggling it doesn't touch the other flag. */
+    public function test_an_admin_can_toggle_the_activity_flag_independently(): void
+    {
+        $this->actingAs($this->admin)
+            ->post(route('admin.settings.update'), ['discord_integration_enabled' => 1, 'discord_activity_enabled' => 1]);
+
+        $this->assertTrue(SiteSetting::current()->fresh()->discord_activity_enabled);
+        $this->assertTrue(SiteSetting::current()->fresh()->discord_integration_enabled);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.settings.update'), ['discord_integration_enabled' => 1]);
+
+        $this->assertFalse(SiteSetting::current()->fresh()->discord_activity_enabled);
         $this->assertTrue(SiteSetting::current()->fresh()->discord_integration_enabled);
     }
 
@@ -176,5 +209,39 @@ class SiteSettingTest extends TestCase
         // and Discord's URL verification would start failing in the portal.
         $this->postJson(route('discord.interactions'), ['type' => 1])
             ->assertStatus(401);
+    }
+
+    /** The Activity defaults off (see test_the_discord_activity_defaults_to_disabled), so its route 404s until explicitly enabled. */
+    public function test_the_activity_404s_while_its_own_flag_is_off(): void
+    {
+        $this->get(route('activity.comble.show'))->assertNotFound();
+    }
+
+    /** discord_integration_enabled still gates the Activity too — both flags have to be on. */
+    public function test_the_activity_404s_when_the_master_discord_flag_is_off_even_if_its_own_flag_is_on(): void
+    {
+        $this->enableActivity();
+        $this->disableDiscord();
+
+        $this->get(route('activity.comble.show'))->assertNotFound();
+    }
+
+    public function test_the_activity_is_reachable_once_both_flags_are_on(): void
+    {
+        $this->enableActivity();
+
+        $this->get(route('activity.comble.show'))->assertOk();
+    }
+
+    /** Turning the Activity off on its own must not affect Discord sign-in/linking or the bot. */
+    public function test_disabling_only_the_activity_flag_does_not_touch_discord_sign_in_or_the_bot(): void
+    {
+        $this->enableActivity();
+        SiteSetting::current()->update(['discord_activity_enabled' => false]);
+        SiteSetting::forgetCurrent();
+
+        $this->post(route('auth.discord.redirect'))->assertRedirectContains('discord.com');
+
+        $this->postJson(route('discord.interactions'), ['type' => 1])->assertStatus(401);
     }
 }

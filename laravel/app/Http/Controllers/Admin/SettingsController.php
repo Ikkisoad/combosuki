@@ -23,13 +23,18 @@ class SettingsController extends Controller
     public function update(Request $request): RedirectResponse
     {
         $enabled = $request->boolean('discord_integration_enabled');
+        $activityEnabled = $request->boolean('discord_activity_enabled');
 
-        SiteSetting::current()->update(['discord_integration_enabled' => $enabled]);
+        SiteSetting::current()->update([
+            'discord_integration_enabled' => $enabled,
+            'discord_activity_enabled' => $activityEnabled,
+        ]);
 
         // Worth an audit line: switching this off signs nobody out, but it
         // does lock out every account whose only credential is Discord.
         Log::info('Discord integration flag changed.', [
             'enabled' => $enabled,
+            'activity_enabled' => $activityEnabled,
             'by_user_iduser' => $request->user()->iduser,
         ]);
 

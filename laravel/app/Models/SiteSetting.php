@@ -20,7 +20,7 @@ class SiteSetting extends Model
 
     protected $primaryKey = 'idsetting';
 
-    protected $fillable = ['discord_integration_enabled'];
+    protected $fillable = ['discord_integration_enabled', 'discord_activity_enabled'];
 
     private static ?self $memo = null;
 
@@ -28,6 +28,7 @@ class SiteSetting extends Model
     {
         return [
             'discord_integration_enabled' => 'boolean',
+            'discord_activity_enabled' => 'boolean',
         ];
     }
 
@@ -39,12 +40,24 @@ class SiteSetting extends Model
     {
         return self::$memo ??= self::query()->firstOrCreate([], [
             'discord_integration_enabled' => true,
+            'discord_activity_enabled' => false,
         ]);
     }
 
     public static function discordIntegrationEnabled(): bool
     {
         return self::current()->discord_integration_enabled;
+    }
+
+    /**
+     * Independent of discordIntegrationEnabled() (which also still gates the
+     * Activity — see EnsureDiscordActivityEnabled): this is the dedicated
+     * switch for turning the Activity off on its own while leaving Discord
+     * sign-in/linking untouched.
+     */
+    public static function discordActivityEnabled(): bool
+    {
+        return self::current()->discord_activity_enabled;
     }
 
     /**

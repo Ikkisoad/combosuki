@@ -48,6 +48,21 @@
                 sign in at all until it is turned back on. Existing connections are kept, not deleted.
             </div>
 
+            <div class="form-check mb-3">
+                <input type="checkbox" name="discord_activity_enabled" id="discord_activity_enabled"
+                       class="form-check-input" value="1"
+                       @checked(old('discord_activity_enabled', $settings->discord_activity_enabled))>
+                <label class="form-check-label" for="discord_activity_enabled">
+                    Enable the Comble Discord Activity
+                </label>
+            </div>
+
+            <p class="text-white-50">
+                The embedded Comble game launched from a Discord voice channel. Independent of the
+                integration switch above — turning that one off also takes this down, but this can be
+                turned off on its own without affecting Discord sign-in or account linking.
+            </p>
+
             <div>
                 <button type="submit" class="btn btn-primary">Save</button>
             </div>

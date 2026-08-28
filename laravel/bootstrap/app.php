@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureDiscordActivityEnabled;
 use App\Http\Middleware\EnsureDiscordIntegrationEnabled;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\EnsureUserIsModerator;
@@ -20,7 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
         then: function () {
             Route::middleware('throttle:60,1')->group(base_path('routes/discord.php'));
-            Route::middleware(['throttle:60,1', 'discord.web'])->group(base_path('routes/activity.php'));
+            Route::middleware(['throttle:60,1', 'discord.web', 'discord.activity'])->group(base_path('routes/activity.php'));
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
@@ -30,6 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'trusted' => EnsureUserIsTrusted::class,
             'moderator' => EnsureUserIsModerator::class,
             'discord.web' => EnsureDiscordIntegrationEnabled::class,
+            'discord.activity' => EnsureDiscordActivityEnabled::class,
             'activity.auth' => VerifyActivityToken::class,
         ]);
         // Comble's "starter" guess is compared character-for-character
