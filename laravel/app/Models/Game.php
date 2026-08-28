@@ -19,7 +19,7 @@ class Game extends Model
     protected $primaryKey = 'idgame';
 
     protected $fillable = [
-        'name', 'complete', 'image', 'globalPass', 'modPass', 'patch', 'description', 'notation',
+        'name', 'complete', 'image', 'globalPass', 'modPass', 'description', 'notation',
         'matches_enabled', 'matches_url',
     ];
 
@@ -153,6 +153,21 @@ class Game extends Model
     public function tierLists(): HasMany
     {
         return $this->hasMany(TierList::class, 'game_idgame');
+    }
+
+    public function patches(): HasMany
+    {
+        return $this->hasMany(GamePatch::class, 'game_idgame')->orderByDesc('released_at');
+    }
+
+    /**
+     * The single open-ended (ended_at IS NULL) patch for this game, if any.
+     * A game may briefly have none right after creation, before any patch
+     * has been registered via the admin Patches page.
+     */
+    public function currentPatch(): HasOne
+    {
+        return $this->hasOne(GamePatch::class, 'game_idgame')->whereNull('ended_at');
     }
 
     /**

@@ -34,7 +34,7 @@ trait FiltersCombos
         ));
 
         $query = Combo::query()
-            ->with(['character', 'listingType'])
+            ->with(['character', 'listingType', 'patch'])
             ->whereHas('character', fn (Builder $q) => $q->where('game_idgame', $game->idgame))
             ->visibleTo(auth()->user());
 
@@ -194,7 +194,8 @@ trait FiltersCombos
         }
 
         if ($request->filled('patch')) {
-            $query->where('patch', 'like', $request->string('patch'));
+            $pattern = $request->string('patch');
+            $query->whereHas('patch', fn (Builder $q) => $q->where('label', 'like', $pattern));
         }
 
         foreach (array_filter(explode('#', (string) $request->input('comments'))) as $piece) {

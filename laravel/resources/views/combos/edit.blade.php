@@ -64,7 +64,15 @@
                 <div class="col">
                     <div class="input-group mb-3">
                         <span class="input-group-text">Patch:</span>
-                        <input type="text" name="patch" class="form-control" value="{{ old('patch', $combo->patch) }}">
+                        <select name="patch_idgame_patch" class="form-select">
+                            <option value="">— none —</option>
+                            @foreach ($game->patches as $patch)
+                                <option value="{{ $patch->idgame_patch }}"
+                                    @selected(old('patch_idgame_patch', $combo->patch_idgame_patch) == $patch->idgame_patch)>
+                                    {{ $patch->label }} ({{ $patch->released_at->format('M j, Y') }}{{ $patch->ended_at ? ' – '.$patch->ended_at->format('M j, Y') : ' – current' }})
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
             </div>

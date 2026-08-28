@@ -10,6 +10,7 @@ use App\Models\CharacterQuery;
 use App\Models\Combo;
 use App\Models\Game;
 use App\Models\GameEntry;
+use App\Models\GamePatch;
 use App\Models\GameResource;
 use App\Models\ListModel;
 use App\Services\ComboSubmissionService;
@@ -66,7 +67,7 @@ class ComboController extends Controller
 
     public function show(Combo $combo): View
     {
-        $combo->load(['character.game', 'listingType', 'resources.resourceValue.gameResource', 'resources.resourceValue.characterAliases', 'user', 'verifier']);
+        $combo->load(['character.game', 'listingType', 'patch', 'resources.resourceValue.gameResource', 'resources.resourceValue.characterAliases', 'user', 'verifier']);
         $combo->increment('views');
 
         $game = $combo->character->game;
@@ -256,7 +257,9 @@ class ComboController extends Controller
         }
 
         if (($filters['patch'] ?? '') !== '') {
-            $defaults['patch'] = $filters['patch'];
+            $defaults['patch_idgame_patch'] = GamePatch::where('game_idgame', $game->idgame)
+                ->where('label', $filters['patch'])
+                ->value('idgame_patch');
         }
 
         $commentPieces = array_filter(explode('#', (string) ($filters['comments'] ?? '')));
@@ -294,7 +297,7 @@ class ComboController extends Controller
             'character_idcharacter' => $validated['character_idcharacter'],
             'damage' => $validated['damage'] ?? null,
             'type' => $validated['listingtype'],
-            'patch' => $validated['patch'] ?? null,
+            'patch_idgame_patch' => $validated['patch_idgame_patch'] ?? null,
         ], $validated['resources'] ?? [], auth()->id());
 
         return redirect()->route('combos.show', $combo)->with('status', 'Combo submitted.');
@@ -369,7 +372,7 @@ class ComboController extends Controller
             'character_idcharacter' => $validated['character_idcharacter'],
             'damage' => $validated['damage'] ?? null,
             'type' => $validated['listingtype'],
-            'patch' => $validated['patch'] ?? null,
+            'patch_idgame_patch' => $validated['patch_idgame_patch'] ?? null,
         ]);
 
         // The inline quick-edit form on the combo page doesn't send a `resources`

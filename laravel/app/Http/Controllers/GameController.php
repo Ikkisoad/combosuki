@@ -10,6 +10,7 @@ use App\Models\Combo;
 use App\Models\Game;
 use App\Models\GameEntry;
 use App\Models\GameMatch;
+use App\Models\GamePatch;
 use App\Models\GameResource;
 use App\Models\ListModel;
 use App\Models\ResourceValue;
@@ -143,8 +144,8 @@ class GameController extends Controller
             'latestCombos' => $latestCombos,
             'listingTypes' => $listingTypes,
             'primaryResources' => $primaryResources,
-            'tierFrom' => $request->input('tier_from'),
-            'tierTo' => $request->input('tier_to'),
+            'patches' => $game->patches,
+            'selectedTierPatch' => $request->input('tier_patch') ?? $game->currentPatch?->idgame_patch ?? 'all',
         ]);
     }
 
@@ -296,24 +297,42 @@ class GameController extends Controller
 
     public function tierListsTab(Game $game, Request $request, TierListAggregator $tierListAggregator): View
     {
-        $tierFrom = $this->parseTierDate($request->input('tier_from'));
-        $tierTo = $this->parseTierDate($request->input('tier_to'));
+        [$tierFrom, $tierTo] = $this->resolveTierPatchWindow($game, $request);
 
         $tierListAggregate = $tierListAggregator->aggregate($game, $tierFrom, $tierTo);
 
         return view('games.partials.tier-lists-tab', ['tierListAggregate' => $tierListAggregate]);
     }
 
-    private function parseTierDate(?string $value): ?Carbon
+    /**
+     * Translates the tier-list tab's patch selection into a date range for
+     * TierListAggregator, which still only understands from/to dates (tier
+     * lists carry no patch reference of their own — see the "Rework patch
+     * into a dated patch list" plan). No `tier_patch` param at all (the
+     * initial AJAX tab load) defaults to the game's current patch's window,
+     * so opening the tab shows "now" rather than every tier list ever
+     * submitted; `tier_patch=all` explicitly clears back to unrestricted.
+     *
+     * @return array{0: ?Carbon, 1: ?Carbon}
+     */
+    private function resolveTierPatchWindow(Game $game, Request $request): array
     {
-        if (! $value) {
-            return null;
+        $param = $request->input('tier_patch');
+
+        if ($param === 'all') {
+            return [null, null];
         }
 
-        try {
-            return Carbon::parse($value);
-        } catch (\Exception) {
-            return null;
+        if ($param !== null && $param !== '') {
+            $patch = GamePatch::where('game_idgame', $game->idgame)->find($param);
+
+            if ($patch) {
+                return [$patch->released_at, $patch->ended_at?->copy()->subDay()];
+            }
         }
+
+        $current = $game->currentPatch;
+
+        return $current ? [$current->released_at, null] : [null, null];
     }
 }

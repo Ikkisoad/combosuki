@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\DonationController;
 use App\Http\Controllers\Admin\ExternalSiteController;
 use App\Http\Controllers\Admin\GameEntryController;
 use App\Http\Controllers\Admin\GameListController;
+use App\Http\Controllers\Admin\GamePatchController;
 use App\Http\Controllers\Admin\GameResourceController;
 use App\Http\Controllers\Admin\GameSettingsController;
 use App\Http\Controllers\Admin\LinkController;
@@ -236,6 +237,9 @@ Route::middleware(['auth', 'can:update,game'])->prefix('games/{game}/edit')->nam
 
     Route::get('/queries', [CharacterQueryController::class, 'index'])->name('queries.index');
     Route::post('/queries', [CharacterQueryController::class, 'store'])->middleware('throttle:10,1')->name('queries.store');
+
+    Route::get('/patches', [GamePatchController::class, 'index'])->name('patches.index');
+    Route::post('/patches', [GamePatchController::class, 'store'])->middleware('throttle:10,1')->name('patches.store');
 
     Route::get('/links', [LinkController::class, 'index'])->name('links.index');
     Route::post('/links', [LinkController::class, 'store'])->middleware('throttle:10,1')->name('links.store');

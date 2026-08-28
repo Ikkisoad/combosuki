@@ -560,7 +560,6 @@ class DiscordComboSubmit
             'character_idcharacter' => $character->idcharacter,
             'damage' => $details['damage'] !== '' ? $details['damage'] : null,
             'type' => $listingType->entryid,
-            'patch' => $game->patch,
         ], $resources, $user->iduser);
 
         Cache::forget($this->detailsCacheKey($state['d']));

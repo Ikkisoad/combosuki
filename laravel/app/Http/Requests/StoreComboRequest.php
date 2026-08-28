@@ -36,7 +36,7 @@ class StoreComboRequest extends FormRequest
             'listingtype' => ['required', 'integer', 'exists:game_entry,entryid,gameid,'.$game->idgame],
             'combo' => ['required', 'string'],
             'damage' => ['nullable', 'numeric', 'min:0'],
-            'patch' => ['nullable', 'string', 'max:10'],
+            'patch_idgame_patch' => ['nullable', 'integer', 'exists:game_patches,idgame_patch,game_idgame,'.$game->idgame],
             'comments' => ['nullable', 'string'],
             'video' => ['nullable', 'string', 'max:255'],
             'resources' => ['array'],

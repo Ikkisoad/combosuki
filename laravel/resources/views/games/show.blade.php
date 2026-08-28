@@ -197,16 +197,18 @@
 
                         <form class="row g-2 align-items-end mb-3" id="tier-date-range-form">
                             <div class="col-auto">
-                                <label for="tier_from" class="form-label small mb-0">From</label>
-                                <input type="date" id="tier_from" name="tier_from" value="{{ $tierFrom }}" class="form-control form-control-sm">
-                            </div>
-                            <div class="col-auto">
-                                <label for="tier_to" class="form-label small mb-0">To</label>
-                                <input type="date" id="tier_to" name="tier_to" value="{{ $tierTo }}" class="form-control form-control-sm">
+                                <label for="tier_patch" class="form-label small mb-0">Patch</label>
+                                <select id="tier_patch" name="tier_patch" class="form-select form-select-sm">
+                                    <option value="all" @selected($selectedTierPatch === 'all')>All time</option>
+                                    @foreach ($patches as $patch)
+                                        <option value="{{ $patch->idgame_patch }}" @selected($selectedTierPatch == $patch->idgame_patch)>
+                                            {{ $patch->label }}@if ($patch->isCurrent()) (current) @endif
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
                             <div class="col-auto">
                                 <button type="submit" class="btn btn-info btn-sm">Filter</button>
-                                <button type="button" class="btn btn-outline-light btn-sm" id="tier-date-range-reset">Reset</button>
                             </div>
                         </form>
 
@@ -243,9 +245,7 @@
             var tierListsPane = document.getElementById('tier-lists-pane');
             var tierResults = document.getElementById('tier-lists-results');
             var tierForm = document.getElementById('tier-date-range-form');
-            var tierFromInput = document.getElementById('tier_from');
-            var tierToInput = document.getElementById('tier_to');
-            var tierResetButton = document.getElementById('tier-date-range-reset');
+            var tierPatchInput = document.getElementById('tier_patch');
 
             function loadGuides() {
                 if (guidesResults.dataset.loaded === '1') {
@@ -297,11 +297,8 @@
 
             function loadTierLists() {
                 var params = new URLSearchParams();
-                if (tierFromInput.value) {
-                    params.set('tier_from', tierFromInput.value);
-                }
-                if (tierToInput.value) {
-                    params.set('tier_to', tierToInput.value);
+                if (tierPatchInput.value) {
+                    params.set('tier_patch', tierPatchInput.value);
                 }
                 tierResults.innerHTML = '<p class="text-white-50">Loading&hellip;</p>';
                 fetch(tierResults.dataset.endpoint + '?' + params.toString())
@@ -363,14 +360,8 @@
                 loadTierLists();
             });
 
-            tierResetButton.addEventListener('click', function () {
-                tierFromInput.value = '';
-                tierToInput.value = '';
-                loadTierLists();
-            });
-
             var params = new URLSearchParams(window.location.search);
-            if (params.has('tier_from') || params.has('tier_to')) {
+            if (params.has('tier_patch')) {
                 activateTab(tierListsTabButton, tierListsPane);
                 loadTierLists();
             }

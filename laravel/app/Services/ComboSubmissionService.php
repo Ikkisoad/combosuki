@@ -23,11 +23,19 @@ use App\Models\Resource;
 class ComboSubmissionService
 {
     /**
-     * @param  array<string, mixed>  $attributes  Combo model field names: combo, comments, video, character_idcharacter, damage, type, patch.
+     * @param  array<string, mixed>  $attributes  Combo model field names: combo, comments, video, character_idcharacter, damage, type, patch_idgame_patch.
      * @param  array<int, mixed>  $resources  Keyed by GameResource id, same shape StoreComboRequest's `resources` input uses.
      */
     public function create(Game $game, array $attributes, array $resources, ?int $userId): Combo
     {
+        // A genuinely absent key (the Discord wizard, which has no picker
+        // step) auto-selects the game's current patch; an explicitly null
+        // value (the web form's blank "— none —" option) is honored as "no
+        // patch" rather than silently overridden.
+        $patchId = array_key_exists('patch_idgame_patch', $attributes)
+            ? $attributes['patch_idgame_patch']
+            : $game->currentPatch?->idgame_patch;
+
         $combo = Combo::create([
             'combo' => $attributes['combo'],
             'comments' => $attributes['comments'] ?? null,
@@ -36,7 +44,7 @@ class ComboSubmissionService
             'submited' => now(),
             'damage' => $attributes['damage'] ?? null,
             'type' => $attributes['type'],
-            'patch' => $attributes['patch'] ?? null,
+            'patch_idgame_patch' => $patchId,
             'user_iduser' => $userId,
         ]);
 

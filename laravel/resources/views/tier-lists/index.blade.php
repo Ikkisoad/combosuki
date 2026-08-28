@@ -16,7 +16,7 @@
             <div class="row g-2 align-items-end">
                 <div class="col-auto">
                     <label class="form-label">Game</label>
-                    <select name="game_idgame" class="form-select">
+                    <select name="game_idgame" class="form-select" onchange="this.form.submit()">
                         <option value="">Any Game</option>
                         @foreach ($games as $gameOption)
                             <option value="{{ $gameOption->idgame }}" @selected(request('game_idgame') == $gameOption->idgame)>{{ $gameOption->name }}</option>
@@ -35,10 +35,21 @@
                     <label class="form-label">To</label>
                     <input type="date" name="date_to" class="form-control" value="{{ request('date_to') }}">
                 </div>
+                @if ($game)
+                    <div class="col-auto">
+                        <label class="form-label">Patch</label>
+                        <select name="tier_patch" class="form-select">
+                            <option value="all">Any</option>
+                            @foreach ($game->patches as $patch)
+                                <option value="{{ $patch->idgame_patch }}" @selected(request('tier_patch') == $patch->idgame_patch)>{{ $patch->label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
             </div>
 
             @php
-                $filterFields = ['game_idgame', 'author', 'date_from', 'date_to'];
+                $filterFields = ['game_idgame', 'author', 'date_from', 'date_to', 'tier_patch'];
             @endphp
 
             <div class="mt-3">

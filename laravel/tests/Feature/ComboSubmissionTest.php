@@ -10,6 +10,7 @@ use App\Models\CharacterResourceValueAlias;
 use App\Models\Combo;
 use App\Models\Game;
 use App\Models\GameEntry;
+use App\Models\GamePatch;
 use App\Models\GameResource;
 use App\Models\ResourceValue;
 use App\Models\User;
@@ -135,6 +136,7 @@ class ComboSubmissionTest extends TestCase
         $comboType = GameEntry::where('gameid', $game->idgame)->where('title', 'Combo')->firstOrFail();
         $whereResource = GameResource::where('game_idgame', $game->idgame)->where('text_name', 'Where?')->firstOrFail();
         $corner = ResourceValue::where('game_resources_idgame_resources', $whereResource->idgame_resources)->where('value', 'Corner')->firstOrFail();
+        $patch = GamePatch::create(['game_idgame' => $game->idgame, 'label' => '1.0', 'released_at' => now()->subDay()]);
 
         $query = CharacterQuery::create([
             'game_idgame' => $game->idgame,
@@ -156,7 +158,7 @@ class ComboSubmissionTest extends TestCase
         $response->assertOk()
             ->assertSee('>2LK</textarea>', false)
             ->assertSee('value="1000"', false)
-            ->assertSee('value="1.0"', false)
+            ->assertSee('value="'.$patch->idgame_patch.'" selected', false)
             ->assertSee('no meter, corner only')
             ->assertSee('value="'.$character->idcharacter.'" selected', false)
             ->assertSee('value="'.$comboType->entryid.'" selected', false)

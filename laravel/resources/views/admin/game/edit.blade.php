@@ -16,8 +16,9 @@
                 <input type="text" name="title" class="form-control" value="{{ $game->name }}">
             </div>
             <div class="input-group mb-3">
-                <span class="input-group-text">Current Version:</span>
-                <input type="text" maxlength="10" name="patch" class="form-control" value="{{ $game->patch }}">
+                <span class="input-group-text">Current Patch:</span>
+                <span class="form-control bg-dark text-white">{{ $game->currentPatch?->label ?? 'None set' }}</span>
+                <a href="{{ route('admin.patches.index', $game) }}" class="btn btn-secondary">Manage Patches</a>
             </div>
             <div class="input-group mb-3">
                 <span class="input-group-text">Logo:</span>

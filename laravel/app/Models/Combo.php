@@ -17,7 +17,7 @@ class Combo extends Model
     protected $fillable = [
         'combo', 'comments', 'video', 'user_iduser', 'character_idcharacter',
         'submited', 'damage', 'type', 'verified', 'verified_by_iduser', 'verified_at',
-        'patch', 'author', 'password',
+        'patch_idgame_patch', 'author', 'password',
     ];
 
     protected $hidden = ['password'];
@@ -34,6 +34,11 @@ class Combo extends Model
     public function character(): BelongsTo
     {
         return $this->belongsTo(Character::class, 'character_idcharacter');
+    }
+
+    public function patch(): BelongsTo
+    {
+        return $this->belongsTo(GamePatch::class, 'patch_idgame_patch');
     }
 
     public function user(): BelongsTo

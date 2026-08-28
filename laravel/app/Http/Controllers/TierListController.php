@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTierListRequest;
 use App\Models\Game;
+use App\Models\GamePatch;
 use App\Models\TierList;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -30,12 +31,26 @@ class TierListController extends Controller
             $query->whereHas('user', fn ($q) => $q->where('nickname', 'like', $author));
         }
 
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->string('date_from'));
-        }
+        $tierPatch = $request->input('tier_patch');
 
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->string('date_to'));
+        if ($game && $tierPatch && $tierPatch !== 'all') {
+            $patch = GamePatch::where('game_idgame', $game->idgame)->find($tierPatch);
+
+            if ($patch) {
+                $query->whereDate('created_at', '>=', $patch->released_at);
+
+                if ($patch->ended_at) {
+                    $query->whereDate('created_at', '<', $patch->ended_at);
+                }
+            }
+        } else {
+            if ($request->filled('date_from')) {
+                $query->whereDate('created_at', '>=', $request->string('date_from'));
+            }
+
+            if ($request->filled('date_to')) {
+                $query->whereDate('created_at', '<=', $request->string('date_to'));
+            }
         }
 
         $tierLists = $query->paginate(30)->withQueryString();

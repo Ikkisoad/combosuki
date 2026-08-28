@@ -6,6 +6,7 @@ use App\Models\Character;
 use App\Models\Combo;
 use App\Models\Game;
 use App\Models\GameEntry;
+use App\Models\GamePatch;
 use App\Models\GameResource;
 use App\Models\Resource;
 use App\Models\ResourceValue;
@@ -32,6 +33,7 @@ class ComboSubmissionServiceTest extends TestCase
     {
         [$game, $character, $listingType] = $this->makeGameAndCharacter();
         $user = User::create(['nickname' => 'submitter', 'password' => 'password123']);
+        $patch = GamePatch::create(['game_idgame' => $game->idgame, 'label' => '1.02', 'released_at' => now()->subDay()]);
 
         $combo = (new ComboSubmissionService)->create($game, [
             'combo' => '5A > 5B > 236B',
@@ -40,17 +42,46 @@ class ComboSubmissionServiceTest extends TestCase
             'character_idcharacter' => $character->idcharacter,
             'damage' => 250,
             'type' => $listingType->entryid,
-            'patch' => '1.02',
+            'patch_idgame_patch' => $patch->idgame_patch,
         ], [], $user->iduser);
 
         $this->assertSame('5A > 5B > 236B', $combo->combo);
         $this->assertSame('Meaty setup', $combo->comments);
         $this->assertSame($character->idcharacter, $combo->character_idcharacter);
         $this->assertSame($listingType->entryid, $combo->type);
-        $this->assertSame('1.02', $combo->patch);
+        $this->assertSame($patch->idgame_patch, $combo->patch_idgame_patch);
         $this->assertSame($user->iduser, $combo->user_iduser);
         $this->assertNull($combo->verified);
         $this->assertNotNull($combo->submited);
+    }
+
+    public function test_create_defaults_to_the_games_current_patch_when_omitted(): void
+    {
+        [$game, $character, $listingType] = $this->makeGameAndCharacter();
+        $current = GamePatch::create(['game_idgame' => $game->idgame, 'label' => '1.1', 'released_at' => now()->subDay()]);
+
+        $combo = (new ComboSubmissionService)->create($game, [
+            'combo' => 'A',
+            'character_idcharacter' => $character->idcharacter,
+            'type' => $listingType->entryid,
+        ], [], null);
+
+        $this->assertSame($current->idgame_patch, $combo->patch_idgame_patch);
+    }
+
+    public function test_create_honors_an_explicit_null_patch_as_no_patch(): void
+    {
+        [$game, $character, $listingType] = $this->makeGameAndCharacter();
+        GamePatch::create(['game_idgame' => $game->idgame, 'label' => '1.1', 'released_at' => now()->subDay()]);
+
+        $combo = (new ComboSubmissionService)->create($game, [
+            'combo' => 'A',
+            'character_idcharacter' => $character->idcharacter,
+            'type' => $listingType->entryid,
+            'patch_idgame_patch' => null,
+        ], [], null);
+
+        $this->assertNull($combo->patch_idgame_patch);
     }
 
     public function test_sync_resources_creates_a_single_row_for_a_list_resource(): void

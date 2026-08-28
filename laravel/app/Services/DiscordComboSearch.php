@@ -136,7 +136,7 @@ class DiscordComboSearch
         }
 
         if ($combo->patch) {
-            $fields[] = ['name' => 'Patch', 'value' => $combo->patch, 'inline' => true];
+            $fields[] = ['name' => 'Patch', 'value' => $combo->patch->label, 'inline' => true];
         }
 
         if ($includeVideoField && $this->videoResolver->resolve($combo->video) !== null) {

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Character;
 use App\Models\Game;
+use App\Models\GamePatch;
 use App\Models\GameResource;
 use App\Models\ListModel;
 use App\Models\ResourceValue;
@@ -75,10 +76,32 @@ class GameTierListAggregateTest extends TestCase
         $this->assertLessThan($bRowPos, $namePos);
     }
 
-    public function test_tier_lists_tab_endpoint_filters_by_date_range(): void
+    /** @return array{0: Game, 1: Character, 2: GamePatch, 3: GamePatch} */
+    private function makeGameWithTwoPatches(): array
     {
         $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
         $character = Character::create(['name' => 'Valentine', 'game_idgame' => $game->idgame]);
+
+        $oldPatch = GamePatch::create([
+            'game_idgame' => $game->idgame,
+            'label' => '1.0',
+            'released_at' => now()->subMonths(6)->toDateString(),
+            'ended_at' => now()->subWeek()->toDateString(),
+        ]);
+
+        $currentPatch = GamePatch::create([
+            'game_idgame' => $game->idgame,
+            'label' => '1.1',
+            'released_at' => now()->subWeek()->toDateString(),
+            'ended_at' => null,
+        ]);
+
+        return [$game, $character, $oldPatch, $currentPatch];
+    }
+
+    public function test_tier_lists_tab_endpoint_defaults_to_the_current_patchs_window(): void
+    {
+        [$game, $character] = $this->makeGameWithTwoPatches();
 
         $oldList = TierList::create(['title' => 'Old List', 'game_idgame' => $game->idgame]);
         $oldList->entries()->create(['character_idcharacter' => $character->idcharacter, 'tier' => 'F', 'order' => 0]);
@@ -87,13 +110,53 @@ class GameTierListAggregateTest extends TestCase
         $recentList = TierList::create(['title' => 'Recent List', 'game_idgame' => $game->idgame]);
         $recentList->entries()->create(['character_idcharacter' => $character->idcharacter, 'tier' => 'S', 'order' => 0]);
 
-        $response = $this->get(route('games.tabs.tier-lists', [
-            'game' => $game,
-            'tier_from' => now()->subWeek()->toDateString(),
-        ]));
+        $response = $this->get(route('games.tabs.tier-lists', $game));
 
         $response->assertOk();
         $response->assertSee('Median of 1 community tier list');
+    }
+
+    public function test_tier_lists_tab_endpoint_tier_patch_all_clears_the_default_filter(): void
+    {
+        [$game, $character] = $this->makeGameWithTwoPatches();
+
+        $oldList = TierList::create(['title' => 'Old List', 'game_idgame' => $game->idgame]);
+        $oldList->entries()->create(['character_idcharacter' => $character->idcharacter, 'tier' => 'F', 'order' => 0]);
+        $oldList->forceFill(['created_at' => now()->subMonths(3)])->save();
+
+        $recentList = TierList::create(['title' => 'Recent List', 'game_idgame' => $game->idgame]);
+        $recentList->entries()->create(['character_idcharacter' => $character->idcharacter, 'tier' => 'S', 'order' => 0]);
+
+        $response = $this->get(route('games.tabs.tier-lists', ['game' => $game, 'tier_patch' => 'all']));
+
+        $response->assertOk();
+        $response->assertSee('Median of 2 community tier lists');
+    }
+
+    public function test_tier_lists_tab_endpoint_filters_by_an_explicit_historical_patch(): void
+    {
+        [$game, $character, $oldPatch] = $this->makeGameWithTwoPatches();
+
+        $oldList = TierList::create(['title' => 'Old List', 'game_idgame' => $game->idgame]);
+        $oldList->entries()->create(['character_idcharacter' => $character->idcharacter, 'tier' => 'F', 'order' => 0]);
+        $oldList->forceFill(['created_at' => now()->subMonths(3)])->save();
+
+        $recentList = TierList::create(['title' => 'Recent List', 'game_idgame' => $game->idgame]);
+        $recentList->entries()->create(['character_idcharacter' => $character->idcharacter, 'tier' => 'S', 'order' => 0]);
+
+        $response = $this->get(route('games.tabs.tier-lists', ['game' => $game, 'tier_patch' => $oldPatch->idgame_patch]));
+
+        $response->assertOk();
+        $response->assertSee('Median of 1 community tier list');
+
+        // The only tier list in range is the old one (tier F), not the
+        // recent one (tier S) — confirm Valentine lands in the F row.
+        $content = $response->getContent();
+        $fRowPos = strpos($content, 'tier-f');
+        $namePos = strpos($content, 'Valentine');
+
+        $this->assertNotFalse($namePos);
+        $this->assertGreaterThan($fRowPos, $namePos);
     }
 
     public function test_tier_lists_tab_endpoint_shows_empty_state_without_tier_lists(): void
@@ -140,23 +203,56 @@ class GameTierListAggregateTest extends TestCase
         $this->assertLessThan($bRowPos, $namePos);
     }
 
-    public function test_tier_lists_tab_endpoint_date_range_boundaries_are_inclusive(): void
+    public function test_tier_lists_tab_endpoint_patch_window_lower_boundary_is_inclusive(): void
     {
         $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
         $character = Character::create(['name' => 'Valentine', 'game_idgame' => $game->idgame]);
+
+        $patch = GamePatch::create([
+            'game_idgame' => $game->idgame,
+            'label' => '1.0',
+            'released_at' => now()->toDateString(),
+            'ended_at' => null,
+        ]);
 
         $list = TierList::create(['title' => 'Boundary List', 'game_idgame' => $game->idgame]);
         $list->entries()->create(['character_idcharacter' => $character->idcharacter, 'tier' => 'S', 'order' => 0]);
         $list->forceFill(['created_at' => now()->startOfDay()])->save();
 
-        $response = $this->get(route('games.tabs.tier-lists', [
-            'game' => $game,
-            'tier_from' => now()->toDateString(),
-            'tier_to' => now()->toDateString(),
-        ]));
+        $response = $this->get(route('games.tabs.tier-lists', ['game' => $game, 'tier_patch' => $patch->idgame_patch]));
 
         $response->assertOk();
         $response->assertSee('Median of 1 community tier list');
+    }
+
+    public function test_tier_lists_tab_endpoint_patch_window_upper_boundary_is_exclusive(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Valentine', 'game_idgame' => $game->idgame]);
+
+        $oldPatch = GamePatch::create([
+            'game_idgame' => $game->idgame,
+            'label' => '1.0',
+            'released_at' => now()->subMonth()->toDateString(),
+            'ended_at' => now()->toDateString(),
+        ]);
+        GamePatch::create([
+            'game_idgame' => $game->idgame,
+            'label' => '1.1',
+            'released_at' => now()->toDateString(),
+            'ended_at' => null,
+        ]);
+
+        // Falls exactly on the boundary date, which belongs to the new
+        // patch (1.1), not the old one (1.0)'s window.
+        $list = TierList::create(['title' => 'Boundary List', 'game_idgame' => $game->idgame]);
+        $list->entries()->create(['character_idcharacter' => $character->idcharacter, 'tier' => 'S', 'order' => 0]);
+        $list->forceFill(['created_at' => now()->startOfDay()])->save();
+
+        $response = $this->get(route('games.tabs.tier-lists', ['game' => $game, 'tier_patch' => $oldPatch->idgame_patch]));
+
+        $response->assertOk();
+        $response->assertSee('No tier lists for this game yet in the selected range.');
     }
 
     public function test_tier_lists_tab_endpoint_splits_a_character_into_separate_rows_per_resource_value(): void

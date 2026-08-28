@@ -6,6 +6,7 @@ use App\Models\Character;
 use App\Models\Combo;
 use App\Models\Game;
 use App\Models\GameEntry;
+use App\Models\GamePatch;
 use App\Models\GameResource;
 use App\Models\Resource;
 use App\Models\ResourceValue;
@@ -123,7 +124,8 @@ class DiscordComboSubmitTest extends TestCase
         $discordId = 'linked-1';
         $user = $this->linkDiscordUser($discordId);
 
-        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret', 'patch' => '1.03']);
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $patch = GamePatch::create(['game_idgame' => $game->idgame, 'label' => '1.03', 'released_at' => now()->subDay()]);
         $character = Character::create(['name' => 'Test Character', 'game_idgame' => $game->idgame]);
         $listingType = GameEntry::create(['title' => 'Combo', 'gameid' => $game->idgame, 'order' => 1]);
         $resource = GameResource::create(['game_idgame' => $game->idgame, 'text_name' => 'Where?', 'type' => 1, 'primaryORsecundary' => 1]);
@@ -181,7 +183,7 @@ class DiscordComboSubmitTest extends TestCase
         $this->assertSame($character->idcharacter, $combo->character_idcharacter);
         $this->assertSame($listingType->entryid, $combo->type);
         $this->assertSame('250', (string) (int) $combo->damage);
-        $this->assertSame('1.03', $combo->patch);
+        $this->assertSame($patch->idgame_patch, $combo->patch_idgame_patch);
         $this->assertSame($user->iduser, $combo->user_iduser);
         $this->assertNull($combo->verified);
 

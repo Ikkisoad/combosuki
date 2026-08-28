@@ -25,7 +25,6 @@ class GameSettingsController extends Controller
             'action' => ['required', 'in:Submit,Delete,Lock,Unlock,Complete,Incomplete'],
             'title' => ['required_if:action,Submit', 'nullable', 'string', 'max:100'],
             'image' => ['nullable', 'image', 'max:5120'],
-            'patch' => ['nullable', 'string', 'max:10'],
             'description' => ['nullable', 'string', 'max:255'],
             'notation' => ['nullable', 'string', 'max:1000'],
             'aliases' => ['nullable', 'string', 'max:1000'],
@@ -48,7 +47,6 @@ class GameSettingsController extends Controller
 
             $attributes = [
                 'name' => $validated['title'],
-                'patch' => $validated['patch'] ?? null,
                 'description' => $validated['description'] ?? null,
                 'notation' => $validated['notation'] ?? null,
                 'matches_enabled' => $request->boolean('matches_enabled'),

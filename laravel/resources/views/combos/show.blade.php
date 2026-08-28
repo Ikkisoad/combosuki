@@ -47,7 +47,7 @@
                                 {{ $combo->listingType?->title }}
                                 <span class="text-white-50 small fw-normal">&middot; {{ number_format($combo->views) }} {{ \Illuminate\Support\Str::plural('view', $combo->views) }}</span>
                                 @if ($combo->patch)
-                                    <button class="btn btn-dark" style="float: right;" disabled>Patch: {{ $combo->patch }}</button>
+                                    <button class="btn btn-dark" style="float: right;" disabled>Patch: {{ $combo->patch->label }}</button>
                                 @endif
                                 @can('update', $combo)
                                     <button type="button" class="btn btn-primary" style="float: right;" onclick="showComboEdit()">Edit</button>
@@ -146,7 +146,14 @@
                                 <div class="col">
                                     <div class="input-group mb-3">
                                         <span class="input-group-text">Patch:</span>
-                                        <input type="text" name="patch" class="form-control" maxlength="10" value="{{ $combo->patch }}">
+                                        <select name="patch_idgame_patch" class="form-select">
+                                            <option value="">— none —</option>
+                                            @foreach ($game->patches as $patch)
+                                                <option value="{{ $patch->idgame_patch }}" @selected($combo->patch_idgame_patch == $patch->idgame_patch)>
+                                                    {{ $patch->label }} ({{ $patch->released_at->format('M j, Y') }}{{ $patch->ended_at ? ' – '.$patch->ended_at->format('M j, Y') : ' – current' }})
+                                                </option>
+                                            @endforeach
+                                        </select>
                                     </div>
                                 </div>
                             </div>
