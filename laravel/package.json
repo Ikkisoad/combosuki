@@ -14,5 +14,8 @@
     "dependencies": {
         "@discord/embedded-app-sdk": "^1.0.0",
         "bootstrap": "^5.0.1"
+    },
+    "overrides": {
+        "uuid": "^14.0.0"
     }
 }
