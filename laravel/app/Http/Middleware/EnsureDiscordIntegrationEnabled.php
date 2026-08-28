@@ -18,7 +18,9 @@ use Symfony\Component\HttpFoundation\Response;
  * existing link — a user who already linked an account still needs to see
  * that the link exists while the integration is off, and to remove it, so
  * the page renders an unavailable notice but stays fully usable. The
- * Discord bot (routes/discord.php) is out of scope for this flag.
+ * Discord bot (routes/discord.php) is out of scope for this flag; the
+ * Discord Activity (routes/activity.php) is in scope, since it performs the
+ * same kind of user-facing Discord OAuth this flag was written to gate.
  */
 class EnsureDiscordIntegrationEnabled
 {

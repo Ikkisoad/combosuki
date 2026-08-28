@@ -5,6 +5,7 @@ use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\EnsureUserIsModerator;
 use App\Http\Middleware\EnsureUserIsTrusted;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\VerifyActivityToken;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
         then: function () {
             Route::middleware('throttle:60,1')->group(base_path('routes/discord.php'));
+            Route::middleware(['throttle:60,1', 'discord.web'])->group(base_path('routes/activity.php'));
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
@@ -28,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'trusted' => EnsureUserIsTrusted::class,
             'moderator' => EnsureUserIsModerator::class,
             'discord.web' => EnsureDiscordIntegrationEnabled::class,
+            'activity.auth' => VerifyActivityToken::class,
         ]);
         // Comble's "starter" guess is compared character-for-character
         // (including spaces) against the combo's raw notation; the global
@@ -39,7 +42,7 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
-            fn (Request $request) => $request->is('api/*') || $request->is('discord/*') || $request->routeIs([
+            fn (Request $request) => $request->is('api/*') || $request->is('discord/*') || $request->is('activity/*') || $request->routeIs([
                 'lists.entries.reassign',
                 'lists.manage.pages.bulk',
                 'lists.manage.categories.bulk',
@@ -49,7 +52,12 @@ return Application::configure(basePath: dirname(__DIR__))
         );
 
         $exceptions->render(function (HttpExceptionInterface $e, Request $request) {
-            if ($e->getStatusCode() !== 403 || $request->expectsJson()) {
+            // Activity routes carry no Laravel session (see
+            // routes/activity.php), so the session-based redirect below
+            // would itself throw for a 403 on one of them — never reachable
+            // today (no route in that file aborts 403), but this keeps a
+            // future one from crashing instead of just returning JSON.
+            if ($e->getStatusCode() !== 403 || $request->expectsJson() || $request->is('activity/*')) {
                 return null;
             }
 

@@ -4,13 +4,11 @@ namespace App\Services;
 
 use App\Exceptions\DiscordInteractionUnauthorized;
 use App\Models\Character;
-use App\Models\Combo;
 use App\Models\CombleDayView;
+use App\Models\Combo;
 use App\Models\Game;
 use App\Models\GameEntry;
 use App\Support\DailyGameClock;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 /**
@@ -22,11 +20,13 @@ use Illuminate\Support\Str;
  *
  * Unlike DiscordComboWizard, accumulated guesses aren't threaded through
  * custom_id: they need to persist across a user's separate `/csk comble`
- * invocations for the same day, so they're kept server-side in cache, keyed
- * by Discord user id + date — mirroring the web version's per-day cookie,
- * just server-side since Discord interactions carry no cookies. Only the
- * raw picks are cached; correctness is always recomputed against the day's
- * target, same as the web controller.
+ * invocations for the same day, so they're kept server-side via
+ * CombleDiscordProgress — mirroring the web version's per-day cookie, just
+ * server-side since Discord interactions carry no cookies. That same
+ * service backs the Discord Activity version of Comble too, so a player's
+ * progress is shared between the bot and the Activity. Only the raw picks
+ * are cached; correctness is always recomputed against the day's target,
+ * same as the web controller.
  *
  * Game messages are public (not ephemeral), so anyone in the channel can
  * watch a puzzle in progress — that's the point. But it also means anyone
@@ -46,9 +46,6 @@ class DiscordCombleGame
 {
     private const MAX_GUESSES = 5;
 
-    /** Generous relative to the puzzle's 1-day relevance window, just to bound cache growth. */
-    private const CACHE_TTL_DAYS = 3;
-
     private const MAX_CHOICES = 24;
 
     public function __construct(
@@ -56,6 +53,7 @@ class DiscordCombleGame
         private CombleGuessEvaluator $evaluator,
         private CombleRevealer $revealer,
         private CombleAttemptRecorder $attemptRecorder,
+        private CombleDiscordProgress $progress,
     ) {}
 
     public function start(string $userId): array
@@ -141,7 +139,7 @@ class DiscordCombleGame
         $day = DailyGameClock::today();
         $target = $this->dailyCombo->forDate($day);
 
-        if (count($this->picks($userId, $day)) >= self::MAX_GUESSES) {
+        if (count($this->progress->picks($userId, $day)) >= self::MAX_GUESSES) {
             return $this->publicStatus($userId);
         }
 
@@ -161,7 +159,7 @@ class DiscordCombleGame
 
         $starterRaw = trim((string) ($this->modalValue($submittedRows, 'starter') ?? ''));
 
-        $this->appendPick($userId, $day, [
+        $picks = $this->progress->appendPick($userId, $day, [
             $game->idgame,
             $character->idcharacter,
             $type->entryid,
@@ -171,9 +169,9 @@ class DiscordCombleGame
 
         $this->attemptRecorder->recordIfFinished(
             $day,
-            $this->visitorKey($userId),
+            $this->progress->visitorKey($userId),
             null,
-            $this->evaluateGuesses($this->picks($userId, $day), $target),
+            $this->evaluateGuesses($picks, $target),
             self::MAX_GUESSES,
         );
 
@@ -335,7 +333,7 @@ class DiscordCombleGame
         $target = $this->dailyCombo->forDate($day);
         $game = $target->character->game;
 
-        $guesses = $this->evaluateGuesses($this->picks($userId, $day), $target);
+        $guesses = $this->evaluateGuesses($this->progress->picks($userId, $day), $target);
         $won = collect($guesses)->contains('won', true);
         $finished = $won || count($guesses) >= self::MAX_GUESSES;
 
@@ -456,34 +454,6 @@ class DiscordCombleGame
         }
 
         return $guesses;
-    }
-
-    private function cacheKey(string $userId, Carbon $day): string
-    {
-        return 'comble:discord:'.$userId.':'.$day->toDateString();
-    }
-
-    /**
-     * Discord user ids are stable, globally unique identities (unlike the
-     * web flow's rotating session id), so this alone is enough to dedup one
-     * CombleAttempt row per Discord player per day via the "discord:"
-     * prefix keeping this key space distinct from web session ids.
-     */
-    private function visitorKey(string $userId): string
-    {
-        return 'discord:'.$userId;
-    }
-
-    private function picks(string $userId, Carbon $day): array
-    {
-        return Cache::get($this->cacheKey($userId, $day), []);
-    }
-
-    private function appendPick(string $userId, Carbon $day, array $pick): void
-    {
-        $picks = array_slice([...$this->picks($userId, $day), $pick], 0, self::MAX_GUESSES);
-
-        Cache::put($this->cacheKey($userId, $day), $picks, now()->addDays(self::CACHE_TTL_DAYS));
     }
 
     private function encodeState(array $state): string
