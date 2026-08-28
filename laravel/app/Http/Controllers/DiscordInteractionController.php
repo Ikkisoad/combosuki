@@ -9,6 +9,7 @@ use App\Services\DiscordComboSearch;
 use App\Services\DiscordComboSubmit;
 use App\Services\DiscordComboWizard;
 use App\Services\DiscordGuideSearch;
+use App\Services\DiscordTierListImage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -23,6 +24,7 @@ class DiscordInteractionController extends Controller
         private DiscordChallenge $challenge,
         private DiscordGuideSearch $guideSearch,
         private DiscordComboSubmit $comboSubmit,
+        private DiscordTierListImage $tierListImage,
     ) {}
 
     public function __invoke(Request $request): JsonResponse
@@ -77,10 +79,38 @@ class DiscordInteractionController extends Controller
             return response()->json(['type' => 4, 'data' => $data]);
         }
 
+        if ($subcommand === 'tierlist') {
+            return $this->handleTierList($payload);
+        }
+
         return response()->json([
             'type' => 4,
             'data' => $this->comboSearch->handle($data, $channelId),
         ]);
+    }
+
+    /**
+     * `/csk tierlist` renders a GD image (portrait file reads + compositing)
+     * that can plausibly exceed Discord's 3-second ack window, so this
+     * always defers (type 5) rather than replying inline like every other
+     * subcommand — except for a bad `from`/`to` date, which is cheap to
+     * catch synchronously and reply to immediately instead of deferring
+     * just to edit in an error a moment later.
+     */
+    private function handleTierList(array $payload): JsonResponse
+    {
+        $options = $this->tierListImage->extractOptions($payload);
+
+        try {
+            $this->tierListImage->parseDate($options['from'] ?? null);
+            $this->tierListImage->parseDate($options['to'] ?? null);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['type' => 4, 'data' => ['content' => $e->getMessage(), 'flags' => 64]]);
+        }
+
+        dispatch(fn () => $this->tierListImage->handle($payload))->afterResponse();
+
+        return response()->json(['type' => 5]);
     }
 
     private function handleComponent(array $payload): JsonResponse

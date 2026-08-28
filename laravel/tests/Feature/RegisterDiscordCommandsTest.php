@@ -54,6 +54,30 @@ class RegisterDiscordCommandsTest extends TestCase
         });
     }
 
+    public function test_the_csk_command_includes_a_tierlist_subcommand_with_a_required_game_option(): void
+    {
+        Http::fake([
+            self::COMMANDS_URL => Http::response([], 200),
+        ]);
+
+        $this->artisan('discord:register-commands')->assertSuccessful();
+
+        Http::assertSent(function ($request) {
+            $csk = collect($request->data())->firstWhere('name', 'csk');
+            $tierlist = collect($csk['options'] ?? [])->firstWhere('name', 'tierlist');
+
+            if (! $tierlist) {
+                return false;
+            }
+
+            $options = collect($tierlist['options'] ?? [])->keyBy('name');
+
+            return $options->get('game')['required'] === true
+                && $options->get('from')['required'] === false
+                && $options->get('to')['required'] === false;
+        });
+    }
+
     /** Entry point commands don't exist at the guild scope, so a guild registration must never even fetch one. */
     public function test_a_guild_registration_does_not_fetch_or_include_an_entry_point_command(): void
     {

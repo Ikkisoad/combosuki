@@ -11,15 +11,19 @@ use App\Models\GameEntry;
 use App\Models\GameResource;
 use App\Models\ListModel;
 use App\Models\ResourceValue;
+use App\Models\TierList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class DiscordInteractionTest extends TestCase
 {
     use RefreshDatabase;
+
+    private const TIER_LIST_FOLLOW_UP_URL = 'https://discord.com/api/v10/webhooks/test-application-id/test-interaction-token/messages/@original';
 
     private string $publicKey;
 
@@ -983,5 +987,143 @@ class DiscordInteractionTest extends TestCase
 
         $response->assertOk()->assertJson(['type' => 4]);
         $this->assertStringContainsString('No challenge is available yet', $response->json('data.embeds.0.description'));
+    }
+
+    private function tierListInteractionPayload(array $tierlistOptions): array
+    {
+        return [
+            'type' => 2,
+            'data' => [
+                'name' => 'csk',
+                'options' => [
+                    ['name' => 'tierlist', 'options' => $tierlistOptions],
+                ],
+            ],
+        ];
+    }
+
+    /** A tiny real PNG, so TierListImageRenderer's imagecreatefromstring() succeeds instead of falling back to a placeholder. */
+    private function fakePortraitBytes(): string
+    {
+        $image = imagecreatetruecolor(4, 4);
+        imagefill($image, 0, 0, imagecolorallocate($image, 200, 50, 50));
+        ob_start();
+        imagepng($image);
+        $bytes = ob_get_clean();
+        imagedestroy($image);
+
+        return $bytes;
+    }
+
+    public function test_tierlist_defers_then_posts_the_image_as_a_follow_up(): void
+    {
+        Storage::fake('public');
+
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Valentine', 'game_idgame' => $game->idgame, 'image' => 'character-portraits/valentine.png']);
+        Storage::disk('public')->put($character->image, $this->fakePortraitBytes());
+
+        $listA = TierList::create(['title' => 'List A', 'game_idgame' => $game->idgame]);
+        $listA->entries()->create(['character_idcharacter' => $character->idcharacter, 'tier' => 'S', 'order' => 0]);
+
+        $listB = TierList::create(['title' => 'List B', 'game_idgame' => $game->idgame]);
+        $listB->entries()->create(['character_idcharacter' => $character->idcharacter, 'tier' => 'A', 'order' => 0]);
+
+        $response = $this->postInteraction($this->tierListInteractionPayload([
+            ['name' => 'game', 'value' => 'Test Game'],
+        ]));
+
+        $response->assertOk()->assertJson(['type' => 5]);
+
+        Http::assertSent(function ($request) use ($game) {
+            if ($request->url() !== self::TIER_LIST_FOLLOW_UP_URL || ! $request->hasFile('files[0]')) {
+                return false;
+            }
+
+            $payloadJsonPart = collect($request->data())->firstWhere('name', 'payload_json');
+            $payload = json_decode($payloadJsonPart['contents'] ?? '', true);
+
+            return str_contains($payload['embeds'][0]['title'] ?? '', $game->name)
+                && str_contains($payload['embeds'][0]['description'] ?? '', '2 tier lists')
+                && ($payload['embeds'][0]['image']['url'] ?? null) === 'attachment://tierlist.png';
+        });
+    }
+
+    public function test_tierlist_filters_by_date_range(): void
+    {
+        Storage::fake('public');
+
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Valentine', 'game_idgame' => $game->idgame]);
+
+        $oldList = TierList::create(['title' => 'Old List', 'game_idgame' => $game->idgame]);
+        $oldList->entries()->create(['character_idcharacter' => $character->idcharacter, 'tier' => 'F', 'order' => 0]);
+        $oldList->forceFill(['created_at' => now()->subMonths(3)])->save();
+
+        $recentList = TierList::create(['title' => 'Recent List', 'game_idgame' => $game->idgame]);
+        $recentList->entries()->create(['character_idcharacter' => $character->idcharacter, 'tier' => 'S', 'order' => 0]);
+
+        $response = $this->postInteraction($this->tierListInteractionPayload([
+            ['name' => 'game', 'value' => 'Test Game'],
+            ['name' => 'from', 'value' => now()->subWeek()->toDateString()],
+        ]));
+
+        $response->assertOk()->assertJson(['type' => 5]);
+
+        Http::assertSent(function ($request) {
+            if ($request->url() !== self::TIER_LIST_FOLLOW_UP_URL || ! $request->hasFile('files[0]')) {
+                return false;
+            }
+
+            $payloadJsonPart = collect($request->data())->firstWhere('name', 'payload_json');
+            $payload = json_decode($payloadJsonPart['contents'] ?? '', true);
+
+            return str_contains($payload['embeds'][0]['description'] ?? '', '1 tier list');
+        });
+    }
+
+    public function test_tierlist_with_no_submissions_reports_none_yet(): void
+    {
+        Game::create(['name' => 'Empty Game', 'complete' => 1, 'modPass' => 'secret']);
+
+        $response = $this->postInteraction($this->tierListInteractionPayload([
+            ['name' => 'game', 'value' => 'Empty Game'],
+        ]));
+
+        $response->assertOk()->assertJson(['type' => 5]);
+
+        Http::assertSent(fn ($request) => $request->url() === self::TIER_LIST_FOLLOW_UP_URL
+            && str_contains($request['content'] ?? '', 'No tier lists have been submitted'));
+    }
+
+    public function test_tierlist_with_unknown_game_reports_an_error_on_the_deferred_message(): void
+    {
+        $response = $this->postInteraction($this->tierListInteractionPayload([
+            ['name' => 'game', 'value' => 'Nobody Game'],
+        ]));
+
+        $response->assertOk()->assertJson(['type' => 5]);
+
+        Http::assertSent(fn ($request) => $request->url() === self::TIER_LIST_FOLLOW_UP_URL
+            && str_contains($request['content'] ?? '', 'No game found matching'));
+    }
+
+    /**
+     * A bad date is cheap to validate (no I/O) so it's rejected immediately
+     * as an ephemeral error instead of deferring only to edit in the same
+     * error a moment later.
+     */
+    public function test_tierlist_with_an_unparsable_date_returns_an_immediate_ephemeral_error(): void
+    {
+        $response = $this->postInteraction($this->tierListInteractionPayload([
+            ['name' => 'game', 'value' => 'Test Game'],
+            ['name' => 'from', 'value' => 'not-a-date'],
+        ]));
+
+        $response->assertOk()->assertJson(['type' => 4]);
+        $this->assertSame(64, $response->json('data.flags'));
+        $this->assertStringContainsString("doesn't look like a date", $response->json('data.content'));
+
+        Http::assertNothingSent();
     }
 }

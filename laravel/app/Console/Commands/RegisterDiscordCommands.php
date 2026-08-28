@@ -9,7 +9,7 @@ class RegisterDiscordCommands extends Command
 {
     protected $signature = 'discord:register-commands {--guild= : Register to a single guild for instant propagation instead of globally}';
 
-    protected $description = 'Register the /csk search, guide, browse, comble, challenge, and submit slash commands with Discord';
+    protected $description = 'Register the /csk search, guide, browse, comble, challenge, submit, and tierlist slash commands with Discord';
 
     public function handle(): int
     {
@@ -97,6 +97,31 @@ class RegisterDiscordCommands extends Command
                         'name' => 'submit',
                         'description' => 'Submit a new combo (requires a linked Discord account)',
                         'type' => 1,
+                    ],
+                    [
+                        'name' => 'tierlist',
+                        'description' => 'Post the community perceived-strength tier list image for a game',
+                        'type' => 1,
+                        'options' => [
+                            [
+                                'name' => 'game',
+                                'description' => 'Game name',
+                                'type' => 3,
+                                'required' => true,
+                            ],
+                            [
+                                'name' => 'from',
+                                'description' => 'Only include tier lists submitted on or after this date',
+                                'type' => 3,
+                                'required' => false,
+                            ],
+                            [
+                                'name' => 'to',
+                                'description' => 'Only include tier lists submitted on or before this date',
+                                'type' => 3,
+                                'required' => false,
+                            ],
+                        ],
                     ],
                 ],
             ],
