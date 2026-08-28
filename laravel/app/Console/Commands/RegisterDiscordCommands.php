@@ -28,7 +28,7 @@ class RegisterDiscordCommands extends Command
             ? "https://discord.com/api/v10/applications/{$applicationId}/guilds/{$guild}/commands"
             : "https://discord.com/api/v10/applications/{$applicationId}/commands";
 
-        $response = Http::withToken($botToken, 'Bot')->asJson()->put($url, [
+        $commands = [
             [
                 'name' => 'csk',
                 'description' => 'Search the combo database',
@@ -100,7 +100,27 @@ class RegisterDiscordCommands extends Command
                     ],
                 ],
             ],
-        ]);
+        ];
+
+        // Once the application has an Activity enabled (see
+        // routes/activity.php), Discord auto-manages a global "Primary Entry
+        // Point" command (type 4) that launches it from the Apps menu.
+        // Entry point commands don't exist at the guild scope, and a global
+        // bulk overwrite replaces the *entire* command set — Discord
+        // rejects (rather than silently drops) an update that would remove
+        // that command via this endpoint, so it has to be fetched and
+        // included unchanged in every global registration alongside our own
+        // commands. A no-op if the application has no entry point command
+        // (e.g. Activities isn't enabled).
+        if (! $guild) {
+            $entryPoint = $this->existingEntryPointCommand($applicationId, $botToken);
+
+            if ($entryPoint) {
+                $commands[] = $entryPoint;
+            }
+        }
+
+        $response = Http::withToken($botToken, 'Bot')->asJson()->put($url, $commands);
 
         if ($response->failed()) {
             $this->error('Discord API error: '.$response->body());
@@ -113,5 +133,19 @@ class RegisterDiscordCommands extends Command
             : 'Registered global command (may take up to 1 hour to propagate).');
 
         return self::SUCCESS;
+    }
+
+    /** @return array<string, mixed>|null */
+    private function existingEntryPointCommand(string $applicationId, string $botToken): ?array
+    {
+        $response = Http::withToken($botToken, 'Bot')->get("https://discord.com/api/v10/applications/{$applicationId}/commands");
+
+        if ($response->failed()) {
+            $this->warn("Couldn't fetch existing commands to preserve the Entry Point command: ".$response->body());
+
+            return null;
+        }
+
+        return collect($response->json())->first(fn ($command) => ($command['type'] ?? null) === 4);
     }
 }
