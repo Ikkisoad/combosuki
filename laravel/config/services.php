@@ -54,6 +54,14 @@ return [
         // and the authenticated linking flow never share an endpoint. Both
         // URLs must be registered in the Discord portal.
         'auth_redirect' => env('DISCORD_AUTH_REDIRECT_URI'),
+
+        // Dedicated subdomain the Comble Activity is served from — see
+        // routes/activity.php's docblock for why it needs one (Discord's
+        // Root URL Mapping always loads the mapped target's own "/", so
+        // the Activity has to actually live at a subdomain's root rather
+        // than a path prefix on the main site). Unset in environments
+        // without that subdomain configured (e.g. local dev).
+        'activity_domain' => env('DISCORD_ACTIVITY_DOMAIN'),
     ],
 
 ];

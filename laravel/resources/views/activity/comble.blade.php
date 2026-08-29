@@ -23,5 +23,16 @@
     </div>
 
     <script type="application/json" id="comble-catalog">{!! json_encode($catalog) !!}</script>
+    {{--
+        route()-generated, not hardcoded in the JS: these routes live at a
+        dedicated subdomain's root in production but under an
+        "/activity/comble" prefix on the main domain in local dev (see
+        routes/activity.php's docblock) — the JS shouldn't need to know which.
+    --}}
+    <script type="application/json" id="activity-comble-urls">{!! json_encode([
+        'token' => route('activity.comble.token'),
+        'state' => route('activity.comble.state'),
+        'guess' => route('activity.comble.guess'),
+    ]) !!}</script>
 </body>
 </html>
