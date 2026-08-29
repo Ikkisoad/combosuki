@@ -103,12 +103,47 @@ window.updateResourceValueAliases = function () {
     });
 };
 
+/**
+ * The combo notation display (#combo_display) has two independent toggles —
+ * Display Method (rendered vs. raw text) and Remove/Show Aliases (as
+ * submitted vs. every alias expanded to its real button name) — backed by up
+ * to 4 pre-rendered <template> variants (combo_variant_{rendered,text}_
+ * {aliased,dealiased}, see combos/show.blade.php). Both toggles just flip a
+ * data-* flag on #combo_display and re-copy the matching template's markup
+ * in, so the two combine freely instead of the previous approach of swapping
+ * innerHTML between two elements, which only worked for one toggle at a time
+ * and corrupted the other once both were used together.
+ */
+window.renderComboDisplay = function () {
+    const display = document.getElementById('combo_display');
+
+    if (! display) {
+        return;
+    }
+
+    const variant = (display.dataset.textMode === '1' ? 'text' : 'rendered')
+        + '_' + (display.dataset.noAlias === '1' ? 'dealiased' : 'aliased');
+
+    const template = document.getElementById('combo_variant_' + variant);
+
+    if (template) {
+        display.innerHTML = template.innerHTML;
+    }
+};
+
 window.change_display = function () {
-    const line = document.getElementById('combo_line');
-    const text = document.getElementById('combo_text');
-    const temp = line.innerHTML;
-    line.innerHTML = text.innerHTML;
-    text.innerHTML = temp;
+    const display = document.getElementById('combo_display');
+    display.dataset.textMode = display.dataset.textMode === '1' ? '0' : '1';
+    window.renderComboDisplay();
+};
+
+window.toggleAliases = function () {
+    const display = document.getElementById('combo_display');
+    display.dataset.noAlias = display.dataset.noAlias === '1' ? '0' : '1';
+    window.renderComboDisplay();
+
+    const button = document.getElementById('toggle-aliases-btn');
+    button.textContent = display.dataset.noAlias === '1' ? 'Show Aliases' : 'Remove Aliases';
 };
 
 window.showComboEdit = function () {

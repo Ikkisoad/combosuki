@@ -78,7 +78,6 @@ class ListComboPickerController extends Controller
         $categoryId = $validated['category_id'] ?? null;
         $added = 0;
 
-        // TODO: record which user made this edit once an audit/edit-log exists
         foreach ($validated['combo_ids'] as $comboId) {
             $combo = Combo::with('character')->find($comboId);
 
@@ -95,6 +94,10 @@ class ListComboPickerController extends Controller
             ]);
 
             $added++;
+        }
+
+        if ($added > 0) {
+            $list->recordEdit();
         }
 
         return redirect()->route('lists.manage.combos.index', $list)->with('status', "{$added} combo(s) added.");

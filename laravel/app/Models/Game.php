@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasEditHistory;
 use App\Support\AliasGenerator;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
@@ -14,6 +15,8 @@ use Illuminate\Support\Str;
 
 class Game extends Model
 {
+    use HasEditHistory;
+
     protected $table = 'game';
 
     protected $primaryKey = 'idgame';

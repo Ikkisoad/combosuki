@@ -13,6 +13,7 @@ use App\Models\GameEntry;
 use App\Models\GamePatch;
 use App\Models\GameResource;
 use App\Models\ListModel;
+use App\Services\ComboNotationRenderer;
 use App\Services\ComboSubmissionService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -25,7 +26,10 @@ class ComboController extends Controller
 {
     use FiltersCombos;
 
-    public function __construct(private ComboSubmissionService $comboSubmission) {}
+    public function __construct(
+        private ComboSubmissionService $comboSubmission,
+        private ComboNotationRenderer $comboNotationRenderer,
+    ) {}
 
     /**
      * Browse/search combos for a game. Mirrors legacy's forms.php (search
@@ -80,6 +84,8 @@ class ComboController extends Controller
 
         $similarCombos = $this->similarCombos($combo);
 
+        $dealiasedNotation = $this->comboNotationRenderer->resolveAliases($game, $combo->combo);
+
         $canEdit = Gate::allows('update', $combo);
         $canVerify = Gate::allows('verify', $combo);
 
@@ -124,6 +130,7 @@ class ComboController extends Controller
             'comboListIds' => $comboListIds,
             'isFavorited' => $isFavorited,
             'similarCombos' => $similarCombos,
+            'dealiasedNotation' => $dealiasedNotation,
         ]);
     }
 
@@ -347,6 +354,8 @@ class ComboController extends Controller
             ->contains(fn (GameResource $resource) => $resource->characters->isNotEmpty()
                 && ! $resource->characters->contains('idcharacter', $combo->character_idcharacter));
 
+        $history = $combo->editHistories()->with('user')->limit(20)->get();
+
         return view('combos.edit', [
             'game' => $game,
             'combo' => $combo,
@@ -356,6 +365,7 @@ class ComboController extends Controller
             'resourceValueAliases' => $this->resourceValueAliasesByCharacter($resources),
             'selectedResources' => $selectedResources,
             'forceShowSecondaryResources' => $forceShowSecondaryResources,
+            'history' => $history,
         ]);
     }
 
@@ -364,7 +374,6 @@ class ComboController extends Controller
         $validated = $request->validated();
         $game = $combo->character->game;
 
-        // TODO: record which user made this edit once an audit/edit-log exists
         $combo->update([
             'combo' => $validated['combo'],
             'comments' => $validated['comments'] ?? null,
@@ -374,6 +383,7 @@ class ComboController extends Controller
             'type' => $validated['listingtype'],
             'patch_idgame_patch' => $validated['patch_idgame_patch'] ?? null,
         ]);
+        $combo->recordEdit();
 
         // The inline quick-edit form on the combo page doesn't send a `resources`
         // field at all (it only edits the simple/relational fields); only sync
@@ -392,7 +402,7 @@ class ComboController extends Controller
 
         $game = $combo->character->game;
 
-        // TODO: record which user made this edit once an audit/edit-log exists
+        $combo->recordEdit('deleted');
         $combo->delete();
 
         return redirect()->route('games.combos.index', $game)->with('status', 'Combo deleted.');

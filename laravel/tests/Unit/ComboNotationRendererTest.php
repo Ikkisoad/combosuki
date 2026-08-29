@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Models\Button;
+use App\Models\ButtonAlias;
 use App\Models\Game;
 use App\Services\ComboNotationRenderer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -132,5 +133,49 @@ class ComboNotationRendererTest extends TestCase
             '<span style="color: #ff0000;">LK</span><span style="color: #ff0000;">5</span>',
             $html
         );
+    }
+
+    public function test_resolve_aliases_swaps_an_alias_for_its_buttons_name(): void
+    {
+        $game = $this->makeGame();
+        $button = Button::create(['name' => '5LP', 'color' => '#ff0000', 'match_type' => 'exact', 'game_idgame' => $game->idgame, 'order' => 1]);
+        ButtonAlias::create(['alias' => 'Throw', 'button_idbutton' => $button->idbutton, 'game_idgame' => $game->idgame]);
+
+        $resolved = $this->renderer->resolveAliases($game, 'Throw > 5LP');
+
+        $this->assertSame('5LP > 5LP', $resolved);
+    }
+
+    public function test_resolve_aliases_is_case_insensitive(): void
+    {
+        $game = $this->makeGame();
+        $button = Button::create(['name' => '5LP', 'color' => '#ff0000', 'match_type' => 'exact', 'game_idgame' => $game->idgame, 'order' => 1]);
+        ButtonAlias::create(['alias' => 'Throw', 'button_idbutton' => $button->idbutton, 'game_idgame' => $game->idgame]);
+
+        $resolved = $this->renderer->resolveAliases($game, 'throw');
+
+        $this->assertSame('5LP', $resolved);
+    }
+
+    public function test_resolve_aliases_expands_the_longest_alias_first_so_a_substring_alias_cant_clobber_it(): void
+    {
+        $game = $this->makeGame();
+        $throwButton = Button::create(['name' => '5LP', 'color' => '#ff0000', 'match_type' => 'exact', 'game_idgame' => $game->idgame, 'order' => 1]);
+        $bigThrowButton = Button::create(['name' => '6LP', 'color' => '#00ff00', 'match_type' => 'exact', 'game_idgame' => $game->idgame, 'order' => 2]);
+        ButtonAlias::create(['alias' => 'Throw', 'button_idbutton' => $throwButton->idbutton, 'game_idgame' => $game->idgame]);
+        ButtonAlias::create(['alias' => 'Big Throw', 'button_idbutton' => $bigThrowButton->idbutton, 'game_idgame' => $game->idgame]);
+
+        $resolved = $this->renderer->resolveAliases($game, 'Big Throw');
+
+        $this->assertSame('6LP', $resolved);
+    }
+
+    public function test_resolve_aliases_leaves_notation_unchanged_when_the_game_has_no_aliases(): void
+    {
+        $game = $this->makeGame();
+
+        $resolved = $this->renderer->resolveAliases($game, '5LP > Throw');
+
+        $this->assertSame('5LP > Throw', $resolved);
     }
 }

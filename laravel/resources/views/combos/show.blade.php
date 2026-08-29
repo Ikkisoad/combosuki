@@ -53,6 +53,9 @@
                                     <button type="button" class="btn btn-primary" style="float: right;" onclick="showComboEdit()">Edit</button>
                                 @endcan
                                 <button style="float: right;" class="btn btn-secondary" onclick="change_display()">Display Method</button>
+                                @if ($dealiasedNotation !== $combo->combo)
+                                    <button type="button" id="toggle-aliases-btn" style="float: right;" class="btn btn-secondary" onclick="toggleAliases()">Remove Aliases</button>
+                                @endif
                                 @auth
                                     <button type="button"
                                             class="btn {{ $isFavorited ? 'btn-warning' : 'btn-outline-warning' }}"
@@ -81,13 +84,25 @@
                             </th>
                         </tr>
                         <tr>
-                            <td id="combo_line"><x-combo-notation :game="$game" :notation="$combo->combo" /></td>
+                            <td><span id="combo_display" data-text-mode="0" data-no-alias="0"><x-combo-notation :game="$game" :notation="$combo->combo" /></span></td>
                         </tr>
                     </table>
 
                     <x-video-embed :video="$combo->video" />
 
-                    <div id="combo_text" style="display: none;">{!! nl2br(e($combo->combo)) !!}</div>
+                    {{--
+                        change_display()/toggleAliases() (app.js) never mutate these
+                        templates — they only read one and copy it into #combo_display
+                        above, so the two toggles can combine freely (e.g. raw-text +
+                        de-aliased) without losing track of the other two variants.
+                    --}}
+                    <template id="combo_variant_rendered_aliased"><x-combo-notation :game="$game" :notation="$combo->combo" /></template>
+                    <template id="combo_variant_text_aliased">{!! nl2br(e($combo->combo)) !!}</template>
+
+                    @if ($dealiasedNotation !== $combo->combo)
+                        <template id="combo_variant_rendered_dealiased"><x-combo-notation :game="$game" :notation="$dealiasedNotation" /></template>
+                        <template id="combo_variant_text_dealiased">{!! nl2br(e($dealiasedNotation)) !!}</template>
+                    @endif
 
                     @if ($combo->comments)
                         <table class="table table-hover align-middle combosuki-main-reversed text-white">

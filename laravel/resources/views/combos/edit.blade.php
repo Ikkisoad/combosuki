@@ -184,6 +184,8 @@
             @csrf
             <button type="submit" class="btn btn-danger">Delete Combo</button>
         </form>
+
+        <x-edit-history :histories="$history" />
     </div>
 
     <script>

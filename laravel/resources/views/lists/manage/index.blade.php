@@ -213,6 +213,8 @@
                 @endforeach
             </div>
         </section>
+
+        <x-edit-history :histories="$history" />
     </div>
 
     @vite(['resources/js/list-manage.js'])

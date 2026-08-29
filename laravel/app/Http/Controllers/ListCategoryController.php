@@ -18,7 +18,6 @@ class ListCategoryController extends Controller
 
         $validated = $this->validateCategory($request, $list);
 
-        // TODO: record which user made this edit once an audit/edit-log exists
         ListCategory::create([
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
@@ -26,6 +25,7 @@ class ListCategoryController extends Controller
             'idPage' => $validated['idPage'] ?? null,
             'order' => $validated['order'] ?? null,
         ]);
+        $list->recordEdit();
 
         return redirect()->route('lists.manage.index', $list)->with('status', 'Category added.');
     }
@@ -36,8 +36,8 @@ class ListCategoryController extends Controller
 
         abort_if($category->list_idlist !== $list->idlist, 404);
 
-        // TODO: record which user made this edit once an audit/edit-log exists
         $category->delete();
+        $list->recordEdit('deleted');
 
         return redirect()->route('lists.manage.index', $list)->with('status', 'Category deleted. Its combos are now uncategorized.');
     }
@@ -58,7 +58,6 @@ class ListCategoryController extends Controller
             'categories.*.order' => ['nullable', 'numeric'],
         ]);
 
-        // TODO: record which user made this edit once an audit/edit-log exists
         DB::transaction(function () use ($validated, $list): void {
             foreach ($validated['categories'] as $idCategory => $row) {
                 ListCategory::where('idlist_category', $idCategory)
@@ -71,6 +70,7 @@ class ListCategoryController extends Controller
                     ]);
             }
         });
+        $list->recordEdit();
 
         return response()->json(['status' => 'ok']);
     }

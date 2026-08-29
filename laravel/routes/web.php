@@ -204,8 +204,6 @@ Route::get('/tier-lists/create', [TierListController::class, 'create'])->middlew
 Route::post('/tier-lists', [TierListController::class, 'store'])->middleware(['auth', 'throttle:10,1'])->name('tier-lists.store');
 Route::get('/tier-lists/{tierList}', [TierListController::class, 'show'])->name('tier-lists.show');
 
-Route::view('/combo-guidelines', 'combo-guidelines')->name('combo-guidelines');
-
 Route::get('/logs', [LogController::class, 'index'])->name('logs.index');
 
 Route::get('/preferences', [PreferenceController::class, 'edit'])->name('preferences.edit');

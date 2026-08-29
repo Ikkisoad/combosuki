@@ -16,7 +16,9 @@ class GameSettingsController extends Controller
 {
     public function edit(Game $game): View
     {
-        return view('admin.game.edit', ['game' => $game]);
+        $history = $game->editHistories()->with('user')->limit(20)->get();
+
+        return view('admin.game.edit', ['game' => $game, 'history' => $history]);
     }
 
     public function update(Request $request, Game $game): RedirectResponse
@@ -31,7 +33,6 @@ class GameSettingsController extends Controller
             'matches_url' => ['nullable', 'string', 'max:255'],
         ]);
 
-        // TODO: record which user made this edit once an audit/edit-log exists
         if ($validated['action'] === 'Submit') {
             $aliases = AliasGenerator::parseList($validated['aliases'] ?? '');
 
@@ -62,6 +63,7 @@ class GameSettingsController extends Controller
             }
 
             $game->update($attributes);
+            $game->recordEdit();
 
             // Matched case-insensitively (mirroring the DB's case-insensitive
             // unique index) so re-submitting an existing alias with different
@@ -88,12 +90,14 @@ class GameSettingsController extends Controller
 
         if ($validated['action'] === 'Lock') {
             $game->update(['complete' => $game->isComplete() ? 2 : -1]);
+            $game->recordEdit();
 
             return redirect()->route('admin.game.edit', $game)->with('status', 'Game locked.');
         }
 
         if ($validated['action'] === 'Unlock') {
             $game->update(['complete' => $game->isComplete() ? 1 : 0]);
+            $game->recordEdit();
 
             return redirect()->route('admin.game.edit', $game)->with('status', 'Game unlocked.');
         }
@@ -108,6 +112,7 @@ class GameSettingsController extends Controller
                 $game->isLocked() => -1,
                 default => 0,
             }]);
+            $game->recordEdit();
 
             return redirect()->route('admin.game.edit', $game)
                 ->with('status', $complete ? 'Game marked as complete.' : 'Game marked as incomplete.');
@@ -128,6 +133,7 @@ class GameSettingsController extends Controller
             Storage::disk('public')->delete($game->image);
         }
 
+        $game->recordEdit('deleted');
         $game->delete();
 
         return redirect()->route('games.index')->with('status', 'Game deleted.');

@@ -105,11 +105,14 @@ class ListController extends Controller
 
         [, $grouped] = $this->categoriesAndGroupedCombos($list, null);
 
+        $history = $list->editHistories()->with('user')->limit(20)->get();
+
         return view('lists.manage.index', [
             'list' => $list,
             'pages' => $pages,
             'categories' => $categories,
             'grouped' => $grouped,
+            'history' => $history,
         ]);
     }
 
@@ -162,8 +165,8 @@ class ListController extends Controller
             'list_name' => ['required', 'string', 'max:100'],
         ]);
 
-        // TODO: record which user made this edit once an audit/edit-log exists
         $list->update(['list_name' => $validated['list_name']]);
+        $list->recordEdit();
 
         return redirect()->route('lists.show', $list)->with('status', 'List renamed.');
     }
@@ -172,8 +175,8 @@ class ListController extends Controller
     {
         $this->authorize('delete', $list);
 
-        // TODO: record which user made this edit once an audit/edit-log exists
         DB::transaction(function () use ($list): void {
+            $list->recordEdit('deleted');
             $list->combos()->detach();
             $list->categories()->delete();
             $list->pages()->delete();
@@ -198,10 +201,10 @@ class ListController extends Controller
             'comboid' => ['required', 'string'],
         ]);
 
-        // TODO: record which user made this edit once an audit/edit-log exists
         $comboIds = array_filter(array_map('trim', explode(',', $validated['comboid'])));
 
         $list->combos()->detach($comboIds);
+        $list->recordEdit();
 
         return redirect()->back()->with('status', 'Entry removed.');
     }
@@ -229,10 +232,10 @@ class ListController extends Controller
             return response()->json(['error' => 'That combo does not belong to this list\'s game.'], 422);
         }
 
-        // TODO: record which user made this edit once an audit/edit-log exists
         $list->combos()->updateExistingPivot($combo->idcombo, [
             'list_category_idlist_category' => $validated['list_category_idlist_category'] ?? null,
         ]);
+        $list->recordEdit();
 
         return response()->json([
             'status' => 'ok',

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Button;
+use App\Models\ButtonAlias;
 use App\Models\Game;
 
 class ComboNotationRenderer
@@ -135,6 +136,31 @@ class ComboNotationRenderer
         }
 
         return null;
+    }
+
+    /**
+     * Expand every button alias configured for $game (e.g. "Throw") found in
+     * $notation into the real button name it stands for (e.g. "5LP"), so a
+     * combo written with aliases can be read back in the game's actual
+     * button names. Longest alias first, same as
+     * FiltersCombos::applyFilters(), so a short alias that's a substring of
+     * a longer one can't clobber it mid-replacement. Case-insensitive since
+     * aliases are admin-defined words a submitter may have typed in any
+     * case.
+     */
+    public function resolveAliases(Game $game, string $notation): string
+    {
+        $aliases = $game->buttonAliases()
+            ->with('button:idbutton,name')
+            ->get()
+            ->sortByDesc(fn (ButtonAlias $alias) => mb_strlen($alias->alias))
+            ->values();
+
+        foreach ($aliases as $alias) {
+            $notation = str_ireplace($alias->alias, $alias->button->name, $notation);
+        }
+
+        return $notation;
     }
 
     private function matches(Button $button, string $word): bool

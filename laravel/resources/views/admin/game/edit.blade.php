@@ -68,5 +68,7 @@
         </form>
 
         <x-admin.edit-nav :game="$game" />
+
+        <x-edit-history :histories="$history" />
     </div>
 </x-layouts.app>

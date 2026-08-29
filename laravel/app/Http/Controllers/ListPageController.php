@@ -21,13 +21,13 @@ class ListPageController extends Controller
             'order' => ['nullable', 'numeric'],
         ]);
 
-        // TODO: record which user made this edit once an audit/edit-log exists
         ListPage::create([
             'Title' => $validated['Title'],
             'Description' => $validated['Description'] ?? null,
             'idList' => $list->idlist,
             'order' => $validated['order'] ?? null,
         ]);
+        $list->recordEdit();
 
         return redirect()->route('lists.manage.index', $list)->with('status', 'Page added.');
     }
@@ -38,8 +38,8 @@ class ListPageController extends Controller
 
         abort_if($page->idList !== $list->idlist, 404);
 
-        // TODO: record which user made this edit once an audit/edit-log exists
         $page->delete();
+        $list->recordEdit('deleted');
 
         return redirect()->route('lists.manage.index', $list)->with('status', 'Page deleted. Its categories are now unassigned from any page.');
     }
@@ -59,7 +59,6 @@ class ListPageController extends Controller
             'pages.*.order' => ['nullable', 'numeric'],
         ]);
 
-        // TODO: record which user made this edit once an audit/edit-log exists
         DB::transaction(function () use ($validated, $list): void {
             foreach ($validated['pages'] as $idListPage => $row) {
                 ListPage::where('idListPage', $idListPage)
@@ -71,6 +70,7 @@ class ListPageController extends Controller
                     ]);
             }
         });
+        $list->recordEdit();
 
         return response()->json(['status' => 'ok']);
     }
