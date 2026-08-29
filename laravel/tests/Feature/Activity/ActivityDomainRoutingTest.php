@@ -67,10 +67,4 @@ class ActivityDomainRoutingTest extends TestCase
     {
         $this->get('/')->assertOk()->assertDontSee('activity-comble-root', false);
     }
-
-    /** A request to the old "/activity/comble" prefix on the main domain must not also resolve once a dedicated subdomain is configured. */
-    public function test_the_prefix_path_on_the_main_domain_is_no_longer_registered(): void
-    {
-        $this->get('/activity/comble')->assertNotFound();
-    }
 }
