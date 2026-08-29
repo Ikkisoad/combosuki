@@ -11,16 +11,15 @@
     RewriteCond %{HTTP:x-xsrf-token} .
     RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
 
-    # Serve Laravel's static assets (build/, img/, favicons, randomizer/...)
-    # transparently from the nested laravel/public folder, without changing
-    # the visible URL — same reasoning as the repo root's .htaccess, one
-    # directory shallower here since this folder (not the repo root) is the
-    # comble.* subdomain's document root.
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{DOCUMENT_ROOT}/../laravel/public%{REQUEST_URI} -f
-    RewriteRule ^(.*)$ ../laravel/public/$1 [L]
-
-    # Everything else goes through the front controller.
+    # Unlike the repo root's .htaccess, this one does NOT try to rewrite
+    # straight to the sibling laravel/public folder for static assets
+    # (build/, etc.) — shared hosts commonly sandbox each subdomain's vhost
+    # to its own docroot, so Apache here can't read across into laravel/
+    # even with a correct ../ rewrite target (confirmed: those requests
+    # 404'd). PHP itself has no such restriction — comble/index.php already
+    # reaches into ../laravel/ to boot the app — so routes/activity.php
+    # serves /build/* itself via Laravel's public_path(), and everything
+    # else goes through the front controller as usual.
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]

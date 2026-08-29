@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Activity\ActivityAssetController;
 use App\Http\Controllers\Activity\ActivityAuthController;
 use App\Http\Controllers\Activity\ActivityCombleController;
 use Illuminate\Support\Facades\Route;
@@ -63,6 +64,17 @@ $registerComble = function () {
 $activityDomain = config('services.discord.activity_domain');
 
 if ($activityDomain) {
+    Route::domain($activityDomain)->group(function () {
+        // Apache's own static-file serving can't reach the sibling
+        // laravel/public folder from this subdomain's sandboxed docroot
+        // (see comble/.htaccess and ActivityAssetController) — only needed
+        // here, not in the prefix-fallback branch below, where the whole
+        // app already shares one docroot that serves /build/* directly.
+        Route::get('/build/{path}', [ActivityAssetController::class, 'show'])
+            ->where('path', '.*')
+            ->name('activity.build-asset');
+    });
+
     Route::domain($activityDomain)->name('activity.comble.')->group($registerComble);
 } else {
     Route::prefix('activity/comble')->name('activity.comble.')->group($registerComble);
