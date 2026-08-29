@@ -38,6 +38,10 @@ class ComboPatchFilterTest extends TestCase
 
         $response->assertOk();
         $response->assertSee($matching->combo);
-        $response->assertDontSee($other->combo);
+        $response->assertViewHas('combos', function ($combos) use ($matching, $other) {
+            $ids = $combos->pluck('idcombo');
+
+            return $ids->contains($matching->idcombo) && ! $ids->contains($other->idcombo);
+        });
     }
 }
