@@ -20,7 +20,6 @@
                 @else
                     <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
                     <li class="nav-item"><a class="nav-link" href="/games">Games</a></li>
-                    <li class="nav-item"><a class="nav-link" href="https://github.com/Ikkisoad/combosuki" target="_blank">GitHub</a></li>
                 @endif
                 <li class="nav-item">
                     <a class="nav-link" href="/lists">Guides</a>

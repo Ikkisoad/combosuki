@@ -60,6 +60,9 @@ Route::get('/about', function () {
     ]);
 })->name('about');
 
+Route::view('/terms', 'terms')->name('terms');
+Route::view('/privacy', 'privacy')->name('privacy');
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1')->name('login.attempt');
