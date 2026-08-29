@@ -6,6 +6,7 @@ use App\Http\Controllers\Concerns\FiltersCombos;
 use App\Http\Requests\StoreComboRequest;
 use App\Http\Requests\UpdateComboRequest;
 use App\Models\Character;
+use App\Models\CharacterButtonAlias;
 use App\Models\CharacterQuery;
 use App\Models\Combo;
 use App\Models\Game;
@@ -84,7 +85,7 @@ class ComboController extends Controller
 
         $similarCombos = $this->similarCombos($combo);
 
-        $dealiasedNotation = $this->comboNotationRenderer->resolveAliases($game, $combo->combo);
+        $dealiasedNotation = $this->comboNotationRenderer->resolveAliases($game, $combo->combo, $combo->character);
 
         $canEdit = Gate::allows('update', $combo);
         $canVerify = Gate::allows('verify', $combo);
@@ -191,8 +192,37 @@ class ComboController extends Controller
             'listingTypes' => $listingTypes,
             'resources' => $resources,
             'resourceValueAliases' => $this->resourceValueAliasesByCharacter($resources),
+            'characterButtonAliases' => $this->characterButtonAliasesByCharacter($game),
             'defaults' => $this->defaultsFromChallenge($game, $resources, $request),
         ]);
+    }
+
+    /**
+     * The character select on the create form is client-side only (see
+     * resourceValueAliasesByCharacter() above), so a character-specific move
+     * alias (e.g. "Tackle" for one character's 236A) can't be filtered into
+     * the "Other button names…" list server-side. Instead this ships every
+     * character's move aliases as {characterId: [{alias, buttonName,
+     * color}]} for app.js to render as buttons on change.
+     */
+    private function characterButtonAliasesByCharacter(Game $game): array
+    {
+        $aliases = [];
+
+        $characterButtonAliases = CharacterButtonAlias::whereHas('character', fn (Builder $q) => $q->where('game_idgame', $game->idgame))
+            ->with('button:idbutton,name,color')
+            ->orderBy('alias')
+            ->get();
+
+        foreach ($characterButtonAliases as $alias) {
+            $aliases[$alias->character_idcharacter][] = [
+                'alias' => $alias->alias,
+                'buttonName' => $alias->button->name,
+                'color' => $alias->button->color,
+            ];
+        }
+
+        return $aliases;
     }
 
     /**

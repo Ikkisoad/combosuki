@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Button;
 use App\Models\ButtonAlias;
 use App\Models\Character;
+use App\Models\CharacterButtonAlias;
 use App\Models\CharacterQuery;
 use App\Models\CharacterResourceValueAlias;
 use App\Models\Combo;
@@ -87,6 +88,49 @@ class ComboSubmissionTest extends TestCase
         $this->get(route('games.combos.create', $game))
             ->assertOk()
             ->assertDontSee('Other button names&hellip;', false);
+    }
+
+    public function test_combo_creation_form_ships_character_specific_button_aliases_for_js_to_filter_by_character(): void
+    {
+        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
+
+        $this->post(route('games.store'), [
+            'name' => 'New Fighter',
+            'image' => 'https://example.com/new-fighter.png',
+        ]);
+
+        $game = Game::where('name', 'New Fighter')->firstOrFail();
+        $character = Character::where('game_idgame', $game->idgame)->firstOrFail();
+        $button = Button::where('game_idgame', $game->idgame)->firstOrFail();
+        CharacterButtonAlias::create(['alias' => 'Tackle', 'button_idbutton' => $button->idbutton, 'character_idcharacter' => $character->idcharacter]);
+
+        $this->get(route('games.combos.create', $game))
+            ->assertOk()
+            ->assertSee('Other button names&hellip;', false)
+            ->assertSee('id="character-button-aliases-data"', false)
+            ->assertSee('{"'.$character->idcharacter.'":[{"alias":"Tackle","buttonName":"'.$button->name.'"', false);
+    }
+
+    public function test_combo_creation_form_offers_the_alias_reveal_link_when_only_a_character_alias_exists(): void
+    {
+        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
+
+        $this->post(route('games.store'), [
+            'name' => 'New Fighter',
+            'image' => 'https://example.com/new-fighter.png',
+        ]);
+
+        $game = Game::where('name', 'New Fighter')->firstOrFail();
+        $character = Character::where('game_idgame', $game->idgame)->firstOrFail();
+        $button = Button::where('game_idgame', $game->idgame)->firstOrFail();
+        CharacterButtonAlias::create(['alias' => 'Tackle', 'button_idbutton' => $button->idbutton, 'character_idcharacter' => $character->idcharacter]);
+
+        // No game-wide ButtonAlias exists here — only a character-scoped
+        // one — so the reveal link must be driven by both sources, not just
+        // $game->buttonAliases().
+        $this->get(route('games.combos.create', $game))
+            ->assertOk()
+            ->assertSee('Other button names&hellip;', false);
     }
 
     public function test_combo_edit_form_preselects_and_updates_the_listing_type(): void

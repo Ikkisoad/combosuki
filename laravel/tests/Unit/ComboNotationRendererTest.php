@@ -4,6 +4,8 @@ namespace Tests\Unit;
 
 use App\Models\Button;
 use App\Models\ButtonAlias;
+use App\Models\Character;
+use App\Models\CharacterButtonAlias;
 use App\Models\Game;
 use App\Services\ComboNotationRenderer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -177,5 +179,58 @@ class ComboNotationRendererTest extends TestCase
         $resolved = $this->renderer->resolveAliases($game, '5LP > Throw');
 
         $this->assertSame('5LP > Throw', $resolved);
+    }
+
+    public function test_resolve_aliases_expands_a_character_specific_alias_for_that_character(): void
+    {
+        $game = $this->makeGame();
+        $character = Character::create(['name' => 'Toph', 'game_idgame' => $game->idgame]);
+        $button = Button::create(['name' => '236A', 'color' => '#ff0000', 'match_type' => 'exact', 'game_idgame' => $game->idgame, 'order' => 1]);
+        CharacterButtonAlias::create(['alias' => 'Tackle', 'button_idbutton' => $button->idbutton, 'character_idcharacter' => $character->idcharacter]);
+
+        $resolved = $this->renderer->resolveAliases($game, 'Tackle > 236A', $character);
+
+        $this->assertSame('236A > 236A', $resolved);
+    }
+
+    public function test_resolve_aliases_does_not_expand_a_character_alias_when_no_character_is_given(): void
+    {
+        $game = $this->makeGame();
+        $character = Character::create(['name' => 'Toph', 'game_idgame' => $game->idgame]);
+        $button = Button::create(['name' => '236A', 'color' => '#ff0000', 'match_type' => 'exact', 'game_idgame' => $game->idgame, 'order' => 1]);
+        CharacterButtonAlias::create(['alias' => 'Tackle', 'button_idbutton' => $button->idbutton, 'character_idcharacter' => $character->idcharacter]);
+
+        $resolved = $this->renderer->resolveAliases($game, 'Tackle > 236A');
+
+        $this->assertSame('Tackle > 236A', $resolved);
+    }
+
+    public function test_resolve_aliases_does_not_expand_a_character_alias_for_a_different_character(): void
+    {
+        $game = $this->makeGame();
+        $toph = Character::create(['name' => 'Toph', 'game_idgame' => $game->idgame]);
+        $aang = Character::create(['name' => 'Aang', 'game_idgame' => $game->idgame]);
+        $button = Button::create(['name' => '236A', 'color' => '#ff0000', 'match_type' => 'exact', 'game_idgame' => $game->idgame, 'order' => 1]);
+        CharacterButtonAlias::create(['alias' => 'Tackle', 'button_idbutton' => $button->idbutton, 'character_idcharacter' => $toph->idcharacter]);
+
+        $resolved = $this->renderer->resolveAliases($game, 'Tackle > 236A', $aang);
+
+        $this->assertSame('Tackle > 236A', $resolved);
+    }
+
+    public function test_resolve_aliases_lets_a_character_alias_override_a_game_alias_with_the_same_word(): void
+    {
+        $game = $this->makeGame();
+        $character = Character::create(['name' => 'Toph', 'game_idgame' => $game->idgame]);
+        $gameButton = Button::create(['name' => '5LP', 'color' => '#ff0000', 'match_type' => 'exact', 'game_idgame' => $game->idgame, 'order' => 1]);
+        $characterButton = Button::create(['name' => '236A', 'color' => '#00ff00', 'match_type' => 'exact', 'game_idgame' => $game->idgame, 'order' => 2]);
+        ButtonAlias::create(['alias' => 'Tackle', 'button_idbutton' => $gameButton->idbutton, 'game_idgame' => $game->idgame]);
+        CharacterButtonAlias::create(['alias' => 'Tackle', 'button_idbutton' => $characterButton->idbutton, 'character_idcharacter' => $character->idcharacter]);
+
+        $resolvedForCharacter = $this->renderer->resolveAliases($game, 'Tackle', $character);
+        $resolvedForGame = $this->renderer->resolveAliases($game, 'Tackle');
+
+        $this->assertSame('236A', $resolvedForCharacter);
+        $this->assertSame('5LP', $resolvedForGame);
     }
 }

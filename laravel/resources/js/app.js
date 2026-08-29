@@ -104,6 +104,42 @@ window.updateResourceValueAliases = function () {
 };
 
 /**
+ * The combo form's character select has no server round-trip (see
+ * filterSecondaryResources above), so the "Other button names…" list can't
+ * be filtered to the selected character's move aliases server-side.
+ * Instead this reads every character's aliases (character-button-aliases-data,
+ * shipped by ComboController::characterButtonAliasesByCharacter()) and
+ * renders just the selected character's as buttons alongside the game-wide
+ * ones already rendered server-side in #button-aliases.
+ */
+window.updateCharacterButtonAliases = function () {
+    const aliasesEl = document.getElementById('character-button-aliases-data');
+    const characterSelect = document.querySelector('select[name="character_idcharacter"]');
+    const container = document.getElementById('character-button-alias-buttons');
+
+    if (! aliasesEl || ! characterSelect || ! container) {
+        return;
+    }
+
+    const aliases = JSON.parse(aliasesEl.textContent || '{}');
+    const characterAliases = aliases[characterSelect.value] || [];
+
+    container.innerHTML = '';
+
+    characterAliases.forEach((alias) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'btn btn-sm';
+        button.style.marginLeft = '0.25em';
+        button.style.marginBottom = '0.5em';
+        button.style.backgroundColor = alias.color;
+        button.textContent = alias.alias;
+        button.addEventListener('click', () => window.moveNumbers(alias.buttonName));
+        container.appendChild(button);
+    });
+};
+
+/**
  * The combo notation display (#combo_display) has two independent toggles —
  * Display Method (rendered vs. raw text) and Remove/Show Aliases (as
  * submitted vs. every alias expanded to its real button name) — backed by up

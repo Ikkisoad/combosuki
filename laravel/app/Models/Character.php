@@ -95,4 +95,9 @@ class Character extends Model
     {
         return $this->hasMany(CharacterResourceValueAlias::class, 'character_idcharacter');
     }
+
+    public function buttonAliases(): HasMany
+    {
+        return $this->hasMany(CharacterButtonAlias::class, 'character_idcharacter');
+    }
 }

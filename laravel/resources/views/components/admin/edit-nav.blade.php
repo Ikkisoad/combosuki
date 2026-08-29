@@ -4,6 +4,7 @@
     <a href="{{ route('admin.characters.index', $game) }}" class="btn btn-secondary">Characters</a>
     <a href="{{ route('admin.buttons.index', $game) }}" class="btn btn-secondary">Buttons</a>
     <a href="{{ route('admin.button-aliases.index', $game) }}" class="btn btn-secondary">Button Aliases</a>
+    <a href="{{ route('admin.character-button-aliases.index', $game) }}" class="btn btn-secondary">Character Move Aliases</a>
     <a href="{{ route('admin.resources.index', $game) }}" class="btn btn-secondary">Resources</a>
     <a href="{{ route('admin.queries.index', $game) }}" class="btn btn-secondary">Queries</a>
     <a href="{{ route('admin.patches.index', $game) }}" class="btn btn-secondary">Patches</a>

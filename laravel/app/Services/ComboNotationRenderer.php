@@ -3,8 +3,9 @@
 namespace App\Services;
 
 use App\Models\Button;
-use App\Models\ButtonAlias;
+use App\Models\Character;
 use App\Models\Game;
+use Illuminate\Support\Collection;
 
 class ComboNotationRenderer
 {
@@ -139,28 +140,44 @@ class ComboNotationRenderer
     }
 
     /**
-     * Expand every button alias configured for $game (e.g. "Throw") found in
-     * $notation into the real button name it stands for (e.g. "5LP"), so a
-     * combo written with aliases can be read back in the game's actual
-     * button names. Longest alias first, same as
+     * Expand every button alias configured for $game (e.g. "Throw"), plus
+     * any move alias specific to $character (e.g. "Tackle" for one
+     * character only), found in $notation into the real button name it
+     * stands for (e.g. "5LP"), so a combo written with aliases can be read
+     * back in the game's actual button names. Longest alias first, same as
      * FiltersCombos::applyFilters(), so a short alias that's a substring of
      * a longer one can't clobber it mid-replacement. Case-insensitive since
      * aliases are admin-defined words a submitter may have typed in any
      * case.
      */
-    public function resolveAliases(Game $game, string $notation): string
+    public function resolveAliases(Game $game, string $notation, ?Character $character = null): string
     {
-        $aliases = $game->buttonAliases()
-            ->with('button:idbutton,name')
-            ->get()
-            ->sortByDesc(fn (ButtonAlias $alias) => mb_strlen($alias->alias))
-            ->values();
-
-        foreach ($aliases as $alias) {
+        foreach ($this->resolvedAliases($game, $character) as $alias) {
             $notation = str_ireplace($alias->alias, $alias->button->name, $notation);
         }
 
         return $notation;
+    }
+
+    /**
+     * The alias list resolveAliases() replaces from, merging $character's
+     * own move aliases with $game's button aliases. Character aliases are
+     * listed first so unique() (which keeps the first occurrence) lets a
+     * character-specific alias override a game-wide alias that happens to
+     * use the same word, only for that character.
+     */
+    private function resolvedAliases(Game $game, ?Character $character): Collection
+    {
+        $characterAliases = $character
+            ? $character->buttonAliases()->with('button:idbutton,name')->get()
+            : collect();
+
+        $gameAliases = $game->buttonAliases()->with('button:idbutton,name')->get();
+
+        return $characterAliases->concat($gameAliases)
+            ->unique(fn ($alias) => mb_strtolower($alias->alias))
+            ->sortByDesc(fn ($alias) => mb_strlen($alias->alias))
+            ->values();
     }
 
     private function matches(Button $button, string $word): bool

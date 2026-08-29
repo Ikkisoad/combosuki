@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Concerns;
 
 use App\Models\Button;
 use App\Models\ButtonAlias;
+use App\Models\Character;
+use App\Models\CharacterButtonAlias;
 use App\Models\Combo;
 use App\Models\Game;
 use App\Models\GameEntry;
@@ -143,15 +145,37 @@ trait FiltersCombos
                 default => $value.'%',
             };
 
+            // A character-specific move alias is only mixed in when a
+            // single character is selected (characterid filter set) — the
+            // search pattern and stored notation are compared against one
+            // shared SQL WHERE clause below, so there's no single alias set
+            // to use once combos from multiple characters are in play.
+            $characterAliases = collect();
+
+            if ($request->filled('characterid') && $request->input('characterid') !== '-') {
+                $character = Character::where('idcharacter', $request->integer('characterid'))
+                    ->where('game_idgame', $game->idgame)
+                    ->first();
+
+                $characterAliases = $character
+                    ? CharacterButtonAlias::where('character_idcharacter', $character->idcharacter)
+                        ->with('button:idbutton,name')
+                        ->get()
+                    : collect();
+            }
+
             // Longest alias first so a short alias that happens to be a
             // substring of a longer one can't clobber it mid-replacement.
             // Each alias expands to the name of an existing Button already
             // configured for this game, not arbitrary text, so it can't
-            // point at notation the game doesn't actually use.
-            $buttonAliases = ButtonAlias::where('game_idgame', $game->idgame)
-                ->with('button:idbutton,name')
-                ->get()
-                ->sortByDesc(fn (ButtonAlias $alias) => mb_strlen($alias->alias))
+            // point at notation the game doesn't actually use. Character
+            // aliases are listed first so unique() (which keeps the first
+            // occurrence) lets a character-specific alias override a
+            // game-wide alias that happens to use the same word.
+            $buttonAliases = $characterAliases
+                ->concat(ButtonAlias::where('game_idgame', $game->idgame)->with('button:idbutton,name')->get())
+                ->unique(fn ($alias) => mb_strtolower($alias->alias))
+                ->sortByDesc(fn ($alias) => mb_strlen($alias->alias))
                 ->values();
 
             // Case-insensitive: aliases are admin-defined words (e.g.

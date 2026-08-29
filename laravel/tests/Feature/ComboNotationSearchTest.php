@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Button;
 use App\Models\ButtonAlias;
 use App\Models\Character;
+use App\Models\CharacterButtonAlias;
 use App\Models\Combo;
 use App\Models\Game;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -104,5 +105,48 @@ class ComboNotationSearchTest extends TestCase
 
         $response->assertOk();
         $response->assertSee($combo->combo);
+    }
+
+    public function test_searching_a_character_alias_word_finds_that_characters_combo_when_the_character_is_selected(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Toph', 'game_idgame' => $game->idgame]);
+        $button = Button::create(['name' => '236A', 'color' => '#ffffff', 'match_type' => 'exact', 'game_idgame' => $game->idgame]);
+        CharacterButtonAlias::create(['alias' => 'Tackle', 'button_idbutton' => $button->idbutton, 'character_idcharacter' => $character->idcharacter]);
+        $combo = Combo::create(['combo' => '236A', 'character_idcharacter' => $character->idcharacter, 'damage' => 0, 'type' => 1]);
+
+        $response = $this->get(route('games.combos.index', $game).'?combo=Tackle&combolike=2&characterid='.$character->idcharacter);
+
+        $response->assertOk();
+        $response->assertSee($combo->combo);
+    }
+
+    public function test_searching_a_character_alias_word_finds_nothing_when_no_character_is_selected(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Toph', 'game_idgame' => $game->idgame]);
+        $button = Button::create(['name' => '236A', 'color' => '#ffffff', 'match_type' => 'exact', 'game_idgame' => $game->idgame]);
+        CharacterButtonAlias::create(['alias' => 'Tackle', 'button_idbutton' => $button->idbutton, 'character_idcharacter' => $character->idcharacter]);
+        Combo::create(['combo' => '236A', 'character_idcharacter' => $character->idcharacter, 'damage' => 0, 'type' => 1]);
+
+        $response = $this->get(route('games.combos.index', $game).'?combo=Tackle&combolike=2');
+
+        $response->assertOk();
+        $response->assertSee('0 result(s)');
+    }
+
+    public function test_searching_a_character_alias_word_finds_nothing_for_a_different_selected_character(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $toph = Character::create(['name' => 'Toph', 'game_idgame' => $game->idgame]);
+        $aang = Character::create(['name' => 'Aang', 'game_idgame' => $game->idgame]);
+        $button = Button::create(['name' => '236A', 'color' => '#ffffff', 'match_type' => 'exact', 'game_idgame' => $game->idgame]);
+        CharacterButtonAlias::create(['alias' => 'Tackle', 'button_idbutton' => $button->idbutton, 'character_idcharacter' => $toph->idcharacter]);
+        Combo::create(['combo' => '236A', 'character_idcharacter' => $toph->idcharacter, 'damage' => 0, 'type' => 1]);
+
+        $response = $this->get(route('games.combos.index', $game).'?combo=Tackle&combolike=2&characterid='.$aang->idcharacter);
+
+        $response->assertOk();
+        $response->assertSee('0 result(s)');
     }
 }

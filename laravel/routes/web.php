@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\ButtonAliasController;
 use App\Http\Controllers\Admin\ButtonController;
+use App\Http\Controllers\Admin\CharacterButtonAliasController;
 use App\Http\Controllers\Admin\CharacterController as AdminCharacterController;
 use App\Http\Controllers\Admin\CharacterQueryController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -255,6 +256,10 @@ Route::middleware(['auth', 'can:update,game'])->prefix('games/{game}/edit')->nam
     Route::get('/button-aliases', [ButtonAliasController::class, 'index'])->name('button-aliases.index');
     Route::post('/button-aliases', [ButtonAliasController::class, 'store'])->middleware('throttle:10,1')->name('button-aliases.store');
     Route::post('/button-aliases/bulk', [ButtonAliasController::class, 'bulkUpdate'])->middleware('throttle:10,1')->name('button-aliases.bulkUpdate');
+
+    Route::get('/character-button-aliases', [CharacterButtonAliasController::class, 'index'])->name('character-button-aliases.index');
+    Route::post('/character-button-aliases', [CharacterButtonAliasController::class, 'store'])->middleware('throttle:10,1')->name('character-button-aliases.store');
+    Route::post('/character-button-aliases/bulk', [CharacterButtonAliasController::class, 'bulkUpdate'])->middleware('throttle:10,1')->name('character-button-aliases.bulkUpdate');
 
     Route::get('/resources', [GameResourceController::class, 'index'])->name('resources.index');
     Route::post('/resources', [GameResourceController::class, 'store'])->middleware('throttle:10,1')->name('resources.store');

@@ -11,6 +11,7 @@
         <h2>Submit a combo</h2>
 
         <script id="resource-value-aliases" type="application/json">@json($resourceValueAliases)</script>
+        <script id="character-button-aliases-data" type="application/json">@json($characterButtonAliases)</script>
 
         @if ($errors->any())
             <div class="alert alert-danger">
@@ -27,7 +28,7 @@
 
             <div class="input-group mb-3">
                 <label class="input-group-text">Character:</label>
-                <select name="character_idcharacter" class="form-select" required onchange="filterSecondaryResources(); updateResourceValueAliases();">
+                <select name="character_idcharacter" class="form-select" required onchange="filterSecondaryResources(); updateResourceValueAliases(); updateCharacterButtonAliases();">
                     @foreach ($characters as $character)
                         <option value="{{ $character->idcharacter }}" @selected(old('character_idcharacter', $defaults['character_idcharacter'] ?? null) == $character->idcharacter)>{{ $character->name }}</option>
                     @endforeach
@@ -50,13 +51,14 @@
                 <button type="button" class="btn btn-sm btn-secondary" onclick="backspace()">&#9003; Backspace</button>
             </div>
 
-            @if ($buttonAliases->isNotEmpty())
+            @if ($buttonAliases->isNotEmpty() || collect($characterButtonAliases)->isNotEmpty())
                 <div class="mb-2">
                     <a href="#button-aliases" class="d-inline-block mb-1" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="button-aliases">Other button names&hellip;</a>
                     <div class="collapse" id="button-aliases">
                         @foreach ($buttonAliases as $buttonAlias)
                             <button type="button" class="btn btn-sm" style="margin-left:0.25em;margin-bottom:0.5em;background-color: {{ $buttonAlias->button->color }};" onclick="moveNumbers('{{ $buttonAlias->button->name }}')">{{ $buttonAlias->alias }}</button>
                         @endforeach
+                        <span id="character-button-alias-buttons"></span>
                     </div>
                 </div>
             @endif
@@ -196,6 +198,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             initSecondaryResources(false);
             updateResourceValueAliases();
+            updateCharacterButtonAliases();
         });
     </script>
 </x-layouts.app>
