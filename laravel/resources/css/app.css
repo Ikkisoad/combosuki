@@ -9,7 +9,7 @@ body {
     margin: 0;
     color: white;
     background-color: var(--combosuki-bg-color);
-    background-image: url('/img/bg/bolinhas2.png'), url('/img/bg/risco2.png');
+    background-image: url('/img/bg/bolinhas2.webp'), url('/img/bg/risco2.webp');
     background-attachment: fixed;
     background-position: center;
     background-repeat: no-repeat;

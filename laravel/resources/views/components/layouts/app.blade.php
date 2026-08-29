@@ -49,6 +49,10 @@
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('img/favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('img/favicon-16x16.png') }}">
 
+    <link rel="preload" as="image" href="{{ asset('img/combosuki.webp') }}" fetchpriority="high">
+    <link rel="preload" as="image" href="{{ asset('img/bg/bolinhas2.webp') }}">
+    <link rel="preload" as="image" href="{{ asset('img/bg/risco2.webp') }}">
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     {{ $styles ?? '' }}
