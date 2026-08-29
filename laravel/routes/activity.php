@@ -36,6 +36,19 @@ use Illuminate\Support\Facades\Route;
  * so nothing else in the app — SecurityHeaders' routeIs('activity.*') CSP
  * carve-out, the route() calls in the Activity's own views/controller —
  * needs to know or care which branch is active.
+ *
+ * The `if ($activityDomain)` branch is deliberately not covered by an
+ * automated test: exercising it requires setting DISCORD_ACTIVITY_DOMAIN
+ * before the framework boots (a plain config() call in a test's setUp() is
+ * too late — routing is already registered by then), and doing that via
+ * putenv()/$_ENV proved unreliable across environments in practice — it
+ * passed consistently in every local run but not in CI, without a
+ * reproducible cause. `Route::domain()` itself is a standard, well-tested
+ * Laravel feature used here in the ordinary documented way, so the risk is
+ * low; verify this branch manually (or in staging) once
+ * DISCORD_ACTIVITY_DOMAIN is actually configured, rather than trusting an
+ * automated test for it. The `else` branch is what every other Activity
+ * test in this suite already exercises.
  */
 $registerComble = function () {
     Route::get('/', [ActivityCombleController::class, 'show'])->name('show');
