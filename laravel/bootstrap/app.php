@@ -22,6 +22,13 @@ return Application::configure(basePath: dirname(__DIR__))
         then: function () {
             Route::middleware('throttle:60,1')->group(base_path('routes/discord.php'));
             Route::middleware(['throttle:60,1', 'discord.web', 'discord.activity'])->group(base_path('routes/activity.php'));
+            // Explicit `web` group, not the `web:` file passed to
+            // withRouting() above — Comble needs the ordinary session/
+            // cookie/CSRF stack (see routes/comble.php's docblock) but must
+            // NOT be gated behind discord.web/discord.activity the way
+            // routes/activity.php is, since it predates and is independent
+            // of every Discord feature.
+            Route::middleware('web')->group(base_path('routes/comble.php'));
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {

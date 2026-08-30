@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Activity;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
- * Serves laravel/public/build/* (the Activity's Vite-built CSS/JS) directly
- * through Laravel instead of Apache, only on the comble.* subdomain (see
- * routes/activity.php).
+ * Serves laravel/public/* (build/ assets, img/ favicons and backgrounds —
+ * everything comble.show's full page chrome references) directly through
+ * Laravel instead of Apache, only on the comble.* subdomain (see
+ * routes/activity.php, which registers this under both /build/{path} and
+ * /img/{path}).
  *
  * comble/.htaccess deliberately doesn't try to rewrite straight to the
  * sibling laravel/public folder the way the repo root's .htaccess does:
@@ -38,6 +41,7 @@ class ActivityAssetController extends Controller
         'map' => 'application/json',
         'json' => 'application/json',
         'svg' => 'image/svg+xml',
+        'ico' => 'image/x-icon',
         'png' => 'image/png',
         'jpg' => 'image/jpeg',
         'jpeg' => 'image/jpeg',
@@ -46,14 +50,19 @@ class ActivityAssetController extends Controller
         'woff2' => 'font/woff2',
     ];
 
-    public function show(string $path): BinaryFileResponse
+    public function show(Request $request): BinaryFileResponse
     {
-        $base = realpath(public_path('build'));
-        $file = realpath(public_path('build/'.$path));
+        return $this->serve($request->path());
+    }
+
+    private function serve(string $relativePath): BinaryFileResponse
+    {
+        $base = realpath(public_path());
+        $file = realpath(public_path($relativePath));
 
         // realpath() collapses ".." segments and resolves symlinks before
-        // this check runs, so a path like "../../.env" can't escape the
-        // build/ directory — false (nonexistent file) is rejected the same
+        // this check runs, so a path like "../../.env" can't escape
+        // laravel/public — false (nonexistent file) is rejected the same
         // way as a successful escape attempt would be.
         abort_unless($base !== false && $file !== false && str_starts_with($file, $base.DIRECTORY_SEPARATOR), 404);
 

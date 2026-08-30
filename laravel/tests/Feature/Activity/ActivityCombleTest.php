@@ -44,11 +44,6 @@ class ActivityCombleTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_the_entry_page_loads_without_identity(): void
-    {
-        $this->get(route('activity.comble.show'))->assertOk();
-    }
-
     public function test_state_requires_a_bearer_token(): void
     {
         $this->getJson(route('activity.comble.state'))->assertStatus(401);
@@ -191,7 +186,6 @@ class ActivityCombleTest extends TestCase
         SiteSetting::current()->update(['discord_integration_enabled' => false]);
         SiteSetting::forgetCurrent();
 
-        $this->get(route('activity.comble.show'))->assertNotFound();
         $this->getJson(route('activity.comble.state'), $this->authHeader('111'))->assertNotFound();
     }
 

@@ -2,6 +2,10 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Models\Character;
+use App\Models\Combo;
+use App\Models\Game;
+use App\Models\GameEntry;
 use App\Models\SiteSetting;
 use App\Models\User;
 use App\Models\UserConnectedAccount;
@@ -211,10 +215,10 @@ class SiteSettingTest extends TestCase
             ->assertStatus(401);
     }
 
-    /** The Activity defaults off (see test_the_discord_activity_defaults_to_disabled), so its route 404s until explicitly enabled. */
+    /** The Activity defaults off (see test_the_discord_activity_defaults_to_disabled), so its data endpoints 404 until explicitly enabled. */
     public function test_the_activity_404s_while_its_own_flag_is_off(): void
     {
-        $this->get(route('activity.comble.show'))->assertNotFound();
+        $this->getJson(route('activity.comble.state'))->assertNotFound();
     }
 
     /** discord_integration_enabled still gates the Activity too — both flags have to be on. */
@@ -223,14 +227,40 @@ class SiteSettingTest extends TestCase
         $this->enableActivity();
         $this->disableDiscord();
 
-        $this->get(route('activity.comble.show'))->assertNotFound();
+        $this->getJson(route('activity.comble.state'))->assertNotFound();
     }
 
     public function test_the_activity_is_reachable_once_both_flags_are_on(): void
     {
         $this->enableActivity();
 
-        $this->get(route('activity.comble.show'))->assertOk();
+        // 401 (missing Bearer token), not 404 — proof the request reached
+        // VerifyActivityToken instead of being swallowed by either flag.
+        $this->getJson(route('activity.comble.state'))->assertStatus(401);
+    }
+
+    /**
+     * comble.show (the page itself) is deliberately NOT gated by either
+     * Discord flag — see routes/comble.php's docblock: Comble predates and
+     * is independent of every Discord feature, unlike its Activity-specific
+     * data endpoints above.
+     */
+    public function test_the_comble_page_is_reachable_regardless_of_either_discord_flag(): void
+    {
+        $game = Game::create(['name' => 'Test Fighter', 'complete' => 1, 'modPass' => 'x']);
+        $character = Character::create(['name' => 'Ryu', 'game_idgame' => $game->idgame]);
+        $type = GameEntry::create(['title' => 'Combo', 'gameid' => $game->idgame, 'order' => 0]);
+        Combo::create([
+            'combo' => 'AAA BBB CCC DDD EEE',
+            'character_idcharacter' => $character->idcharacter,
+            'submited' => now(),
+            'type' => $type->entryid,
+            'damage' => 3000,
+        ]);
+
+        $this->disableDiscord();
+
+        $this->get(route('comble.show'))->assertOk();
     }
 
     /** Turning the Activity off on its own must not affect Discord sign-in/linking or the bot. */

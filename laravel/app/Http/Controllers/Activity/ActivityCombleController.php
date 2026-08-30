@@ -18,7 +18,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
-use Illuminate\View\View;
 
 /**
  * Comble played as a Discord Activity — the same puzzle CombleController
@@ -29,11 +28,13 @@ use Illuminate\View\View;
  * Activity. Only today's puzzle is playable here, matching the bot — the
  * web version's past-date archive isn't exposed to either.
  *
- * show() needs no identity — the catalog is public data, and the Discord
- * SDK handshake that establishes identity only happens client-side after
- * the page has loaded. state() and guess() are gated behind the
- * `activity.auth` middleware alias (VerifyActivityToken), which resolves
- * the verified Discord user id onto the request.
+ * The Activity's own *page* is CombleController::show() (comble.show) —
+ * Discord's Root URL Mapping always loads that domain's "/" as the initial
+ * document, and resources/js/comble.js's bootDiscordActivity() calls
+ * state()/guess() here afterward once it detects the page is framed. Both
+ * are gated behind the `activity.auth` middleware alias
+ * (VerifyActivityToken), which resolves the verified Discord user id onto
+ * the request.
  */
 class ActivityCombleController extends Controller
 {
@@ -46,14 +47,6 @@ class ActivityCombleController extends Controller
         private CombleAttemptRecorder $attemptRecorder,
         private CombleDiscordProgress $progress,
     ) {}
-
-    public function show(): View
-    {
-        return view('activity.comble', [
-            'applicationId' => config('services.discord.application_id'),
-            'catalog' => $this->catalog(),
-        ]);
-    }
 
     public function state(Request $request): JsonResponse
     {
@@ -225,27 +218,5 @@ class ActivityCombleController extends Controller
     private function webUrl(): string
     {
         return route('comble.show');
-    }
-
-    private function catalog(): array
-    {
-        $games = Game::where('complete', '>', 0)->orderBy('name')->get(['idgame', 'name']);
-
-        $characters = Character::whereIn('game_idgame', $games->pluck('idgame'))
-            ->orderBy('name')
-            ->get(['idcharacter', 'name', 'game_idgame']);
-
-        $types = GameEntry::whereIn('gameid', $games->pluck('idgame'))
-            ->orderBy('order')
-            ->orderBy('title')
-            ->get(['entryid', 'title', 'gameid']);
-
-        return [
-            'games' => $games->map(fn (Game $g) => ['id' => $g->idgame, 'name' => $g->name])->values(),
-            'charactersByGame' => $characters->groupBy('game_idgame')
-                ->map(fn ($group) => $group->map(fn (Character $c) => ['id' => $c->idcharacter, 'name' => $c->name])->values()),
-            'typesByGame' => $types->groupBy('gameid')
-                ->map(fn ($group) => $group->map(fn (GameEntry $t) => ['id' => $t->entryid, 'title' => $t->title])->values()),
-        ];
     }
 }

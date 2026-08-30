@@ -131,6 +131,14 @@ function showGuessError(message) {
     errorEl.style.display = message ? 'block' : 'none';
 }
 
+// Set once bootDiscordActivity() completes the Discord handshake — null for
+// every normal (cookie-based) visit, which is the vast majority of
+// requests this page ever serves. submitGuessForm() attaches it as a
+// Bearer token when present; the guess form's own action attribute (baked
+// into whichever fragment — comble/_game or activity/_comble-game — is
+// currently in the DOM) already points at the right endpoint either way.
+let activityToken = null;
+
 /**
  * Submits a guess via fetch instead of a normal form POST, so a correct or
  * wrong guess updates the reveal/table/stats in place instead of reloading
@@ -148,10 +156,16 @@ function submitGuessForm(form) {
         submitBtn.textContent = 'Guessing…';
     }
 
+    const headers = { Accept: 'application/json' };
+
+    if (activityToken) {
+        headers.Authorization = `Bearer ${activityToken}`;
+    }
+
     fetch(form.action, {
         method: 'POST',
         body: new FormData(form),
-        headers: { Accept: 'application/json' },
+        headers,
     })
         .then(function (response) {
             return response.json().then(function (data) {
@@ -190,8 +204,91 @@ function submitGuessForm(form) {
         });
 }
 
+/**
+ * Discord Activity bootstrap — only ever runs when this page is loaded
+ * inside an iframe. SecurityHeaders' CSP only allows Discord's own client
+ * to frame this page at all (every other origin is refused), so being
+ * framed is by itself a reliable signal that this is an actual Discord
+ * Activity launch, not a normal visit — no undocumented Discord query
+ * parameters to rely on.
+ *
+ * The page has already rendered and works completely fine standalone by
+ * the time this runs (initGuessForm() below already drives it against the
+ * cookie-based comble.guess endpoint) — this only *replaces* the game
+ * widget with the Discord-identified one once the handshake completes.
+ * Any failure here (no Discord parent, handshake error, timeout) just
+ * leaves the already-working cookie-based page exactly as it was.
+ *
+ * @discord/embedded-app-sdk is dynamically imported so its ~140KB bundle
+ * is never downloaded by the vast majority of visits that aren't inside
+ * Discord at all.
+ */
+async function bootDiscordActivity() {
+    const applicationId = document.querySelector('meta[name="discord-application-id"]')?.content;
+    const urlsEl = document.getElementById('activity-comble-urls');
+
+    if (! applicationId || ! urlsEl) {
+        return;
+    }
+
+    const urls = JSON.parse(urlsEl.textContent);
+
+    try {
+        const { DiscordSDK } = await import('@discord/embedded-app-sdk');
+        const discordSdk = new DiscordSDK(applicationId);
+        await discordSdk.ready();
+
+        const { code } = await discordSdk.commands.authorize({
+            client_id: applicationId,
+            response_type: 'code',
+            state: '',
+            prompt: 'none',
+            scope: ['identify'],
+        });
+
+        const tokenResponse = await fetch(urls.token, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify({ code }),
+        });
+
+        if (! tokenResponse.ok) {
+            throw new Error('Activity token exchange failed');
+        }
+
+        const tokenData = await tokenResponse.json();
+        activityToken = tokenData.token;
+
+        await discordSdk.commands.authenticate({ access_token: tokenData.access_token });
+
+        const stateResponse = await fetch(urls.state, {
+            headers: { Accept: 'application/json', Authorization: `Bearer ${activityToken}` },
+        });
+
+        if (! stateResponse.ok) {
+            activityToken = null;
+            return;
+        }
+
+        const data = await stateResponse.json();
+        const container = document.getElementById('comble-game-state');
+
+        if (container) {
+            container.outerHTML = data.html;
+        }
+
+        initGuessForm();
+    } catch (e) {
+        activityToken = null;
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     initGuessForm();
+
+    if (window.self !== window.top) {
+        bootDiscordActivity();
+    }
 
     document.addEventListener('submit', function (event) {
         const form = event.target.closest('#comble-guess-form');

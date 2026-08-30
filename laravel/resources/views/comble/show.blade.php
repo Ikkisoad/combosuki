@@ -2,6 +2,16 @@
     :title="'Comble'.($isToday ? '' : ' — '.$day->format('M j, Y')).' - Combo好き'"
     description="Guess the game, character and type behind a mystery combo in 5 tries."
 >
+    <x-slot:styles>
+        {{--
+            Discord's own client is the only thing that can ever frame this
+            page (see SecurityHeaders) — resources/js/comble.js's
+            bootDiscordActivity() reads this to detect being framed and
+            know which Discord Application to hand off to.
+        --}}
+        <meta name="discord-application-id" content="{{ config('services.discord.application_id') }}">
+    </x-slot:styles>
+
     <x-jumbotron :height="150" />
     <x-nav-bar />
 
@@ -34,5 +44,15 @@
     </div>
 
     <script type="application/json" id="comble-catalog">{!! json_encode($catalog) !!}</script>
+    {{--
+        route()-generated, not hardcoded in the JS: these routes live under
+        an /activity sub-path on the dedicated comble.* subdomain in
+        production but under an "/activity/comble" prefix on the main
+        domain in local dev — see routes/activity.php's docblock.
+    --}}
+    <script type="application/json" id="activity-comble-urls">{!! json_encode([
+        'token' => route('activity.comble.token'),
+        'state' => route('activity.comble.state'),
+    ]) !!}</script>
     @vite(['resources/js/comble.js'])
 </x-layouts.app>

@@ -5,9 +5,11 @@
     - no @csrf (nothing to protect — there's no session to forge a request
       against; identity comes from the Bearer token instead, see
       VerifyActivityToken)
-    - the guess form posts to the activity.comble.guess route and is
-      driven entirely by resources/js/activity-comble.js, which attaches
-      the Bearer token itself
+    - the guess form posts to the activity.comble.guess route; when this
+      fragment swaps in for #comble-game-state (see
+      resources/js/comble.js's bootDiscordActivity()), that same script's
+      submitGuessForm() picks up the form's new action automatically and
+      attaches the Bearer token it already holds
     Keep this in sync with comble/_game.blade.php when the game's rules or
     display change — see ActivityCombleController::gameState()'s docblock
     for why it isn't a shared partial instead.
