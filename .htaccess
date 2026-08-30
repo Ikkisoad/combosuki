@@ -11,6 +11,19 @@
     RewriteCond %{HTTP:x-xsrf-token} .
     RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
 
+    # The repo root also holds comble/, a *separate* front-controller bridge
+    # for the comble.* subdomain (see comble/index.php) — it happens to
+    # share its name with this site's own /comble URL prefix (Comble, the
+    # daily puzzle). Without this rule, Apache sees comble/ as a real,
+    # existing directory and serves comble/index.php as its directory index
+    # instead of routing through this site's own front controller below —
+    # which still renders a page, but with every asset URL wrongly
+    # generated as if the app lived under a /comble subdirectory (Symfony
+    # infers that base path from the executing script's own location).
+    # Forcing every /comble request through this site's index.php first,
+    # regardless of that directory's existence, avoids the collision.
+    RewriteRule ^comble(/.*)?$ index.php [L]
+
     # Serve Laravel's static assets (build/, img/, favicons, randomizer/...)
     # transparently from the nested laravel/public folder, without changing
     # the visible URL. Needed because this hosting plan does not allow
