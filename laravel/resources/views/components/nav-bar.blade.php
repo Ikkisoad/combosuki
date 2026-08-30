@@ -31,7 +31,8 @@
                     <a class="nav-link" href="{{ route('randomizer.index') }}">Randomizers</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ route('comble.show') }}">Comble</a>
+                    {{-- Comble lives on its own comble.* subdomain (routes/comble.php) — opened in a new tab rather than navigated to in place, so there's no "how do I get back" to solve on that page at all. --}}
+                    <a class="nav-link" href="{{ route('comble.show') }}" target="_blank" rel="noopener">Comble</a>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">

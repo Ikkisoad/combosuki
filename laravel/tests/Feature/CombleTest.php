@@ -7,6 +7,7 @@ use App\Models\Combo;
 use App\Models\Game;
 use App\Models\GameEntry;
 use App\Services\CombleDailyCombo;
+use App\Services\CombleRevealer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Testing\TestResponse;
@@ -28,6 +29,43 @@ class CombleTest extends TestCase
         Carbon::setTestNow();
 
         parent::tearDown();
+    }
+
+    /**
+     * comble.show deliberately has no site chrome (no jumbotron/nav-bar —
+     * see resources/views/comble/show.blade.php): Comble is opened as its
+     * own browser tab from the main site's nav bar rather than navigated to
+     * in place (see nav-bar.blade.php), so there's nothing on this page
+     * whose job is linking back to the main site — except "View this
+     * combo" once a puzzle is finished, which still points at combos.show
+     * on the main site (App\Support\MainSiteUrl) regardless of which host
+     * actually served this request. Requesting the route via an arbitrary
+     * Host reproduces that without needing DISCORD_ACTIVITY_DOMAIN
+     * configured at boot — comble.show has no domain constraint in this
+     * (test) environment, so it matches regardless of Host, exactly like it
+     * would if it genuinely lived on the main domain and a request came in
+     * for some other host.
+     */
+    public function test_the_page_has_no_site_chrome_and_its_one_remaining_main_site_link_is_correct(): void
+    {
+        config(['app.url' => 'https://combosuki.com']);
+
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $type = $this->makeType($game);
+        $this->makeCombo($character, $type);
+
+        $winResponse = $this->submitGuess($this->guessPayload($game, $character, $type));
+        $cookie = $this->cookieFromResponse($winResponse);
+
+        $html = $this->withCookie($cookie['name'], $cookie['value'])
+            ->get('http://comble.example.test'.route('comble.show', absolute: false))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringNotContainsString('navbar', $html);
+        $this->assertStringNotContainsString('jumbotron', $html);
+        $this->assertStringContainsString('href="https://combosuki.com/combos/', $html);
     }
 
     public function test_the_daily_target_is_stable_across_repeated_requests(): void
@@ -559,7 +597,7 @@ class CombleTest extends TestCase
             $notation = implode(' ', array_map(fn ($i) => "T{$seed}x{$i}", range(0, 9)));
             $this->makeCombo($character, $type, ['combo' => $notation]);
 
-            $html = app(\App\Services\CombleRevealer::class)->render($game, $notation, 1);
+            $html = app(CombleRevealer::class)->render($game, $notation, 1);
 
             if (! str_contains($html, "T{$seed}x0")) {
                 $firstTokenAlwaysRevealed = false;
@@ -595,7 +633,7 @@ class CombleTest extends TestCase
         $this->makeCombo($character, $type, ['combo' => $notation]);
 
         foreach ([1, 2, 3, 4] as $guessesMade) {
-            $html = app(\App\Services\CombleRevealer::class)->render($game, $notation, $guessesMade);
+            $html = app(CombleRevealer::class)->render($game, $notation, $guessesMade);
 
             $this->assertFalse(
                 str_contains($html, 'AAA') && str_contains($html, 'BBB'),

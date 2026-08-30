@@ -83,7 +83,8 @@
             <x-video-embed :video="$target->video" />
 
             <div class="mt-2 d-flex align-items-center gap-2">
-                <a href="{{ route('combos.show', $target) }}" class="btn btn-dark">View this combo</a>
+                {{-- App\Support\MainSiteUrl + target="_blank": this partial also renders on comble.show, which lives on its own comble.* subdomain — see that class's docblock. --}}
+                <a href="{{ \App\Support\MainSiteUrl::route('combos.show', $target) }}" target="_blank" rel="noopener" class="btn btn-dark">View this combo</a>
                 <button type="button" id="comble-share-btn" class="btn btn-secondary" data-share-text="{{ $shareText }}">Copy Results</button>
                 <span id="comble-share-feedback" class="small" style="display: none;"></span>
             </div>

@@ -28,10 +28,12 @@ class GameController extends Controller
 
     private const DEFAULT_BUTTONS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '214', '236', 'A', 'B', 'C', 'j', '>'];
 
-    public function index(): View
+    public function index(Request $request): View
     {
         $viewer = auth()->user();
         $moderatedGameIds = $viewer?->moderatedGames()->pluck('game.idgame')->all() ?? [];
+
+        $search = trim($request->string('name'));
 
         $games = Game::withCount([
             'combos',
@@ -39,6 +41,7 @@ class GameController extends Controller
                 ->whereNotNull('user_iduser')
                 ->where(fn ($q) => $q->whereNull('verified')->orWhere('verified', 0)),
         ])
+            ->when($search !== '', fn ($query) => $query->where('name', 'like', '%'.$search.'%'))
             ->orderBy('name')
             ->get()
             ->each(function (Game $game) use ($viewer, $moderatedGameIds) {
@@ -51,7 +54,7 @@ class GameController extends Controller
                     && ($viewer->is_admin || $viewer->trusted_user || in_array($game->idgame, $moderatedGameIds, true));
             });
 
-        return view('games.index', ['games' => $games]);
+        return view('games.index', ['games' => $games, 'search' => $search]);
     }
 
     public function create(): View

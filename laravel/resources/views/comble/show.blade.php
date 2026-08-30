@@ -12,9 +12,12 @@
         <meta name="discord-application-id" content="{{ config('services.discord.application_id') }}">
     </x-slot:styles>
 
-    <x-jumbotron :height="150" />
-    <x-nav-bar />
-
+    {{--
+        No jumbotron/nav-bar here — Comble lives on its own comble.*
+        subdomain (routes/comble.php) and is opened as its own tab from the
+        main site's nav bar rather than navigated to in place, so there's
+        no "back to the main site" link to provide on this page.
+    --}}
     <div class="container my-3">
         @if (session('status'))
             <div class="alert alert-success">{{ session('status') }}</div>
@@ -30,7 +33,14 @@
 
             <div class="text-center">
                 <div>{{ $isToday ? "Today's puzzle" : $day->format('F j, Y') }}</div>
-                <input type="date" class="form-control form-control-sm mt-1" value="{{ $day->toDateString() }}" max="{{ now()->toDateString() }}" onchange="if (this.value) window.location.href = '{{ url('/comble') }}/' + this.value">
+                {{--
+                    route()-generated with a placeholder date, not a
+                    hardcoded "/comble/" prefix: comble.show.date's actual
+                    path differs between the domain-scoped subdomain ("/{date}")
+                    and the local-dev prefix fallback ("/comble/{date}") — see
+                    routes/comble.php.
+                --}}
+                <input type="date" class="form-control form-control-sm mt-1" value="{{ $day->toDateString() }}" max="{{ now()->toDateString() }}" data-date-url-template="{{ route('comble.show.date', ['date' => 'DATE_PLACEHOLDER']) }}" onchange="if (this.value) window.location.href = this.dataset.dateUrlTemplate.replace('DATE_PLACEHOLDER', this.value)">
             </div>
 
             @if ($nextDay)
