@@ -42,6 +42,29 @@ class ActivityAssetControllerTest extends TestCase
         $this->assertSame(200, $response->getStatusCode());
     }
 
+    /**
+     * The Content-Type is set explicitly rather than left to
+     * BinaryFileResponse's auto-detection — see the controller's docblock:
+     * on the production host that guessing produced text/plain (fileinfo/
+     * exec both unavailable there), which browsers refuse to execute as JS
+     * or apply as CSS at all.
+     */
+    public function test_the_content_type_is_set_explicitly_by_extension_not_guessed(): void
+    {
+        $cssResponse = (new ActivityAssetController)->show('activity-asset-controller-test-probe.css');
+        $this->assertSame('text/css', $cssResponse->headers->get('Content-Type'));
+
+        $jsFile = public_path('build/activity-asset-controller-test-probe.js');
+        file_put_contents($jsFile, 'export default 1;');
+
+        try {
+            $jsResponse = (new ActivityAssetController)->show('activity-asset-controller-test-probe.js');
+            $this->assertSame('application/javascript', $jsResponse->headers->get('Content-Type'));
+        } finally {
+            @unlink($jsFile);
+        }
+    }
+
     public function test_it_404s_a_missing_file(): void
     {
         $this->expectException(NotFoundHttpException::class);

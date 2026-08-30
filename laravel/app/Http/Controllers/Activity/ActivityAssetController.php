@@ -20,9 +20,32 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  * disk via public_path(), which always resolves relative to this app's own
  * base path regardless of which front controller/subdomain the request
  * came in through.
+ *
+ * The Content-Type is set explicitly rather than left to
+ * BinaryFileResponse's auto-detection: that falls back to PHP's fileinfo
+ * extension or shelling out to the `file` command, and on this host
+ * neither worked reliably (confirmed in production — assets loaded with
+ * Content-Type: text/plain, which browsers refuse to execute as JS or
+ * apply as CSS at all), consistent with exec() already being disabled here
+ * for other things (see the storage:link deploy workaround).
  */
 class ActivityAssetController extends Controller
 {
+    private const MIME_TYPES = [
+        'js' => 'application/javascript',
+        'mjs' => 'application/javascript',
+        'css' => 'text/css',
+        'map' => 'application/json',
+        'json' => 'application/json',
+        'svg' => 'image/svg+xml',
+        'png' => 'image/png',
+        'jpg' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'webp' => 'image/webp',
+        'woff' => 'font/woff',
+        'woff2' => 'font/woff2',
+    ];
+
     public function show(string $path): BinaryFileResponse
     {
         $base = realpath(public_path('build'));
@@ -34,6 +57,10 @@ class ActivityAssetController extends Controller
         // way as a successful escape attempt would be.
         abort_unless($base !== false && $file !== false && str_starts_with($file, $base.DIRECTORY_SEPARATOR), 404);
 
-        return response()->file($file);
+        $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+
+        return response()->file($file, [
+            'Content-Type' => self::MIME_TYPES[$extension] ?? 'application/octet-stream',
+        ]);
     }
 }
