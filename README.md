@@ -4,11 +4,13 @@ Community-fueled searchable environment that shares and perfects combos for figh
 
 ## Project layout
 
-The app runs on Laravel and lives in [`laravel/`](laravel). The repository root only holds a thin front controller that bridges legacy hosting paths to the Laravel app:
+The app runs on Laravel and lives in [`laravel/`](laravel). The repository root only holds a thin front controller that bridges hosting paths to the Laravel app:
 
 - [`index.php`](index.php) / [`.htaccess`](.htaccess) — forward all requests to `laravel/public`-equivalent bootstrapping so the app can be served from the domain root without moving the Laravel install.
-- [`laravel/`](laravel) — the actual Laravel 13 application (routes, controllers, views, migrations, etc.).
-- `app/`, `css/`, `game/`, `img/`, `js/`, `list/`, `matches/`, `randomizer/`, `server/` — legacy static/PHP assets predating the Laravel rewrite, kept for reference/compatibility.
+- [`comble/`](comble) — a second front-controller bridge for the `comble.*` subdomain (see [`comble/index.php`](comble/index.php)).
+- [`laravel/`](laravel) — the actual Laravel application (routes, controllers, views, migrations, etc.).
+
+The pre-Laravel PHP app that used to live at the repository root (`game/`, `list/`, `matches/`, `server/`, plus root-level `css/`, `js/`, `img/`) has been removed; its URLs now redirect into the Laravel app (see the bottom of [`laravel/routes/web.php`](laravel/routes/web.php)).
 
 ### Key areas inside `laravel/`
 

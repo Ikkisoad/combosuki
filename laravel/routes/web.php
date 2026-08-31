@@ -269,3 +269,49 @@ Route::middleware(['auth', 'can:update,game'])->prefix('games/{game}/edit')->nam
     Route::get('/unverified-combos', [UnverifiedCombosController::class, 'index'])->name('unverified-combos.index');
     Route::post('/unverified-combos/verify', [UnverifiedCombosController::class, 'bulkVerify'])->middleware('throttle:10,1')->name('unverified-combos.bulkVerify');
 });
+
+// Redirects for URLs the pre-Laravel PHP app (formerly game/, list/) used
+// to serve directly, so old bookmarks/search results/external links keep
+// resolving instead of 404ing now that those files are gone.
+Route::get('/game/index.php', fn () => request('gameid')
+    ? redirect()->route('games.show', request('gameid'))
+    : redirect()->route('games.index'));
+
+Route::get('/game/combo.php', fn () => request('idcombo')
+    ? redirect()->route('combos.show', request('idcombo'))
+    : redirect()->route('games.index'));
+
+Route::get('/game/add.php', fn () => redirect()->route('games.create'));
+
+Route::get('/game/submit.php', fn () => request('gameid')
+    ? redirect()->route('games.combos.index', request('gameid'))
+    : redirect()->route('games.index'));
+
+Route::get('/game/forms.php', fn () => request('gameid')
+    ? redirect()->route('games.combos.create', request('gameid'))
+    : redirect()->route('games.index'));
+
+$legacyGameEditRedirect = fn (string $route) => fn () => request('gameid')
+    ? redirect()->route($route, request('gameid'))
+    : redirect()->route('games.index');
+
+Route::get('/game/edit/game.php', $legacyGameEditRedirect('admin.game.edit'));
+Route::get('/game/edit/characters.php', $legacyGameEditRedirect('admin.characters.index'));
+Route::get('/game/edit/buttons.php', $legacyGameEditRedirect('admin.buttons.index'));
+Route::get('/game/edit/entries.php', $legacyGameEditRedirect('admin.entries.index'));
+Route::get('/game/edit/links.php', $legacyGameEditRedirect('admin.links.index'));
+Route::get('/game/edit/lists.php', $legacyGameEditRedirect('admin.lists.index'));
+Route::get('/game/edit/resources.php', $legacyGameEditRedirect('admin.resources.index'));
+Route::get('/game/edit/mass.php', $legacyGameEditRedirect('admin.game.edit'));
+
+Route::get('/list/index.php', fn () => redirect()->route('lists.index'));
+
+Route::get('/list/list.php', fn () => request('listid')
+    ? redirect()->route('lists.show', request('listid'))
+    : redirect()->route('lists.index'));
+
+Route::get('/list/show.php', fn () => request('id')
+    ? redirect()->route('lists.show', request('id'))
+    : redirect()->route('lists.index'));
+
+Route::get('/list/search.php', fn () => redirect()->route('lists.search', request()->only(['gameid', 'q'])));
