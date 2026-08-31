@@ -78,6 +78,29 @@ class RegisterDiscordCommandsTest extends TestCase
         });
     }
 
+    public function test_the_csk_command_includes_a_guide_browse_subcommand_with_optional_game_and_name_options(): void
+    {
+        Http::fake([
+            self::COMMANDS_URL => Http::response([], 200),
+        ]);
+
+        $this->artisan('discord:register-commands')->assertSuccessful();
+
+        Http::assertSent(function ($request) {
+            $csk = collect($request->data())->firstWhere('name', 'csk');
+            $guideBrowse = collect($csk['options'] ?? [])->firstWhere('name', 'guide-browse');
+
+            if (! $guideBrowse) {
+                return false;
+            }
+
+            $options = collect($guideBrowse['options'] ?? [])->keyBy('name');
+
+            return $options->get('game')['required'] === false
+                && $options->get('name')['required'] === false;
+        });
+    }
+
     /** Entry point commands don't exist at the guild scope, so a guild registration must never even fetch one. */
     public function test_a_guild_registration_does_not_fetch_or_include_an_entry_point_command(): void
     {

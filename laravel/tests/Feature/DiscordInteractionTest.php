@@ -9,7 +9,9 @@ use App\Models\Combo;
 use App\Models\Game;
 use App\Models\GameEntry;
 use App\Models\GameResource;
+use App\Models\ListCategory;
 use App\Models\ListModel;
+use App\Models\ListPage;
 use App\Models\ResourceValue;
 use App\Models\TierList;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -420,6 +422,164 @@ class DiscordInteractionTest extends TestCase
 
         $response->assertOk();
         $this->assertSame(64, $response->json('data.flags'));
+    }
+
+    public function test_guide_browse_with_no_matches_returns_ephemeral_message(): void
+    {
+        $response = $this->postInteraction([
+            'type' => 2,
+            'data' => ['name' => 'csk', 'options' => [['name' => 'guide-browse']]],
+        ]);
+
+        $response->assertOk();
+        $this->assertSame(64, $response->json('data.flags'));
+        $this->assertSame('No guides found.', $response->json('data.content'));
+    }
+
+    public function test_guide_browse_with_one_matching_guide_skips_straight_to_the_page_step(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $guide = ListModel::create(['list_name' => 'Combo Theory Guide', 'game_idgame' => $game->idgame, 'password' => 'secret', 'type' => 1]);
+        $page = ListPage::create(['Title' => 'Neutral', 'idList' => $guide->idlist, 'order' => 0]);
+
+        $response = $this->postInteraction([
+            'type' => 2,
+            'data' => [
+                'name' => 'csk',
+                'options' => [
+                    ['name' => 'guide-browse', 'options' => [['name' => 'name', 'value' => 'Combo Theory']]],
+                ],
+            ],
+        ]);
+
+        $response->assertOk()->assertJson(['type' => 4]);
+        $this->assertNull($response->json('data.flags'));
+
+        $select = $response->json('data.components.0.components.0');
+        $this->assertSame('gb:page::l='.$guide->idlist, $select['custom_id']);
+        $this->assertContains((string) $page->idListPage, array_column($select['options'], 'value'));
+    }
+
+    public function test_guide_browse_with_multiple_matches_shows_a_guide_dropdown(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $first = ListModel::create(['list_name' => 'First Guide', 'game_idgame' => $game->idgame, 'password' => 'secret', 'type' => 1]);
+        $second = ListModel::create(['list_name' => 'Second Guide', 'game_idgame' => $game->idgame, 'password' => 'secret', 'type' => 1]);
+
+        $response = $this->postInteraction([
+            'type' => 2,
+            'data' => ['name' => 'csk', 'options' => [['name' => 'guide-browse']]],
+        ]);
+
+        $response->assertOk()->assertJson(['type' => 4]);
+        $select = $response->json('data.components.0.components.0');
+        $this->assertSame('gb:guide::', $select['custom_id']);
+        $this->assertEqualsCanonicalizing(
+            [(string) $first->idlist, (string) $second->idlist],
+            array_column($select['options'], 'value')
+        );
+    }
+
+    public function test_guide_browse_full_flow_narrows_combos_by_page_and_category(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Test Character', 'game_idgame' => $game->idgame]);
+        $listingType = GameEntry::create(['title' => 'Combo', 'gameid' => $game->idgame, 'order' => 1]);
+        $guide = ListModel::create(['list_name' => 'Combo Theory Guide', 'game_idgame' => $game->idgame, 'password' => 'secret', 'type' => 1]);
+        $page = ListPage::create(['Title' => 'Neutral', 'idList' => $guide->idlist, 'order' => 0]);
+        $category = ListCategory::create(['title' => 'Punishes', 'list_idlist' => $guide->idlist, 'order' => 0, 'idPage' => $page->idListPage]);
+
+        $inCategory = Combo::create([
+            'combo' => 'In category combo',
+            'character_idcharacter' => $character->idcharacter,
+            'type' => $listingType->entryid,
+            'damage' => 500,
+        ]);
+        $inCategory->lists()->attach($guide->idlist, ['list_category_idlist_category' => $category->idlist_category]);
+
+        $uncategorized = Combo::create([
+            'combo' => 'Uncategorized combo',
+            'character_idcharacter' => $character->idcharacter,
+            'type' => $listingType->entryid,
+            'damage' => 999,
+        ]);
+        $uncategorized->lists()->attach($guide->idlist);
+
+        // Step 1: choose the guide.
+        $pageStep = $this->postComponent('gb:guide::', [(string) $guide->idlist]);
+        $pageStep->assertOk()->assertJson(['type' => 7]);
+        $pageSelect = $pageStep->json('data.components.0.components.0');
+        $this->assertSame('gb:page::l='.$guide->idlist, $pageSelect['custom_id']);
+
+        // Step 2: choose the page.
+        $categoryStep = $this->postComponent($pageSelect['custom_id'], [(string) $page->idListPage]);
+        $categoryStep->assertOk();
+        $categorySelect = $categoryStep->json('data.components.0.components.0');
+        $this->assertStringStartsWith('gb:cat::', $categorySelect['custom_id']);
+        $this->assertContains('Uncategorized', array_column($categorySelect['options'], 'label'));
+
+        // Step 3: narrow to the "Punishes" category only.
+        $results = $this->postComponent($categorySelect['custom_id'], [(string) $category->idlist_category]);
+        $results->assertOk()->assertJson(['type' => 7]);
+        $description = $results->json('data.embeds.0.description');
+        $this->assertStringContainsString($inCategory->combo, $description);
+        $this->assertStringNotContainsString($uncategorized->combo, $description);
+    }
+
+    public function test_guide_browse_skips_the_category_step_when_theres_nothing_to_categorize(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $guide = ListModel::create(['list_name' => 'Empty Guide', 'game_idgame' => $game->idgame, 'password' => 'secret', 'type' => 1]);
+        $page = ListPage::create(['Title' => 'Neutral', 'idList' => $guide->idlist, 'order' => 0]);
+
+        $response = $this->postComponent('gb:page::l='.$guide->idlist, [(string) $page->idListPage]);
+
+        $response->assertOk()->assertJson(['type' => 7]);
+        $this->assertStringContainsString('No combos found for this selection.', $response->json('data.embeds.0.description'));
+    }
+
+    public function test_guide_browse_paginates_results(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Test Character', 'game_idgame' => $game->idgame]);
+        $listingType = GameEntry::create(['title' => 'Combo', 'gameid' => $game->idgame, 'order' => 1]);
+        $guide = ListModel::create(['list_name' => 'Big Guide', 'game_idgame' => $game->idgame, 'password' => 'secret', 'type' => 1]);
+
+        foreach (range(1, 10) as $n) {
+            $combo = Combo::create([
+                'combo' => "Combo {$n}",
+                'character_idcharacter' => $character->idcharacter,
+                'type' => $listingType->entryid,
+                'damage' => $n,
+            ]);
+            $combo->lists()->attach($guide->idlist);
+        }
+
+        // Guide has no pages -> pageStep skips straight to categoryStep; it
+        // has no categories but does have uncategorized combos, so it still
+        // offers "All categories" rather than skipping again.
+        $categoryStep = $this->postComponent('gb:guide::', [(string) $guide->idlist]);
+        $categoryStep->assertOk();
+        $categorySelect = $categoryStep->json('data.components.0.components.0');
+        $this->assertStringStartsWith('gb:cat::', $categorySelect['custom_id']);
+
+        $page1 = $this->postComponent($categorySelect['custom_id'], ['_any_']);
+        $page1->assertOk();
+        $this->assertStringContainsString('Page 1 of 2', $page1->json('data.embeds.0.description'));
+
+        $buttons = $page1->json('data.components.0.components');
+        $previous = collect($buttons)->firstWhere('label', 'Previous');
+        $next = collect($buttons)->firstWhere('label', 'Next');
+        $this->assertTrue($previous['disabled']);
+        $this->assertFalse($next['disabled']);
+
+        $page2 = $this->postComponent($next['custom_id'], []);
+        $page2->assertOk();
+        $this->assertStringContainsString('Page 2 of 2', $page2->json('data.embeds.0.description'));
+
+        $page2Buttons = $page2->json('data.components.0.components');
+        $this->assertFalse(collect($page2Buttons)->firstWhere('label', 'Previous')['disabled']);
+        $this->assertTrue(collect($page2Buttons)->firstWhere('label', 'Next')['disabled']);
     }
 
     public function test_character_page_returns_matching_character_as_embed(): void

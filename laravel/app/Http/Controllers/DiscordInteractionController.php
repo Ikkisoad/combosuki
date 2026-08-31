@@ -9,6 +9,7 @@ use App\Services\DiscordCombleGame;
 use App\Services\DiscordComboSearch;
 use App\Services\DiscordComboSubmit;
 use App\Services\DiscordComboWizard;
+use App\Services\DiscordGuideBrowse;
 use App\Services\DiscordGuideSearch;
 use App\Services\DiscordTierListImage;
 use Illuminate\Http\JsonResponse;
@@ -24,6 +25,7 @@ class DiscordInteractionController extends Controller
         private DiscordCombleGame $comble,
         private DiscordChallenge $challenge,
         private DiscordGuideSearch $guideSearch,
+        private DiscordGuideBrowse $guideBrowse,
         private DiscordComboSubmit $comboSubmit,
         private DiscordTierListImage $tierListImage,
         private DiscordCharacterPage $characterPage,
@@ -57,6 +59,10 @@ class DiscordInteractionController extends Controller
 
         if ($subcommand === 'guide') {
             return response()->json(['type' => 4, 'data' => $this->guideSearch->handle($data)]);
+        }
+
+        if ($subcommand === 'guide-browse') {
+            return response()->json(['type' => 4, 'data' => $this->guideBrowse->start($data)]);
         }
 
         if ($subcommand === 'browse') {
@@ -134,6 +140,13 @@ class DiscordInteractionController extends Controller
 
         if (str_starts_with($customId, 'cb:')) {
             return $this->handleCombleComponent($customId, $data['values'] ?? [], $payload);
+        }
+
+        if (str_starts_with($customId, 'gb:')) {
+            return response()->json([
+                'type' => 7,
+                'data' => $this->guideBrowse->handleComponent($customId, $data['values'] ?? []),
+            ]);
         }
 
         // "Enter combo details" and "More details" both open a Modal, which
