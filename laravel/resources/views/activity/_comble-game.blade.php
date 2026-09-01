@@ -110,34 +110,36 @@
 
         {{-- absolute: false — see comble/show.blade.php's comment on the same route() calls; the same reasoning applies here. --}}
         <form method="post" action="{{ route('activity.comble.guess', [], absolute: false) }}" id="comble-guess-form">
-            <div class="row g-2 align-items-end">
-                <div class="col-md-2">
+            <div class="row g-2 mb-2">
+                <div class="col-md-4">
                     <label class="form-label">Game</label>
-                    <select name="game_id" id="comble-game" class="form-select" required data-sticky="{{ $stickyGameId }}">
+                    <select name="game_id" id="comble-game" class="form-select" size="6" required data-sticky="{{ $stickyGameId }}">
                         <option value="">Choose a game&hellip;</option>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-4">
                     <label class="form-label">Character</label>
-                    <select name="character_id" id="comble-character" class="form-select" required disabled data-sticky="{{ $stickyCharacterId }}">
+                    <select name="character_id" id="comble-character" class="form-select" size="6" required disabled data-sticky="{{ $stickyCharacterId }}">
                         <option value="">Choose a game first&hellip;</option>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-4">
                     <label class="form-label">Type</label>
-                    <select name="listing_type_id" id="comble-type" class="form-select" required disabled data-sticky="{{ $stickyTypeId }}" data-sticky-title="{{ $stickyTypeTitle }}">
+                    <select name="listing_type_id" id="comble-type" class="form-select" size="6" required disabled data-sticky="{{ $stickyTypeId }}" data-sticky-title="{{ $stickyTypeTitle }}">
                         <option value="">Choose a game first&hellip;</option>
                     </select>
                 </div>
-                <div class="col-md-2">
+            </div>
+            <div class="row g-2 align-items-end">
+                <div class="col-md-4">
                     <label class="form-label">Starter <span class="text-white-50">(optional)</span></label>
                     <input type="text" name="starter" id="comble-starter" class="form-control" maxlength="6" placeholder="First 6 chars" value="{{ $stickyStarter }}">
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-4">
                     <label class="form-label">Damage</label>
                     <input type="number" name="damage" id="comble-damage" class="form-control" min="0" required>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-4">
                     <button type="submit" class="btn btn-primary w-100">Guess</button>
                 </div>
             </div>
