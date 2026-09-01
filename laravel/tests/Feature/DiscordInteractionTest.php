@@ -25,7 +25,7 @@ class DiscordInteractionTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const TIER_LIST_FOLLOW_UP_URL = 'https://discord.com/api/v10/webhooks/test-application-id/test-interaction-token/messages/@original';
+    private const DEFERRED_ORIGINAL_MESSAGE_URL = 'https://discord.com/api/v10/webhooks/test-application-id/test-interaction-token/messages/@original';
 
     private string $publicKey;
 
@@ -582,35 +582,43 @@ class DiscordInteractionTest extends TestCase
         $this->assertTrue(collect($page2Buttons)->firstWhere('label', 'Next')['disabled']);
     }
 
-    public function test_character_page_returns_matching_character_as_embed(): void
+    private function characterInteractionPayload(array $characterOptions): array
     {
-        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
-        $character = Character::create(['name' => 'Test Character', 'game_idgame' => $game->idgame, 'image' => 'https://example.com/portrait.png']);
-
-        $response = $this->postInteraction([
+        return [
             'type' => 2,
             'data' => [
                 'name' => 'csk',
                 'options' => [
-                    [
-                        'name' => 'character',
-                        'options' => [
-                            ['name' => 'game', 'value' => 'Test Game'],
-                            ['name' => 'character', 'value' => 'Test Character'],
-                        ],
-                    ],
+                    ['name' => 'character', 'options' => $characterOptions],
                 ],
             ],
-        ]);
+        ];
+    }
 
-        $response->assertOk()->assertJson(['type' => 4]);
-        $this->assertSame($character->name, $response->json('data.embeds.0.title'));
-        $this->assertSame($game->name, $response->json('data.embeds.0.fields.0.value'));
-        $this->assertStringContainsString(
-            route('characters.show', [$game, $character], absolute: false),
-            $response->json('data.embeds.0.url')
-        );
-        $this->assertSame('https://example.com/portrait.png', $response->json('data.embeds.0.thumbnail.url'));
+    public function test_character_page_defers_then_posts_the_embed_as_a_follow_up(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Test Character', 'game_idgame' => $game->idgame, 'image' => 'https://example.com/portrait.png']);
+
+        $response = $this->postInteraction($this->characterInteractionPayload([
+            ['name' => 'game', 'value' => 'Test Game'],
+            ['name' => 'character', 'value' => 'Test Character'],
+        ]));
+
+        $response->assertOk()->assertJson(['type' => 5]);
+
+        Http::assertSent(function ($request) use ($game, $character) {
+            if ($request->url() !== self::DEFERRED_ORIGINAL_MESSAGE_URL) {
+                return false;
+            }
+
+            $embed = $request['embeds'][0] ?? [];
+
+            return ($embed['title'] ?? null) === $character->name
+                && ($embed['fields'][0]['value'] ?? null) === $game->name
+                && str_contains($embed['url'] ?? '', route('characters.show', [$game, $character], absolute: false))
+                && ($embed['thumbnail']['url'] ?? null) === 'https://example.com/portrait.png';
+        });
     }
 
     public function test_character_page_resolves_game_and_character_by_alias(): void
@@ -620,95 +628,57 @@ class DiscordInteractionTest extends TestCase
         $game = Game::create(['name' => 'Street Fighter 6', 'complete' => 1, 'modPass' => 'secret']);
         $character = Character::create(['name' => 'Wanted Character', 'game_idgame' => $game->idgame]);
 
-        $response = $this->postInteraction([
-            'type' => 2,
-            'data' => [
-                'name' => 'csk',
-                'options' => [
-                    [
-                        'name' => 'character',
-                        'options' => [
-                            ['name' => 'game', 'value' => 'sf6'],
-                            ['name' => 'character', 'value' => 'wc'],
-                        ],
-                    ],
-                ],
-            ],
-        ]);
+        $response = $this->postInteraction($this->characterInteractionPayload([
+            ['name' => 'game', 'value' => 'sf6'],
+            ['name' => 'character', 'value' => 'wc'],
+        ]));
 
-        $response->assertOk()->assertJson(['type' => 4]);
-        $this->assertSame($character->name, $response->json('data.embeds.0.title'));
+        $response->assertOk()->assertJson(['type' => 5]);
+
+        Http::assertSent(fn ($request) => $request->url() === self::DEFERRED_ORIGINAL_MESSAGE_URL
+            && ($request['embeds'][0]['title'] ?? null) === $character->name);
     }
 
-    public function test_character_page_with_unknown_game_returns_ephemeral_message(): void
+    public function test_character_page_with_unknown_game_reports_an_error_on_the_deferred_message(): void
     {
-        $response = $this->postInteraction([
-            'type' => 2,
-            'data' => [
-                'name' => 'csk',
-                'options' => [
-                    [
-                        'name' => 'character',
-                        'options' => [
-                            ['name' => 'game', 'value' => 'Nobody Game'],
-                            ['name' => 'character', 'value' => 'Anyone'],
-                        ],
-                    ],
-                ],
-            ],
-        ]);
+        $response = $this->postInteraction($this->characterInteractionPayload([
+            ['name' => 'game', 'value' => 'Nobody Game'],
+            ['name' => 'character', 'value' => 'Anyone'],
+        ]));
 
-        $response->assertOk();
-        $this->assertSame(64, $response->json('data.flags'));
-        $this->assertStringContainsString('No game found matching', $response->json('data.content'));
+        $response->assertOk()->assertJson(['type' => 5]);
+
+        Http::assertSent(fn ($request) => $request->url() === self::DEFERRED_ORIGINAL_MESSAGE_URL
+            && str_contains($request['content'] ?? '', 'No game found matching'));
     }
 
-    public function test_character_page_with_unknown_character_returns_ephemeral_message(): void
-    {
-        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
-
-        $response = $this->postInteraction([
-            'type' => 2,
-            'data' => [
-                'name' => 'csk',
-                'options' => [
-                    [
-                        'name' => 'character',
-                        'options' => [
-                            ['name' => 'game', 'value' => 'Test Game'],
-                            ['name' => 'character', 'value' => 'Nobody'],
-                        ],
-                    ],
-                ],
-            ],
-        ]);
-
-        $response->assertOk();
-        $this->assertSame(64, $response->json('data.flags'));
-        $this->assertStringContainsString('No character found matching', $response->json('data.content'));
-    }
-
-    public function test_character_page_without_a_character_option_returns_ephemeral_message(): void
+    public function test_character_page_with_unknown_character_reports_an_error_on_the_deferred_message(): void
     {
         Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
 
-        $response = $this->postInteraction([
-            'type' => 2,
-            'data' => [
-                'name' => 'csk',
-                'options' => [
-                    [
-                        'name' => 'character',
-                        'options' => [
-                            ['name' => 'game', 'value' => 'Test Game'],
-                        ],
-                    ],
-                ],
-            ],
-        ]);
+        $response = $this->postInteraction($this->characterInteractionPayload([
+            ['name' => 'game', 'value' => 'Test Game'],
+            ['name' => 'character', 'value' => 'Nobody'],
+        ]));
 
-        $response->assertOk();
-        $this->assertSame(64, $response->json('data.flags'));
+        $response->assertOk()->assertJson(['type' => 5]);
+
+        Http::assertSent(fn ($request) => $request->url() === self::DEFERRED_ORIGINAL_MESSAGE_URL
+            && str_contains($request['content'] ?? '', 'No character found matching'));
+    }
+
+    public function test_character_page_without_a_character_option_reports_an_error_on_the_deferred_message(): void
+    {
+        Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+
+        $response = $this->postInteraction($this->characterInteractionPayload([
+            ['name' => 'game', 'value' => 'Test Game'],
+        ]));
+
+        $response->assertOk()->assertJson(['type' => 5]);
+
+        Http::assertSent(fn ($request) => $request->url() === self::DEFERRED_ORIGINAL_MESSAGE_URL
+            && str_contains($request['content'] ?? '', 'Please provide both a game and a character name.'));
     }
 
     private function postComponent(string $customId, array $values, ?string $userId = null): TestResponse
@@ -1325,7 +1295,7 @@ class DiscordInteractionTest extends TestCase
         $response->assertOk()->assertJson(['type' => 5]);
 
         Http::assertSent(function ($request) use ($game) {
-            if ($request->url() !== self::TIER_LIST_FOLLOW_UP_URL || ! $request->hasFile('files[0]')) {
+            if ($request->url() !== self::DEFERRED_ORIGINAL_MESSAGE_URL || ! $request->hasFile('files[0]')) {
                 return false;
             }
 
@@ -1360,7 +1330,7 @@ class DiscordInteractionTest extends TestCase
         $response->assertOk()->assertJson(['type' => 5]);
 
         Http::assertSent(function ($request) {
-            if ($request->url() !== self::TIER_LIST_FOLLOW_UP_URL || ! $request->hasFile('files[0]')) {
+            if ($request->url() !== self::DEFERRED_ORIGINAL_MESSAGE_URL || ! $request->hasFile('files[0]')) {
                 return false;
             }
 
@@ -1381,7 +1351,7 @@ class DiscordInteractionTest extends TestCase
 
         $response->assertOk()->assertJson(['type' => 5]);
 
-        Http::assertSent(fn ($request) => $request->url() === self::TIER_LIST_FOLLOW_UP_URL
+        Http::assertSent(fn ($request) => $request->url() === self::DEFERRED_ORIGINAL_MESSAGE_URL
             && str_contains($request['content'] ?? '', 'No tier lists have been submitted'));
     }
 
@@ -1393,7 +1363,7 @@ class DiscordInteractionTest extends TestCase
 
         $response->assertOk()->assertJson(['type' => 5]);
 
-        Http::assertSent(fn ($request) => $request->url() === self::TIER_LIST_FOLLOW_UP_URL
+        Http::assertSent(fn ($request) => $request->url() === self::DEFERRED_ORIGINAL_MESSAGE_URL
             && str_contains($request['content'] ?? '', 'No game found matching'));
     }
 

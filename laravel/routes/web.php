@@ -218,6 +218,8 @@ Route::post('/preferences', [PreferenceController::class, 'update'])->middleware
 Route::get('/timeline', [TimelineController::class, 'index'])->name('timeline.index');
 
 Route::get('/challenge', [ChallengeController::class, 'show'])->name('challenge.show');
+Route::get('/challenge/tabs/ranking', [ChallengeController::class, 'rankingTab'])->name('challenge.tabs.ranking');
+Route::get('/challenge/tabs/calendar', [ChallengeController::class, 'calendarTab'])->name('challenge.tabs.calendar');
 Route::get('/challenge/{date}', [ChallengeController::class, 'show'])->where('date', '\d{4}-\d{2}-\d{2}')->name('challenge.show.date');
 
 Route::view('/randomizer', 'randomizer.index')->name('randomizer.index');

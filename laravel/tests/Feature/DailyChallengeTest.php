@@ -138,6 +138,82 @@ class DailyChallengeTest extends TestCase
             ->assertSee('Damage ≤ 1000', false);
     }
 
+    public function test_results_between_matches_for_date_pick_by_pick(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $this->makeQuery($game, 'Established Query');
+        $type = $this->makeType($game);
+        $this->makeCombo($character, $type);
+
+        // Created mid-range so the range straddles the eligible/not-yet-eligible
+        // boundary, exercising both branches of pickPair() across the batch.
+        CharacterQuery::create([
+            'game_idgame' => $game->idgame,
+            'label' => 'Newer Query',
+            'filters' => [],
+            'order' => 1,
+        ])->forceFill(['created_at' => Carbon::parse('2026-08-15 00:00:00')])->save();
+
+        $from = Carbon::parse('2026-08-10 00:00:00', 'America/Sao_Paulo');
+        $to = Carbon::parse('2026-08-20 00:00:00', 'America/Sao_Paulo');
+
+        $results = app(DailyChallenge::class)->resultsBetween($from, $to);
+
+        for ($day = $from->copy(); $day->lte($to); $day->addDay()) {
+            $expected = app(DailyChallenge::class)->forDate($day);
+            $actual = $results[$day->toDateString()];
+
+            $this->assertSame($expected['query']?->idquery, $actual['query']?->idquery, "query mismatch on {$day->toDateString()}");
+            $this->assertSame($expected['character']?->idcharacter, $actual['character']?->idcharacter, "character mismatch on {$day->toDateString()}");
+            $this->assertSame($expected['combo']?->idcombo, $actual['combo']?->idcombo, "combo mismatch on {$day->toDateString()}");
+        }
+    }
+
+    public function test_results_between_returns_null_fields_for_dates_before_any_query_existed(): void
+    {
+        $game = $this->makeGame();
+        $this->makeCharacter($game);
+        $this->makeQuery($game);
+
+        $results = app(DailyChallenge::class)->resultsBetween(
+            Carbon::parse('2026-07-01 00:00:00', 'America/Sao_Paulo'),
+            Carbon::parse('2026-07-02 00:00:00', 'America/Sao_Paulo'),
+        );
+
+        $this->assertNull($results['2026-07-01']['query']);
+        $this->assertNull($results['2026-07-01']['combo']);
+        $this->assertNull($results['2026-07-02']['query']);
+    }
+
+    public function test_results_between_does_not_requery_the_database_per_day(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $this->makeQuery($game);
+        $type = $this->makeType($game);
+        $this->makeCombo($character, $type);
+
+        \Illuminate\Support\Facades\DB::enableQueryLog();
+        app(DailyChallenge::class)->resultsBetween(
+            Carbon::parse('2026-08-10 00:00:00', 'America/Sao_Paulo'),
+            Carbon::parse('2026-08-11 00:00:00', 'America/Sao_Paulo'),
+        );
+        $shortRangeQueries = count(\Illuminate\Support\Facades\DB::getQueryLog());
+        \Illuminate\Support\Facades\DB::flushQueryLog();
+
+        app(DailyChallenge::class)->resultsBetween(
+            Carbon::parse('2026-08-10 00:00:00', 'America/Sao_Paulo'),
+            Carbon::parse('2026-09-08 00:00:00', 'America/Sao_Paulo'),
+        );
+        $longRangeQueries = count(\Illuminate\Support\Facades\DB::getQueryLog());
+        \Illuminate\Support\Facades\DB::disableQueryLog();
+
+        // Same single (query, character) pair is picked every day in both
+        // ranges, so query count shouldn't grow with the number of days.
+        $this->assertSame($shortRangeQueries, $longRangeQueries);
+    }
+
     private function makeGame(array $overrides = []): Game
     {
         return Game::create(array_merge([

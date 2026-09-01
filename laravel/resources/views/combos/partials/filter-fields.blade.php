@@ -5,7 +5,9 @@
      Expects: $values, $buttons, $primaryResources, $listingTypes, and an
      optional $notationId to wire up the per-game notation buttons/backspace
      helper (only meaningful when exactly one instance of this partial is on
-     the page, since that JS targets a single element id). --}}
+     the page, since that JS targets a single element id). Optional
+     $hideDamageAndVideo omits the Max Damage / Video contains / No video
+     only fields. --}}
 
 <div class="row g-2 align-items-end mt-2">
     <div class="col-auto">
@@ -42,24 +44,28 @@
 @endif
 
 <div class="row g-2 align-items-end mt-2">
-    <div class="col-auto">
-        <label class="form-label">Max Damage</label>
-        <input type="number" name="damage" class="form-control" value="{{ $values['damage'] ?? '' }}">
-    </div>
+    @unless ($hideDamageAndVideo ?? false)
+        <div class="col-auto">
+            <label class="form-label">Max Damage</label>
+            <input type="number" name="damage" class="form-control" value="{{ $values['damage'] ?? '' }}">
+        </div>
+    @endunless
     <div class="col-auto">
         <label class="form-label">Patch</label>
         <input type="text" name="patch" maxlength="10" class="form-control" value="{{ $values['patch'] ?? '' }}">
     </div>
-    <div class="col-auto">
-        <label class="form-label">Video contains</label>
-        <input type="text" name="video" class="form-control" value="{{ $values['video'] ?? '' }}" @disabled($values['novideo'] ?? false)>
-    </div>
-    <div class="col-auto">
-        <div class="form-check">
-            <input type="checkbox" name="novideo" value="1" class="form-check-input" @checked($values['novideo'] ?? false) onchange="const v = this.closest('.row').querySelector('[name=video]'); if (v) v.disabled = this.checked;">
-            <label class="form-check-label">No video only</label>
+    @unless ($hideDamageAndVideo ?? false)
+        <div class="col-auto">
+            <label class="form-label">Video contains</label>
+            <input type="text" name="video" class="form-control" value="{{ $values['video'] ?? '' }}" @disabled($values['novideo'] ?? false)>
         </div>
-    </div>
+        <div class="col-auto">
+            <div class="form-check">
+                <input type="checkbox" name="novideo" value="1" class="form-check-input" @checked($values['novideo'] ?? false) onchange="const v = this.closest('.row').querySelector('[name=video]'); if (v) v.disabled = this.checked;">
+                <label class="form-check-label">No video only</label>
+            </div>
+        </div>
+    @endunless
     <div class="col-auto">
         <label class="form-label">Comment has (# separated)</label>
         <input type="text" name="comments" class="form-control" placeholder="#universal #corner" value="{{ $values['comments'] ?? '' }}">

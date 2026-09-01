@@ -43,6 +43,7 @@
                     'buttons' => $buttons,
                     'primaryResources' => $primaryResources,
                     'listingTypes' => $listingTypes,
+                    'hideDamageAndVideo' => true,
                 ])
 
                 <div class="mt-3">
@@ -81,6 +82,7 @@
                 'buttons' => $buttons,
                 'primaryResources' => $primaryResources,
                 'listingTypes' => $listingTypes,
+                'hideDamageAndVideo' => true,
             ])
 
             <div class="mt-3">

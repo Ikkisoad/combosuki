@@ -91,8 +91,15 @@ class DiscordInteractionController extends Controller
             return $this->handleTierList($payload);
         }
 
+        // Deferred (type 5) rather than replied to inline: the game/character
+        // resolution below runs up to four fallback queries each (exact name,
+        // alias, then a LIKE sweep of both), and on production that chain was
+        // occasionally missing Discord's 3-second ack window and surfacing as
+        // "didn't respond in time" — see DiscordCharacterPage::handle().
         if ($subcommand === 'character') {
-            return response()->json(['type' => 4, 'data' => $this->characterPage->handle($data)]);
+            dispatch(fn () => $this->characterPage->handle($payload))->afterResponse();
+
+            return response()->json(['type' => 5]);
         }
 
         return response()->json([

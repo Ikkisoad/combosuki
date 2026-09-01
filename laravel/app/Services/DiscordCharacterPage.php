@@ -4,39 +4,64 @@ namespace App\Services;
 
 use App\Models\Character;
 use App\Models\Game;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
 class DiscordCharacterPage
 {
     /**
-     * Handle the text-based `/csk character` interaction's `data` payload
-     * and return the Discord interaction response `data` object: an embed
-     * linking to the character's page, with their portrait as a thumbnail.
+     * The deferred-phase work for `/csk character`: resolve the game and
+     * character, then PATCH the resulting embed (or an error message) onto
+     * the deferred message. Discord only gives 3 seconds for the initial
+     * ack (handled by the controller returning `type 5` before this runs),
+     * so the resolution queries happen after that ack, dispatched via
+     * afterResponse(). Any failure is reported and turned into a plain-text
+     * edit of the deferred message instead of leaving it to time out as
+     * "The application did not respond".
      */
-    public function handle(array $interactionData): array
+    public function handle(array $payload): void
     {
-        $options = $this->flattenOptions($interactionData['options'] ?? []);
+        $applicationId = $payload['application_id'] ?? config('services.discord.application_id');
+        $token = $payload['token'] ?? null;
 
-        $gameName = $options['game'] ?? null;
-        $characterName = $options['character'] ?? null;
-
-        if (! $gameName || ! $characterName) {
-            return $this->ephemeral('Please provide both a game and a character name.');
+        if (! $applicationId || ! $token) {
+            return;
         }
 
-        $game = $this->resolveGame($gameName);
+        try {
+            $options = $this->flattenOptions($payload['data']['options'] ?? []);
 
-        if (! $game) {
-            return $this->ephemeral("No game found matching \"{$gameName}\".");
+            $gameName = $options['game'] ?? null;
+            $characterName = $options['character'] ?? null;
+
+            if (! $gameName || ! $characterName) {
+                $this->editOriginal($applicationId, $token, ['content' => 'Please provide both a game and a character name.']);
+
+                return;
+            }
+
+            $game = $this->resolveGame($gameName);
+
+            if (! $game) {
+                $this->editOriginal($applicationId, $token, ['content' => "No game found matching \"{$gameName}\"."]);
+
+                return;
+            }
+
+            $character = $this->resolveCharacter($game, $characterName);
+
+            if (! $character) {
+                $this->editOriginal($applicationId, $token, ['content' => "No character found matching \"{$characterName}\" in {$game->name}."]);
+
+                return;
+            }
+
+            $this->editOriginal($applicationId, $token, ['embeds' => [$this->toEmbed($game, $character)]]);
+        } catch (\Throwable $e) {
+            report($e);
+
+            $this->editOriginal($applicationId, $token, ['content' => 'Something went wrong looking up that character.']);
         }
-
-        $character = $this->resolveCharacter($game, $characterName);
-
-        if (! $character) {
-            return $this->ephemeral("No character found matching \"{$characterName}\" in {$game->name}.");
-        }
-
-        return ['embeds' => [$this->toEmbed($game, $character)]];
     }
 
     private function resolveGame(string $gameName): ?Game
@@ -103,8 +128,11 @@ class DiscordCharacterPage
         return collect($options)->pluck('value', 'name')->all();
     }
 
-    private function ephemeral(string $content): array
+    private function editOriginal(string $applicationId, string $token, array $data): void
     {
-        return ['content' => $content, 'flags' => 64];
+        Http::asJson()->timeout(10)->patch(
+            "https://discord.com/api/v10/webhooks/{$applicationId}/{$token}/messages/@original",
+            $data
+        );
     }
 }
