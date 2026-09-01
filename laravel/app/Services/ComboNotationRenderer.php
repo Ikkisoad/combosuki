@@ -19,6 +19,15 @@ class ComboNotationRenderer
     private const DEFAULT_COLOR = '#ffffff';
 
     /**
+     * Per-word tokenize() classification, namespaced by the $buttons
+     * instance it was computed against (see tokenize()'s $cacheKey). Lives
+     * for the lifetime of this renderer instance — safe under Laravel's
+     * default per-request container resolution, which hands out a fresh
+     * instance rather than a long-lived singleton.
+     */
+    private array $wordCache = [];
+
+    /**
      * Split combo notation text into tokens, each either a literal string of
      * text or a recognized, genuinely color-coded button. Buttons are
      * matched in the game's configured order using each button's match_type
@@ -27,28 +36,47 @@ class ComboNotationRenderer
      * the first match overall if every match is still at the default color
      * (in which case the token is treated as plain text). Returns
      * [['type' => 'text'|'colored', 'value' => $word, 'color' => ...]].
+     *
+     * $buttons lets a caller that already has $game's buttons loaded (e.g.
+     * one tokenizing many notations in a loop, like ComboFlowChartBuilder)
+     * skip the query this would otherwise run on every single call; omit it
+     * to fetch fresh as before. Passing the *same* $buttons instance across
+     * repeated calls also lets this reuse per-word classification work via
+     * $wordCache (keyed by that instance's spl_object_id(), so a caller who
+     * passes a different or omitted $buttons collection never risks a stale
+     * hit from a previous, differently-scoped call) — the default,
+     * fetch-fresh path (a new Collection every call, so never a cache hit)
+     * is completely unaffected.
      */
-    public function tokenize(Game $game, string $notation): array
+    public function tokenize(Game $game, string $notation, ?Collection $buttons = null): array
     {
-        $buttons = $game->buttons()->orderBy('order')->get(['name', 'color', 'match_type']);
+        $buttons ??= $game->buttons()->orderBy('order')->get(['name', 'color', 'match_type']);
+        $cacheKey = spl_object_id($buttons);
+        $this->wordCache[$cacheKey] ??= [];
 
         $tokens = [];
         $word = '';
 
-        $flush = function (&$word) use (&$tokens, $buttons) {
+        $flush = function (&$word) use (&$tokens, $buttons, $cacheKey) {
             if ($word === '') {
                 return;
             }
 
-            $matches = $buttons->filter(fn ($button) => $this->matches($button, $word));
+            $lookup = mb_strtolower($word);
 
-            $button = $matches->first(fn ($button) => mb_strtolower($button->color) !== self::DEFAULT_COLOR)
-                ?? $matches->first();
+            $classification = $this->wordCache[$cacheKey][$lookup] ??= (function () use ($buttons, $word) {
+                $matches = $buttons->filter(fn ($button) => $this->matches($button, $word));
 
-            $isColored = $button && mb_strtolower($button->color) !== self::DEFAULT_COLOR;
+                $button = $matches->first(fn ($button) => mb_strtolower($button->color) !== self::DEFAULT_COLOR)
+                    ?? $matches->first();
 
-            $tokens[] = $isColored
-                ? ['type' => 'colored', 'value' => $word, 'color' => $button->color]
+                $isColored = $button && mb_strtolower($button->color) !== self::DEFAULT_COLOR;
+
+                return $isColored ? ['colored' => true, 'color' => $button->color] : ['colored' => false];
+            })();
+
+            $tokens[] = $classification['colored']
+                ? ['type' => 'colored', 'value' => $word, 'color' => $classification['color']]
                 : ['type' => 'text', 'value' => $word];
 
             $word = '';
@@ -149,10 +177,17 @@ class ComboNotationRenderer
      * a longer one can't clobber it mid-replacement. Case-insensitive since
      * aliases are admin-defined words a submitter may have typed in any
      * case.
+     *
+     * $aliases lets a caller that's already resolved $game/$character's
+     * alias list (e.g. one resolving many notations for the same character
+     * in a loop, like ComboFlowChartBuilder) skip the two queries
+     * resolvedAliases() would otherwise run on every single call; pass the
+     * result of a prior resolvedAliases() call, or omit it to resolve fresh
+     * as before.
      */
-    public function resolveAliases(Game $game, string $notation, ?Character $character = null): string
+    public function resolveAliases(Game $game, string $notation, ?Character $character = null, ?Collection $aliases = null): string
     {
-        foreach ($this->resolvedAliases($game, $character) as $alias) {
+        foreach ($aliases ?? $this->resolvedAliases($game, $character) as $alias) {
             $notation = str_ireplace($alias->alias, $alias->button->name, $notation);
         }
 
@@ -164,9 +199,13 @@ class ComboNotationRenderer
      * own move aliases with $game's button aliases. Character aliases are
      * listed first so unique() (which keeps the first occurrence) lets a
      * character-specific alias override a game-wide alias that happens to
-     * use the same word, only for that character.
+     * use the same word, only for that character. Exposed (not just used
+     * internally by resolveAliases()) so a caller resolving many notations
+     * for the same $game/$character can compute this once and pass it back
+     * into resolveAliases()'s $aliases parameter instead of paying for it
+     * on every call.
      */
-    private function resolvedAliases(Game $game, ?Character $character): Collection
+    public function resolvedAliases(Game $game, ?Character $character): Collection
     {
         $characterAliases = $character
             ? $character->buttonAliases()->with('button:idbutton,name')->get()
@@ -180,7 +219,13 @@ class ComboNotationRenderer
             ->values();
     }
 
-    private function matches(Button $button, string $word): bool
+    /**
+     * Whether $word satisfies $button's match_type — exposed beyond the
+     * renderer itself so callers that need the same button-matching (e.g.
+     * ComboFlowChartBuilder, to find move boundaries) don't have to
+     * reimplement it.
+     */
+    public function matches(Button $button, string $word): bool
     {
         $needle = mb_strtolower($button->name);
         $haystack = mb_strtolower($word);

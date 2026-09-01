@@ -157,6 +157,9 @@ Route::get('/games/{game}/tabs/matches', [GameController::class, 'matchesTab'])-
 
 Route::scopeBindings()->group(function () {
     Route::get('/games/{game}/characters/{character}', [CharacterController::class, 'show'])->name('characters.show');
+    Route::get('/games/{game}/characters/{character}/tabs/flow-chart', [CharacterController::class, 'flowChartTab'])->name('characters.tabs.flow-chart');
+    Route::get('/games/{game}/characters/{character}/tabs/flow-chart/next', [CharacterController::class, 'flowChartNext'])->name('characters.tabs.flow-chart.next');
+    Route::get('/games/{game}/characters/{character}/tabs/flow-chart/matches', [CharacterController::class, 'flowChartMatches'])->name('characters.tabs.flow-chart.matches');
 });
 
 Route::get('/games/{game}/combos', [ComboController::class, 'index'])->name('games.combos.index');
