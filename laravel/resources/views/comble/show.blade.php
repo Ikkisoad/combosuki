@@ -13,6 +13,25 @@
     </x-slot:styles>
 
     {{--
+        TEMPORARY diagnostic — remove once the Discord-proxy asset-loading
+        issue is understood. Inline and synchronous (no dependency on the
+        Vite bundle, which is exactly what's suspected of failing to load),
+        so it renders regardless of whether comble.js itself loads. Shows
+        what URL the browser believes this page is actually at once Discord
+        has loaded it — if root-relative asset URLs are resolving against
+        the wrong base (e.g. missing a /.proxy/ path segment Discord's
+        client may be using), this reveals it directly, without needing
+        Discord's own DevTools.
+    --}}
+    <div id="debug-location-info" style="background:#000;color:#0f0;padding:8px;font-family:monospace;font-size:11px;word-break:break-all;"></div>
+    <script>
+        document.getElementById('debug-location-info').textContent =
+            'href=' + window.location.href
+            + ' | base=' + document.baseURI
+            + ' | framed=' + (window.self !== window.top);
+    </script>
+
+    {{--
         No jumbotron/nav-bar here — Comble lives on its own comble.*
         subdomain (routes/comble.php) and is opened as its own tab from the
         main site's nav bar rather than navigated to in place, so there's
