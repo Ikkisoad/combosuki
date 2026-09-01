@@ -46,12 +46,23 @@
     <meta name="twitter:description" content="{{ $description }}" />
     <meta name="twitter:image" content="{{ $image ?? 'https://combosuki.com/img/combosuki.png' }}" />
 
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('img/favicon-32x32.png') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('img/favicon-16x16.png') }}">
+    {{--
+        Root-relative paths, not asset() (which defaults to an absolute URL
+        built from the current request's host) — this layout also renders
+        on comble.show, which can be viewed through Discord's Activity
+        proxy, where the page is displayed from a different origin than
+        our server sees in the request. A root-relative path resolves
+        against whatever origin is actually serving the page in every
+        context; an absolute URL with our own host baked in gets blocked as
+        a direct external fetch by Discord's sandboxed iframe — see
+        AppServiceProvider's matching fix for @vite() output.
+    --}}
+    <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png">
 
-    <link rel="preload" as="image" href="{{ asset('img/combosuki.webp') }}" fetchpriority="high">
-    <link rel="preload" as="image" href="{{ asset('img/bg/bolinhas2.webp') }}">
-    <link rel="preload" as="image" href="{{ asset('img/bg/risco2.webp') }}">
+    <link rel="preload" as="image" href="/img/combosuki.webp" fetchpriority="high">
+    <link rel="preload" as="image" href="/img/bg/bolinhas2.webp">
+    <link rel="preload" as="image" href="/img/bg/risco2.webp">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 

@@ -68,6 +68,37 @@ class CombleTest extends TestCase
         $this->assertStringContainsString('href="https://combosuki.com/combos/', $html);
     }
 
+    /**
+     * comble.show can be viewed through Discord's Activity proxy, where the
+     * page is displayed from a discordsays.com origin while our server
+     * still sees whatever Host the request actually carried. Any asset URL
+     * with a host baked in (@vite() defaults to one built from the current
+     * request, same underlying cause as the nav-link bug above) makes the
+     * browser — sandboxed inside Discord's iframe — try to fetch a
+     * completely different external domain directly, which that sandbox
+     * blocks (confirmed in production). Every asset reference on this page
+     * has to be root-relative instead, so the browser resolves it against
+     * whatever origin is actually serving the page in every context — see
+     * AppServiceProvider's Vite::createAssetPathsUsing() and the root-
+     * relative hrefs in layouts/app.blade.php.
+     */
+    public function test_every_asset_url_on_the_page_is_root_relative_not_absolute(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $type = $this->makeType($game);
+        $this->makeCombo($character, $type);
+
+        $html = $this->get('http://comble.example.test'.route('comble.show', absolute: false))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('href="/img/favicon-32x32.png"', $html);
+        $this->assertStringContainsString('href="/img/combosuki.webp"', $html);
+        $this->assertMatchesRegularExpression('#<script type="module" src="/build/assets/comble-#', $html);
+        $this->assertMatchesRegularExpression('#<link rel="stylesheet" href="/build/assets/app-#', $html);
+    }
+
     public function test_the_daily_target_is_stable_across_repeated_requests(): void
     {
         $game = $this->makeGame();

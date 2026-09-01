@@ -16,6 +16,7 @@ use Illuminate\Database\Schema\Builder;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use SocialiteProviders\Discord\Provider;
 use SocialiteProviders\Manager\SocialiteWasCalled;
@@ -60,5 +61,21 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(function (Login $event) {
             $event->user->forceFill(['last_login_at' => now()])->saveQuietly();
         });
+
+        // @vite()/Vite::asset() default to an ABSOLUTE URL built from the
+        // current request's own host (via the global asset() helper) —
+        // fine for a normal same-origin page load, but comble.show also
+        // renders inside a real Discord client, where the page is actually
+        // displayed from a discordsays.com proxy origin while our server
+        // still sees the request as comble.combosuki.com. Baking that host
+        // into <script>/<link> tags makes the browser, sandboxed inside
+        // Discord's Activity iframe, try to fetch an entirely different
+        // external domain directly — which that sandbox blocks by design
+        // (confirmed in production: "Failed to fetch" on every asset).
+        // Root-relative paths sidestep the whole problem: the browser
+        // resolves them against whatever origin is actually serving the
+        // page, which is correct in every context — a normal visit, the
+        // dedicated subdomain directly, or proxied through Discord.
+        Vite::createAssetPathsUsing(fn (string $path) => '/'.ltrim($path, '/'));
     }
 }
