@@ -92,7 +92,8 @@
     @else
         <div id="comble-guess-error" class="alert alert-danger" style="display: none;"></div>
 
-        <form method="post" action="{{ $isToday ? route('comble.guess') : route('comble.guess.date', ['date' => $day->toDateString()]) }}" id="comble-guess-form">
+        {{-- absolute: false — see comble/show.blade.php's comment on the same route() calls; the same reasoning applies here. --}}
+        <form method="post" action="{{ $isToday ? route('comble.guess', [], absolute: false) : route('comble.guess.date', ['date' => $day->toDateString()], absolute: false) }}" id="comble-guess-form">
             @csrf
             <div class="row g-2 align-items-end">
                 <div class="col-md-2">

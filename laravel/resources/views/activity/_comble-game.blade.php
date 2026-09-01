@@ -108,7 +108,8 @@
     @else
         <div id="comble-guess-error" class="alert alert-danger" style="display: none;"></div>
 
-        <form method="post" action="{{ route('activity.comble.guess') }}" id="comble-guess-form">
+        {{-- absolute: false — see comble/show.blade.php's comment on the same route() calls; the same reasoning applies here. --}}
+        <form method="post" action="{{ route('activity.comble.guess', [], absolute: false) }}" id="comble-guess-form">
             <div class="row g-2 align-items-end">
                 <div class="col-md-2">
                     <label class="form-label">Game</label>

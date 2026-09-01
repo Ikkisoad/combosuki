@@ -99,6 +99,39 @@ class CombleTest extends TestCase
         $this->assertMatchesRegularExpression('#<link rel="stylesheet" href="/build/assets/app-#', $html);
     }
 
+    /**
+     * Same underlying issue as the asset-URL test above, but for
+     * route()-generated URLs the browser actually submits/fetches (the
+     * guess form's action, the date-picker/prev-next links, and the
+     * Discord Activity data-endpoint URLs resources/js/comble.js's
+     * bootDiscordActivity() calls) — route() defaults to an absolute URL
+     * built from the current request's host too, unless passed
+     * absolute: false. Confirmed in production: guess submission failed
+     * with a network error until this was fixed. The one exception is
+     * "View this combo" (App\Support\MainSiteUrl), which is deliberately
+     * still absolute since it points at a different domain on purpose.
+     */
+    public function test_every_route_url_the_browser_submits_or_fetches_is_root_relative(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $type = $this->makeType($game);
+        $this->makeCombo($character, $type);
+
+        $html = $this->get('http://comble.example.test'.route('comble.show', absolute: false))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('action="'.route('comble.guess', [], absolute: false).'"', $html);
+        $this->assertStringContainsString('href="'.route('comble.show.date', ['date' => now()->subDay()->toDateString()], absolute: false).'"', $html);
+
+        preg_match('#<script type="application/json" id="activity-comble-urls">(.*?)</script>#s', $html, $matches);
+        $urls = json_decode($matches[1] ?? 'null', true);
+
+        $this->assertSame(route('activity.comble.token', [], absolute: false), $urls['token'] ?? null);
+        $this->assertSame(route('activity.comble.state', [], absolute: false), $urls['state'] ?? null);
+    }
+
     public function test_the_daily_target_is_stable_across_repeated_requests(): void
     {
         $game = $this->makeGame();
