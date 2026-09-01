@@ -13,64 +13,6 @@
     </x-slot:styles>
 
     {{--
-        TEMPORARY diagnostic — remove once the Discord-proxy asset-loading
-        issue is understood. Inline and synchronous (no dependency on the
-        Vite bundle, which is exactly what's suspected of failing to load),
-        so it renders regardless of whether comble.js itself loads. Shows
-        what URL the browser believes this page is actually at once Discord
-        has loaded it — if root-relative asset URLs are resolving against
-        the wrong base (e.g. missing a /.proxy/ path segment Discord's
-        client may be using), this reveals it directly, without needing
-        Discord's own DevTools.
-    --}}
-    <div id="debug-location-info" style="background:#000;color:#0f0;padding:8px;font-family:monospace;font-size:11px;word-break:break-all;"></div>
-    <div id="debug-fetch-info" style="background:#000;color:#ff0;padding:8px;font-family:monospace;font-size:11px;word-break:break-all;">fetch tests pending…</div>
-    <script>
-        document.getElementById('debug-location-info').textContent =
-            'href=' + window.location.href
-            + ' | base=' + document.baseURI
-            + ' | framed=' + (window.self !== window.top);
-
-        // Runs after the document (including the built stylesheet/script
-        // tags Vite injects further down) has parsed, and independently
-        // re-fetches the exact same URLs the browser already tried for the
-        // stylesheet and the comble.js module script — reporting the
-        // actual result (success, status code, or network/CORS failure)
-        // directly on the page, since that's otherwise only visible in
-        // DevTools.
-        document.addEventListener('DOMContentLoaded', function () {
-            // The shared layout's own Vite call for the site-wide app CSS/JS
-            // also renders a stylesheet link and a module script in <head>,
-            // ahead of this view's own Vite tag for comble.js further down
-            // — so "the first match" would silently grab the wrong ones.
-            // Filtering by filename picks the actual comble.js/app.css
-            // tags specifically.
-            const cssLink = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).find((el) => el.href.includes('app-'));
-            const jsScript = Array.from(document.querySelectorAll('script[type="module"]')).find((el) => el.src.includes('comble-'));
-            const targets = [
-                ['css', cssLink ? cssLink.href : null],
-                ['js', jsScript ? jsScript.src : null],
-            ];
-
-            Promise.all(targets.map(function ([label, url]) {
-                if (! url) {
-                    return Promise.resolve(label + '=NO_TAG_FOUND');
-                }
-
-                return fetch(url, { cache: 'no-store' })
-                    .then(function (res) {
-                        return label + '=' + res.status + ' (' + url + ')';
-                    })
-                    .catch(function (err) {
-                        return label + '=FETCH_ERROR:' + err.message + ' (' + url + ')';
-                    });
-            })).then(function (parts) {
-                document.getElementById('debug-fetch-info').textContent = parts.join(' | ');
-            });
-        });
-    </script>
-
-    {{--
         No jumbotron/nav-bar here — Comble lives on its own comble.*
         subdomain (routes/comble.php) and is opened as its own tab from the
         main site's nav bar rather than navigated to in place, so there's
