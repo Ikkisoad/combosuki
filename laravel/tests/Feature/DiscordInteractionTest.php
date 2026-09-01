@@ -621,6 +621,57 @@ class DiscordInteractionTest extends TestCase
         });
     }
 
+    public function test_character_page_embed_lists_the_character_s_top_damage_combos(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Test Character', 'game_idgame' => $game->idgame]);
+        $listingType = GameEntry::create(['title' => 'Combo', 'gameid' => $game->idgame, 'order' => 1]);
+
+        $strong = Combo::create(['combo' => '5HP>Shoryuken', 'character_idcharacter' => $character->idcharacter, 'type' => $listingType->entryid, 'damage' => 500]);
+        $weak = Combo::create(['combo' => '2LP', 'character_idcharacter' => $character->idcharacter, 'type' => $listingType->entryid, 'damage' => 50]);
+
+        $response = $this->postInteraction($this->characterInteractionPayload([
+            ['name' => 'game', 'value' => 'Test Game'],
+            ['name' => 'character', 'value' => 'Test Character'],
+        ]));
+
+        $response->assertOk()->assertJson(['type' => 5]);
+
+        Http::assertSent(function ($request) use ($strong, $weak) {
+            if ($request->url() !== self::DEFERRED_ORIGINAL_MESSAGE_URL) {
+                return false;
+            }
+
+            $combosField = collect($request['embeds'][0]['fields'] ?? [])->firstWhere('name', 'Top Combos');
+
+            return $combosField !== null
+                && str_contains($combosField['value'], $strong->combo)
+                && str_contains($combosField['value'], $weak->combo)
+                && strpos($combosField['value'], $strong->combo) < strpos($combosField['value'], $weak->combo);
+        });
+    }
+
+    public function test_character_page_embed_omits_the_combos_field_when_the_character_has_none(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        Character::create(['name' => 'Test Character', 'game_idgame' => $game->idgame]);
+
+        $response = $this->postInteraction($this->characterInteractionPayload([
+            ['name' => 'game', 'value' => 'Test Game'],
+            ['name' => 'character', 'value' => 'Test Character'],
+        ]));
+
+        $response->assertOk()->assertJson(['type' => 5]);
+
+        Http::assertSent(function ($request) {
+            if ($request->url() !== self::DEFERRED_ORIGINAL_MESSAGE_URL) {
+                return false;
+            }
+
+            return collect($request['embeds'][0]['fields'] ?? [])->firstWhere('name', 'Top Combos') === null;
+        });
+    }
+
     public function test_character_page_resolves_game_and_character_by_alias(): void
     {
         // Auto-generated on create (see Game/Character::booted()): "Street

@@ -3,8 +3,10 @@
 namespace Tests\Unit;
 
 use App\Models\Character;
+use App\Models\Combo;
 use App\Models\Game;
 use App\Services\DiscordCharacterPage;
+use Illuminate\Support\Collection;
 use Tests\TestCase;
 
 class DiscordCharacterPageTest extends TestCase
@@ -34,7 +36,7 @@ class DiscordCharacterPageTest extends TestCase
         ]);
         $character->exists = true;
 
-        $embed = $this->invokeToEmbed($game, $character);
+        $embed = $this->invokeToEmbed($game, $character, new Collection());
 
         $viewsField = collect($embed['fields'])->firstWhere('name', 'Views');
 
@@ -65,17 +67,68 @@ class DiscordCharacterPageTest extends TestCase
         ]);
         $character->exists = true;
 
-        $embed = $this->invokeToEmbed($game, $character);
+        $embed = $this->invokeToEmbed($game, $character, new Collection());
 
         $this->assertArrayNotHasKey('thumbnail', $embed);
     }
 
-    private function invokeToEmbed(Game $game, Character $character): array
+    /**
+     * Regression guard for the `/csk character` embed missing the combos
+     * that are visible on the character's own page (characters.show) — the
+     * embed used to only show the Game/Views fields, so a searcher couldn't
+     * tell whether the character had any combos without following the link.
+     */
+    public function test_embed_lists_the_given_top_combos(): void
+    {
+        $game = (new Game())->forceFill(['idgame' => 5, 'name' => 'Test Game']);
+        $game->exists = true;
+
+        $character = (new Character())->forceFill([
+            'idcharacter' => 9,
+            'name' => 'Ryu',
+            'game_idgame' => 5,
+            'views' => 0,
+        ]);
+        $character->exists = true;
+
+        $combo = (new Combo())->forceFill([
+            'idcombo' => 1,
+            'combo' => '2LP2LP5HP>Shoryuken',
+            'damage' => 350,
+        ]);
+
+        $embed = $this->invokeToEmbed($game, $character, new Collection([$combo]));
+
+        $combosField = collect($embed['fields'])->firstWhere('name', 'Top Combos');
+
+        $this->assertNotNull($combosField);
+        $this->assertSame('2LP2LP5HP>Shoryuken — 350 dmg', $combosField['value']);
+    }
+
+    public function test_embed_omits_the_combos_field_when_there_are_none(): void
+    {
+        $game = (new Game())->forceFill(['idgame' => 5, 'name' => 'Test Game']);
+        $game->exists = true;
+
+        $character = (new Character())->forceFill([
+            'idcharacter' => 9,
+            'name' => 'Ryu',
+            'game_idgame' => 5,
+            'views' => 0,
+        ]);
+        $character->exists = true;
+
+        $embed = $this->invokeToEmbed($game, $character, new Collection());
+
+        $this->assertNull(collect($embed['fields'])->firstWhere('name', 'Top Combos'));
+    }
+
+    private function invokeToEmbed(Game $game, Character $character, Collection $combos): array
     {
         $service = new DiscordCharacterPage();
         $method = new \ReflectionMethod($service, 'toEmbed');
         $method->setAccessible(true);
 
-        return $method->invoke($service, $game, $character);
+        return $method->invoke($service, $game, $character, $combos);
     }
 }

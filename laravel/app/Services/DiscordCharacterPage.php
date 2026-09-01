@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Models\Character;
+use App\Models\Combo;
 use App\Models\Game;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
@@ -56,7 +58,13 @@ class DiscordCharacterPage
                 return;
             }
 
-            $this->editOriginal($applicationId, $token, ['embeds' => [$this->toEmbed($game, $character)]]);
+            $combos = Combo::where('character_idcharacter', $character->idcharacter)
+                ->visibleTo(auth()->user())
+                ->orderByDesc('damage')
+                ->limit(3)
+                ->get();
+
+            $this->editOriginal($applicationId, $token, ['embeds' => [$this->toEmbed($game, $character, $combos)]]);
         } catch (\Throwable $e) {
             report($e);
 
@@ -92,7 +100,12 @@ class DiscordCharacterPage
                 ->first();
     }
 
-    private function toEmbed(Game $game, Character $character): array
+    /**
+     * $combos is pre-fetched by handle() (visibility-scoped, top damage
+     * first) rather than queried in here, so this stays a pure formatter and
+     * can be exercised by the Unit test without a database.
+     */
+    private function toEmbed(Game $game, Character $character, Collection $combos): array
     {
         $embed = [
             'title' => $character->name,
@@ -110,6 +123,20 @@ class DiscordCharacterPage
                 ['name' => 'Views', 'value' => (string) ($character->views ?? 0), 'inline' => true],
             ],
         ];
+
+        // Mirrors the "Top Damage Combos" section of the character's page
+        // (characters.show), so the embed doesn't just point at the page but
+        // actually previews what's on it. Omitted (like the thumbnail below)
+        // rather than shown empty when the character has no visible combos.
+        if ($combos->isNotEmpty()) {
+            $embed['fields'][] = [
+                'name' => 'Top Combos',
+                'value' => $combos->map(fn (Combo $combo) => Str::limit($combo->combo, 100, '').' — '.(
+                    $combo->damage !== null ? number_format((float) $combo->damage, 0, '', '.').' dmg' : 'no damage listed'
+                ))->implode("\n"),
+                'inline' => false,
+            ];
+        }
 
         // `image` can hold a legacy free-text URL from before uploads
         // existed (see Character::imageUrl), so it isn't guaranteed to be a
