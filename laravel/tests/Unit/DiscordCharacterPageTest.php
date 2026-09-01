@@ -42,6 +42,34 @@ class DiscordCharacterPageTest extends TestCase
         $this->assertNotSame('', $viewsField['value']);
     }
 
+    /**
+     * Regression test for a second production occurrence of the same
+     * "stuck on thinking" bug: a legacy character had a malformed `image`
+     * value (free-text, from before uploads existed — see
+     * Character::imageUrl) that wasn't a well-formed absolute URL. Discord
+     * rejected the whole embed (thumbnail.url "Not a well formed URL"), and
+     * again nothing checked the follow-up PATCH's response, so the deferred
+     * message never got edited.
+     */
+    public function test_embed_omits_the_thumbnail_for_a_malformed_legacy_image_url(): void
+    {
+        $game = (new Game())->forceFill(['idgame' => 5, 'name' => 'Test Game']);
+        $game->exists = true;
+
+        $character = (new Character())->forceFill([
+            'idcharacter' => 9,
+            'name' => 'Ryu',
+            'game_idgame' => 5,
+            'views' => 0,
+            'image' => 'not a well formed url',
+        ]);
+        $character->exists = true;
+
+        $embed = $this->invokeToEmbed($game, $character);
+
+        $this->assertArrayNotHasKey('thumbnail', $embed);
+    }
+
     private function invokeToEmbed(Game $game, Character $character): array
     {
         $service = new DiscordCharacterPage();

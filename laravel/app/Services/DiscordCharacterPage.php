@@ -111,7 +111,11 @@ class DiscordCharacterPage
             ],
         ];
 
-        if ($character->imageUrl) {
+        // `image` can hold a legacy free-text URL from before uploads
+        // existed (see Character::imageUrl), so it isn't guaranteed to be a
+        // well-formed absolute URL — Discord rejects the whole embed if it
+        // isn't, so a malformed one is dropped instead of breaking the reply.
+        if ($character->imageUrl && filter_var($character->imageUrl, FILTER_VALIDATE_URL)) {
             $embed['thumbnail'] = ['url' => $character->imageUrl];
         }
 
