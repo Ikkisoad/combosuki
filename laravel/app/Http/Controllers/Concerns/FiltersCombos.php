@@ -53,9 +53,12 @@ trait FiltersCombos
      * what a combo must satisfy to count, instead of relying on a free-text
      * label to convey it accurately. 'characterid' is intentionally not
      * described here since every caller already shows the character by name
-     * alongside the query.
+     * alongside the query. When $character is given, resource value labels
+     * use its per-character alias (e.g. "Support 3" becomes whatever that
+     * character calls its 3rd resource value) the same way combo listings
+     * already do via ResourceValue::aliasFor().
      */
-    private function describeFilters(Game $game, array $filters): array
+    private function describeFilters(Game $game, array $filters, ?Character $character = null): array
     {
         $descriptions = [];
 
@@ -108,7 +111,8 @@ trait FiltersCombos
 
             if ($resource->type === 1) {
                 if ($value !== null && $value !== '' && $value !== '-') {
-                    $label = $resource->values->firstWhere('idResources_values', (int) $value)?->value ?? $value;
+                    $resourceValue = $resource->values->firstWhere('idResources_values', (int) $value);
+                    $label = $resourceValue?->aliasFor($character)?->alias ?? $resourceValue?->value ?? $value;
                     $descriptions[] = "{$resource->text_name}: {$label}";
                 }
             } elseif ($resource->type === 2) {
@@ -124,7 +128,11 @@ trait FiltersCombos
                 $values = array_values(array_filter((array) $value, fn ($v) => $v !== null && $v !== '' && $v !== '-'));
 
                 if ($values !== []) {
-                    $labels = collect($values)->map(fn ($v) => $resource->values->firstWhere('idResources_values', (int) $v)?->value ?? $v);
+                    $labels = collect($values)->map(function ($v) use ($resource, $character) {
+                        $resourceValue = $resource->values->firstWhere('idResources_values', (int) $v);
+
+                        return $resourceValue?->aliasFor($character)?->alias ?? $resourceValue?->value ?? $v;
+                    });
                     $descriptions[] = "{$resource->text_name}: ".$labels->implode(', ');
                 }
             }

@@ -132,7 +132,12 @@ document.addEventListener('DOMContentLoaded', function () {
         board.style.display = '';
     });
 
-    form.addEventListener('submit', function () {
+    form.addEventListener('submit', function (event) {
+        if (! window.confirm('Once submitted, this tier list cannot be edited. Submit anyway?')) {
+            event.preventDefault();
+            return;
+        }
+
         entriesContainer.innerHTML = '';
 
         let index = 0;

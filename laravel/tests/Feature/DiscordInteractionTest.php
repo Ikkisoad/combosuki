@@ -1248,6 +1248,60 @@ class DiscordInteractionTest extends TestCase
         $this->assertStringContainsString('No challenge is available yet', $response->json('data.embeds.0.description'));
     }
 
+    public function test_challenge_with_a_date_option_shows_that_days_challenge(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Test Character', 'game_idgame' => $game->idgame]);
+        $query = CharacterQuery::create(['game_idgame' => $game->idgame, 'label' => 'Random Assist 1', 'filters' => [], 'order' => 0]);
+        $query->forceFill(['created_at' => now()->subWeek()])->save();
+
+        $targetDate = now('America/Sao_Paulo')->subDay();
+
+        $response = $this->postInteraction([
+            'type' => 2,
+            'data' => ['name' => 'csk', 'options' => [[
+                'name' => 'challenge',
+                'options' => [['name' => 'date', 'value' => $targetDate->toDateString()]],
+            ]]],
+        ]);
+
+        $response->assertOk()->assertJson(['type' => 4]);
+
+        $title = $response->json('data.embeds.0.title');
+        $this->assertStringContainsString($game->name, $title);
+        $this->assertStringContainsString($targetDate->format('M j, Y'), $title);
+    }
+
+    public function test_challenge_with_an_unparsable_date_returns_an_immediate_ephemeral_error(): void
+    {
+        $response = $this->postInteraction([
+            'type' => 2,
+            'data' => ['name' => 'csk', 'options' => [[
+                'name' => 'challenge',
+                'options' => [['name' => 'date', 'value' => 'not-a-date']],
+            ]]],
+        ]);
+
+        $response->assertOk()->assertJson(['type' => 4]);
+        $this->assertSame(64, $response->json('data.flags'));
+        $this->assertStringContainsString("doesn't look like a date", $response->json('data.content'));
+    }
+
+    public function test_challenge_with_a_future_date_returns_an_immediate_ephemeral_error(): void
+    {
+        $response = $this->postInteraction([
+            'type' => 2,
+            'data' => ['name' => 'csk', 'options' => [[
+                'name' => 'challenge',
+                'options' => [['name' => 'date', 'value' => now('America/Sao_Paulo')->addWeek()->toDateString()]],
+            ]]],
+        ]);
+
+        $response->assertOk()->assertJson(['type' => 4]);
+        $this->assertSame(64, $response->json('data.flags'));
+        $this->assertStringContainsString('in the future', $response->json('data.content'));
+    }
+
     private function tierListInteractionPayload(array $tierlistOptions): array
     {
         return [

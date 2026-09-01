@@ -54,7 +54,7 @@ class DiscordInteractionController extends Controller
         $subcommand = $data['options'][0]['name'] ?? null;
 
         if ($subcommand === 'challenge') {
-            return response()->json(['type' => 4, 'data' => $this->challenge->handle()]);
+            return response()->json(['type' => 4, 'data' => $this->challenge->handle($data)]);
         }
 
         if ($subcommand === 'guide') {

@@ -72,7 +72,7 @@ class DailyChallenge
 
         $filters = array_merge($query->filters ?? [], ['characterid' => $character->idcharacter]);
         $combo = $this->searchCombos($character->game, $filters, 1)->first();
-        $criteria = $this->describeFilters($character->game, $query->filters ?? []);
+        $criteria = $this->describeFilters($character->game, $query->filters ?? [], $character);
 
         return compact('query', 'character', 'combo', 'criteria');
     }

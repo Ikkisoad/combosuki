@@ -4,12 +4,16 @@ namespace Tests\Feature;
 
 use App\Models\Character;
 use App\Models\CharacterQuery;
+use App\Models\CharacterResourceValueAlias;
 use App\Models\Combo;
 use App\Models\Game;
 use App\Models\GameEntry;
+use App\Models\GameResource;
+use App\Models\ResourceValue;
 use App\Services\DailyChallenge;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class DailyChallengeTest extends TestCase
@@ -138,6 +142,35 @@ class DailyChallengeTest extends TestCase
             ->assertSee('Damage ≤ 1000', false);
     }
 
+    public function test_the_challenge_criteria_use_the_characters_resource_value_alias(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+
+        $support = GameResource::create([
+            'game_idgame' => $game->idgame,
+            'text_name' => 'Support',
+            'type' => 1,
+            'primaryORsecundary' => 1,
+        ]);
+        $value = ResourceValue::create(['value' => '3', 'game_resources_idgame_resources' => $support->idgame_resources]);
+
+        CharacterResourceValueAlias::create([
+            'alias' => 'Doggy Assist',
+            'character_idcharacter' => $character->idcharacter,
+            'resources_values_idResources_values' => $value->idResources_values,
+        ]);
+
+        $this->makeQuery($game, 'Support 3 combos', [
+            'Support' => $value->idResources_values,
+        ]);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('Support: Doggy Assist')
+            ->assertDontSee('Support: 3');
+    }
+
     public function test_results_between_matches_for_date_pick_by_pick(): void
     {
         $game = $this->makeGame();
@@ -194,20 +227,20 @@ class DailyChallengeTest extends TestCase
         $type = $this->makeType($game);
         $this->makeCombo($character, $type);
 
-        \Illuminate\Support\Facades\DB::enableQueryLog();
+        DB::enableQueryLog();
         app(DailyChallenge::class)->resultsBetween(
             Carbon::parse('2026-08-10 00:00:00', 'America/Sao_Paulo'),
             Carbon::parse('2026-08-11 00:00:00', 'America/Sao_Paulo'),
         );
-        $shortRangeQueries = count(\Illuminate\Support\Facades\DB::getQueryLog());
-        \Illuminate\Support\Facades\DB::flushQueryLog();
+        $shortRangeQueries = count(DB::getQueryLog());
+        DB::flushQueryLog();
 
         app(DailyChallenge::class)->resultsBetween(
             Carbon::parse('2026-08-10 00:00:00', 'America/Sao_Paulo'),
             Carbon::parse('2026-09-08 00:00:00', 'America/Sao_Paulo'),
         );
-        $longRangeQueries = count(\Illuminate\Support\Facades\DB::getQueryLog());
-        \Illuminate\Support\Facades\DB::disableQueryLog();
+        $longRangeQueries = count(DB::getQueryLog());
+        DB::disableQueryLog();
 
         // Same single (query, character) pair is picked every day in both
         // ranges, so query count shouldn't grow with the number of days.

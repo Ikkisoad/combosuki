@@ -109,8 +109,16 @@ class RegisterDiscordCommands extends Command
                     ],
                     [
                         'name' => 'challenge',
-                        'description' => 'Show today\'s daily challenge and its current winning combo, if any',
+                        'description' => 'Show the daily challenge and its current winning combo, if any',
                         'type' => 1,
+                        'options' => [
+                            [
+                                'name' => 'date',
+                                'description' => 'Date to view, YYYY-MM-DD (defaults to today)',
+                                'type' => 3,
+                                'required' => false,
+                            ],
+                        ],
                     ],
                     [
                         'name' => 'submit',

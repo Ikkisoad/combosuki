@@ -18,6 +18,7 @@
             <a href="{{ route('tier-lists.index') }}" class="btn btn-sm btn-outline-light">Browse tier lists</a>
         </div>
         <p class="text-white-50">Pick a game, drag its characters into a tier, then title and submit your list. Characters left in Unranked won't be saved.</p>
+        <p class="text-warning"><strong>Heads up:</strong> once submitted, a tier list cannot be edited.</p>
 
         <form method="post" action="{{ route('tier-lists.store') }}" id="tier-list-form">
             @csrf

@@ -103,7 +103,11 @@ class DiscordCharacterPage
             'url' => rtrim(config('app.url'), '/').route('characters.show', [$game, $character], absolute: false),
             'fields' => [
                 ['name' => 'Game', 'value' => $game->name, 'inline' => true],
-                ['name' => 'Views', 'value' => (string) $character->views, 'inline' => true],
+                // Discord rejects an embed field with an empty-string value,
+                // so a null `views` (schema drift, a column missing on a given
+                // environment) falls back to 0 instead of silently failing
+                // the edit and leaving the deferred message stuck "thinking".
+                ['name' => 'Views', 'value' => (string) ($character->views ?? 0), 'inline' => true],
             ],
         ];
 
@@ -128,11 +132,22 @@ class DiscordCharacterPage
         return collect($options)->pluck('value', 'name')->all();
     }
 
+    /**
+     * A failed edit here (e.g. Discord 400-ing an invalid embed) has no
+     * further fallback to escalate to — the interaction is left stuck on
+     * "thinking" either way — so it's logged rather than silently ignored,
+     * to make that failure mode visible instead of indistinguishable from
+     * this method never having run at all.
+     */
     private function editOriginal(string $applicationId, string $token, array $data): void
     {
-        Http::asJson()->timeout(10)->patch(
+        $response = Http::asJson()->timeout(10)->patch(
             "https://discord.com/api/v10/webhooks/{$applicationId}/{$token}/messages/@original",
             $data
         );
+
+        if ($response->failed()) {
+            report(new \RuntimeException("Discord rejected the /csk character follow-up edit: {$response->status()} {$response->body()}"));
+        }
     }
 }
