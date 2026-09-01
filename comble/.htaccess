@@ -1,3 +1,22 @@
+<IfModule mod_headers.c>
+    # This host's actual web server is LiteSpeed (see this file's other
+    # comment on the /build /img workaround) — it injects
+    # X-Frame-Options: SAMEORIGIN and a bare
+    # Content-Security-Policy: upgrade-insecure-requests on every response
+    # at the server layer, *after* Laravel's own SecurityHeaders middleware
+    # runs. Confirmed by curling the origin directly (bypassing any CDN in
+    # front of it) and still seeing those exact values — no PHP-level
+    # header call can override something injected after PHP returns; only
+    # another directive at this same server layer can. "always" is
+    # mod_headers' modifier specifically for forcing a value regardless of
+    # what's already been set upstream. Unconditional (not trying to
+    # distinguish routes the way SecurityHeaders.php does for the main
+    # domain) because this whole subdomain exists to be embedded in
+    # Discord's client — see routes/comble.php.
+    Header always set Content-Security-Policy "frame-ancestors https://discord.com https://*.discord.com https://*.discordsays.com"
+    Header always unset X-Frame-Options
+</IfModule>
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
