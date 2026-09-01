@@ -235,6 +235,13 @@
             }
 
             form.addEventListener('submit', function (event) {
+                if (form.dataset.confirmed === '1') {
+                    form.dataset.confirmed = '';
+                    return;
+                }
+
+                event.preventDefault();
+
                 const games = form.querySelectorAll('.game-checkbox:checked').length;
 
                 let message;
@@ -247,9 +254,14 @@
                         : `Permanently delete ${total} selected entries? This cannot be undone.`;
                 }
 
-                if (!confirm(message)) {
-                    event.preventDefault();
-                }
+                window.confirmDialog(message).then(function (ok) {
+                    if (!ok) {
+                        return;
+                    }
+
+                    form.dataset.confirmed = '1';
+                    form.requestSubmit();
+                });
             });
         })();
     </script>

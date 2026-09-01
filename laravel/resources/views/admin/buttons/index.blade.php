@@ -32,10 +32,10 @@
                                 <input form="bulk-buttons-form" type="checkbox" class="form-check-input mt-0 me-1" name="buttons[{{ $button->idbutton }}][ignored]" value="1" @checked($button->ignored) id="ignored-{{ $button->idbutton }}">
                                 <label class="form-check-label" for="ignored-{{ $button->idbutton }}">Ignore in searches</label>
                             </div>
-                            <form method="post" action="{{ route('admin.buttons.store', $game) }}">
+                            <form method="post" action="{{ route('admin.buttons.store', $game) }}" data-confirm="Are you sure you want to delete this button?">
                                 @csrf
                                 <input type="hidden" name="idbutton" value="{{ $button->idbutton }}">
-                                <button type="submit" name="action" value="Delete" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this button?');">Delete</button>
+                                <button type="submit" name="action" value="Delete" class="btn btn-danger">Delete</button>
                             </form>
                         </div>
                     </td>

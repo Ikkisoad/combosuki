@@ -48,7 +48,7 @@
 
                 <div class="mt-3">
                     <button type="submit" name="action" value="Update" class="btn btn-primary">Update</button>
-                    <button type="submit" name="action" value="Delete" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this query?');">Delete</button>
+                    <button type="submit" name="action" value="Delete" class="btn btn-danger" data-confirm="Are you sure you want to delete this query?">Delete</button>
                 </div>
             </form>
         @endforeach

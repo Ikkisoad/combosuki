@@ -30,10 +30,10 @@
                                     <option value="{{ $button->idbutton }}" @selected($button->idbutton === $buttonAlias->button_idbutton)>{{ $button->name }}</option>
                                 @endforeach
                             </select>
-                            <form method="post" action="{{ route('admin.button-aliases.store', $game) }}">
+                            <form method="post" action="{{ route('admin.button-aliases.store', $game) }}" data-confirm="Are you sure you want to delete this alias?">
                                 @csrf
                                 <input type="hidden" name="idbuttonalias" value="{{ $buttonAlias->idbuttonalias }}">
-                                <button type="submit" name="action" value="Delete" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this alias?');">Delete</button>
+                                <button type="submit" name="action" value="Delete" class="btn btn-danger">Delete</button>
                             </form>
                         </div>
                     </td>

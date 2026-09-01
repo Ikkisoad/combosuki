@@ -36,10 +36,10 @@
                             <input form="bulk-characters-form" type="text" name="characters[{{ $character->idcharacter }}][aliases]" maxlength="1000" class="form-control" placeholder="Aliases" value="{{ $character->aliases->pluck('alias')->implode(', ') }}">
                             <textarea form="bulk-characters-form" name="characters[{{ $character->idcharacter }}][links]" maxlength="2000" class="form-control" rows="1" placeholder="Links: Label|https://url.com, one per line">{{ $character->links->map(fn ($link) => "{$link->label}|{$link->url}")->implode("\n") }}</textarea>
                             <input form="bulk-characters-form" type="file" name="characters[{{ $character->idcharacter }}][image]" accept="image/*" class="form-control">
-                            <form method="post" action="{{ route('admin.characters.store', $game) }}">
+                            <form method="post" action="{{ route('admin.characters.store', $game) }}" data-confirm="Are you sure you want to delete this character?">
                                 @csrf
                                 <input type="hidden" name="idcharacter" value="{{ $character->idcharacter }}">
-                                <button type="submit" name="action" value="Delete" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this character?');">Delete</button>
+                                <button type="submit" name="action" value="Delete" class="btn btn-danger">Delete</button>
                             </form>
                         </div>
                     </td>

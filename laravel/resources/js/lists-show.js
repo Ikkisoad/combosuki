@@ -18,6 +18,7 @@ function loadListPage(url, pushHistory) {
         .then(function (data) {
             description.innerHTML = data.description;
             body.innerHTML = data.content;
+            document.dispatchEvent(new CustomEvent('list-canvas:loaded'));
 
             sidebar.querySelectorAll('a.nav-link').forEach(function (link) {
                 link.classList.toggle('active', Number(link.dataset.pageId) === data.pageId);

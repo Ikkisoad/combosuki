@@ -31,7 +31,7 @@
                 <input type="text" name="list_name" maxlength="100" class="form-control" value="{{ $list->list_name }}">
                 <button class="btn btn-primary text-nowrap">Rename</button>
             </form>
-            <form method="post" action="{{ route('lists.destroy', $list) }}" class="d-flex gap-2" onsubmit="return confirm('Are you sure you want to delete this list? This also deletes all of its pages and categories.');">
+            <form method="post" action="{{ route('lists.destroy', $list) }}" class="d-flex gap-2" data-confirm="Are you sure you want to delete this list? This also deletes all of its pages and categories.">
                 @csrf
                 <button class="btn btn-danger text-nowrap">Delete List</button>
             </form>
@@ -42,7 +42,7 @@
             <p class="text-white-50">Predefine the pages your guide is split across. A page groups categories together and shows its own tab when viewing the list.</p>
 
             @foreach ($pages as $page)
-                <form id="page-delete-{{ $page->idListPage }}" method="post" action="{{ route('lists.manage.pages.destroy', [$list, $page]) }}" onsubmit="return confirm('Delete this page? Its categories will become unassigned from any page.');">@csrf</form>
+                <form id="page-delete-{{ $page->idListPage }}" method="post" action="{{ route('lists.manage.pages.destroy', [$list, $page]) }}" data-confirm="Delete this page? Its categories will become unassigned from any page.">@csrf</form>
             @endforeach
 
             <div id="pages-table" data-list-id="{{ $list->idlist }}" data-save-url="{{ route('lists.manage.pages.bulk', $list) }}" class="table-responsive">
@@ -62,6 +62,9 @@
                                 <td><input type="text" data-field="Description" maxlength="1000" class="form-control form-control-sm" value="{{ $page->Description }}"></td>
                                 <td><input type="number" data-field="order" class="form-control form-control-sm" value="{{ $page->order }}"></td>
                                 <td class="text-nowrap">
+                                    @if ($page->isCanvas())
+                                        <a href="{{ route('lists.manage.canvas.edit', [$list, $page]) }}" class="btn btn-sm btn-primary">Edit Canvas</a>
+                                    @endif
                                     <button form="page-delete-{{ $page->idListPage }}" type="submit" class="btn btn-sm btn-danger">Delete</button>
                                 </td>
                             </tr>
@@ -91,6 +94,12 @@
                     <input type="number" name="order" placeholder="Order" class="form-control" style="width:100px">
                 </div>
                 <div class="col-auto">
+                    <select name="page_type" class="form-select">
+                        <option value="text" selected>Text Page</option>
+                        <option value="canvas">Canvas Page (flow chart)</option>
+                    </select>
+                </div>
+                <div class="col-auto">
                     <button type="submit" class="btn btn-primary">Add Page</button>
                 </div>
             </form>
@@ -101,7 +110,7 @@
             <p class="text-white-50">Predefine categories and optionally assign each one to a page, then bulk-add combos into them from the combo picker.</p>
 
             @foreach ($categories as $category)
-                <form id="category-delete-{{ $category->idlist_category }}" method="post" action="{{ route('lists.manage.categories.destroy', [$list, $category]) }}" onsubmit="return confirm('Delete this category? Its combos will become uncategorized, not removed from the list.');">@csrf</form>
+                <form id="category-delete-{{ $category->idlist_category }}" method="post" action="{{ route('lists.manage.categories.destroy', [$list, $category]) }}" data-confirm="Delete this category? Its combos will become uncategorized, not removed from the list.">@csrf</form>
             @endforeach
 
             <div id="categories-table" data-list-id="{{ $list->idlist }}" data-save-url="{{ route('lists.manage.categories.bulk', $list) }}" class="table-responsive">
@@ -199,7 +208,7 @@
                                                 <x-combo-link :combo="$combo" />
                                                 <div class="text-white-50 small">By {{ $combo->user?->nickname ?? 'Anonymous' }}</div>
                                             </div>
-                                            <form method="post" action="{{ route('lists.entries.alter', $list) }}" onsubmit="return confirm('Remove this combo from the list?');">
+                                            <form method="post" action="{{ route('lists.entries.alter', $list) }}" data-confirm="Remove this combo from the list?">
                                                 @csrf
                                                 <input type="hidden" name="comboid" value="{{ $combo->idcombo }}">
                                                 <button type="submit" class="btn btn-sm btn-outline-light">&times;</button>

@@ -42,7 +42,7 @@
                     <td>
                         @can('verify', $combo)
                             <form method="post" action="{{ route('combos.verify', $combo) }}"
-                                  onsubmit="return confirm('Verify this combo?');" class="d-inline">
+                                  data-confirm="Verify this combo?" class="d-inline">
                                 @csrf
                                 <button type="submit" class="btn btn-sm btn-success">Verify</button>
                             </form>
@@ -97,11 +97,23 @@
                 });
 
                 bulkForm.addEventListener('submit', function (event) {
+                    if (bulkForm.dataset.confirmed === '1') {
+                        bulkForm.dataset.confirmed = '';
+                        return;
+                    }
+
+                    event.preventDefault();
+
                     const total = document.querySelectorAll('.combo-checkbox:checked').length;
 
-                    if (!confirm(`Verify ${total} selected combo(s)?`)) {
-                        event.preventDefault();
-                    }
+                    window.confirmDialog(`Verify ${total} selected combo(s)?`).then(function (ok) {
+                        if (!ok) {
+                            return;
+                        }
+
+                        bulkForm.dataset.confirmed = '1';
+                        bulkForm.requestSubmit();
+                    });
                 });
             })();
         </script>

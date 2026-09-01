@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class ListPageController extends Controller
 {
@@ -19,6 +20,7 @@ class ListPageController extends Controller
             'Title' => ['required', 'string', 'max:255'],
             'Description' => ['nullable', 'string', 'max:1000'],
             'order' => ['nullable', 'numeric'],
+            'page_type' => ['nullable', 'string', Rule::in(['text', 'canvas'])],
         ]);
 
         ListPage::create([
@@ -26,6 +28,7 @@ class ListPageController extends Controller
             'Description' => $validated['Description'] ?? null,
             'idList' => $list->idlist,
             'order' => $validated['order'] ?? null,
+            'page_type' => $validated['page_type'] ?? 'text',
         ]);
         $list->recordEdit();
 

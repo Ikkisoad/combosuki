@@ -46,7 +46,7 @@
                                     <input type="file" name="icon" accept="image/*" class="form-control" title="Icon (optional)" style="max-width: 200px;">
                                     <input type="hidden" name="idresourcevalue" value="{{ $value->idResources_values }}">
                                     <button type="submit" name="action" value="EditUpdate" class="btn btn-primary">Update</button>
-                                    <button type="submit" name="action" value="EditDelete" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this resource value?');">Delete</button>
+                                    <button type="submit" name="action" value="EditDelete" class="btn btn-danger" data-confirm="Are you sure you want to delete this resource value?">Delete</button>
                                 </div>
                             </form>
                         </td>

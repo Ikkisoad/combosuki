@@ -10,7 +10,7 @@
         @endif
 
         @foreach ($resources as $resource)
-            <form id="delete-resource-{{ $resource->idgame_resources }}" method="post" action="{{ route('admin.resources.store', $game) }}" class="d-none">
+            <form id="delete-resource-{{ $resource->idgame_resources }}" method="post" action="{{ route('admin.resources.store', $game) }}" class="d-none" data-confirm="Are you sure you want to delete this resource?">
                 @csrf
                 <input type="hidden" name="action" value="Delete">
                 <input type="hidden" name="idresource" value="{{ $resource->idgame_resources }}">
@@ -50,7 +50,7 @@
                                         <option value="{{ $character->idcharacter }}" @selected($resource->characters->contains('idcharacter', $character->idcharacter))>{{ $character->name }}</option>
                                     @endforeach
                                 </select>
-                                <button type="submit" form="delete-resource-{{ $resource->idgame_resources }}" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this resource?');">Delete</button>
+                                <button type="submit" form="delete-resource-{{ $resource->idgame_resources }}" class="btn btn-danger">Delete</button>
                             </div>
                             <a href="{{ route('admin.resources.values', [$game, $resource]) }}" class="btn btn-secondary mt-1">Edit values</a>
                             @if ($resource->type === 1)

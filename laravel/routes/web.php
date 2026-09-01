@@ -29,6 +29,10 @@ use App\Http\Controllers\ComboListController;
 use App\Http\Controllers\ComboVerificationController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\GameController;
+use App\Http\Controllers\ListCanvasComboPickerController;
+use App\Http\Controllers\ListCanvasController;
+use App\Http\Controllers\ListCanvasEdgeController;
+use App\Http\Controllers\ListCanvasNodeController;
 use App\Http\Controllers\ListCategoryController;
 use App\Http\Controllers\ListComboPickerController;
 use App\Http\Controllers\ListController;
@@ -203,6 +207,20 @@ Route::middleware(['auth', 'throttle:10,1'])->prefix('lists/{list}/manage')->nam
 
     Route::get('/combos', [ListComboPickerController::class, 'index'])->withoutMiddleware('throttle:10,1')->name('combos.index');
     Route::post('/combos', [ListComboPickerController::class, 'store'])->name('combos.store');
+
+    Route::get('/pages/{page}/canvas', [ListCanvasController::class, 'edit'])
+        ->withoutMiddleware('throttle:10,1')->name('canvas.edit');
+
+    Route::prefix('pages/{page}/canvas')->name('canvas.')->group(function () {
+        Route::get('/combos', [ListCanvasComboPickerController::class, 'search'])
+            ->withoutMiddleware('throttle:10,1')->name('combos.search');
+        Route::post('/nodes', [ListCanvasNodeController::class, 'store'])->name('nodes.store');
+        Route::patch('/nodes/{node}', [ListCanvasNodeController::class, 'update'])->name('nodes.update');
+        Route::post('/nodes/{node}/delete', [ListCanvasNodeController::class, 'destroy'])->name('nodes.destroy');
+        Route::post('/edges', [ListCanvasEdgeController::class, 'store'])->name('edges.store');
+        Route::patch('/edges/{edge}', [ListCanvasEdgeController::class, 'update'])->name('edges.update');
+        Route::post('/edges/{edge}/delete', [ListCanvasEdgeController::class, 'destroy'])->name('edges.destroy');
+    });
 });
 
 Route::get('/tier-lists', [TierListController::class, 'index'])->name('tier-lists.index');

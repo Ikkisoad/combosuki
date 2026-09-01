@@ -180,7 +180,7 @@
             </div>
         </form>
 
-        <form method="post" action="{{ route('combos.destroy', $combo) }}" onsubmit="return confirm('Are you sure you want to delete this combo?');">
+        <form method="post" action="{{ route('combos.destroy', $combo) }}" data-confirm="Are you sure you want to delete this combo?">
             @csrf
             <button type="submit" class="btn btn-danger">Delete Combo</button>
         </form>

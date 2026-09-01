@@ -43,10 +43,10 @@
                                 <option value="3" @selected($list->type === 3)>Featured</option>
                                 <option value="0" @selected($list->type === 0)>Hidden</option>
                             </select>
-                            <form method="post" action="{{ route('admin.lists.store', $game) }}">
+                            <form method="post" action="{{ route('admin.lists.store', $game) }}" data-confirm="Are you sure you want to delete this list?">
                                 @csrf
                                 <input type="hidden" name="idlist" value="{{ $list->idlist }}">
-                                <button type="submit" name="action" value="Delete" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this list?');">Delete</button>
+                                <button type="submit" name="action" value="Delete" class="btn btn-danger">Delete</button>
                             </form>
                         </div>
                     </td>

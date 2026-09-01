@@ -240,7 +240,7 @@
 
                 @if ($canVerify && ! $combo->verified)
                     <form method="post" action="{{ route('combos.verify', $combo) }}"
-                          onsubmit="return confirm('Mark this combo as verified? This confirms it is a legitimate submission.');">
+                          data-confirm="Mark this combo as verified? This confirms it is a legitimate submission.">
                         @csrf
                         <button type="submit" class="btn btn-success mb-3">Verify Combo</button>
                     </form>

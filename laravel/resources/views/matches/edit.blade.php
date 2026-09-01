@@ -66,7 +66,7 @@
             </div>
         </form>
 
-        <form method="post" action="{{ route('matches.destroy', $match) }}" onsubmit="return confirm('Are you sure you want to delete this match?');">
+        <form method="post" action="{{ route('matches.destroy', $match) }}" data-confirm="Are you sure you want to delete this match?">
             @csrf
             <button type="submit" class="btn btn-danger">Delete Match</button>
         </form>

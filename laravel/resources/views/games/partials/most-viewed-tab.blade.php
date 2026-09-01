@@ -3,7 +3,7 @@
     <p>No combos for this game yet.</p>
 @else
     <div class="table-responsive">
-        <table class="table table-hover align-middle caption-top">
+        <table class="table table-hover align-middle caption-top text-white">
             <caption>Click the character name to see comments if the entry has them.</caption>
             <tr>
                 <th>Character</th>
@@ -44,7 +44,7 @@
 @if ($mostViewedGuides->isEmpty())
     <p>No guides for this game yet.</p>
 @else
-    <table class="table table-hover align-middle">
+    <table class="table table-hover align-middle text-white">
         <tr>
             <th>Title</th>
             <th>Author</th>

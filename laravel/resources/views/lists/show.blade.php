@@ -55,7 +55,7 @@
                 @endcan
 
                 <div id="list-page-body">
-                    @include('lists._page-body', ['categories' => $categories, 'grouped' => $grouped])
+                    @include($contentView, $contentData)
                 </div>
 
             </main>
@@ -64,5 +64,8 @@
 
     @if ($list->pages->isNotEmpty())
         @vite(['resources/js/lists-show.js'])
+    @endif
+    @if ($list->pages->contains(fn ($page) => $page->isCanvas()))
+        @vite(['resources/js/guide-flow-chart.js'])
     @endif
 </x-layouts.app>

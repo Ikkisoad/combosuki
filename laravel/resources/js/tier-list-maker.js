@@ -133,42 +133,53 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     form.addEventListener('submit', function (event) {
-        if (! window.confirm('Once submitted, this tier list cannot be edited. Submit anyway?')) {
-            event.preventDefault();
+        if (form.dataset.confirmed === '1') {
+            form.dataset.confirmed = '';
             return;
         }
 
-        entriesContainer.innerHTML = '';
+        event.preventDefault();
 
-        let index = 0;
+        window.confirmDialog('Once submitted, this tier list cannot be edited. Submit anyway?').then(function (ok) {
+            if (! ok) {
+                return;
+            }
 
-        document.querySelectorAll('#tier-board .tier-dropzone').forEach((zone) => {
-            const tier = zone.dataset.tier;
+            entriesContainer.innerHTML = '';
 
-            zone.querySelectorAll('.character-card').forEach((card) => {
-                const characterInput = document.createElement('input');
-                characterInput.type = 'hidden';
-                characterInput.name = `entries[${index}][character_idcharacter]`;
-                characterInput.value = card.dataset.characterId;
+            let index = 0;
 
-                const tierInput = document.createElement('input');
-                tierInput.type = 'hidden';
-                tierInput.name = `entries[${index}][tier]`;
-                tierInput.value = tier;
+            document.querySelectorAll('#tier-board .tier-dropzone').forEach((zone) => {
+                const tier = zone.dataset.tier;
 
-                entriesContainer.appendChild(characterInput);
-                entriesContainer.appendChild(tierInput);
+                zone.querySelectorAll('.character-card').forEach((card) => {
+                    const characterInput = document.createElement('input');
+                    characterInput.type = 'hidden';
+                    characterInput.name = `entries[${index}][character_idcharacter]`;
+                    characterInput.value = card.dataset.characterId;
 
-                if (card.dataset.resourceValueId) {
-                    const valueInput = document.createElement('input');
-                    valueInput.type = 'hidden';
-                    valueInput.name = `entries[${index}][resources_values_idResources_values]`;
-                    valueInput.value = card.dataset.resourceValueId;
-                    entriesContainer.appendChild(valueInput);
-                }
+                    const tierInput = document.createElement('input');
+                    tierInput.type = 'hidden';
+                    tierInput.name = `entries[${index}][tier]`;
+                    tierInput.value = tier;
 
-                index++;
+                    entriesContainer.appendChild(characterInput);
+                    entriesContainer.appendChild(tierInput);
+
+                    if (card.dataset.resourceValueId) {
+                        const valueInput = document.createElement('input');
+                        valueInput.type = 'hidden';
+                        valueInput.name = `entries[${index}][resources_values_idResources_values]`;
+                        valueInput.value = card.dataset.resourceValueId;
+                        entriesContainer.appendChild(valueInput);
+                    }
+
+                    index++;
+                });
             });
+
+            form.dataset.confirmed = '1';
+            form.requestSubmit();
         });
     });
 });

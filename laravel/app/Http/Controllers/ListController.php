@@ -7,9 +7,11 @@ use App\Models\Combo;
 use App\Models\Game;
 use App\Models\ListCategory;
 use App\Models\ListModel;
+use App\Models\ListPageCanvasEdge;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -75,20 +77,30 @@ class ListController extends Controller
         $pageId = $request->integer('page', 0);
         $currentPage = $list->pages->firstWhere('idListPage', $pageId);
 
-        [$categories, $grouped] = $this->categoriesAndGroupedCombos($list, $pageId);
+        if ($currentPage?->isCanvas()) {
+            $currentPage->load(['canvasNodes.combo.character', 'canvasNodes.combo.listingType']);
+            $nodes = $currentPage->canvasNodes;
+            $edges = ListPageCanvasEdge::whereIn('idFromNode', $nodes->pluck('idCanvasNode'))->get();
+            $contentView = 'lists._page-canvas';
+            $contentData = ['nodes' => $nodes, 'edges' => $edges];
+        } else {
+            [$categories, $grouped] = $this->categoriesAndGroupedCombos($list, $pageId);
+            $contentView = 'lists._page-body';
+            $contentData = ['categories' => $categories, 'grouped' => $grouped];
+        }
 
         if ($request->wantsJson()) {
             return response()->json([
                 'pageId' => $pageId,
                 'description' => view('lists._page-description', ['currentPage' => $currentPage])->render(),
-                'content' => view('lists._page-body', ['categories' => $categories, 'grouped' => $grouped])->render(),
+                'content' => view($contentView, $contentData)->render(),
             ]);
         }
 
         return view('lists.show', [
             'list' => $list,
-            'categories' => $categories,
-            'grouped' => $grouped,
+            'contentView' => $contentView,
+            'contentData' => $contentData,
             'pageId' => $pageId,
             'currentPage' => $currentPage,
         ]);
@@ -123,7 +135,7 @@ class ListController extends Controller
      * category and combo for the list, used by the management hub which
      * needs the full board for drag-and-drop.
      *
-     * @return array{0: \Illuminate\Support\Collection, 1: \Illuminate\Support\Collection}
+     * @return array{0: Collection, 1: Collection}
      */
     private function categoriesAndGroupedCombos(ListModel $list, ?int $pageId): array
     {

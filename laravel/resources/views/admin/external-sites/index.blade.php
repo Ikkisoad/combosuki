@@ -23,7 +23,7 @@
                                 <input type="number" name="order" class="form-control" style="max-width: 6rem;" value="{{ $site->order }}">
                                 <input type="hidden" name="id" value="{{ $site->id }}">
                                 <button type="submit" name="action" value="Update" class="btn btn-primary">Update</button>
-                                <button type="submit" name="action" value="Delete" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this site?');">Delete</button>
+                                <button type="submit" name="action" value="Delete" class="btn btn-danger" data-confirm="Are you sure you want to delete this site?">Delete</button>
                             </div>
                         </form>
                     </td>

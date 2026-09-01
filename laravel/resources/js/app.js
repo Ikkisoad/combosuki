@@ -1,4 +1,107 @@
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import { Modal } from 'bootstrap';
+
+/**
+ * Site-wide replacement for window.confirm(), styled with the same
+ * combosuki-main-reversed modal used elsewhere, since native browser
+ * confirm() dialogs can't be themed. Returns a Promise<boolean> instead of
+ * blocking synchronously, so callers that used to check `confirm(...)`
+ * inline need to move the follow-up logic into a `.then()`/`await`.
+ */
+let confirmModal = null;
+let resolveConfirm = null;
+
+window.confirmDialog = function (message) {
+    const modalEl = document.getElementById('global-confirm-modal');
+    const messageEl = document.getElementById('global-confirm-modal-message');
+
+    if (! modalEl || ! messageEl) {
+        return Promise.resolve(window.confirm(message));
+    }
+
+    if (! confirmModal) {
+        confirmModal = new Modal(modalEl);
+
+        modalEl.querySelector('#global-confirm-modal-accept').addEventListener('click', () => {
+            confirmModal.hide();
+            resolveConfirm?.(true);
+            resolveConfirm = null;
+        });
+
+        modalEl.addEventListener('hidden.bs.modal', () => {
+            resolveConfirm?.(false);
+            resolveConfirm = null;
+        });
+    }
+
+    messageEl.textContent = message;
+
+    return new Promise((resolve) => {
+        resolveConfirm = resolve;
+        confirmModal.show();
+    });
+};
+
+/**
+ * Forms marked data-confirm="message" get the modal above instead of a
+ * native confirm() before they submit. The listener runs in the capture
+ * phase so it can intercept before other submit handlers run.
+ */
+document.addEventListener('submit', (event) => {
+    const form = event.target;
+
+    if (! (form instanceof HTMLFormElement) || ! form.dataset.confirm) {
+        return;
+    }
+
+    if (form.dataset.confirmed === '1') {
+        form.dataset.confirmed = '';
+        return;
+    }
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    window.confirmDialog(form.dataset.confirm).then((ok) => {
+        if (! ok) {
+            return;
+        }
+
+        form.dataset.confirmed = '1';
+        form.requestSubmit();
+    });
+}, true);
+
+/**
+ * Same idea as above, but for a single submit button inside a form that has
+ * other submit buttons which shouldn't be confirmed (e.g. "Update" next to
+ * "Delete") — data-confirm goes on the button instead of the form, and
+ * requestSubmit(button) re-fires the click with that button as the
+ * submitter so its name/value still reaches the server.
+ */
+document.addEventListener('click', (event) => {
+    const button = event.target.closest('button[data-confirm], input[type=submit][data-confirm]');
+
+    if (! button || button.type !== 'submit' || ! button.form) {
+        return;
+    }
+
+    if (button.dataset.confirmed === '1') {
+        button.dataset.confirmed = '';
+        return;
+    }
+
+    event.preventDefault();
+
+    window.confirmDialog(button.dataset.confirm).then((ok) => {
+        if (! ok) {
+            return;
+        }
+
+        button.dataset.confirmed = '1';
+        button.form.requestSubmit(button);
+    });
+});
 
 window.returnColor = function (color) {
     document.getElementById('headcolor').value = color;

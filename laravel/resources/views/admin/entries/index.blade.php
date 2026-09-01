@@ -21,7 +21,7 @@
                                 <input class="form-control" type="number" name="order" value="{{ $entry->order }}" step="any">
                                 <input type="hidden" name="entryid" value="{{ $entry->entryid }}">
                                 <button type="submit" name="action" value="Update" class="btn btn-primary">Update</button>
-                                <button type="submit" name="action" value="Delete" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this entry?');">Delete</button>
+                                <button type="submit" name="action" value="Delete" class="btn btn-danger" data-confirm="Are you sure you want to delete this entry?">Delete</button>
                             </div>
                         </form>
                     </td>

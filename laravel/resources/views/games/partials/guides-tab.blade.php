@@ -2,7 +2,7 @@
 @if ($featuredGuides->isEmpty())
     <p>No featured guides for this game yet.</p>
 @else
-    <table class="table table-hover align-middle">
+    <table class="table table-hover align-middle text-white">
         <tr>
             <th>Title</th>
             <th>Author</th>
@@ -20,7 +20,7 @@
 @if ($guides->isEmpty())
     <p>No guides for this game yet.</p>
 @else
-    <table class="table table-hover align-middle">
+    <table class="table table-hover align-middle text-white">
         <tr>
             <th>Title</th>
             <th>Author</th>

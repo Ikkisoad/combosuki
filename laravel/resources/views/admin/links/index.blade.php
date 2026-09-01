@@ -21,7 +21,7 @@
                                 <textarea name="link" maxlength="255" class="form-control" rows="1">{{ $link->Link }}</textarea>
                                 <input type="hidden" name="idLink" value="{{ $link->idLink }}">
                                 <button type="submit" name="action" value="Update" class="btn btn-primary">Update</button>
-                                <button type="submit" name="action" value="Delete" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this link?');">Delete</button>
+                                <button type="submit" name="action" value="Delete" class="btn btn-danger" data-confirm="Are you sure you want to delete this link?">Delete</button>
                             </div>
                         </form>
                     </td>

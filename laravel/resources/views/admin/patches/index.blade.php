@@ -28,7 +28,7 @@
                                 <span class="input-group-text">{{ $patch->isCurrent() ? 'current' : $patch->ended_at->format('M j, Y') }}</span>
                                 <input type="hidden" name="idgame_patch" value="{{ $patch->idgame_patch }}">
                                 <button type="submit" name="action" value="Update" class="btn btn-primary">Update</button>
-                                <button type="submit" name="action" value="Delete" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this patch? Its date range and any combos will be folded into the neighboring patch.');">Delete</button>
+                                <button type="submit" name="action" value="Delete" class="btn btn-danger" data-confirm="Are you sure you want to delete this patch? Its date range and any combos will be folded into the neighboring patch.">Delete</button>
                             </div>
                         </form>
                     </td>
