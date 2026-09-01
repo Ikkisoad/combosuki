@@ -245,24 +245,48 @@ function initFlowChart() {
     function loadOptionsForCurrentPath() {
         isLoadingOptions = true;
         refreshOutput();
-        refreshMatches();
 
         // Clear the previous step's options immediately so a now-invalid
         // one can't be tapped while the real ones for the new path are
         // still loading.
         applyOptions([]);
 
-        const requestToken = ++optionsRequestToken;
-        const pathKeys = selectedPath.slice(1);
+        fetchAndAutoAdvance(++optionsRequestToken);
+    }
 
+    /**
+     * Fetches the moves following the current path and, as long as there's
+     * exactly one, keeps walking forward on its own — a forced move isn't a
+     * real decision point, so the user shouldn't have to click through it.
+     * The matches lookup is deliberately skipped for these in-between hops:
+     * it's a combos-matching-this-path search, and mid-chain the path isn't
+     * where it's going to land yet, so searching for it here would just be
+     * one throwaway request per hop. It only runs once the walk actually
+     * stops, at a real end-of-line or branching node.
+     */
+    function fetchAndAutoAdvance(requestToken) {
+        const pathKeys = selectedPath.slice(1);
         const fetcher = pathKeys.length === 0 ? Promise.resolve(initialOptions) : fetchNextMoves(pathKeys);
 
         fetcher.then((options) => {
-            if (requestToken === optionsRequestToken) {
-                isLoadingOptions = false;
-                applyOptions(options);
-                refreshOutput();
+            if (requestToken !== optionsRequestToken) {
+                return;
             }
+
+            // The node/edge still has to be added via applyOptions() before
+            // advancing past it, or it's left on selectedPath with no
+            // backing element (blank label, edges with a missing source).
+            if (options.length === 1) {
+                applyOptions(options);
+                selectedPath.push(options[0].key);
+                fetchAndAutoAdvance(requestToken);
+                return;
+            }
+
+            isLoadingOptions = false;
+            applyOptions(options);
+            refreshOutput();
+            refreshMatches();
         });
     }
 
@@ -340,8 +364,7 @@ function initFlowChart() {
         });
     }
 
-    applyOptions(initialOptions);
-    refreshOutput();
+    loadOptionsForCurrentPath();
 }
 
 document.addEventListener('combo-flow-chart:loaded', initFlowChart);
