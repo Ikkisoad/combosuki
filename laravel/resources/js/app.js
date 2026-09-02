@@ -377,6 +377,30 @@ window.toggleFavorite = function (button, comboId) {
         });
 };
 
+// Combo page's "Damage history" section shows the current patch's value up
+// front, but older patches are only fetched (and cached) the first time the
+// visitor actually expands it via the arrow button — see damage-history()
+// in ComboController for why.
+document.addEventListener('show.bs.collapse', (event) => {
+    const container = event.target;
+
+    if (! container.matches('[data-damage-history-endpoint]') || container.dataset.loaded === '1') {
+        return;
+    }
+
+    container.innerHTML = '<p class="text-white-50 small mb-0 px-2">Loading&hellip;</p>';
+
+    fetch(container.dataset.damageHistoryEndpoint)
+        .then((response) => response.text())
+        .then((html) => {
+            container.innerHTML = html;
+            container.dataset.loaded = '1';
+        })
+        .catch(() => {
+            container.innerHTML = '<p class="text-danger small mb-0 px-2">Could not load damage history.</p>';
+        });
+});
+
 window.copyQueryInto = function (select) {
     const sourceId = select.value;
     const targetForm = select.closest('form');

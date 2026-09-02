@@ -154,6 +154,63 @@ class ComboDamageHistoryTest extends TestCase
         $response = $this->get(route('combos.show', $combo));
         $response->assertOk();
         $response->assertSee('Damage history');
+        $response->assertSee('1.01');
+    }
+
+    public function test_show_page_only_loads_the_current_and_previous_patch_not_older_ones(): void
+    {
+        $game = $this->makeGame();
+        $patch1 = $this->makePatch($game, '1.00');
+        $patch2 = $this->makePatch($game, '1.01');
+        $patch3 = $this->makePatch($game, '1.02');
+        $character = $this->makeCharacter($game);
+
+        $combo = Combo::create([
+            'combo' => 'A',
+            'character_idcharacter' => $character->idcharacter,
+            'damage' => 3500,
+            'type' => 1,
+            'patch_idgame_patch' => $patch1->idgame_patch,
+        ]);
+        $combo->update(['damage' => 3000, 'patch_idgame_patch' => $patch2->idgame_patch]);
+        $combo->update(['damage' => 3200, 'patch_idgame_patch' => $patch3->idgame_patch]);
+
+        $response = $this->get(route('combos.show', $combo));
+
+        $response->assertOk();
+        $response->assertSee('Damage history');
+        // The most recent patch is rendered directly into the page...
+        $response->assertSee('1.02');
+        // ...but the older ones only exist behind the on-demand endpoint,
+        // never rendered into the initial page itself.
+        $response->assertDontSee('1.00');
+        $response->assertDontSee('1.01');
+        $response->assertSee(route('combos.damage-history', $combo), escape: false);
+    }
+
+    public function test_damage_history_endpoint_returns_the_older_entries_with_deltas(): void
+    {
+        $game = $this->makeGame();
+        $patch1 = $this->makePatch($game, '1.00');
+        $patch2 = $this->makePatch($game, '1.01');
+        $patch3 = $this->makePatch($game, '1.02');
+        $character = $this->makeCharacter($game);
+
+        $combo = Combo::create([
+            'combo' => 'A',
+            'character_idcharacter' => $character->idcharacter,
+            'damage' => 3500,
+            'type' => 1,
+            'patch_idgame_patch' => $patch1->idgame_patch,
+        ]);
+        $combo->update(['damage' => 3000, 'patch_idgame_patch' => $patch2->idgame_patch]);
+        $combo->update(['damage' => 3200, 'patch_idgame_patch' => $patch3->idgame_patch]);
+
+        $response = $this->get(route('combos.damage-history', $combo));
+
+        $response->assertOk();
         $response->assertSeeInOrder(['1.00', '1.01']);
+        // The most recent (already-visible-elsewhere) entry isn't repeated here.
+        $response->assertDontSee('1.02');
     }
 }

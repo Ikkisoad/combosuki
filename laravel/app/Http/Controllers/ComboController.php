@@ -72,7 +72,7 @@ class ComboController extends Controller
 
     public function show(Combo $combo): View
     {
-        $combo->load(['character.game', 'listingType', 'patch', 'resources.resourceValue.gameResource', 'resources.resourceValue.characterAliases', 'user', 'verifier', 'damageHistories.patch']);
+        $combo->load(['character.game', 'listingType', 'patch', 'resources.resourceValue.gameResource', 'resources.resourceValue.characterAliases', 'user', 'verifier']);
         $combo->increment('views');
 
         $game = $combo->character->game;
@@ -84,6 +84,27 @@ class ComboController extends Controller
             ->filter(fn ($resource) => $resource->resourceValue?->gameResource?->primaryORsecundary === 0);
 
         $similarCombos = $this->similarCombos($combo);
+
+        // Only the current value (plus the one before it, to know whether to
+        // draw a nerf/buff arrow on it) is loaded here — older patches are
+        // fetched from damageHistory() on demand, so a visitor who never
+        // expands "Damage history" never costs a query for data they don't
+        // look at.
+        $recentDamageHistory = $combo->damageHistories()
+            ->join('game_patches', 'game_patches.idgame_patch', '=', 'combo_damage_histories.patch_idgame_patch')
+            // released_at alone can tie (same-day patches); idgame_patch as a
+            // secondary key keeps the order deterministic and matching the
+            // order patches were actually added in.
+            ->orderByDesc('game_patches.released_at')
+            ->orderByDesc('game_patches.idgame_patch')
+            ->select('combo_damage_histories.*')
+            ->with('patch')
+            ->limit(2)
+            ->get();
+
+        $latestDamageHistory = $recentDamageHistory->first();
+        $previousDamageHistory = $recentDamageHistory->get(1);
+        $hasOlderDamageHistory = $recentDamageHistory->count() > 1;
 
         $dealiasedNotation = $this->comboNotationRenderer->resolveAliases($game, $combo->combo, $combo->character);
 
@@ -132,6 +153,32 @@ class ComboController extends Controller
             'isFavorited' => $isFavorited,
             'similarCombos' => $similarCombos,
             'dealiasedNotation' => $dealiasedNotation,
+            'latestDamageHistory' => $latestDamageHistory,
+            'previousDamageHistory' => $previousDamageHistory,
+            'hasOlderDamageHistory' => $hasOlderDamageHistory,
+        ]);
+    }
+
+    /**
+     * Older damage-history entries, loaded on demand when a visitor expands
+     * the "Damage history" section on the combo page (see show()) instead of
+     * on every page view.
+     */
+    public function damageHistory(Combo $combo): View
+    {
+        $olderDamageHistory = $combo->damageHistories()
+            ->with('patch')
+            ->get()
+            // released_at alone can tie (same-day patches); idgame_patch as a
+            // secondary key keeps this in the same order show() uses to pick
+            // the latest/previous entries.
+            ->sort(fn ($a, $b) => $a->patch->released_at <=> $b->patch->released_at ?: $a->patch->idgame_patch <=> $b->patch->idgame_patch)
+            ->values()
+            ->slice(0, -1)
+            ->values();
+
+        return view('combos.partials.damage-history-older', [
+            'olderDamageHistory' => $olderDamageHistory,
         ]);
     }
 

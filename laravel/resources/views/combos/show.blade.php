@@ -210,26 +210,42 @@
                     @endforeach
                 </table>
 
-                @php $damageHistory = $combo->damageHistories->sortBy(fn ($h) => $h->patch->released_at)->values(); @endphp
-                @if ($damageHistory->count() > 1)
+                @if ($hasOlderDamageHistory)
                     <table class="table table-hover align-middle combosuki-main-reversed text-white">
                         <tr>
-                            <th colspan="2">Damage history</th>
+                            <th colspan="2">
+                                Damage history
+                                <button class="btn btn-dark btn-sm" style="float: right;" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#damage-history-older-{{ $combo->idcombo }}"
+                                        aria-expanded="false" aria-controls="damage-history-older-{{ $combo->idcombo }}"
+                                        aria-label="Show older patches">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M3 5l5 6 5-6" />
+                                    </svg>
+                                </button>
+                            </th>
                         </tr>
-                        @foreach ($damageHistory as $i => $entry)
-                            @php $delta = $i > 0 ? $entry->damage <=> $damageHistory[$i - 1]->damage : 0; @endphp
-                            <tr>
-                                <td>{{ $entry->patch->label }}</td>
-                                <td>
-                                    {{ number_format((float) $entry->damage, 0, '', '.') }}
-                                    @if ($delta < 0)
-                                        <span class="text-danger">&#9660;</span>
-                                    @elseif ($delta > 0)
-                                        <span class="text-success">&#9650;</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
+                        <tr>
+                            <td colspan="2" class="p-0 border-0">
+                                {{-- Empty until expanded: app.js fetches this on the collapse's
+                                     show.bs.collapse event and caches the result, so a visitor
+                                     who never clicks the arrow never costs a query for it. --}}
+                                <div class="collapse" id="damage-history-older-{{ $combo->idcombo }}"
+                                     data-damage-history-endpoint="{{ route('combos.damage-history', $combo) }}"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>{{ $latestDamageHistory->patch->label }}</td>
+                            <td>
+                                {{ number_format((float) $latestDamageHistory->damage, 0, '', '.') }}
+                                @php $latestDelta = $previousDamageHistory ? $latestDamageHistory->damage <=> $previousDamageHistory->damage : 0; @endphp
+                                @if ($latestDelta < 0)
+                                    <span class="text-danger">&#9660;</span>
+                                @elseif ($latestDelta > 0)
+                                    <span class="text-success">&#9650;</span>
+                                @endif
+                            </td>
+                        </tr>
                     </table>
                 @endif
 
