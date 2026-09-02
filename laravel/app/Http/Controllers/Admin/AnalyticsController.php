@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\BotHit;
 use App\Models\Character;
 use App\Models\Combo;
 use App\Models\CombleDayView;
@@ -65,6 +66,14 @@ class AnalyticsController extends Controller
                 ];
             });
 
+        $topBotPages = BotHit::selectRaw('path, COUNT(*) as hits')
+            ->whereNotNull('path')
+            ->where('path', '!=', '')
+            ->groupBy('path')
+            ->orderByDesc('hits')
+            ->limit(10)
+            ->get();
+
         return view('admin.analytics.index', [
             'totals' => $totals,
             'topGames' => $topGames,
@@ -73,6 +82,8 @@ class AnalyticsController extends Controller
             'topGuides' => $topGuides,
             'topTierLists' => $topTierLists,
             'topCombleDays' => $topCombleDays,
+            'topBotPages' => $topBotPages,
+            'totalBotHits' => BotHit::count(),
         ]);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Models\BotHit;
 use App\Models\Character;
 use App\Models\Combo;
 use App\Models\Game;
@@ -43,6 +44,22 @@ class AnalyticsTest extends TestCase
         $response->assertSee('Best Guide');
         $response->assertSee('S Tier List');
         $response->assertSee('50'); // Popular Game's view total
+    }
+
+    public function test_admin_sees_top_bot_hit_pages(): void
+    {
+        BotHit::create(['path' => '/games/1', 'ip_address' => '1.2.3.4', 'user_agent' => 'BadBot', 'created_at' => now()]);
+        BotHit::create(['path' => '/games/1', 'ip_address' => '1.2.3.5', 'user_agent' => 'BadBot', 'created_at' => now()]);
+        BotHit::create(['path' => '/combos/2', 'ip_address' => '1.2.3.6', 'user_agent' => 'BadBot', 'created_at' => now()]);
+
+        $this->actingAs($this->admin());
+
+        $response = $this->get(route('admin.analytics'));
+
+        $response->assertOk();
+        $response->assertSee('Top 10 Pages by Bot Hits');
+        $response->assertSee('/games/1');
+        $response->assertSee('3 total honeypot hits recorded');
     }
 
     public function test_non_admin_cannot_view_the_analytics_page(): void

@@ -29,6 +29,7 @@ use App\Http\Controllers\ComboListController;
 use App\Http\Controllers\ComboVerificationController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\GameController;
+use App\Http\Controllers\HoneypotController;
 use App\Http\Controllers\ListCanvasComboPickerController;
 use App\Http\Controllers\ListCanvasController;
 use App\Http\Controllers\ListCanvasEdgeController;
@@ -66,6 +67,10 @@ Route::get('/about', function () {
 
 Route::view('/terms', 'terms')->name('terms');
 Route::view('/privacy', 'privacy')->name('privacy');
+
+// Honeypot: a hidden link on every page (see x-layouts.app) that only a
+// bot ignoring both CSS and robots.txt would ever follow.
+Route::get('/t', [HoneypotController::class, 'hit'])->name('honeypot.hit');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

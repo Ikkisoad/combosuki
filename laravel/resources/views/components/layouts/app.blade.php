@@ -71,6 +71,17 @@
 <body>
     {{ $slot }}
 
+    {{--
+        Honeypot: hidden from real users (clipped off-screen, out of tab
+        order, aria-hidden) and disallowed in robots.txt, so only a bot that
+        ignores both signals and blindly follows every <a href> in the raw
+        HTML will ever request it. See HoneypotController and
+        AnalyticsController's "Top 10 Pages by Bot Hits" widget.
+    --}}
+    <a href="{{ route('honeypot.hit', ['from' => request()->path()], absolute: false) }}"
+       rel="nofollow" tabindex="-1" aria-hidden="true"
+       style="position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap;"></a>
+
     <div class="modal fade" id="global-confirm-modal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content combosuki-main-reversed text-white">

@@ -57,6 +57,13 @@
             ? route('comble.show')
             : route('comble.show.date', ['date' => $row['day']->toDateString()]),
     ])->all();
+
+    $topBotPagesRows = $topBotPages->map(fn ($p) => [
+        'label' => $p->path,
+        'sublabel' => null,
+        'views' => $p->hits,
+        'url' => $p->path,
+    ])->all();
 @endphp
 <x-layouts.app title="Admin Analytics">
     <x-nav-bar />
@@ -115,5 +122,13 @@
                 <x-admin.top-list title="Top 10 Comble Days" :rows="$topCombleDaysRows" />
             </div>
         </div>
+
+        <div class="card combosuki-main-reversed text-white p-3 mb-3">
+            <h4>Bot Traffic</h4>
+            <div class="text-white-50 small mb-2">
+                {{ number_format($totalBotHits) }} total honeypot {{ \Illuminate\Support\Str::plural('hit', $totalBotHits) }} recorded
+            </div>
+        </div>
+        <x-admin.top-list title="Top 10 Pages by Bot Hits" :rows="$topBotPagesRows" />
     </div>
 </x-layouts.app>
