@@ -151,12 +151,70 @@ class GameDamageStatsTabTest extends TestCase
         // Only the two scoped characters have data for this query: the
         // highest is Toph's 400 and the average is (400 + 200) / 2 = 300.
         // Aang's 999 combo is never evaluated against this query since he
-        // isn't one of the scoped characters, and his row in the
-        // per-character breakdown shows "No data" instead.
+        // isn't one of the scoped characters.
         $response->assertSeeInOrder(['Highest Damage', 'Toph', '400']);
         $response->assertSee('300');
         $response->assertDontSee('999');
-        $response->assertSee('No data');
+
+        // The "Damage by Character" breakdown for this query should list
+        // only the characters it's scoped to — Aang shouldn't appear in it
+        // at all (not even as a "No data" row), even though he's a
+        // character in the game with a matching combo of his own.
+        // The pane id also appears earlier, in the nav-pill button that
+        // targets it — search for the pane's own opening tag specifically
+        // so the earlier Overview pane's content isn't swept in too.
+        $html = $response->getContent();
+        $panePosition = strpos($html, 'id="damage-stats-query-0-pane" role="tabpanel"');
+        $this->assertNotFalse($panePosition);
+        $paneHtml = substr($html, $panePosition);
+
+        $this->assertStringContainsString('Toph', $paneHtml);
+        $this->assertStringContainsString('Katara', $paneHtml);
+        $this->assertStringNotContainsString('Aang', $paneHtml);
+    }
+
+    public function test_a_group_with_an_unscoped_member_query_still_lists_every_character(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $toph = Character::create(['name' => 'Toph', 'game_idgame' => $game->idgame]);
+        $aang = Character::create(['name' => 'Aang', 'game_idgame' => $game->idgame]);
+
+        CharacterQuery::create([
+            'game_idgame' => $game->idgame,
+            'label' => 'Command grab',
+            'group_label' => 'Starter Group',
+            'filters' => ['combo' => '622', 'combolike' => '0'],
+            'order' => 0,
+        ])->characters()->attach([$toph->idcharacter]);
+
+        // Shares the group with "Command grab" but isn't itself restricted
+        // to any character.
+        CharacterQuery::create([
+            'game_idgame' => $game->idgame,
+            'label' => 'Normal starter',
+            'group_label' => 'Starter Group',
+            'filters' => ['combo' => '2A', 'combolike' => '0'],
+            'order' => 1,
+        ]);
+
+        $response = $this->get(route('games.tabs.damage-stats', $game));
+
+        $response->assertOk();
+
+        // The pane id also appears earlier, in the nav-pill button that
+        // targets it — search for the pane's own opening tag specifically
+        // so the earlier Overview pane's content isn't swept in too.
+        $html = $response->getContent();
+        $panePosition = strpos($html, 'id="damage-stats-query-0-pane" role="tabpanel"');
+        $this->assertNotFalse($panePosition);
+        $paneHtml = substr($html, $panePosition);
+
+        // The group as a whole still applies to every character — Aang has
+        // no data for either member query, but he's still listed (as "No
+        // data") rather than being dropped like he would be if the group
+        // took the restriction from "Command grab" alone.
+        $this->assertStringContainsString('Aang', $paneHtml);
+        $this->assertStringContainsString('Toph', $paneHtml);
     }
 
     public function test_query_pane_shows_no_data_message_when_no_combo_matches(): void

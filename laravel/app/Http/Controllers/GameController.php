@@ -214,7 +214,10 @@ class GameController extends Controller
      * get its own tab. A query restricted to specific characters (see
      * CharacterQuery::characters()) is only evaluated for those characters —
      * every other character gets a null (no data) for it, the same as if it
-     * simply didn't match any of their combos.
+     * simply didn't match any of their combos — and a restricted group's own
+     * per-character breakdown list is likewise narrowed to just those
+     * characters, rather than listing every character in the game with "No
+     * data" for everyone the query doesn't apply to.
      */
     public function damageStatsTab(Game $game): View
     {
@@ -258,9 +261,20 @@ class GameController extends Controller
                     return [$character->idcharacter => $damages->isNotEmpty() ? $damages->max() : null];
                 });
 
+                // The set of characters this group's "Damage by Character"
+                // breakdown should list: the union of every member query's
+                // character restriction, unless any member applies to every
+                // character (unscoped), in which case the whole group does
+                // too — null means "every character".
+                $memberScopes = $members->map(fn (CharacterQuery $query) => $query->characters->pluck('idcharacter'));
+                $restrictedCharacterIds = $memberScopes->contains(fn (Collection $scope) => $scope->isEmpty())
+                    ? null
+                    : $memberScopes->flatten()->unique()->values();
+
                 return [
                     'label' => $members->count() > 1 ? $members->first()->group_label : $members->first()->label,
                     'damageByCharacter' => $damageByCharacter,
+                    'restrictedCharacterIds' => $restrictedCharacterIds,
                 ];
             })
             ->values();
@@ -293,7 +307,11 @@ class GameController extends Controller
         $topCharacterEntry = $charactersWithData->first();
 
         $queryStats = $queryGroups->map(function (array $group) use ($characters) {
-            $entries = $characters->map(fn (Character $character) => [
+            $applicableCharacters = $group['restrictedCharacterIds'] === null
+                ? $characters
+                : $characters->whereIn('idcharacter', $group['restrictedCharacterIds']);
+
+            $entries = $applicableCharacters->map(fn (Character $character) => [
                 'character' => $character,
                 'damage' => $group['damageByCharacter'][$character->idcharacter],
             ]);
