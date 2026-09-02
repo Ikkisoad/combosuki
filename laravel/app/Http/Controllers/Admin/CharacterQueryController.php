@@ -31,12 +31,15 @@ class CharacterQueryController extends Controller
             ->orderBy('text_name')
             ->get();
 
+        $groupLabels = $queries->pluck('group_label')->filter()->unique()->sort()->values();
+
         return view('admin.queries.index', [
             'game' => $game,
             'queries' => $queries,
             'buttons' => $buttons,
             'listingTypes' => $listingTypes,
             'primaryResources' => $primaryResources,
+            'groupLabels' => $groupLabels,
         ]);
     }
 
@@ -45,6 +48,7 @@ class CharacterQueryController extends Controller
         $validated = $request->validate([
             'action' => ['required', 'in:Add,Update,Delete'],
             'label' => ['required_if:action,Add,Update', 'nullable', 'string', 'max:150'],
+            'group_label' => ['nullable', 'string', 'max:150'],
             'order' => ['nullable', 'integer'],
             'idquery' => ['required_if:action,Update,Delete', 'nullable', 'integer'],
         ]);
@@ -64,6 +68,7 @@ class CharacterQueryController extends Controller
 
         $attributes = [
             'label' => $validated['label'],
+            'group_label' => $validated['group_label'] ?: null,
             'order' => $validated['order'] ?? 0,
             'filters' => $this->buildFilters($request, $primaryResources),
         ];

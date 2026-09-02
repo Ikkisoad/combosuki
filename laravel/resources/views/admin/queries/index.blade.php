@@ -20,8 +20,16 @@
 
         <p>
             These queries are evaluated for every character in this game to build their character page: the
-            highest-damage combo matching each query is shown as that character's "top combo" for it.
+            highest-damage combo matching each query is shown as that character's "top combo" for it. Give two or
+            more queries the same Group so the Damage Stats tab nests them under one shared tab instead of listing
+            them separately (e.g. the same starter with different Support values).
         </p>
+
+        <datalist id="query-group-labels">
+            @foreach ($groupLabels as $groupLabel)
+                <option value="{{ $groupLabel }}">
+            @endforeach
+        </datalist>
 
         @foreach ($queries as $query)
             <form method="post" action="{{ route('admin.queries.store', $game) }}" class="card combosuki-main-reversed text-white p-3 mb-3" data-query-id="{{ $query->idquery }}">
@@ -31,6 +39,10 @@
                     <div class="col-auto">
                         <label class="form-label">Label</label>
                         <input type="text" name="label" maxlength="150" class="form-control" value="{{ $query->label }}">
+                    </div>
+                    <div class="col-auto">
+                        <label class="form-label">Group</label>
+                        <input type="text" name="group_label" maxlength="150" class="form-control" list="query-group-labels" value="{{ $query->group_label }}">
                     </div>
                     <div class="col-auto">
                         <label class="form-label">Order</label>
@@ -70,6 +82,10 @@
                 <div class="col-auto">
                     <label class="form-label">Label</label>
                     <input type="text" name="label" maxlength="150" class="form-control" placeholder="e.g. 2LK starter, no meter" autofocus>
+                </div>
+                <div class="col-auto">
+                    <label class="form-label">Group</label>
+                    <input type="text" name="group_label" maxlength="150" class="form-control" list="query-group-labels" placeholder="e.g. 2LK starter">
                 </div>
                 <div class="col-auto">
                     <label class="form-label">Order</label>

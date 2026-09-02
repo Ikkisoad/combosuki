@@ -42,6 +42,80 @@ class GameDamageStatsTabTest extends TestCase
         $response->assertSeeInOrder(['Highest Damage', 'Valentine', '300']);
     }
 
+    public function test_evaluates_queries_sharing_a_group_label_together_as_one_tab(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $valentine = Character::create(['name' => 'Valentine', 'game_idgame' => $game->idgame]);
+        $painwheel = Character::create(['name' => 'Painwheel', 'game_idgame' => $game->idgame]);
+
+        CharacterQuery::create([
+            'game_idgame' => $game->idgame,
+            'label' => 'No support',
+            'group_label' => 'Starter Group',
+            'filters' => ['combo' => '2A', 'combolike' => '0'],
+            'order' => 0,
+        ]);
+        CharacterQuery::create([
+            'game_idgame' => $game->idgame,
+            'label' => 'Support 1',
+            'group_label' => 'Starter Group',
+            'filters' => ['combo' => '5A', 'combolike' => '0'],
+            'order' => 1,
+        ]);
+
+        // Valentine matches both member queries: the group should take her
+        // best result (500, from the "Support 1" filter), not average or
+        // pick whichever member happens to be evaluated first.
+        Combo::create([
+            'combo' => '2A > 236B', 'character_idcharacter' => $valentine->idcharacter, 'submited' => now(), 'damage' => 300, 'type' => 1,
+        ]);
+        Combo::create([
+            'combo' => '5A > 236B', 'character_idcharacter' => $valentine->idcharacter, 'submited' => now(), 'damage' => 500, 'type' => 1,
+        ]);
+        // Painwheel only matches the "No support" filter.
+        Combo::create([
+            'combo' => '2A > 5C', 'character_idcharacter' => $painwheel->idcharacter, 'submited' => now(), 'damage' => 200, 'type' => 1,
+        ]);
+
+        $response = $this->get(route('games.tabs.damage-stats', $game));
+
+        $response->assertOk();
+        // The group label is the one and only tab for this family of
+        // queries — the individual member labels aren't surfaced anymore,
+        // since their results are merged into a single evaluation.
+        $response->assertSee('Starter Group');
+        $response->assertDontSee('No support');
+        $response->assertDontSee('Support 1');
+        $response->assertSeeInOrder(['Highest Damage', 'Valentine', '500']);
+        // Average across the two characters' best results: (500 + 200) / 2 = 350.
+        $response->assertSee('350');
+    }
+
+    public function test_queries_without_a_group_label_stay_as_separate_tabs(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        Character::create(['name' => 'Valentine', 'game_idgame' => $game->idgame]);
+
+        CharacterQuery::create([
+            'game_idgame' => $game->idgame,
+            'label' => '2LK starter',
+            'filters' => ['combo' => '2LK', 'combolike' => '0'],
+            'order' => 0,
+        ]);
+        CharacterQuery::create([
+            'game_idgame' => $game->idgame,
+            'label' => '5C starter',
+            'filters' => ['combo' => '5C', 'combolike' => '0'],
+            'order' => 1,
+        ]);
+
+        $response = $this->get(route('games.tabs.damage-stats', $game));
+
+        $response->assertOk();
+        $response->assertSee('2LK starter');
+        $response->assertSee('5C starter');
+    }
+
     public function test_query_pane_shows_no_data_message_when_no_combo_matches(): void
     {
         $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);

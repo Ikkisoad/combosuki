@@ -11,7 +11,7 @@ class CharacterQuery extends Model
 
     protected $primaryKey = 'idquery';
 
-    protected $fillable = ['game_idgame', 'label', 'filters', 'order'];
+    protected $fillable = ['game_idgame', 'label', 'group_label', 'filters', 'order'];
 
     protected function casts(): array
     {

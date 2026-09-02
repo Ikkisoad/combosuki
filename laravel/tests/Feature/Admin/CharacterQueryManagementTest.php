@@ -23,6 +23,7 @@ class CharacterQueryManagementTest extends TestCase
         $this->post(route('admin.queries.store', $game), [
             'action' => 'Add',
             'label' => '2LK starter, no meter',
+            'group_label' => '2LK starter',
             'order' => 1,
             'combo' => '2LK',
             'combolike' => '0',
@@ -30,6 +31,7 @@ class CharacterQueryManagementTest extends TestCase
 
         $query = CharacterQuery::where('game_idgame', $game->idgame)->firstOrFail();
         $this->assertSame('2LK starter, no meter', $query->label);
+        $this->assertSame('2LK starter', $query->group_label);
         $this->assertSame(1, $query->order);
         $this->assertSame(['combo' => '2LK', 'combolike' => '0'], $query->filters);
 
@@ -37,6 +39,7 @@ class CharacterQueryManagementTest extends TestCase
             'action' => 'Update',
             'idquery' => $query->idquery,
             'label' => '2LK starter, updated',
+            'group_label' => '',
             'order' => 2,
             'combo' => '2LK',
             'combolike' => '0',
@@ -45,6 +48,7 @@ class CharacterQueryManagementTest extends TestCase
 
         $query->refresh();
         $this->assertSame('2LK starter, updated', $query->label);
+        $this->assertNull($query->group_label);
         $this->assertSame(2, $query->order);
         $this->assertSame(['combo' => '2LK', 'combolike' => '0', 'damage' => '1000'], $query->filters);
 
