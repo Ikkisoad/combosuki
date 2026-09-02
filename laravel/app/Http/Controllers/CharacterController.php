@@ -27,6 +27,10 @@ class CharacterController extends Controller
         $character->load('links');
 
         $queries = CharacterQuery::where('game_idgame', $game->idgame)
+            ->where(fn ($query) => $query->doesntHave('characters')->orWhereHas(
+                'characters',
+                fn ($characters) => $characters->where('character.idcharacter', $character->idcharacter)
+            ))
             ->orderBy('order')
             ->orderBy('label')
             ->get();

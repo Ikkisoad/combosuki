@@ -70,6 +70,34 @@ class CharacterShowTest extends TestCase
         $response->assertSee('No combo found yet', false);
     }
 
+    public function test_a_query_scoped_to_specific_characters_only_appears_on_their_pages(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $toph = Character::create(['name' => 'Toph', 'game_idgame' => $game->idgame]);
+        $katara = Character::create(['name' => 'Katara', 'game_idgame' => $game->idgame]);
+        $aang = Character::create(['name' => 'Aang', 'game_idgame' => $game->idgame]);
+
+        $query = CharacterQuery::create([
+            'game_idgame' => $game->idgame,
+            'label' => 'Command grab',
+            'filters' => ['combo' => '622', 'combolike' => '0'],
+            'order' => 0,
+        ]);
+        $query->characters()->attach([$toph->idcharacter, $katara->idcharacter]);
+
+        $tophResponse = $this->get(route('characters.show', [$game, $toph]));
+        $tophResponse->assertOk();
+        $tophResponse->assertSee('Command grab');
+
+        $kataraResponse = $this->get(route('characters.show', [$game, $katara]));
+        $kataraResponse->assertOk();
+        $kataraResponse->assertSee('Command grab');
+
+        $aangResponse = $this->get(route('characters.show', [$game, $aang]));
+        $aangResponse->assertOk();
+        $aangResponse->assertDontSee('Command grab');
+    }
+
     public function test_character_belonging_to_a_different_game_404s(): void
     {
         $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);

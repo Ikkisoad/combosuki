@@ -22,7 +22,10 @@
             These queries are evaluated for every character in this game to build their character page: the
             highest-damage combo matching each query is shown as that character's "top combo" for it. Give two or
             more queries the same Group so the Damage Stats tab nests them under one shared tab instead of listing
-            them separately (e.g. the same starter with different Support values).
+            them separately (e.g. the same starter with different Support values). Restrict a query to one or more
+            Characters if it only makes sense for them (e.g. a command grab only some characters have) — it's then
+            hidden and excluded from stats for every other character. Leave no character selected for it to apply to
+            everyone.
         </p>
 
         <datalist id="query-group-labels">
@@ -43,6 +46,19 @@
                     <div class="col-auto">
                         <label class="form-label">Group</label>
                         <input type="text" name="group_label" maxlength="150" class="form-control" list="query-group-labels" value="{{ $query->group_label }}">
+                    </div>
+                    <div class="col-auto">
+                        <label class="form-label">Characters</label>
+                        @php $selectedCharacterIds = $query->characters->pluck('idcharacter')->all(); @endphp
+                        <div class="d-flex align-items-start gap-2">
+                            <select name="character_idcharacters[]" class="form-select" multiple size="3">
+                                @foreach ($characters as $characterOption)
+                                    <option value="{{ $characterOption->idcharacter }}" @selected(in_array($characterOption->idcharacter, $selectedCharacterIds))>{{ $characterOption->name }}</option>
+                                @endforeach
+                            </select>
+                            <button type="button" class="btn btn-outline-light btn-sm" onclick="clearMultiSelect(this)">Clear</button>
+                        </div>
+                        <div class="form-text text-white-50">Leave empty for all characters.</div>
                     </div>
                     <div class="col-auto">
                         <label class="form-label">Order</label>
@@ -86,6 +102,18 @@
                 <div class="col-auto">
                     <label class="form-label">Group</label>
                     <input type="text" name="group_label" maxlength="150" class="form-control" list="query-group-labels" placeholder="e.g. 2LK starter">
+                </div>
+                <div class="col-auto">
+                    <label class="form-label">Characters</label>
+                    <div class="d-flex align-items-start gap-2">
+                        <select name="character_idcharacters[]" class="form-select" multiple size="3">
+                            @foreach ($characters as $characterOption)
+                                <option value="{{ $characterOption->idcharacter }}">{{ $characterOption->name }}</option>
+                            @endforeach
+                        </select>
+                        <button type="button" class="btn btn-outline-light btn-sm" onclick="clearMultiSelect(this)">Clear</button>
+                    </div>
+                    <div class="form-text text-white-50">Leave empty for all characters.</div>
                 </div>
                 <div class="col-auto">
                     <label class="form-label">Order</label>

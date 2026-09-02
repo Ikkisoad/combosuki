@@ -100,4 +100,14 @@ class Character extends Model
     {
         return $this->hasMany(CharacterButtonAlias::class, 'character_idcharacter');
     }
+
+    public function defaultQueries(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            CharacterQuery::class,
+            'character_default_query_character',
+            'character_idcharacter',
+            'character_default_query_idquery'
+        );
+    }
 }

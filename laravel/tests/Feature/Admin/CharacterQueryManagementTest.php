@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Models\Character;
 use App\Models\CharacterQuery;
 use App\Models\Game;
 use App\Models\User;
@@ -60,6 +61,79 @@ class CharacterQueryManagementTest extends TestCase
         $this->assertDatabaseMissing('character_default_queries', ['idquery' => $query->idquery]);
     }
 
+    public function test_a_query_can_be_restricted_to_multiple_characters(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $toph = Character::create(['name' => 'Toph', 'game_idgame' => $game->idgame]);
+        $katara = Character::create(['name' => 'Katara', 'game_idgame' => $game->idgame]);
+        $trusted = User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]);
+        $game->moderators()->attach($trusted->iduser);
+
+        $this->actingAs($trusted);
+
+        $this->post(route('admin.queries.store', $game), [
+            'action' => 'Add',
+            'label' => 'Command grab',
+            'group_label' => '',
+            'character_idcharacters' => [$toph->idcharacter, $katara->idcharacter],
+            'order' => 0,
+            'combo' => '622',
+            'combolike' => '0',
+        ])->assertRedirect(route('admin.queries.index', $game));
+
+        $query = CharacterQuery::where('game_idgame', $game->idgame)->firstOrFail();
+        $this->assertEqualsCanonicalizing(
+            [$toph->idcharacter, $katara->idcharacter],
+            $query->characters()->pluck('idcharacter')->all()
+        );
+
+        $this->post(route('admin.queries.store', $game), [
+            'action' => 'Update',
+            'idquery' => $query->idquery,
+            'label' => 'Command grab',
+            'group_label' => '',
+            'character_idcharacters' => [$katara->idcharacter],
+            'order' => 0,
+            'combo' => '622',
+            'combolike' => '0',
+        ])->assertRedirect(route('admin.queries.index', $game));
+
+        $this->assertSame([$katara->idcharacter], $query->characters()->pluck('idcharacter')->all());
+
+        $this->post(route('admin.queries.store', $game), [
+            'action' => 'Update',
+            'idquery' => $query->idquery,
+            'label' => 'Command grab',
+            'group_label' => '',
+            'order' => 0,
+            'combo' => '622',
+            'combolike' => '0',
+        ])->assertRedirect(route('admin.queries.index', $game));
+
+        $this->assertSame([], $query->characters()->pluck('idcharacter')->all());
+    }
+
+    public function test_a_query_cannot_be_restricted_to_a_character_from_another_game(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $otherGame = Game::create(['name' => 'Other Game', 'complete' => 1, 'modPass' => 'secret']);
+        $foreignCharacter = Character::create(['name' => 'Foreign', 'game_idgame' => $otherGame->idgame]);
+
+        $trusted = User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]);
+        $game->moderators()->attach($trusted->iduser);
+        $this->actingAs($trusted);
+
+        $this->post(route('admin.queries.store', $game), [
+            'action' => 'Add',
+            'label' => 'Command grab',
+            'character_idcharacters' => [$foreignCharacter->idcharacter],
+            'order' => 0,
+            'combo' => '622',
+        ])->assertSessionHasErrors('character_idcharacters.0');
+
+        $this->assertDatabaseMissing('character_default_queries', ['game_idgame' => $game->idgame]);
+    }
+
     public function test_index_offers_existing_queries_as_copy_sources(): void
     {
         $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
@@ -79,6 +153,20 @@ class CharacterQueryManagementTest extends TestCase
         $response->assertOk();
         $response->assertSee('data-query-id="'.$query->idquery.'"', false);
         $response->assertSee('<option value="'.$query->idquery.'">2LK starter, no meter</option>', false);
+    }
+
+    public function test_index_renders_a_clear_button_next_to_the_characters_multi_select(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $trusted = User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]);
+        $game->moderators()->attach($trusted->iduser);
+        $this->actingAs($trusted);
+
+        $response = $this->get(route('admin.queries.index', $game));
+
+        $response->assertOk();
+        $response->assertSee('name="character_idcharacters[]"', false);
+        $response->assertSee('onclick="clearMultiSelect(this)"', false);
     }
 
     public function test_non_trusted_user_cannot_manage_queries(): void

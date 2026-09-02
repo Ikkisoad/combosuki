@@ -406,10 +406,24 @@ window.copyQueryInto = function (select) {
         if (sourceField.type === 'checkbox' || sourceField.type === 'radio') {
             targetField.checked = sourceField.checked;
             targetField.dispatchEvent(new Event('change'));
+        } else if (sourceField.type === 'select-multiple') {
+            const selectedValues = Array.from(sourceField.selectedOptions).map((option) => option.value);
+            Array.from(targetField.options).forEach((option) => {
+                option.selected = selectedValues.includes(option.value);
+            });
         } else {
             targetField.value = sourceField.value;
         }
     });
+};
+
+window.clearMultiSelect = function (button) {
+    const select = button.closest('.col-auto')?.querySelector('select[multiple]');
+    if (! select) {
+        return;
+    }
+
+    Array.from(select.options).forEach((option) => { option.selected = false; });
 };
 
 window.showDIV = function (divId) {

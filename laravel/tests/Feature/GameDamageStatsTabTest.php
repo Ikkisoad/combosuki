@@ -116,6 +116,49 @@ class GameDamageStatsTabTest extends TestCase
         $response->assertSee('5C starter');
     }
 
+    public function test_character_scoped_query_only_contributes_data_for_scoped_characters(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $toph = Character::create(['name' => 'Toph', 'game_idgame' => $game->idgame]);
+        $katara = Character::create(['name' => 'Katara', 'game_idgame' => $game->idgame]);
+        $aang = Character::create(['name' => 'Aang', 'game_idgame' => $game->idgame]);
+
+        $query = CharacterQuery::create([
+            'game_idgame' => $game->idgame,
+            'label' => 'Command grab',
+            'filters' => ['combo' => '622', 'combolike' => '0'],
+            'order' => 0,
+        ]);
+        $query->characters()->attach([$toph->idcharacter, $katara->idcharacter]);
+
+        Combo::create([
+            'combo' => '622', 'character_idcharacter' => $toph->idcharacter, 'submited' => now(), 'damage' => 400, 'type' => 1,
+        ]);
+        Combo::create([
+            'combo' => '622', 'character_idcharacter' => $katara->idcharacter, 'submited' => now(), 'damage' => 200, 'type' => 1,
+        ]);
+        // Aang isn't one of the scoped characters, but does happen to have a
+        // combo that would otherwise match the query's filters — it must not
+        // be picked up for him.
+        Combo::create([
+            'combo' => '622', 'character_idcharacter' => $aang->idcharacter, 'submited' => now(), 'damage' => 999, 'type' => 1,
+        ]);
+
+        $response = $this->get(route('games.tabs.damage-stats', $game));
+
+        $response->assertOk();
+        $response->assertSee($query->label);
+        // Only the two scoped characters have data for this query: the
+        // highest is Toph's 400 and the average is (400 + 200) / 2 = 300.
+        // Aang's 999 combo is never evaluated against this query since he
+        // isn't one of the scoped characters, and his row in the
+        // per-character breakdown shows "No data" instead.
+        $response->assertSeeInOrder(['Highest Damage', 'Toph', '400']);
+        $response->assertSee('300');
+        $response->assertDontSee('999');
+        $response->assertSee('No data');
+    }
+
     public function test_query_pane_shows_no_data_message_when_no_combo_matches(): void
     {
         $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);

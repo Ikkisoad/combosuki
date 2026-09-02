@@ -211,11 +211,15 @@ class GameController extends Controller
      * full per-character breakdown (sorted desc) for the comparison graph —
      * plus, per group, the average damage across characters and the
      * character with the highest damage for that group, so each group can
-     * get its own tab.
+     * get its own tab. A query restricted to specific characters (see
+     * CharacterQuery::characters()) is only evaluated for those characters —
+     * every other character gets a null (no data) for it, the same as if it
+     * simply didn't match any of their combos.
      */
     public function damageStatsTab(Game $game): View
     {
         $queries = CharacterQuery::where('game_idgame', $game->idgame)
+            ->with('characters')
             ->orderBy('order')
             ->orderBy('label')
             ->get();
@@ -224,7 +228,13 @@ class GameController extends Controller
 
         // idquery => (idcharacter => top damage for that query, or null)
         $damageMatrix = $queries->mapWithKeys(function (CharacterQuery $query) use ($game, $characters) {
-            $perCharacter = $characters->mapWithKeys(function (Character $character) use ($game, $query) {
+            $scopedCharacterIds = $query->characters->pluck('idcharacter');
+
+            $perCharacter = $characters->mapWithKeys(function (Character $character) use ($game, $query, $scopedCharacterIds) {
+                if ($scopedCharacterIds->isNotEmpty() && ! $scopedCharacterIds->contains($character->idcharacter)) {
+                    return [$character->idcharacter => null];
+                }
+
                 $damage = $this->searchCombos(
                     $game,
                     array_merge($query->filters ?? [], ['characterid' => $character->idcharacter]),

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Character;
 use App\Models\CharacterQuery;
 use App\Models\Game;
 use App\Models\GameEntry;
@@ -10,6 +11,7 @@ use App\Models\GameResource;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class CharacterQueryController extends Controller
@@ -17,11 +19,14 @@ class CharacterQueryController extends Controller
     public function index(Game $game): View
     {
         $queries = CharacterQuery::where('game_idgame', $game->idgame)
+            ->with('characters')
             ->orderBy('order')
             ->orderBy('label')
             ->get();
 
         $buttons = $game->buttons()->orderBy('order')->get();
+
+        $characters = Character::where('game_idgame', $game->idgame)->orderBy('name')->get();
 
         $listingTypes = GameEntry::where('gameid', $game->idgame)->orderBy('order')->orderBy('title')->get();
 
@@ -37,6 +42,7 @@ class CharacterQueryController extends Controller
             'game' => $game,
             'queries' => $queries,
             'buttons' => $buttons,
+            'characters' => $characters,
             'listingTypes' => $listingTypes,
             'primaryResources' => $primaryResources,
             'groupLabels' => $groupLabels,
@@ -49,6 +55,11 @@ class CharacterQueryController extends Controller
             'action' => ['required', 'in:Add,Update,Delete'],
             'label' => ['required_if:action,Add,Update', 'nullable', 'string', 'max:150'],
             'group_label' => ['nullable', 'string', 'max:150'],
+            'character_idcharacters' => ['nullable', 'array'],
+            'character_idcharacters.*' => [
+                'integer',
+                Rule::exists('character', 'idcharacter')->where('game_idgame', $game->idgame),
+            ],
             'order' => ['nullable', 'integer'],
             'idquery' => ['required_if:action,Update,Delete', 'nullable', 'integer'],
         ]);
@@ -73,12 +84,20 @@ class CharacterQueryController extends Controller
             'filters' => $this->buildFilters($request, $primaryResources),
         ];
 
+        $characterIds = $validated['character_idcharacters'] ?? [];
+
         if ($validated['action'] === 'Add') {
-            CharacterQuery::create([...$attributes, 'game_idgame' => $game->idgame]);
+            $query = CharacterQuery::create([...$attributes, 'game_idgame' => $game->idgame]);
+            $query->characters()->sync($characterIds);
         } else {
-            CharacterQuery::where('idquery', $validated['idquery'])
+            $query = CharacterQuery::where('idquery', $validated['idquery'])
                 ->where('game_idgame', $game->idgame)
-                ->update($attributes);
+                ->first();
+
+            if ($query) {
+                $query->update($attributes);
+                $query->characters()->sync($characterIds);
+            }
         }
 
         return redirect()->route('admin.queries.index', $game)->with('status', 'Saved.');
