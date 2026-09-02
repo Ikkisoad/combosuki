@@ -41,13 +41,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'discord.activity' => EnsureDiscordActivityEnabled::class,
             'activity.auth' => VerifyActivityToken::class,
         ]);
-        // Comble's "starter" guess is compared character-for-character
-        // (including spaces) against the combo's raw notation; the global
-        // TrimStrings middleware would otherwise silently strip a leading or
-        // trailing space the player legitimately typed as part of a
-        // 6-character guess (e.g. a 5-character opening move followed by
-        // the space before the next one).
-        $middleware->trimStrings(except: ['starter']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

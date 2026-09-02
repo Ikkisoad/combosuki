@@ -46,9 +46,14 @@ class CombleGuessEvaluator
 
     /**
      * Compares a guess at the combo's opening 6 characters against the real
-     * notation string (not tokens — literal characters, spaces included),
-     * position by position, case-insensitively. Never guessed, never gates a
-     * win: same non-blocking "bonus hint" role as damage.
+     * notation string (literal characters, not tokens), position by
+     * position, case-insensitively. Spaces are stripped from both sides
+     * first — notation spacing (see the " > " separator between chained
+     * moves) is a display convention, not something a player can be
+     * expected to reproduce blindly by counting characters, so it's
+     * excluded from both the target's opening 6 and the guess itself.
+     * Never guessed, never gates a win: same non-blocking "bonus hint" role
+     * as damage.
      *
      * Returns 'correct' (identical, same length), 'partial' (at least one
      * character right in its own position, but not a full match — shown as
@@ -61,8 +66,8 @@ class CombleGuessEvaluator
             return 'wrong';
         }
 
-        $guessed = mb_strtolower($guessedStarter);
-        $actual = mb_strtolower(mb_substr($target->combo, 0, 6));
+        $guessed = mb_strtolower(str_replace(' ', '', $guessedStarter));
+        $actual = mb_strtolower(mb_substr(str_replace(' ', '', $target->combo), 0, 6));
 
         if ($guessed === $actual) {
             return 'correct';

@@ -228,8 +228,9 @@ class CombleTest extends TestCase
         $type = $this->makeType($game);
         $this->makeCombo($character, $type, ['combo' => 'AAA BBB CCC DDD EEE']);
 
-        // Correct starter guess ('AAA BB' is the first 6 raw characters).
-        $response = $this->submitGuess($this->guessPayload($game, $character, $type, 3000, 'AAA BB'));
+        // Correct starter guess: 'AAA BBB CCC DDD EEE' with spaces stripped
+        // is 'AAABBBCCCDDDEEE', whose first 6 characters are 'AAABBB'.
+        $response = $this->submitGuess($this->guessPayload($game, $character, $type, 3000, 'AAABBB'));
 
         $shareText = $this->showPage(cookie: $this->cookieFromResponse($response))
             ->assertOk()
@@ -521,12 +522,13 @@ class CombleTest extends TestCase
         $type = $this->makeType($game);
         $this->makeCombo($character, $type, ['combo' => 'AAA BBB CCC DDD EEE']);
 
-        // First 6 raw characters of 'AAA BBB CCC DDD EEE', space included.
-        $response = $this->submitGuess($this->guessPayload($game, $character, $type, 3000, 'AAA BB'));
+        // 'AAA BBB CCC DDD EEE' with spaces stripped is 'AAABBBCCCDDDEEE';
+        // its first 6 characters are 'AAABBB'.
+        $response = $this->submitGuess($this->guessPayload($game, $character, $type, 3000, 'AAABBB'));
 
         $this->showPage(cookie: $this->cookieFromResponse($response))
             ->assertOk()
-            ->assertSee('AAA BB');
+            ->assertSee('AAABBB');
     }
 
     public function test_a_wrong_starter_guess_does_not_block_a_win(): void
@@ -551,24 +553,27 @@ class CombleTest extends TestCase
         $type = $this->makeType($game);
         $this->makeCombo($character, $type, ['combo' => 'AAA BBB CCC DDD EEE']);
 
-        // First 6 chars are 'AAA BB'; 'AAA XX' shares the first 4 positions
-        // ('AAA ') but not the last 2 — some characters right, not all.
-        $response = $this->submitGuess($this->guessPayload($game, $character, $type, 3000, 'AAA XX'));
+        // First 6 space-stripped chars are 'AAABBB'; 'AAAXXX' shares the
+        // first 3 positions ('AAA') but not the last 3 — some characters
+        // right, not all.
+        $response = $this->submitGuess($this->guessPayload($game, $character, $type, 3000, 'AAAXXX'));
 
         $this->showPage(cookie: $this->cookieFromResponse($response))
             ->assertOk()
-            ->assertSee('AAA XX')
+            ->assertSee('AAAXXX')
             ->assertSee('background-color: #fd7e14;', false);
     }
 
     /**
-     * Laravel's global TrimStrings middleware silently strips leading/
-     * trailing whitespace from request input by default — which would
-     * always mark this guess wrong if 'starter' weren't specifically
-     * excluded from it (see bootstrap/app.php), since a 5-character opening
-     * move followed by a space is a completely ordinary combo shape.
+     * The combo's own notation spacing (e.g. the gap between tokens) must
+     * never count toward the 6-character guess. The JS input blocks the
+     * player from typing a space at all, but a guess can still reach the
+     * server with one in it (no-JS submission) — the evaluator strips
+     * spaces from the guess the same way, so it stays aligned against the
+     * space-stripped notation instead of being thrown off by one. See
+     * CombleGuessEvaluator::starterResult().
      */
-    public function test_a_starter_guess_with_a_trailing_space_is_compared_correctly(): void
+    public function test_a_space_within_a_starter_guess_is_stripped_before_comparing(): void
     {
         $game = $this->makeGame();
         $character = $this->makeCharacter($game);
@@ -579,17 +584,17 @@ class CombleTest extends TestCase
         $wrongCharacter = $this->makeCharacter($wrongGame, 'Wrong Character');
         $wrongType = $this->makeType($wrongGame);
 
-        // First 6 raw characters are '12345 ' — five digits plus the
-        // trailing space before the next token.
-        $response = $this->submitGuess($this->guessPayload($wrongGame, $wrongCharacter, $wrongType, 3000, '12345 '));
+        // '12345 BBB CCC DDD EEE' with spaces stripped is '12345BBBCCCDDDEEE',
+        // whose first 6 characters are '12345B'. The guess below has a space
+        // in the middle ('123 45', 6 raw characters) which strips down to
+        // '12345' — still aligned with the actual's first 5 characters, so
+        // it's a partial match rather than being thrown off entirely.
+        $response = $this->submitGuess($this->guessPayload($wrongGame, $wrongCharacter, $wrongType, 3000, '123 45'));
 
         $html = $this->showPage(cookie: $this->cookieFromResponse($response))->getContent();
 
-        // Game/character/type are all deliberately wrong here, so a
-        // "bg-success" cell in this row can only be the starter one.
-        $this->assertStringContainsString('12345', $html);
-        $this->assertStringContainsString('bg-success', $html);
-        $this->assertStringNotContainsString('#fd7e14', $html);
+        $this->assertStringContainsString('123 45', $html);
+        $this->assertStringContainsString('background-color: #fd7e14;', $html);
     }
 
     public function test_the_starter_guess_is_optional(): void

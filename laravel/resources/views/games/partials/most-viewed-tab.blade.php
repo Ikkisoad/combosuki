@@ -38,7 +38,7 @@
         </table>
     </div>
 @endif
-<a href="{{ route('games.combos.index', $game) }}" class="link-light">View all combos &rarr;</a>
+<a href="{{ route('games.combos.index', $game) }}?search=1" class="link-light">View all combos &rarr;</a>
 
 <h4 class="mb-2 mt-4">Most Viewed Guides</h4>
 @if ($mostViewedGuides->isEmpty())

@@ -128,8 +128,9 @@ class CombleRevealer
      * would work but leaks into any other randomness generated later in the
      * same request).
      *
-     * Any token overlapping the raw notation's first 6 characters — the
-     * "Starter" guess field's answer — sorts after every other token, no
+     * Any token overlapping the notation's first 6 characters with spaces
+     * stripped out — the "Starter" guess field's answer — sorts after every
+     * other token, no
      * matter what the hash comparison says. Since this method is only ever
      * consulted while the puzzle isn't finished, guessesMade is at most 4,
      * and CombleDailyCombo guarantees at least 5 tokens, the reveal count
@@ -163,11 +164,16 @@ class CombleRevealer
     }
 
     /**
-     * Token indices whose span in the raw notation string overlaps its
-     * first 6 characters (positions 0-5) — mirrors
-     * ComboNotationRenderer::tokenize()'s own word-splitting exactly, so the
-     * indices line up with $tokens, but tracks each word's starting
-     * character offset instead of just its text.
+     * Token indices whose span overlaps the notation's first 6 characters
+     * with spaces stripped out (positions 0-5 of the non-space text) —
+     * mirrors ComboNotationRenderer::tokenize()'s own word-splitting
+     * exactly, so the indices line up with $tokens, but tracks each word's
+     * starting character offset (counted over non-space characters only)
+     * instead of just its text. Spaces are excluded from that offset so
+     * this stays aligned with CombleGuessEvaluator::starterResult(), which
+     * compares the guess against the same space-stripped first 6
+     * characters — a space in the raw notation must never shift the
+     * boundary and leave part of the real answer unprotected.
      */
     private function starterOverlappingTokenIndices(string $notation): array
     {
@@ -203,7 +209,6 @@ class CombleRevealer
             }
 
             $flush();
-            $charIndex++;
         }
 
         $flush();

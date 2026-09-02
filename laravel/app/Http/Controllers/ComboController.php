@@ -37,6 +37,13 @@ class ComboController extends Controller
      * mode) + submit.php (result query) combined into one page: the filter
      * form and its results live together instead of being two separate
      * pages joined by a GET redirect.
+     *
+     * A request with no query string at all (the bare "Advanced Search"
+     * link) just shows the empty filter form — running an implicit
+     * "show everything" query would look like a search already happened.
+     * Anything else — an actual filter, a "view all" link that adds its own
+     * marker (e.g. ?search=1), or a pagination link carrying the previous
+     * query string forward — runs the search as before.
      */
     public function index(Game $game, Request $request): View
     {
@@ -50,22 +57,33 @@ class ComboController extends Controller
             ->orderBy('text_name')
             ->get();
 
-        $query = Combo::query()
-            ->with(['character', 'listingType', 'resources.resourceValue.characterAliases', 'user'])
-            ->whereHas('character', fn (Builder $q) => $q->where('game_idgame', $game->idgame))
-            ->visibleTo(auth()->user());
+        $secondaryResources = GameResource::where('game_idgame', $game->idgame)
+            ->where('primaryORsecundary', 0)
+            ->with('values')
+            ->orderBy('text_name')
+            ->get();
 
-        $this->applyFilters($query, $request, $primaryResources, $game);
+        $combos = null;
 
-        $this->applyOrdering($query, $request);
+        if ($request->query() !== []) {
+            $query = Combo::query()
+                ->with(['character', 'listingType', 'resources.resourceValue.characterAliases', 'user'])
+                ->whereHas('character', fn (Builder $q) => $q->where('game_idgame', $game->idgame))
+                ->visibleTo(auth()->user());
 
-        $combos = $query->paginate(20)->withQueryString();
+            $this->applyFilters($query, $request, $primaryResources->concat($secondaryResources), $game);
+
+            $this->applyOrdering($query, $request);
+
+            $combos = $query->paginate(20)->withQueryString();
+        }
 
         return view('combos.index', [
             'game' => $game,
             'characters' => $characters,
             'listingTypes' => $listingTypes,
             'primaryResources' => $primaryResources,
+            'secondaryResources' => $secondaryResources,
             'combos' => $combos,
         ]);
     }
@@ -482,6 +500,6 @@ class ComboController extends Controller
         $combo->recordEdit('deleted');
         $combo->delete();
 
-        return redirect()->route('games.combos.index', $game)->with('status', 'Combo deleted.');
+        return redirect()->route('games.combos.index', ['game' => $game, 'search' => 1])->with('status', 'Combo deleted.');
     }
 }

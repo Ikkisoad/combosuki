@@ -53,7 +53,7 @@ class CombleGuessEvaluatorTest extends TestCase
         $this->assertTrue($result['won']);
     }
 
-    public function test_starter_guess_matches_the_first_six_raw_characters_case_insensitively(): void
+    public function test_starter_guess_matches_the_first_six_characters_with_spaces_stripped_case_insensitively(): void
     {
         $game = (new Game())->forceFill(['idgame' => 5, 'name' => 'Test Game']);
         $game->exists = true;
@@ -75,10 +75,12 @@ class CombleGuessEvaluatorTest extends TestCase
         $guessedType = (new GameEntry())->forceFill(['entryid' => 7, 'title' => 'Combo', 'gameid' => 5]);
         $evaluator = new CombleGuessEvaluator();
 
-        // '2LP 5MP 2HP'[0:6] === '2LP 5M', compared case-insensitively.
-        $this->assertSame('correct', $evaluator->evaluate($target, $game, $character, $guessedType, null, '2lp 5m')['starter_result']);
-        // Shares the first 4 positions ('2LP ') but not the last 2 — some characters right, not all.
-        $this->assertSame('partial', $evaluator->evaluate($target, $game, $character, $guessedType, null, '2LP XZ')['starter_result']);
+        // '2LP 5MP 2HP' with spaces stripped is '2LP5MP2HP'[0:6] === '2LP5MP', compared case-insensitively.
+        $this->assertSame('correct', $evaluator->evaluate($target, $game, $character, $guessedType, null, '2lp5mp')['starter_result']);
+        // Spaces in the guess itself are stripped too, so they don't throw off the position comparison.
+        $this->assertSame('correct', $evaluator->evaluate($target, $game, $character, $guessedType, null, '2l p 5mp')['starter_result']);
+        // Shares the first 4 positions ('2LP5') but not the last 2 — some characters right, not all.
+        $this->assertSame('partial', $evaluator->evaluate($target, $game, $character, $guessedType, null, '2lp5xz')['starter_result']);
         // No position matches at all.
         $this->assertSame('wrong', $evaluator->evaluate($target, $game, $character, $guessedType, null, '999999')['starter_result']);
         $this->assertSame('wrong', $evaluator->evaluate($target, $game, $character, $guessedType, null, null)['starter_result']);

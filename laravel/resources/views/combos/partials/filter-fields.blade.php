@@ -7,7 +7,11 @@
      helper (only meaningful when exactly one instance of this partial is on
      the page, since that JS targets a single element id). Optional
      $hideDamageAndVideo omits the Max Damage / Video contains / No video
-     only fields. --}}
+     only fields. Optional $secondaryResources (defaults to none) renders a
+     second "Secondary Resources" fields row the same way $primaryResources
+     does — callers that don't search on secondary resources (e.g. the
+     character-query admin, which only ever filtered on primary resources)
+     can simply omit it. --}}
 
 <div class="row g-2 align-items-end mt-2">
     <div class="col-auto">
@@ -76,9 +80,16 @@
     </div>
 </div>
 
-@if ($primaryResources->isNotEmpty())
+@foreach ([
+    ['label' => null, 'resources' => $primaryResources],
+    ['label' => 'Secondary Resources', 'resources' => $secondaryResources ?? collect()],
+] as $group)
+    @continue($group['resources']->isEmpty())
+    @if ($group['label'])
+        <h3 class="mt-2 mb-0">{{ $group['label'] }}</h3>
+    @endif
     <div class="row g-2 align-items-end mt-2">
-        @foreach ($primaryResources as $resource)
+        @foreach ($group['resources'] as $resource)
             @php $field = str_replace(' ', '_', $resource->text_name); @endphp
             <div class="col-auto">
                 <label class="form-label">{{ $resource->text_name }}</label>
@@ -114,4 +125,4 @@
             </div>
         @endforeach
     </div>
-@endif
+@endforeach

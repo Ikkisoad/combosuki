@@ -178,7 +178,7 @@
                                 @endforeach
                             </table>
                         </div>
-                        <a href="{{ route('games.combos.index', $game) }}" class="link-light">View all combos &rarr;</a>
+                        <a href="{{ route('games.combos.index', $game) }}?search=1" class="link-light">View all combos &rarr;</a>
                     </div>
 
                     <div class="tab-pane fade" id="most-viewed-pane" role="tabpanel" aria-labelledby="most-viewed-tab">

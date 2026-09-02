@@ -32,6 +32,7 @@
                 'values' => request()->all(),
                 'buttons' => $buttons,
                 'primaryResources' => $primaryResources,
+                'secondaryResources' => $secondaryResources,
                 'listingTypes' => $listingTypes,
                 'notationId' => 'comboarea',
             ])
@@ -41,58 +42,62 @@
             </div>
         </form>
 
-        <div class="table-responsive">
-            <table class="table table-hover align-middle caption-top combosuki-main-reversed text-white">
-                <caption>{{ $combos->total() }} result(s)</caption>
-                <tr>
-                    <th>Character</th>
-                    <th>Inputs</th>
-                    <th>Damage</th>
-                    @foreach ($primaryResources as $resource)
-                        <th>{{ $resource->text_name }}</th>
-                        @if ($resource->type === 3)
-                            <th>{{ $resource->text_name }}</th>
-                        @endif
-                    @endforeach
-                </tr>
-                @foreach ($combos as $combo)
+        @if ($combos)
+            <div class="table-responsive">
+                <table class="table table-hover align-middle caption-top combosuki-main-reversed text-white">
+                    <caption>{{ $combos->total() }} result(s)</caption>
                     <tr>
-                        <td>
-                            @if ($combo->comments || $combo->video)
-                                <button class="btn btn-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ $combo->idcombo }}">{{ $combo->character->name }}</button>
-                            @else
-                                {{ $combo->character->name }}
-                            @endif
-                        </td>
-                        <td style="min-width:400px">
-                            <x-combo-link :combo="$combo" />
-                            @if ($combo->comments || $combo->video)
-                                <div class="collapse" id="collapse{{ $combo->idcombo }}">
-                                    {{ $combo->comments }}
-                                    <x-video-embed :video="$combo->video" />
-                                </div>
-                            @endif
-                        </td>
-                        <td>{{ number_format((float) $combo->damage, 0, '', '.') }}</td>
-                        @php
-                            $comboResourcesByGameResource = $combo->resources->groupBy(fn ($r) => $r->resourceValue?->game_resources_idgame_resources);
-                        @endphp
+                        <th>Character</th>
+                        <th>Inputs</th>
+                        <th>Damage</th>
                         @foreach ($primaryResources as $resource)
-                            @php $matches = $comboResourcesByGameResource->get($resource->idgame_resources, collect()); @endphp
+                            <th>{{ $resource->text_name }}</th>
                             @if ($resource->type === 3)
-                                <td><x-resource-value-icon :value="$matches->get(0)?->resourceValue" :character="$combo->character" />{{ $matches->get(0)?->resourceValue?->aliasFor($combo->character)?->alias ?? $matches->get(0)?->resourceValue?->value }}</td>
-                                <td><x-resource-value-icon :value="$matches->get(1)?->resourceValue" :character="$combo->character" />{{ $matches->get(1)?->resourceValue?->aliasFor($combo->character)?->alias ?? $matches->get(1)?->resourceValue?->value }}</td>
-                            @elseif ($resource->type === 2)
-                                <td>{{ $matches->first()?->number_value }}</td>
-                            @else
-                                <td><x-resource-value-icon :value="$matches->first()?->resourceValue" :character="$combo->character" />{{ $matches->first()?->resourceValue?->aliasFor($combo->character)?->alias ?? $matches->first()?->resourceValue?->value }}</td>
+                                <th>{{ $resource->text_name }}</th>
                             @endif
                         @endforeach
                     </tr>
-                @endforeach
-            </table>
-        </div>
+                    @foreach ($combos as $combo)
+                        <tr>
+                            <td>
+                                @if ($combo->comments || $combo->video)
+                                    <button class="btn btn-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ $combo->idcombo }}">{{ $combo->character->name }}</button>
+                                @else
+                                    {{ $combo->character->name }}
+                                @endif
+                            </td>
+                            <td style="min-width:400px">
+                                <x-combo-link :combo="$combo" />
+                                @if ($combo->comments || $combo->video)
+                                    <div class="collapse" id="collapse{{ $combo->idcombo }}">
+                                        {{ $combo->comments }}
+                                        <x-video-embed :video="$combo->video" />
+                                    </div>
+                                @endif
+                            </td>
+                            <td>{{ number_format((float) $combo->damage, 0, '', '.') }}</td>
+                            @php
+                                $comboResourcesByGameResource = $combo->resources->groupBy(fn ($r) => $r->resourceValue?->game_resources_idgame_resources);
+                            @endphp
+                            @foreach ($primaryResources as $resource)
+                                @php $matches = $comboResourcesByGameResource->get($resource->idgame_resources, collect()); @endphp
+                                @if ($resource->type === 3)
+                                    <td><x-resource-value-icon :value="$matches->get(0)?->resourceValue" :character="$combo->character" />{{ $matches->get(0)?->resourceValue?->aliasFor($combo->character)?->alias ?? $matches->get(0)?->resourceValue?->value }}</td>
+                                    <td><x-resource-value-icon :value="$matches->get(1)?->resourceValue" :character="$combo->character" />{{ $matches->get(1)?->resourceValue?->aliasFor($combo->character)?->alias ?? $matches->get(1)?->resourceValue?->value }}</td>
+                                @elseif ($resource->type === 2)
+                                    <td>{{ $matches->first()?->number_value }}</td>
+                                @else
+                                    <td><x-resource-value-icon :value="$matches->first()?->resourceValue" :character="$combo->character" />{{ $matches->first()?->resourceValue?->aliasFor($combo->character)?->alias ?? $matches->first()?->resourceValue?->value }}</td>
+                                @endif
+                            @endforeach
+                        </tr>
+                    @endforeach
+                </table>
+            </div>
 
-        {{ $combos->links() }}
+            {{ $combos->links() }}
+        @else
+            <p class="text-white-50">Fill in the filters above and click Search.</p>
+        @endif
     </div>
 </x-layouts.app>

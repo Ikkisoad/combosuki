@@ -141,7 +141,7 @@ trait FiltersCombos
         return $descriptions;
     }
 
-    private function applyFilters(Builder $query, Request $request, $primaryResources, Game $game): void
+    private function applyFilters(Builder $query, Request $request, $resources, Game $game): void
     {
         if ($request->filled('combo')) {
             $mode = $request->integer('combolike', 0);
@@ -252,7 +252,7 @@ trait FiltersCombos
             $query->where('character_idcharacter', $request->integer('characterid'));
         }
 
-        foreach ($primaryResources as $resource) {
+        foreach ($resources as $resource) {
             $field = str_replace(' ', '_', $resource->text_name);
             $value = $request->input($field);
 

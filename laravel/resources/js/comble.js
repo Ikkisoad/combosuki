@@ -14,11 +14,39 @@ function fillOptions(select, items, valueKey, labelKey, placeholder) {
     });
 }
 
+// Combo notation spacing (e.g. the " > " between chained moves) is a
+// display convention, not something a player should have to reproduce
+// blindly — see CombleGuessEvaluator::starterResult(), which strips spaces
+// from both the guess and the target before comparing. Blocking spaces at
+// the input keeps the 6-character guess limited to actual notation and
+// matches what the evaluator will end up comparing anyway.
+function initStarterInput() {
+    const starterInput = document.getElementById('comble-starter');
+
+    if (! starterInput) {
+        return;
+    }
+
+    starterInput.addEventListener('keydown', function (event) {
+        if (event.key === ' ') {
+            event.preventDefault();
+        }
+    });
+
+    starterInput.addEventListener('input', function () {
+        if (starterInput.value.includes(' ')) {
+            starterInput.value = starterInput.value.replace(/\s+/g, '');
+        }
+    });
+}
+
 function initGuessForm() {
     const catalogEl = document.getElementById('comble-catalog');
     const gameSelect = document.getElementById('comble-game');
     const characterSelect = document.getElementById('comble-character');
     const typeSelect = document.getElementById('comble-type');
+
+    initStarterInput();
 
     if (! catalogEl || ! gameSelect || ! characterSelect || ! typeSelect) {
         return;
