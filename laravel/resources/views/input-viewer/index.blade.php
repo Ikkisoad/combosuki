@@ -334,6 +334,11 @@
                 width: 100%;
             }
 
+            .mapping-notation {
+                width: 100%;
+                margin-bottom: 6px;
+            }
+
             .macro-picker {
                 margin-top: 8px;
                 padding: 14px;
@@ -491,6 +496,29 @@
                 font-style: italic;
                 margin: 0;
             }
+
+            .recording-status {
+                margin-left: 12px;
+                font-weight: 600;
+                color: #FA591C;
+            }
+
+            .recording-list {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+                max-height: 300px;
+                overflow-y: auto;
+                margin: 12px 0;
+            }
+
+            {{-- .input-entry/.input-entry > img are the same classes #history uses on the overlay — reused here so a recorded entry looks exactly like it did when it was captured. --}}
+            .recording-entry {
+                padding: 8px 10px;
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                border-radius: 4px;
+            }
         </style>
     </x-slot:styles>
 
@@ -535,6 +563,9 @@
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-customize" type="button" role="tab">Customize</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-recording" type="button" role="tab">Recording</button>
                 </li>
             </ul>
 
@@ -646,6 +677,41 @@
                             Transparent background (just the number)
                         </label>
                     </div>
+                </div>
+
+                <div class="tab-pane fade" id="tab-recording" role="tabpanel">
+                    <div class="mapping-section-title" style="margin-top: 0;">Keyboard Hotkey</div>
+                    <p class="input-tab-hint">
+                        This hotkey only fires while this page has keyboard focus — e.g. OBS's <strong>Interact</strong> window, or a regular browser tab. It can't listen system-wide while you're alt-tabbed into your game.
+                    </p>
+                    <div class="settings-row">
+                        <span id="recording-hotkey-current">No hotkey set.</span>
+                        <button type="button" id="recording-hotkey-set" class="btn btn-outline-light">Set Hotkey</button>
+                    </div>
+
+                    <div class="mapping-section-title">Controller Hotkey</div>
+                    <p class="input-tab-hint">
+                        A controller button works even without keyboard focus, so it's the more reliable option once you're actually playing — select a controller above, then bind a button here. That button is then reserved for this and won't show up in Mappings.
+                    </p>
+                    <div class="settings-row">
+                        <span id="recording-gamepad-hotkey-current">No controller button set.</span>
+                        <button type="button" id="recording-gamepad-hotkey-set" class="btn btn-outline-light">Set Controller Hotkey</button>
+                    </div>
+
+                    <div class="mapping-section-title">Record</div>
+                    <button type="button" id="recording-toggle" class="btn btn-combosuki">Start Recording</button>
+                    <span id="recording-status" class="recording-status"></span>
+
+                    <div class="mapping-section-title">Recorded Inputs</div>
+                    <div id="recording-list" class="recording-list">
+                        <p class="radio-list-empty">Nothing recorded yet.</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="recording-notation" class="form-label mb-1" style="font-size: 22px;">Notation</label>
+                        <textarea id="recording-notation" class="form-control" rows="3" readonly placeholder="Notation appears here after you stop recording."></textarea>
+                    </div>
+                    <button type="button" id="recording-copy" class="btn btn-outline-light">Copy to Clipboard</button>
                 </div>
             </div>
         </div>
