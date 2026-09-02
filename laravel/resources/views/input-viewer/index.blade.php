@@ -327,6 +327,37 @@
             .settings-row input {
                 width: 70px;
             }
+
+            {{-- Bootstrap's nav-tabs are styled for a light page by default — restyle for the panel's dark background. --}}
+            .nav-tabs-combosuki {
+                border-bottom-color: rgba(255, 255, 255, 0.2);
+            }
+
+            .nav-tabs-combosuki .nav-link {
+                color: rgba(255, 255, 255, 0.6);
+                background: transparent;
+                border: none;
+                border-bottom: 2px solid transparent;
+                padding: 4px 10px 8px;
+                font-size: 13px;
+            }
+
+            .nav-tabs-combosuki .nav-link:hover {
+                color: white;
+                border-color: rgba(255, 255, 255, 0.3);
+            }
+
+            .nav-tabs-combosuki .nav-link.active {
+                color: white;
+                background: transparent;
+                border-color: #FA591C;
+            }
+
+            .input-tab-hint {
+                font-size: 12px;
+                color: rgba(255, 255, 255, 0.55);
+                margin: 6px 0 0;
+            }
         </style>
     </x-slot:styles>
 
@@ -359,30 +390,62 @@
                 </select>
             </div>
 
-            <div class="settings-row">
-                <label for="setting-fps">Polling FPS</label>
-                <input type="number" id="setting-fps" class="form-control form-control-sm" min="1" max="240">
-            </div>
-            <div class="settings-row">
-                <label for="setting-charge">Charge frames</label>
-                <input type="number" id="setting-charge" class="form-control form-control-sm" min="1" max="999">
-            </div>
-            <div class="settings-row">
-                <label for="setting-hide">Hide after (frames)</label>
-                <input type="number" id="setting-hide" class="form-control form-control-sm" min="1" max="9999">
-            </div>
-            <div class="settings-row">
-                <label for="setting-history-limit">History length</label>
-                <input type="number" id="setting-history-limit" class="form-control form-control-sm" min="1" max="200">
-            </div>
+            <ul class="nav nav-tabs nav-tabs-combosuki mb-3" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-mappings" type="button" role="tab">Mappings</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-input" type="button" role="tab">Input</button>
+                </li>
+            </ul>
 
-            <div class="mapping-section-title">Directions</div>
-            <div id="direction-mapping-rows"></div>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="tab-mappings" role="tabpanel">
+                    <div class="mapping-section-title">Directions</div>
+                    <div id="direction-mapping-rows"></div>
 
-            <div class="mapping-section-title">Buttons</div>
-            <div id="button-mapping-rows"></div>
+                    <div class="mapping-section-title">Buttons</div>
+                    <div id="button-mapping-rows"></div>
 
-            <button type="button" id="reset-mappings" class="btn btn-sm btn-outline-danger mt-3">Reset mappings for this controller</button>
+                    <button type="button" id="reset-mappings" class="btn btn-sm btn-outline-danger mt-3">Reset mappings for this controller</button>
+                </div>
+
+                <div class="tab-pane fade" id="tab-input" role="tabpanel">
+                    <div class="mb-3">
+                        <label for="direction-source" class="form-label mb-1" style="font-size: 13px;">Read directions from</label>
+                        <select id="direction-source" class="form-select form-select-sm">
+                            <option value="dpad">D-Pad / Hat Switch (default)</option>
+                            <option value="leftStick">Left Analog Stick</option>
+                            <option value="rightStick">Right Analog Stick</option>
+                        </select>
+                        <p class="input-tab-hint">
+                            Playing on a pad and want motion inputs read off the analog stick instead of the d-pad? Pick a stick here — it maps to the same 8 directions above.
+                        </p>
+                    </div>
+
+                    <div class="settings-row">
+                        <label for="setting-deadzone">Stick deadzone</label>
+                        <input type="number" id="setting-deadzone" class="form-control form-control-sm" min="0.05" max="0.95" step="0.05">
+                    </div>
+
+                    <div class="settings-row">
+                        <label for="setting-fps">Polling FPS</label>
+                        <input type="number" id="setting-fps" class="form-control form-control-sm" min="1" max="240">
+                    </div>
+                    <div class="settings-row">
+                        <label for="setting-charge">Charge frames</label>
+                        <input type="number" id="setting-charge" class="form-control form-control-sm" min="1" max="999">
+                    </div>
+                    <div class="settings-row">
+                        <label for="setting-hide">Hide after (frames)</label>
+                        <input type="number" id="setting-hide" class="form-control form-control-sm" min="1" max="9999">
+                    </div>
+                    <div class="settings-row">
+                        <label for="setting-history-limit">History length</label>
+                        <input type="number" id="setting-history-limit" class="form-control form-control-sm" min="1" max="200">
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

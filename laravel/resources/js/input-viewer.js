@@ -36,6 +36,8 @@ const DEFAULT_SETTINGS = {
     chargeThreshold: 30,
     hideThreshold: 120,
     historyLimit: 30,
+    directionSource: 'dpad',
+    stickDeadzone: 0.5,
 };
 
 const DIRECTIONS = ['up', 'upright', 'right', 'downright', 'down', 'downleft', 'left', 'upleft', 'idle'];
@@ -271,6 +273,8 @@ function initInputViewer() {
     const chargeInput = document.getElementById('setting-charge');
     const hideInput = document.getElementById('setting-hide');
     const historyLimitInput = document.getElementById('setting-history-limit');
+    const directionSourceSelect = document.getElementById('direction-source');
+    const deadzoneInput = document.getElementById('setting-deadzone');
 
     let currentGamepadIndex = null;
     let currentGamepadId = null;
@@ -331,26 +335,50 @@ function initInputViewer() {
         return entry;
     }
 
-    function getDirection(gp, dpadIndices) {
+    function combineDirections(up, down, left, right) {
+        if (up && right) return 'upright';
+        if (up && left) return 'upleft';
+        if (down && right) return 'downright';
+        if (down && left) return 'downleft';
+        if (up) return 'up';
+        if (down) return 'down';
+        if (left) return 'left';
+        if (right) return 'right';
+        return 'idle';
+    }
+
+    function directionFromDpadButtons(gp) {
+        return combineDirections(gp.buttons[12]?.pressed, gp.buttons[13]?.pressed, gp.buttons[14]?.pressed, gp.buttons[15]?.pressed);
+    }
+
+    function directionFromStick(x, y) {
+        if (x === undefined || y === undefined) return 'idle';
+        const deadzone = store.settings.stickDeadzone;
+        return combineDirections(y < -deadzone, y > deadzone, x < -deadzone, x > deadzone);
+    }
+
+    // Whether the gamepad's d-pad buttons (12-15) are the ones supplying
+    // direction right now — if so they're consumed by getDirection() and
+    // shouldn't also show up as generic, individually-mappable buttons.
+    function dpadButtonIndicesActive(gp) {
+        if (store.settings.directionSource !== 'dpad') return false;
+        return gp.axes[9] === undefined && gp.buttons.length > 15;
+    }
+
+    function getDirection(gp) {
+        const source = store.settings.directionSource;
+
+        if (source === 'leftStick') return directionFromStick(gp.axes[0], gp.axes[1]);
+        if (source === 'rightStick') return directionFromStick(gp.axes[2], gp.axes[3]);
+
+        // 'dpad' (default): a hat-switch axis, common on fight sticks/hitboxes,
+        // takes priority when present; otherwise fall back to the standard
+        // mapping's d-pad buttons.
         if (gp.axes[9] !== undefined) {
             const rounded = roundAxis(gp.axes[9]);
             return HAT_DIRECTIONS[String(rounded)] || 'idle';
         }
-        if (dpadIndices) {
-            const up = gp.buttons[12]?.pressed;
-            const down = gp.buttons[13]?.pressed;
-            const left = gp.buttons[14]?.pressed;
-            const right = gp.buttons[15]?.pressed;
-            if (up && right) return 'upright';
-            if (up && left) return 'upleft';
-            if (down && right) return 'downright';
-            if (down && left) return 'downleft';
-            if (up) return 'up';
-            if (down) return 'down';
-            if (left) return 'left';
-            if (right) return 'right';
-        }
-        return 'idle';
+        return directionFromDpadButtons(gp);
     }
 
     function pollGamepad() {
@@ -362,8 +390,8 @@ function initInputViewer() {
             return;
         }
 
-        const usesDpadButtons = gp.axes[9] === undefined && gp.buttons.length > 15;
-        const direction = getDirection(gp, usesDpadButtons);
+        const excludeDpadButtons = dpadButtonIndicesActive(gp);
+        const direction = getDirection(gp);
 
         if (directionsShareCharge(heldDirection, direction)) {
             heldDirectionFrames++;
@@ -375,7 +403,7 @@ function initInputViewer() {
 
         const buttonIndices = [];
         for (let i = 0; i < gp.buttons.length; i++) {
-            if (usesDpadButtons && i >= 12 && i <= 15) continue;
+            if (excludeDpadButtons && i >= 12 && i <= 15) continue;
             if (gp.buttons[i]?.pressed) buttonIndices.push(i);
         }
 
@@ -450,7 +478,7 @@ function initInputViewer() {
 
     function renderMappingRows(gp) {
         const profile = getProfile(store, gp.id);
-        const usesDpadButtons = gp.axes[9] === undefined && gp.buttons.length > 15;
+        const excludeDpadButtons = dpadButtonIndicesActive(gp);
 
         directionRowsEl.innerHTML = '';
         DIRECTIONS.forEach((dir) => {
@@ -459,7 +487,7 @@ function initInputViewer() {
 
         buttonRowsEl.innerHTML = '';
         for (let i = 0; i < gp.buttons.length; i++) {
-            if (usesDpadButtons && i >= 12 && i <= 15) continue;
+            if (excludeDpadButtons && i >= 12 && i <= 15) continue;
             const key = String(i);
             buttonRowsEl.appendChild(buildMappingRow({ kind: 'button', key, label: `Button ${key}`, profile, gp }));
         }
@@ -646,6 +674,26 @@ function initInputViewer() {
     wireSetting(chargeInput, 'chargeThreshold');
     wireSetting(hideInput, 'hideThreshold');
     wireSetting(historyLimitInput, 'historyLimit');
+
+    directionSourceSelect.value = store.settings.directionSource;
+    directionSourceSelect.addEventListener('change', () => {
+        store.settings.directionSource = directionSourceSelect.value;
+        saveStore(store);
+        // Switching source changes which button indices (12-15) count as
+        // the d-pad vs. plain mappable buttons — re-render to match.
+        const gamepads = navigator.getGamepads();
+        if (currentGamepadIndex !== null && gamepads[currentGamepadIndex]) {
+            renderMappingRows(gamepads[currentGamepadIndex]);
+        }
+    });
+
+    deadzoneInput.value = store.settings.stickDeadzone;
+    deadzoneInput.addEventListener('change', () => {
+        const value = parseFloat(deadzoneInput.value);
+        if (isNaN(value) || value <= 0 || value >= 1) return;
+        store.settings.stickDeadzone = value;
+        saveStore(store);
+    });
 
     toggleTab.addEventListener('click', () => {
         panelHidden = !panelHidden;
