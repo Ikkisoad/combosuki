@@ -72,7 +72,7 @@ class ComboController extends Controller
 
     public function show(Combo $combo): View
     {
-        $combo->load(['character.game', 'listingType', 'patch', 'resources.resourceValue.gameResource', 'resources.resourceValue.characterAliases', 'user', 'verifier']);
+        $combo->load(['character.game', 'listingType', 'patch', 'resources.resourceValue.gameResource', 'resources.resourceValue.characterAliases', 'user', 'verifier', 'damageHistories.patch']);
         $combo->increment('views');
 
         $game = $combo->character->game;

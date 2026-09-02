@@ -210,6 +210,29 @@
                     @endforeach
                 </table>
 
+                @php $damageHistory = $combo->damageHistories->sortBy(fn ($h) => $h->patch->released_at)->values(); @endphp
+                @if ($damageHistory->count() > 1)
+                    <table class="table table-hover align-middle combosuki-main-reversed text-white">
+                        <tr>
+                            <th colspan="2">Damage history</th>
+                        </tr>
+                        @foreach ($damageHistory as $i => $entry)
+                            @php $delta = $i > 0 ? $entry->damage <=> $damageHistory[$i - 1]->damage : 0; @endphp
+                            <tr>
+                                <td>{{ $entry->patch->label }}</td>
+                                <td>
+                                    {{ number_format((float) $entry->damage, 0, '', '.') }}
+                                    @if ($delta < 0)
+                                        <span class="text-danger">&#9660;</span>
+                                    @elseif ($delta > 0)
+                                        <span class="text-success">&#9650;</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </table>
+                @endif
+
                 @if ($secondaryResources->isNotEmpty())
                     <table class="table table-hover align-middle combosuki-main-reversed text-white">
                         @foreach ($secondaryResources as $resource)

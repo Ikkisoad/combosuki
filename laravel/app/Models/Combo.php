@@ -34,6 +34,34 @@ class Combo extends Model
         ];
     }
 
+    /**
+     * Keeps combo_damage_histories in sync with damage/patch changes so the
+     * combo page can show what a combo's damage was in each patch (e.g. a
+     * character nerf). One row per (combo, patch): editing damage without
+     * changing the patch corrects that patch's row in place; editing damage
+     * together with bumping the patch dropdown records a new row and leaves
+     * the previous patch's value untouched. Also fires on create: unlike
+     * updates, a fresh insert never populates wasChanged(), so that's
+     * checked via wasRecentlyCreated instead.
+     */
+    protected static function booted(): void
+    {
+        static::saved(function (Combo $combo) {
+            if ($combo->damage === null || $combo->patch_idgame_patch === null) {
+                return;
+            }
+
+            if (! $combo->wasRecentlyCreated && ! $combo->wasChanged(['damage', 'patch_idgame_patch'])) {
+                return;
+            }
+
+            ComboDamageHistory::updateOrCreate(
+                ['combo_idcombo' => $combo->idcombo, 'patch_idgame_patch' => $combo->patch_idgame_patch],
+                ['damage' => $combo->damage]
+            );
+        });
+    }
+
     public function character(): BelongsTo
     {
         return $this->belongsTo(Character::class, 'character_idcharacter');
@@ -52,6 +80,11 @@ class Combo extends Model
     public function resources(): HasMany
     {
         return $this->hasMany(Resource::class, 'combo_idcombo');
+    }
+
+    public function damageHistories(): HasMany
+    {
+        return $this->hasMany(ComboDamageHistory::class, 'combo_idcombo');
     }
 
     public function lists(): BelongsToMany
