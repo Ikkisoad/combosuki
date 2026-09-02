@@ -11,6 +11,19 @@
             this feature is based on (`body { background: transparent; }`).
         --}}
         <style>
+            {{--
+                Bumps every rem-based Bootstrap size on this page (buttons,
+                form-controls/selects, headings, nav-tabs, checkboxes) at
+                once, on top of the px bumps below on our own custom classes
+                — OBS's Interact window often renders the browser source
+                shrunk to fit a small popup, so text needs to be genuinely
+                large in absolute terms to still read at that scale, not
+                just "large for a normal desktop page".
+            --}}
+            html {
+                font-size: 24px;
+            }
+
             body {
                 background: transparent !important;
                 background-image: none !important;
@@ -24,7 +37,7 @@
             #back-link {
                 display: inline-block;
                 margin-bottom: 12px;
-                font-size: 13px;
+                font-size: 24px;
                 color: rgba(255, 255, 255, 0.7);
             }
 
@@ -88,22 +101,38 @@
                 color: white;
             }
 
+            {{--
+                Styled as a combosuki badge (same #920000/#FA591C pairing as
+                .btn-combosuki in app.css) rather than a generic yellow HUD
+                digit, so it reads as part of the site rather than a
+                copy-pasted overlay widget. Font/color/background are CSS
+                custom properties so the Input tab's settings (input-viewer.js
+                applyCounterAppearance()) can override them per-viewer and
+                have every counter — including ones already in the history
+                feed — update live; they default to the site's own look.
+            --}}
             .frame-counter {
-                width: 44px;
-                color: yellow;
-                font-family: 'Arial Black', Impact, sans-serif;
-                font-size: 20px;
-                text-align: right;
-                line-height: 32px;
-                -webkit-text-stroke: 1px black;
-                text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black;
+                min-width: 40px;
+                height: 32px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0 8px;
+                color: var(--counter-color, white);
+                font-family: var(--counter-font, inherit);
+                font-weight: 700;
+                font-size: 15px;
+                background: var(--counter-bg, rgba(146, 0, 0, 0.7));
+                border: 1px solid var(--counter-border, #FA591C);
+                border-radius: 4px;
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
             }
 
             .glow {
-                filter: drop-shadow(0 0 6px yellow) brightness(1.2);
+                filter: drop-shadow(0 0 6px #FA591C) brightness(1.2);
             }
 
-            #watermark {
+            #watermark-group {
                 position: fixed;
                 top: 50%;
                 left: 50%;
@@ -112,19 +141,33 @@
                 flex-direction: column;
                 align-items: center;
                 gap: 16px;
-                opacity: 0.14;
                 z-index: 0;
-                transition: opacity 0.4s ease;
                 pointer-events: none;
             }
 
+            {{--
+                opacity here is its own stacking context — a child's opacity
+                can never read as more visible than this, no matter how
+                opaque the child itself is. #watermark-hint deliberately
+                lives outside it (as a sibling, not nested inside) so its
+                text can stay legible instead of being capped to 14% too.
+            --}}
+            #watermark {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 16px;
+                opacity: 0.14;
+                transition: opacity 0.4s ease;
+            }
+
             #watermark img {
-                width: min(38vw, 420px);
+                width: min(44vw, 520px);
                 height: auto;
             }
 
             #watermark-text {
-                font-size: 24px;
+                font-size: 34px;
                 font-weight: 600;
                 letter-spacing: 0.05em;
                 color: white;
@@ -137,15 +180,39 @@
                     -1px 1px 2px rgba(0, 0, 0, 0.95);
             }
 
+            {{--
+                Read while the panel is still visible (it fades away with
+                everything else once the panel hides), so the viewer knows in
+                advance how to bring the settings back later.
+            --}}
+            #watermark-hint {
+                margin-top: -8px;
+                max-width: 460px;
+                font-size: 20px;
+                font-weight: 600;
+                text-align: center;
+                color: white;
+                opacity: 0.85;
+                transition: opacity 0.4s ease;
+                text-shadow:
+                    0 0 6px rgba(0, 0, 0, 0.95),
+                    1px 1px 2px rgba(0, 0, 0, 1),
+                    -1px -1px 2px rgba(0, 0, 0, 1),
+                    1px -1px 2px rgba(0, 0, 0, 1),
+                    -1px 1px 2px rgba(0, 0, 0, 1);
+            }
+
             #config-panel {
                 position: fixed;
                 top: 0;
                 right: 0;
                 bottom: 0;
-                width: 340px;
+                width: 560px;
                 max-width: 90vw;
+                font-size: 22px;
                 overflow-y: auto;
-                padding: 16px;
+                {{-- Extra right padding keeps row content (e.g. each mapping row's Clear button) from rendering under #panel-toggle-zone, which sits on top of the panel at a higher z-index. --}}
+                padding: 16px 104px 16px 16px;
                 background: rgba(0, 0, 0, 0.75);
                 border-left: 1px solid rgba(255, 255, 255, 0.15);
                 z-index: 2;
@@ -153,7 +220,8 @@
             }
 
             #config-panel.faded,
-            #watermark.faded {
+            #watermark.faded,
+            #watermark-hint.faded {
                 opacity: 0;
                 pointer-events: none;
             }
@@ -168,7 +236,7 @@
                 top: 0;
                 right: 0;
                 bottom: 0;
-                width: 56px;
+                width: 84px;
                 z-index: 3;
                 display: flex;
                 align-items: center;
@@ -181,8 +249,9 @@
                 border: 1px solid rgba(255, 255, 255, 0.3);
                 border-right: none;
                 border-radius: 6px 0 0 6px;
-                padding: 10px 6px;
-                font-size: 13px;
+                padding: 28px 16px;
+                font-size: 24px;
+                font-weight: 600;
                 cursor: pointer;
                 writing-mode: vertical-rl;
                 opacity: 1;
@@ -202,13 +271,13 @@
             }
 
             .panel-hint {
-                font-size: 12px;
+                font-size: 22px;
                 color: rgba(255, 255, 255, 0.6);
                 margin-bottom: 16px;
             }
 
             .mapping-section-title {
-                font-size: 13px;
+                font-size: 24px;
                 text-transform: uppercase;
                 letter-spacing: 0.05em;
                 color: rgba(255, 255, 255, 0.6);
@@ -229,9 +298,9 @@
             }
 
             .mapping-preview {
-                width: 32px;
-                height: 32px;
-                flex: 0 0 32px;
+                width: 56px;
+                height: 56px;
+                flex: 0 0 56px;
                 border: 1px dashed rgba(255, 255, 255, 0.35);
                 border-radius: 4px;
                 display: flex;
@@ -247,34 +316,31 @@
 
             .mapping-label {
                 flex: 1 1 auto;
-                font-size: 12px;
+                font-size: 24px;
             }
 
             .mapping-actions {
                 display: flex;
-                gap: 6px;
+                gap: 8px;
                 flex: 0 0 auto;
             }
 
             .mapping-combine,
             .mapping-clear {
                 flex: 0 0 auto;
-                font-size: 11px;
-                padding: 2px 6px;
             }
 
             .mapping-file {
                 width: 100%;
-                font-size: 11px;
             }
 
             .macro-picker {
                 margin-top: 8px;
-                padding: 8px;
+                padding: 14px;
                 background: rgba(255, 255, 255, 0.05);
                 border: 1px solid rgba(255, 255, 255, 0.15);
                 border-radius: 4px;
-                font-size: 12px;
+                font-size: 20px;
             }
 
             .macro-picker-empty {
@@ -303,8 +369,8 @@
             }
 
             .macro-picker-thumb {
-                width: 20px;
-                height: 20px;
+                width: 38px;
+                height: 38px;
                 object-fit: contain;
                 border-radius: 3px;
                 background: rgba(0, 0, 0, 0.3);
@@ -312,7 +378,7 @@
 
             .macro-picker-actions {
                 display: flex;
-                gap: 6px;
+                gap: 8px;
             }
 
             .settings-row {
@@ -321,11 +387,11 @@
                 justify-content: space-between;
                 gap: 8px;
                 margin-bottom: 8px;
-                font-size: 13px;
+                font-size: 22px;
             }
 
             .settings-row input {
-                width: 70px;
+                width: 112px;
             }
 
             {{-- Bootstrap's nav-tabs are styled for a light page by default — restyle for the panel's dark background. --}}
@@ -338,8 +404,8 @@
                 background: transparent;
                 border: none;
                 border-bottom: 2px solid transparent;
-                padding: 4px 10px 8px;
-                font-size: 13px;
+                padding: 10px 16px 14px;
+                font-size: 24px;
             }
 
             .nav-tabs-combosuki .nav-link:hover {
@@ -354,9 +420,76 @@
             }
 
             .input-tab-hint {
-                font-size: 12px;
+                font-size: 21px;
                 color: rgba(255, 255, 255, 0.55);
                 margin: 6px 0 0;
+            }
+
+            {{-- Bigger checkboxes/radios throughout the panel — easier to hit through OBS's interact window. --}}
+            .form-check-input {
+                width: 1.8em;
+                height: 1.8em;
+                margin-top: 0.15em;
+            }
+
+            #quick-assign-result {
+                margin-top: 10px;
+            }
+
+            #quick-assign-result:empty {
+                margin-top: 0;
+            }
+
+            .quick-assign-heading {
+                font-size: 21px;
+                font-weight: 600;
+                color: #FA591C;
+                margin-bottom: 6px;
+            }
+
+            {{--
+                Replaces plain <select> dropdowns throughout the panel — a
+                dropdown needs to be opened, found in, then closed, which is
+                fiddly through OBS's small interact window. A flat list of
+                big, directly clickable rows is a single click either way.
+            --}}
+            .radio-list {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .radio-option {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                padding: 14px 16px;
+                font-size: 23px;
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                border-radius: 4px;
+                cursor: pointer;
+            }
+
+            .radio-option:hover {
+                background: rgba(255, 255, 255, 0.1);
+            }
+
+            .radio-option:has(input:checked) {
+                border-color: #FA591C;
+                background: rgba(146, 0, 0, 0.35);
+            }
+
+            .radio-option input {
+                flex: 0 0 auto;
+                margin: 0;
+            }
+
+            .radio-list-empty {
+                font-size: 21px;
+                color: rgba(255, 255, 255, 0.55);
+                font-style: italic;
+                margin: 0;
             }
         </style>
     </x-slot:styles>
@@ -364,9 +497,12 @@
     <div id="input-viewer">
         <div id="history"></div>
 
-        <div id="watermark">
-            <img src="/img/combosuki.webp" alt="">
-            <div id="watermark-text">Provided by combo好き</div>
+        <div id="watermark-group">
+            <div id="watermark">
+                <img src="/img/combosuki.webp" alt="">
+                <div id="watermark-text">Provided by combo好き</div>
+            </div>
+            <div id="watermark-hint">Hold any button on your controller to hide this menu. Move your mouse to the right edge of the screen to bring it back.</div>
         </div>
 
         <div id="panel-toggle-zone">
@@ -384,10 +520,10 @@
             </p>
 
             <div class="mb-3">
-                <label for="gamepad-selector" class="form-label mb-1" style="font-size: 13px;">Controller</label>
-                <select id="gamepad-selector" class="form-select form-select-sm">
-                    <option value="">Select Controller</option>
-                </select>
+                <label class="form-label mb-1" style="font-size: 22px;">Controller</label>
+                <div id="gamepad-list" class="radio-list">
+                    <p class="radio-list-empty">No controllers detected yet. Press a button on your controller to wake it up.</p>
+                </div>
             </div>
 
             <ul class="nav nav-tabs nav-tabs-combosuki mb-3" role="tablist">
@@ -396,6 +532,9 @@
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-input" type="button" role="tab">Input</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-customize" type="button" role="tab">Customize</button>
                 </li>
             </ul>
 
@@ -407,17 +546,33 @@
                     <div class="mapping-section-title">Buttons</div>
                     <div id="button-mapping-rows"></div>
 
-                    <button type="button" id="reset-mappings" class="btn btn-sm btn-outline-danger mt-3">Reset mappings for this controller</button>
+                    <button type="button" id="reset-mappings" class="btn btn-outline-danger mt-3">Reset mappings for this controller</button>
                 </div>
 
                 <div class="tab-pane fade" id="tab-input" role="tabpanel">
-                    <div class="mb-3">
-                        <label for="direction-source" class="form-label mb-1" style="font-size: 13px;">Read directions from</label>
-                        <select id="direction-source" class="form-select form-select-sm">
-                            <option value="dpad">D-Pad / Hat Switch (default)</option>
-                            <option value="leftStick">Left Analog Stick</option>
-                            <option value="rightStick">Right Analog Stick</option>
-                        </select>
+                    <div class="mapping-section-title" style="margin-top: 0;">Quick Assign</div>
+                    <p class="input-tab-hint">
+                        Not sure which raw button index is which on your controller? Click Listen, then press the button (or a direction) you want to set an image for — it'll open right below.
+                    </p>
+                    <button type="button" id="quick-assign-listen" class="btn btn-combosuki">Listen for input…</button>
+                    <div id="quick-assign-result"></div>
+
+                    <div class="mb-3 mt-4">
+                        <label class="form-label mb-1" style="font-size: 22px;">Read directions from</label>
+                        <div class="radio-list">
+                            <label class="radio-option" for="direction-source-dpad">
+                                <input type="radio" name="direction-source" id="direction-source-dpad" value="dpad">
+                                D-Pad / Hat Switch (default)
+                            </label>
+                            <label class="radio-option" for="direction-source-leftStick">
+                                <input type="radio" name="direction-source" id="direction-source-leftStick" value="leftStick">
+                                Left Analog Stick
+                            </label>
+                            <label class="radio-option" for="direction-source-rightStick">
+                                <input type="radio" name="direction-source" id="direction-source-rightStick" value="rightStick">
+                                Right Analog Stick
+                            </label>
+                        </div>
                         <p class="input-tab-hint">
                             Playing on a pad and want motion inputs read off the analog stick instead of the d-pad? Pick a stick here — it maps to the same 8 directions above.
                         </p>
@@ -425,24 +580,71 @@
 
                     <div class="settings-row">
                         <label for="setting-deadzone">Stick deadzone</label>
-                        <input type="number" id="setting-deadzone" class="form-control form-control-sm" min="0.05" max="0.95" step="0.05">
+                        <input type="number" id="setting-deadzone" class="form-control" min="0.05" max="0.95" step="0.05">
                     </div>
 
                     <div class="settings-row">
                         <label for="setting-fps">Polling FPS</label>
-                        <input type="number" id="setting-fps" class="form-control form-control-sm" min="1" max="240">
+                        <input type="number" id="setting-fps" class="form-control" min="1" max="240">
                     </div>
                     <div class="settings-row">
                         <label for="setting-charge">Charge frames</label>
-                        <input type="number" id="setting-charge" class="form-control form-control-sm" min="1" max="999">
+                        <input type="number" id="setting-charge" class="form-control" min="1" max="999">
                     </div>
                     <div class="settings-row">
                         <label for="setting-hide">Hide after (frames)</label>
-                        <input type="number" id="setting-hide" class="form-control form-control-sm" min="1" max="9999">
+                        <input type="number" id="setting-hide" class="form-control" min="1" max="9999">
                     </div>
                     <div class="settings-row">
                         <label for="setting-history-limit">History length</label>
-                        <input type="number" id="setting-history-limit" class="form-control form-control-sm" min="1" max="200">
+                        <input type="number" id="setting-history-limit" class="form-control" min="1" max="200">
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="tab-customize" role="tabpanel">
+                    <div class="mapping-section-title" style="margin-top: 0;">Frame Counter</div>
+
+                    <div class="mb-3">
+                        <label class="form-label mb-1" style="font-size: 22px;">Font</label>
+                        <div class="radio-list">
+                            <label class="radio-option" for="counter-font-inherit">
+                                <input type="radio" name="counter-font" id="counter-font-inherit" value="inherit">
+                                Site default
+                            </label>
+                            <label class="radio-option" for="counter-font-impact">
+                                <input type="radio" name="counter-font" id="counter-font-impact" value="'Arial Black', Impact, sans-serif">
+                                Impact (classic HUD)
+                            </label>
+                            <label class="radio-option" for="counter-font-monospace">
+                                <input type="radio" name="counter-font" id="counter-font-monospace" value="'Courier New', monospace">
+                                Monospace
+                            </label>
+                            <label class="radio-option" for="counter-font-serif">
+                                <input type="radio" name="counter-font" id="counter-font-serif" value="Georgia, 'Times New Roman', serif">
+                                Serif
+                            </label>
+                            <label class="radio-option" for="counter-font-trebuchet">
+                                <input type="radio" name="counter-font" id="counter-font-trebuchet" value="'Trebuchet MS', sans-serif">
+                                Trebuchet
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="setting-counter-color" class="form-label mb-1" style="font-size: 22px;">Text color</label>
+                        <input type="color" id="setting-counter-color" class="form-control form-control-color">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="setting-counter-bg-color" class="form-label mb-1" style="font-size: 22px;">Background color</label>
+                        <input type="color" id="setting-counter-bg-color" class="form-control form-control-color">
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="setting-counter-transparent-bg">
+                        <label class="form-check-label" for="setting-counter-transparent-bg" style="font-size: 22px;">
+                            Transparent background (just the number)
+                        </label>
                     </div>
                 </div>
             </div>

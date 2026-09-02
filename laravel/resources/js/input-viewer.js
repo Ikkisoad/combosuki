@@ -38,6 +38,12 @@ const DEFAULT_SETTINGS = {
     historyLimit: 30,
     directionSource: 'dpad',
     stickDeadzone: 0.5,
+    // 'inherit' follows the site's own font stack (Bootstrap's default) —
+    // see the "Frame counter font" setting for the other choices.
+    counterFont: 'inherit',
+    counterColor: '#ffffff',
+    counterBgColor: '#920000',
+    counterTransparentBg: false,
 };
 
 const DIRECTIONS = ['up', 'upright', 'right', 'downright', 'down', 'downleft', 'left', 'upleft', 'idle'];
@@ -259,13 +265,26 @@ function initInputViewer() {
     const root = document.getElementById('input-viewer');
     if (!root) return;
 
+    function applyCounterAppearance(settings) {
+        root.style.setProperty('--counter-font', settings.counterFont);
+        root.style.setProperty('--counter-color', settings.counterColor);
+        if (settings.counterTransparentBg) {
+            root.style.setProperty('--counter-bg', 'transparent');
+            root.style.setProperty('--counter-border', 'transparent');
+        } else {
+            root.style.setProperty('--counter-bg', settings.counterBgColor);
+            root.style.removeProperty('--counter-border');
+        }
+    }
+
     const store = loadStore();
 
     const historyEl = document.getElementById('history');
     const watermarkEl = document.getElementById('watermark');
+    const watermarkHintEl = document.getElementById('watermark-hint');
     const panelEl = document.getElementById('config-panel');
     const toggleTab = document.getElementById('panel-toggle');
-    const gamepadSelect = document.getElementById('gamepad-selector');
+    const gamepadListEl = document.getElementById('gamepad-list');
     const buttonRowsEl = document.getElementById('button-mapping-rows');
     const directionRowsEl = document.getElementById('direction-mapping-rows');
     const resetButton = document.getElementById('reset-mappings');
@@ -273,8 +292,12 @@ function initInputViewer() {
     const chargeInput = document.getElementById('setting-charge');
     const hideInput = document.getElementById('setting-hide');
     const historyLimitInput = document.getElementById('setting-history-limit');
-    const directionSourceSelect = document.getElementById('direction-source');
     const deadzoneInput = document.getElementById('setting-deadzone');
+    const quickAssignButton = document.getElementById('quick-assign-listen');
+    const quickAssignResult = document.getElementById('quick-assign-result');
+    const counterColorInput = document.getElementById('setting-counter-color');
+    const counterBgColorInput = document.getElementById('setting-counter-bg-color');
+    const counterTransparentBgInput = document.getElementById('setting-counter-transparent-bg');
 
     let currentGamepadIndex = null;
     let currentGamepadId = null;
@@ -288,6 +311,14 @@ function initInputViewer() {
     let frameCount = 1;
     let pollingTimer = null;
 
+    // "Tap to set": while true, the next newly-pressed button (or newly-hit
+    // direction) on the selected pad is captured and used to open a mapping
+    // row for it — lets a user identify a raw button index by physically
+    // pressing it instead of guessing from a list.
+    let listeningForInput = false;
+    let previouslyPressedButtons = new Set();
+    let previousPolledDirection = 'idle';
+
     function currentProfile() {
         return currentGamepadId ? getProfile(store, currentGamepadId) : null;
     }
@@ -299,6 +330,7 @@ function initInputViewer() {
     function applyFadeState() {
         panelEl.classList.toggle('faded', panelHidden);
         watermarkEl.classList.toggle('faded', panelHidden);
+        watermarkHintEl.classList.toggle('faded', panelHidden);
         toggleTab.classList.toggle('tab-hidden', panelHidden);
     }
 
@@ -407,6 +439,17 @@ function initInputViewer() {
             if (gp.buttons[i]?.pressed) buttonIndices.push(i);
         }
 
+        if (listeningForInput) {
+            const newlyPressed = buttonIndices.find((i) => !previouslyPressedButtons.has(i));
+            if (newlyPressed !== undefined) {
+                handleListenedInput('button', String(newlyPressed), `Button ${newlyPressed}`);
+            } else if (direction !== 'idle' && previousPolledDirection === 'idle') {
+                handleListenedInput('direction', direction, DIRECTION_LABELS[direction] || direction);
+            }
+        }
+        previouslyPressedButtons = new Set(buttonIndices);
+        previousPolledDirection = direction;
+
         const signature = JSON.stringify({ direction, buttonIndices: [...buttonIndices].sort((a, b) => a - b) });
 
         if (signature === lastSignature && lastEntry) {
@@ -449,21 +492,53 @@ function initInputViewer() {
 
     function refreshGamepadList() {
         const gamepads = navigator.getGamepads();
-        gamepadSelect.innerHTML = '<option value="">Select Controller</option>';
+        gamepadListEl.innerHTML = '';
         let matchedIndex = null;
+        let anyConnected = false;
+
         for (let i = 0; i < gamepads.length; i++) {
             const gp = gamepads[i];
             if (!gp) continue;
-            const option = document.createElement('option');
-            option.value = String(i);
-            option.textContent = `${i}: ${gp.id}`;
+            anyConnected = true;
+
+            const optionId = `gamepad-radio-${i}`;
+            const option = document.createElement('label');
+            option.className = 'radio-option';
+            option.htmlFor = optionId;
+
+            const radio = document.createElement('input');
+            radio.type = 'radio';
+            radio.name = 'gamepad-choice';
+            radio.id = optionId;
+            radio.value = String(i);
             if (store.lastGamepadId && gp.id === store.lastGamepadId) {
-                option.selected = true;
+                radio.checked = true;
                 matchedIndex = i;
             }
-            gamepadSelect.appendChild(option);
+            radio.addEventListener('change', () => {
+                const gamepadsNow = navigator.getGamepads();
+                if (gamepadsNow[i]) selectGamepad(i, gamepadsNow[i]);
+            });
+            option.appendChild(radio);
+
+            const text = document.createElement('span');
+            text.textContent = `${i}: ${gp.id}`;
+            option.appendChild(text);
+
+            gamepadListEl.appendChild(option);
         }
-        if (matchedIndex !== null) {
+
+        if (!anyConnected) {
+            const empty = document.createElement('p');
+            empty.className = 'radio-list-empty';
+            empty.textContent = 'No controllers detected yet. Press a button on your controller to wake it up.';
+            gamepadListEl.appendChild(empty);
+        }
+
+        // Guard against re-selecting (and so resetting Quick Assign/re-
+        // rendering everything) on every periodic rescan when the already-
+        // selected pad is still the one that matched.
+        if (matchedIndex !== null && (currentGamepadIndex !== matchedIndex || currentGamepadId !== gamepads[matchedIndex].id)) {
             selectGamepad(matchedIndex, gamepads[matchedIndex]);
         }
     }
@@ -473,6 +548,8 @@ function initInputViewer() {
         currentGamepadId = gp.id;
         store.lastGamepadId = gp.id;
         saveStore(store);
+        setListening(false);
+        quickAssignResult.innerHTML = '';
         renderMappingRows(gp);
     }
 
@@ -505,6 +582,15 @@ function initInputViewer() {
         renderPreview(preview, getSlotValue(profile, kind, key), label, profile);
         topLine.appendChild(preview);
 
+        // renderMappingRows(gp) below rebuilds the Mappings-tab list from
+        // scratch, but this exact row instance can also be mounted
+        // standalone (see handleListenedInput's Quick Assign result), which
+        // that rebuild never touches — refresh this row's own preview too so
+        // both places stay correct regardless of where the row lives.
+        function refreshLocalPreview() {
+            renderPreview(preview, getSlotValue(profile, kind, key), label, profile);
+        }
+
         const labelEl = document.createElement('span');
         labelEl.className = 'mapping-label';
         labelEl.textContent = label;
@@ -515,16 +601,17 @@ function initInputViewer() {
 
         const combineBtn = document.createElement('button');
         combineBtn.type = 'button';
-        combineBtn.className = 'btn btn-sm btn-outline-light mapping-combine';
+        combineBtn.className = 'btn btn-outline-light mapping-combine';
         combineBtn.textContent = 'Combine…';
         actions.appendChild(combineBtn);
 
         const clearBtn = document.createElement('button');
         clearBtn.type = 'button';
-        clearBtn.className = 'btn btn-sm btn-outline-light mapping-clear';
+        clearBtn.className = 'btn btn-outline-light mapping-clear';
         clearBtn.textContent = 'Clear';
         clearBtn.addEventListener('click', () => {
             setSlotValue(store, profile, kind, key, undefined);
+            refreshLocalPreview();
             renderMappingRows(gp);
         });
         actions.appendChild(clearBtn);
@@ -535,17 +622,18 @@ function initInputViewer() {
         const fileInput = document.createElement('input');
         fileInput.type = 'file';
         fileInput.accept = 'image/*';
-        fileInput.className = 'mapping-file form-control form-control-sm';
+        fileInput.className = 'mapping-file form-control';
         fileInput.addEventListener('change', async () => {
             const file = fileInput.files && fileInput.files[0];
             if (!file) return;
             const dataUrl = await resizeImageFile(file);
             setSlotValue(store, profile, kind, key, dataUrl);
+            refreshLocalPreview();
             renderMappingRows(gp);
         });
         row.appendChild(fileInput);
 
-        const picker = buildMacroPicker({ kind, key, label, profile, gp });
+        const picker = buildMacroPicker({ kind, key, label, profile, gp, onSaved: refreshLocalPreview });
         row.appendChild(picker);
 
         combineBtn.addEventListener('click', () => {
@@ -558,7 +646,7 @@ function initInputViewer() {
     // Lets a slot (e.g. a macro button like A+B on a fight stick) be set to
     // several already-uploaded images at once instead of a single upload —
     // see buildMacroIcon for how that's rendered as a compact diagonal fan.
-    function buildMacroPicker({ kind, key, label, profile, gp }) {
+    function buildMacroPicker({ kind, key, label, profile, gp, onSaved }) {
         const wrap = document.createElement('div');
         wrap.className = 'macro-picker';
         wrap.hidden = true;
@@ -610,7 +698,7 @@ function initInputViewer() {
 
         const saveBtn = document.createElement('button');
         saveBtn.type = 'button';
-        saveBtn.className = 'btn btn-sm btn-combosuki';
+        saveBtn.className = 'btn btn-combosuki';
         saveBtn.textContent = 'Save macro';
         saveBtn.addEventListener('click', () => {
             const checked = Array.from(list.querySelectorAll('input[type=checkbox]:checked')).map((cb) => {
@@ -622,13 +710,14 @@ function initInputViewer() {
                 return;
             }
             setSlotValue(store, profile, kind, key, { macro: checked });
+            onSaved?.();
             renderMappingRows(gp);
         });
         actions.appendChild(saveBtn);
 
         const cancelBtn = document.createElement('button');
         cancelBtn.type = 'button';
-        cancelBtn.className = 'btn btn-sm btn-outline-light';
+        cancelBtn.className = 'btn btn-outline-light';
         cancelBtn.textContent = 'Cancel';
         cancelBtn.addEventListener('click', () => {
             wrap.hidden = true;
@@ -640,12 +729,46 @@ function initInputViewer() {
         return wrap;
     }
 
-    gamepadSelect.addEventListener('change', () => {
-        const index = parseInt(gamepadSelect.value, 10);
+    function setListening(next) {
+        listeningForInput = next;
+        quickAssignButton.textContent = next ? 'Waiting for input…' : 'Listen for input…';
+        quickAssignButton.classList.toggle('btn-outline-light', next);
+        quickAssignButton.classList.toggle('btn-combosuki', !next);
+    }
+
+    // Called from pollGamepad once a press is detected while listening —
+    // opens the same row buildMappingRow() renders in the Mappings tab, but
+    // inline here, so the just-identified button/direction can be assigned
+    // an image immediately without hunting for it in a long list.
+    function handleListenedInput(kind, key, label) {
+        setListening(false);
+
         const gamepads = navigator.getGamepads();
-        if (!isNaN(index) && gamepads[index]) {
-            selectGamepad(index, gamepads[index]);
+        const gp = currentGamepadIndex !== null ? gamepads[currentGamepadIndex] : null;
+        const profile = currentProfile();
+        if (!gp || !profile) return;
+
+        quickAssignResult.innerHTML = '';
+
+        const heading = document.createElement('div');
+        heading.className = 'quick-assign-heading';
+        heading.textContent = `Detected: ${label}`;
+        quickAssignResult.appendChild(heading);
+
+        quickAssignResult.appendChild(buildMappingRow({ kind, key, label, profile, gp }));
+    }
+
+    quickAssignButton.addEventListener('click', () => {
+        if (!currentGamepadId) {
+            alert('Select a controller first.');
+            return;
         }
+        if (listeningForInput) {
+            setListening(false);
+            return;
+        }
+        quickAssignResult.innerHTML = '';
+        setListening(true);
     });
 
     resetButton.addEventListener('click', () => {
@@ -670,14 +793,26 @@ function initInputViewer() {
         });
     }
 
+    // Radio-group equivalent of wireSetting() — used in place of a <select>
+    // for the same reason as the gamepad list (see refreshGamepadList): a
+    // dropdown has to be opened, found in, then closed, which is fiddly
+    // through OBS's small interact window.
+    function wireRadioGroup(name, initialValue, onChange) {
+        document.querySelectorAll(`input[name="${name}"]`).forEach((radio) => {
+            radio.checked = radio.value === initialValue;
+            radio.addEventListener('change', () => {
+                if (radio.checked) onChange(radio.value);
+            });
+        });
+    }
+
     wireSetting(fpsInput, 'pollingFPS');
     wireSetting(chargeInput, 'chargeThreshold');
     wireSetting(hideInput, 'hideThreshold');
     wireSetting(historyLimitInput, 'historyLimit');
 
-    directionSourceSelect.value = store.settings.directionSource;
-    directionSourceSelect.addEventListener('change', () => {
-        store.settings.directionSource = directionSourceSelect.value;
+    wireRadioGroup('direction-source', store.settings.directionSource, (value) => {
+        store.settings.directionSource = value;
         saveStore(store);
         // Switching source changes which button indices (12-15) count as
         // the d-pad vs. plain mappable buttons — re-render to match.
@@ -695,6 +830,35 @@ function initInputViewer() {
         saveStore(store);
     });
 
+    applyCounterAppearance(store.settings);
+
+    wireRadioGroup('counter-font', store.settings.counterFont, (value) => {
+        store.settings.counterFont = value;
+        applyCounterAppearance(store.settings);
+        saveStore(store);
+    });
+
+    counterColorInput.value = store.settings.counterColor;
+    counterColorInput.addEventListener('input', () => {
+        store.settings.counterColor = counterColorInput.value;
+        applyCounterAppearance(store.settings);
+        saveStore(store);
+    });
+
+    counterBgColorInput.value = store.settings.counterBgColor;
+    counterBgColorInput.addEventListener('input', () => {
+        store.settings.counterBgColor = counterBgColorInput.value;
+        applyCounterAppearance(store.settings);
+        saveStore(store);
+    });
+
+    counterTransparentBgInput.checked = store.settings.counterTransparentBg;
+    counterTransparentBgInput.addEventListener('change', () => {
+        store.settings.counterTransparentBg = counterTransparentBgInput.checked;
+        applyCounterAppearance(store.settings);
+        saveStore(store);
+    });
+
     toggleTab.addEventListener('click', () => {
         panelHidden = !panelHidden;
         applyFadeState();
@@ -705,6 +869,18 @@ function initInputViewer() {
 
     refreshGamepadList();
     pollGamepad();
+
+    // A gamepad that was already connected before this page loaded doesn't
+    // always fire 'gamepadconnected' (that event is for connects that
+    // happen *while* the page is open) and getGamepads() can take a moment
+    // to report it too — a short burst of rescans right after load catches
+    // those without requiring the user to press a button first.
+    let startupScans = 0;
+    const startupScanTimer = setInterval(() => {
+        refreshGamepadList();
+        startupScans++;
+        if (startupScans >= 6) clearInterval(startupScanTimer);
+    }, 500);
 }
 
 document.addEventListener('DOMContentLoaded', initInputViewer);
