@@ -44,6 +44,10 @@
                             <li><hr class="dropdown-divider"></li>
                         @endif
                         <li><a class="dropdown-item" href="{{ route('tier-lists.index') }}">Tier Lists</a></li>
+                        <li>
+                            {{-- Meant to be pointed at directly as an OBS Browser Source, so it opens in its own tab rather than navigating away from the site. --}}
+                            <a class="dropdown-item" href="{{ route('input-viewer.index') }}" target="_blank" rel="noopener">Input Viewer</a>
+                        </li>
                         <li><a class="dropdown-item" href="https://srk.shib.live/w/Shoryuken_Wiki:Community_portal/Discords/Game" target="_blank">FGC Discord Compendium</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="{{ route('preferences.edit') }}">Preferences</a></li>

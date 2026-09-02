@@ -1,5 +1,6 @@
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import { Modal } from 'bootstrap';
+import bootstrap from 'bootstrap/dist/js/bootstrap.bundle.min.js';
+
+const { Modal } = bootstrap;
 
 /**
  * Site-wide replacement for window.confirm(), styled with the same

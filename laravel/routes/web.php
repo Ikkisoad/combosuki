@@ -246,6 +246,8 @@ Route::view('/randomizer/mvc2', 'randomizer.mvc2')->name('randomizer.mvc2');
 Route::view('/randomizer/skullgirls', 'randomizer.skullgirls')->name('randomizer.skullgirls');
 Route::view('/randomizer/dengeki', 'randomizer.dengeki')->name('randomizer.dengeki');
 
+Route::view('/input-viewer', 'input-viewer.index')->name('input-viewer.index');
+
 Route::middleware(['auth', 'can:update,game'])->prefix('games/{game}/edit')->name('admin.')->scopeBindings()->group(function () {
     Route::get('/', [GameSettingsController::class, 'edit'])->name('game.edit');
     Route::post('/', [GameSettingsController::class, 'update'])->middleware('throttle:10,1')->name('game.update');
