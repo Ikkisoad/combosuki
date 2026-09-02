@@ -33,7 +33,7 @@ const MACRO_CORNERS_TRIO = [
 
 const DEFAULT_SETTINGS = {
     pollingFPS: 60,
-    chargeThreshold: 5,
+    chargeThreshold: 30,
     hideThreshold: 120,
     historyLimit: 30,
 };

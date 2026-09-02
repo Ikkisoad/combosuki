@@ -128,7 +128,13 @@
                 font-weight: 600;
                 letter-spacing: 0.05em;
                 color: white;
-                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+                text-shadow:
+                    0 0 6px rgba(0, 0, 0, 0.9),
+                    0 0 14px rgba(0, 0, 0, 0.7),
+                    1px 1px 2px rgba(0, 0, 0, 0.95),
+                    -1px -1px 2px rgba(0, 0, 0, 0.95),
+                    1px -1px 2px rgba(0, 0, 0, 0.95),
+                    -1px 1px 2px rgba(0, 0, 0, 0.95);
             }
 
             #config-panel {
