@@ -40,7 +40,7 @@
         <meta name="twitter:player:width" content="{{ $player['width'] }}" />
         <meta name="twitter:player:height" content="{{ $player['height'] }}" />
     @else
-        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:card" content="summary" />
     @endif
     <meta name="twitter:title" content="{{ $title }}" />
     <meta name="twitter:description" content="{{ $description }}" />
