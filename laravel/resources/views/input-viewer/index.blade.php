@@ -44,10 +44,33 @@
                 align-items: center;
             }
 
-            .input-entry img {
+            {{-- Child combinator, not a descendant selector: a macro icon's
+                 own <img> children (see .macro-icon below) are nested one
+                 level deeper and must keep their own, smaller size. --}}
+            .input-entry > img {
                 width: 32px;
                 height: 32px;
                 object-fit: contain;
+            }
+
+            {{--
+                A macro slot (e.g. an A+B macro button) is rendered as its
+                source images fanned diagonally in front of one another, each
+                offset by MACRO_STEP — see buildMacroIcon() in
+                input-viewer.js. The wrapper's own size is set inline per
+                image count so it still lays out like a single icon.
+            --}}
+            .macro-icon {
+                position: relative;
+                flex: 0 0 auto;
+            }
+
+            {{-- width/height are set inline per image (input-viewer.js macroImageSize) — they shrink as more images join the macro. --}}
+            .macro-icon img {
+                position: absolute;
+                object-fit: contain;
+                border-radius: 3px;
+                box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.7);
             }
 
             .input-chip {
@@ -187,6 +210,12 @@
             }
 
             .mapping-row {
+                margin-bottom: 10px;
+                padding-bottom: 10px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            }
+
+            .mapping-row-top {
                 display: flex;
                 align-items: center;
                 gap: 8px;
@@ -202,27 +231,82 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                overflow: hidden;
+                overflow: visible;
             }
 
-            .mapping-preview img {
+            .mapping-preview > img {
                 max-width: 100%;
                 max-height: 100%;
             }
 
             .mapping-label {
-                width: 84px;
-                flex: 0 0 84px;
+                flex: 1 1 auto;
                 font-size: 12px;
             }
 
+            .mapping-actions {
+                display: flex;
+                gap: 6px;
+                flex: 0 0 auto;
+            }
+
+            .mapping-combine,
+            .mapping-clear {
+                flex: 0 0 auto;
+                font-size: 11px;
+                padding: 2px 6px;
+            }
+
             .mapping-file {
-                flex: 1 1 auto;
+                width: 100%;
                 font-size: 11px;
             }
 
-            .mapping-clear {
-                flex: 0 0 auto;
+            .macro-picker {
+                margin-top: 8px;
+                padding: 8px;
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                border-radius: 4px;
+                font-size: 12px;
+            }
+
+            .macro-picker-empty {
+                color: rgba(255, 255, 255, 0.55);
+                font-style: italic;
+            }
+
+            .macro-picker-title {
+                margin-bottom: 6px;
+                color: rgba(255, 255, 255, 0.8);
+            }
+
+            .macro-picker-list {
+                max-height: 160px;
+                overflow-y: auto;
+                margin-bottom: 8px;
+            }
+
+            .macro-picker-option {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                padding: 2px 0;
+                font-weight: normal;
+                cursor: pointer;
+            }
+
+            .macro-picker-thumb {
+                width: 20px;
+                height: 20px;
+                object-fit: contain;
+                border-radius: 3px;
+                background: rgba(0, 0, 0, 0.3);
+            }
+
+            .macro-picker-actions {
+                display: flex;
+                gap: 6px;
             }
 
             .settings-row {

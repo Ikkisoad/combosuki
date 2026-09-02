@@ -1,5 +1,35 @@
 const STORAGE_KEY = 'combosuki:input-viewer:v1';
 const MAX_IMAGE_SIZE = 128;
+const MACRO_CONTAINER_SIZE = 28;
+
+// The 2-image case is the reference size (kept as-is); each image beyond
+// that shrinks a bit further so more of them don't just pile on top of one
+// another inside the same fixed-size composite.
+const MACRO_IMAGE_SIZES = { 2: 18, 3: 15, 4: 13 };
+const MACRO_IMAGE_SIZE_MIN = 11;
+
+function macroImageSize(count) {
+    return MACRO_IMAGE_SIZES[count] || MACRO_IMAGE_SIZE_MIN;
+}
+
+// Where each image in a macro leans within the (fixed-size) composite —
+// 1st top-left, 2nd bottom-right, 3rd top-right, 4th bottom-left. Cycles for
+// macros with more than 4 images.
+const MACRO_CORNERS = [
+    { left: 0, top: 0 },
+    { left: 1, top: 1 },
+    { left: 1, top: 0 },
+    { left: 0, top: 1 },
+];
+
+// With exactly 3 images, the "2nd" (bottom-right) slot moves to dead center
+// instead — top-left / center / top-right reads more like a fan than three
+// corners of a box with one left empty.
+const MACRO_CORNERS_TRIO = [
+    { left: 0, top: 0 },
+    { left: 0.5, top: 0.5 },
+    { left: 1, top: 0 },
+];
 
 const DEFAULT_SETTINGS = {
     pollingFPS: 60,
@@ -77,6 +107,47 @@ function getProfile(store, gamepadId) {
     return store.profiles[gamepadId];
 }
 
+function getSlotValue(profile, kind, key) {
+    return kind === 'direction' ? profile.directions[key] : profile.buttons[key];
+}
+
+function setSlotValue(store, profile, kind, key, value) {
+    const bucket = kind === 'direction' ? profile.directions : profile.buttons;
+    if (value === undefined) {
+        delete bucket[key];
+    } else {
+        bucket[key] = value;
+    }
+    saveStore(store);
+}
+
+function isMacro(value) {
+    return !!value && typeof value === 'object' && Array.isArray(value.macro);
+}
+
+// Only plain (already-uploaded) images can be combined into a macro — this
+// keeps macro resolution a single flat lookup instead of having to recurse
+// into macros-of-macros.
+function collectImageSources(profile, excludeKind, excludeKey) {
+    const sources = [];
+
+    DIRECTIONS.forEach((key) => {
+        const value = profile.directions[key];
+        if (typeof value === 'string' && !(excludeKind === 'direction' && excludeKey === key)) {
+            sources.push({ kind: 'direction', key, label: DIRECTION_LABELS[key] || key, src: value });
+        }
+    });
+
+    Object.keys(profile.buttons).forEach((key) => {
+        const value = profile.buttons[key];
+        if (typeof value === 'string' && !(excludeKind === 'button' && excludeKey === key)) {
+            sources.push({ kind: 'button', key, label: `Button ${key}`, src: value });
+        }
+    });
+
+    return sources;
+}
+
 function roundAxis(value) {
     return parseFloat(value.toFixed(5));
 }
@@ -110,6 +181,76 @@ function resizeImageFile(file, maxSize = MAX_IMAGE_SIZE) {
         };
         reader.readAsDataURL(file);
     });
+}
+
+// A macro (e.g. an A+B macro button) renders as its source images fanned
+// diagonally, each one nudged a few pixels further and layered in front of
+// the last — so it reads as "more than one input" while still occupying
+// roughly the footprint of a single icon instead of a full row/grid.
+function buildMacroIcon(refs, label, profile) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'macro-icon';
+    wrapper.title = label;
+
+    const imgs = refs
+        .map((ref) => getSlotValue(profile, ref.kind, ref.key))
+        .filter((src) => typeof src === 'string');
+
+    if (imgs.length === 0) {
+        wrapper.classList.add('input-chip');
+        wrapper.textContent = label;
+        return wrapper;
+    }
+
+    wrapper.style.width = `${MACRO_CONTAINER_SIZE}px`;
+    wrapper.style.height = `${MACRO_CONTAINER_SIZE}px`;
+
+    const imageSize = macroImageSize(imgs.length);
+    const maxOffset = MACRO_CONTAINER_SIZE - imageSize;
+
+    const corners = imgs.length === 3 ? MACRO_CORNERS_TRIO : MACRO_CORNERS;
+
+    imgs.forEach((src, i) => {
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = label;
+        img.style.width = `${imageSize}px`;
+        img.style.height = `${imageSize}px`;
+        const corner = corners[i % corners.length];
+        img.style.left = `${corner.left * maxOffset}px`;
+        img.style.top = `${corner.top * maxOffset}px`;
+        img.style.zIndex = String(i + 1);
+        wrapper.appendChild(img);
+    });
+
+    return wrapper;
+}
+
+function buildIconNode(value, label, profile) {
+    if (typeof value === 'string') {
+        const img = document.createElement('img');
+        img.src = value;
+        img.alt = label;
+        return img;
+    }
+    if (isMacro(value)) {
+        return buildMacroIcon(value.macro, label, profile);
+    }
+    const chip = document.createElement('span');
+    chip.className = 'input-chip';
+    chip.textContent = label;
+    return chip;
+}
+
+function renderPreview(previewEl, value, label, profile) {
+    previewEl.innerHTML = '';
+    if (typeof value === 'string') {
+        const img = document.createElement('img');
+        img.src = value;
+        previewEl.appendChild(img);
+    } else if (isMacro(value)) {
+        previewEl.appendChild(buildMacroIcon(value.macro, label, profile));
+    }
 }
 
 function initInputViewer() {
@@ -159,17 +300,8 @@ function initInputViewer() {
 
     function iconElement(kind, key, label) {
         const profile = currentProfile();
-        const src = profile ? (kind === 'direction' ? profile.directions[key] : profile.buttons[key]) : null;
-        if (src) {
-            const img = document.createElement('img');
-            img.src = src;
-            img.alt = label;
-            return img;
-        }
-        const chip = document.createElement('span');
-        chip.className = 'input-chip';
-        chip.textContent = label;
-        return chip;
+        const value = profile ? getSlotValue(profile, kind, key) : null;
+        return buildIconNode(value, label, profile);
     }
 
     function addInputToHistory(direction, buttons) {
@@ -322,59 +454,55 @@ function initInputViewer() {
 
         directionRowsEl.innerHTML = '';
         DIRECTIONS.forEach((dir) => {
-            directionRowsEl.appendChild(buildMappingRow({
-                label: DIRECTION_LABELS[dir],
-                previewSrc: profile.directions[dir],
-                onUpload: async (file) => {
-                    const dataUrl = await resizeImageFile(file);
-                    profile.directions[dir] = dataUrl;
-                    saveStore(store);
-                    return dataUrl;
-                },
-                onClear: () => {
-                    delete profile.directions[dir];
-                    saveStore(store);
-                },
-            }));
+            directionRowsEl.appendChild(buildMappingRow({ kind: 'direction', key: dir, label: DIRECTION_LABELS[dir], profile, gp }));
         });
 
         buttonRowsEl.innerHTML = '';
         for (let i = 0; i < gp.buttons.length; i++) {
             if (usesDpadButtons && i >= 12 && i <= 15) continue;
-            buttonRowsEl.appendChild(buildMappingRow({
-                label: `Button ${i}`,
-                previewSrc: profile.buttons[i],
-                onUpload: async (file) => {
-                    const dataUrl = await resizeImageFile(file);
-                    profile.buttons[i] = dataUrl;
-                    saveStore(store);
-                    return dataUrl;
-                },
-                onClear: () => {
-                    delete profile.buttons[i];
-                    saveStore(store);
-                },
-            }));
+            const key = String(i);
+            buttonRowsEl.appendChild(buildMappingRow({ kind: 'button', key, label: `Button ${key}`, profile, gp }));
         }
     }
 
-    function buildMappingRow({ label, previewSrc, onUpload, onClear }) {
+    function buildMappingRow({ kind, key, label, profile, gp }) {
         const row = document.createElement('div');
         row.className = 'mapping-row';
 
+        const topLine = document.createElement('div');
+        topLine.className = 'mapping-row-top';
+
         const preview = document.createElement('div');
         preview.className = 'mapping-preview';
-        if (previewSrc) {
-            const img = document.createElement('img');
-            img.src = previewSrc;
-            preview.appendChild(img);
-        }
-        row.appendChild(preview);
+        renderPreview(preview, getSlotValue(profile, kind, key), label, profile);
+        topLine.appendChild(preview);
 
         const labelEl = document.createElement('span');
         labelEl.className = 'mapping-label';
         labelEl.textContent = label;
-        row.appendChild(labelEl);
+        topLine.appendChild(labelEl);
+
+        const actions = document.createElement('div');
+        actions.className = 'mapping-actions';
+
+        const combineBtn = document.createElement('button');
+        combineBtn.type = 'button';
+        combineBtn.className = 'btn btn-sm btn-outline-light mapping-combine';
+        combineBtn.textContent = 'Combine…';
+        actions.appendChild(combineBtn);
+
+        const clearBtn = document.createElement('button');
+        clearBtn.type = 'button';
+        clearBtn.className = 'btn btn-sm btn-outline-light mapping-clear';
+        clearBtn.textContent = 'Clear';
+        clearBtn.addEventListener('click', () => {
+            setSlotValue(store, profile, kind, key, undefined);
+            renderMappingRows(gp);
+        });
+        actions.appendChild(clearBtn);
+
+        topLine.appendChild(actions);
+        row.appendChild(topLine);
 
         const fileInput = document.createElement('input');
         fileInput.type = 'file';
@@ -383,26 +511,105 @@ function initInputViewer() {
         fileInput.addEventListener('change', async () => {
             const file = fileInput.files && fileInput.files[0];
             if (!file) return;
-            const dataUrl = await onUpload(file);
-            preview.innerHTML = '';
-            const img = document.createElement('img');
-            img.src = dataUrl;
-            preview.appendChild(img);
-            fileInput.value = '';
+            const dataUrl = await resizeImageFile(file);
+            setSlotValue(store, profile, kind, key, dataUrl);
+            renderMappingRows(gp);
         });
         row.appendChild(fileInput);
 
-        const clearBtn = document.createElement('button');
-        clearBtn.type = 'button';
-        clearBtn.className = 'btn btn-sm btn-outline-light mapping-clear';
-        clearBtn.textContent = 'Clear';
-        clearBtn.addEventListener('click', () => {
-            onClear();
-            preview.innerHTML = '';
+        const picker = buildMacroPicker({ kind, key, label, profile, gp });
+        row.appendChild(picker);
+
+        combineBtn.addEventListener('click', () => {
+            picker.hidden = !picker.hidden;
         });
-        row.appendChild(clearBtn);
 
         return row;
+    }
+
+    // Lets a slot (e.g. a macro button like A+B on a fight stick) be set to
+    // several already-uploaded images at once instead of a single upload —
+    // see buildMacroIcon for how that's rendered as a compact diagonal fan.
+    function buildMacroPicker({ kind, key, label, profile, gp }) {
+        const wrap = document.createElement('div');
+        wrap.className = 'macro-picker';
+        wrap.hidden = true;
+
+        const sources = collectImageSources(profile, kind, key);
+
+        if (sources.length < 2) {
+            wrap.classList.add('macro-picker-empty');
+            wrap.textContent = 'Upload at least two other images before you can combine them into a macro.';
+            return wrap;
+        }
+
+        const title = document.createElement('div');
+        title.className = 'macro-picker-title';
+        title.textContent = `Combine images for "${label}" (pick 2 or more):`;
+        wrap.appendChild(title);
+
+        const currentValue = getSlotValue(profile, kind, key);
+        const currentRefs = isMacro(currentValue) ? currentValue.macro : [];
+
+        const list = document.createElement('div');
+        list.className = 'macro-picker-list';
+
+        sources.forEach((source) => {
+            const option = document.createElement('label');
+            option.className = 'macro-picker-option';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = `${source.kind}:${source.key}`;
+            checkbox.checked = currentRefs.some((r) => r.kind === source.kind && r.key === source.key);
+            option.appendChild(checkbox);
+
+            const thumb = document.createElement('img');
+            thumb.src = source.src;
+            thumb.className = 'macro-picker-thumb';
+            option.appendChild(thumb);
+
+            const text = document.createElement('span');
+            text.textContent = source.label;
+            option.appendChild(text);
+
+            list.appendChild(option);
+        });
+        wrap.appendChild(list);
+
+        const actions = document.createElement('div');
+        actions.className = 'macro-picker-actions';
+
+        const saveBtn = document.createElement('button');
+        saveBtn.type = 'button';
+        saveBtn.className = 'btn btn-sm btn-combosuki';
+        saveBtn.textContent = 'Save macro';
+        saveBtn.addEventListener('click', () => {
+            const checked = Array.from(list.querySelectorAll('input[type=checkbox]:checked')).map((cb) => {
+                const [refKind, refKey] = cb.value.split(':');
+                return { kind: refKind, key: refKey };
+            });
+            if (checked.length < 2) {
+                alert('Pick at least two images to combine into a macro.');
+                return;
+            }
+            setSlotValue(store, profile, kind, key, { macro: checked });
+            renderMappingRows(gp);
+        });
+        actions.appendChild(saveBtn);
+
+        const cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.className = 'btn btn-sm btn-outline-light';
+        cancelBtn.textContent = 'Cancel';
+        cancelBtn.addEventListener('click', () => {
+            wrap.hidden = true;
+        });
+        actions.appendChild(cancelBtn);
+
+        wrap.appendChild(actions);
+
+        return wrap;
     }
 
     gamepadSelect.addEventListener('change', () => {
