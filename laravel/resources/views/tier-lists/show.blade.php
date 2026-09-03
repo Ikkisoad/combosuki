@@ -2,6 +2,7 @@
     :title="$tierList->title.' - Combo好き'"
     :description="'A '.$tierList->game->name.' tier list by '.($tierList->user?->nickname ?? 'Anonymous').'.'"
     :image="route('tier-lists.image', $tierList)"
+    :image-large="true"
 >
     <x-jumbotron :height="100" />
     <x-nav-bar :game="$tierList->game" />

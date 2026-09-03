@@ -3,6 +3,7 @@
     'description' => 'Community-fueled searchable environment that shares and perfects combos.',
     'image' => 'https://combosuki.com/img/combosuki.png',
     'player' => null,
+    'imageLarge' => false,
 ])
 
 @php
@@ -40,7 +41,7 @@
         <meta name="twitter:player:width" content="{{ $player['width'] }}" />
         <meta name="twitter:player:height" content="{{ $player['height'] }}" />
     @else
-        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:card" content="{{ $imageLarge ? 'summary_large_image' : 'summary' }}" />
     @endif
     <meta name="twitter:title" content="{{ $title }}" />
     <meta name="twitter:description" content="{{ $description }}" />

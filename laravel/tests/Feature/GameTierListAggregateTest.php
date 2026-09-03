@@ -255,6 +255,73 @@ class GameTierListAggregateTest extends TestCase
         $response->assertSee('No tier lists for this game yet in the selected range.');
     }
 
+    public function test_tier_lists_tab_endpoint_weighs_within_tier_position_into_the_median(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $filler = Character::create(['name' => 'Filler', 'game_idgame' => $game->idgame]);
+        $character = Character::create(['name' => 'Valentine', 'game_idgame' => $game->idgame]);
+
+        // Both votes place Valentine in S, but always dead last in a two-slot
+        // S tier (behind Filler) — that consistently-worst position should
+        // pull the median down into A, not leave it at S.
+        $listA = TierList::create(['title' => 'List A', 'game_idgame' => $game->idgame]);
+        $listA->entries()->create(['character_idcharacter' => $filler->idcharacter, 'tier' => 'S', 'order' => 0]);
+        $listA->entries()->create(['character_idcharacter' => $character->idcharacter, 'tier' => 'S', 'order' => 1]);
+
+        $listB = TierList::create(['title' => 'List B', 'game_idgame' => $game->idgame]);
+        $listB->entries()->create(['character_idcharacter' => $filler->idcharacter, 'tier' => 'S', 'order' => 0]);
+        $listB->entries()->create(['character_idcharacter' => $character->idcharacter, 'tier' => 'S', 'order' => 1]);
+
+        $response = $this->get(route('games.tabs.tier-lists', $game));
+
+        $response->assertOk();
+
+        $content = $response->getContent();
+        $sRowPos = strpos($content, 'tier-s');
+        $aRowPos = strpos($content, 'tier-a');
+        $bRowPos = strpos($content, 'tier-b');
+        $fillerPos = strpos($content, 'Filler');
+        $namePos = strpos($content, 'Valentine');
+
+        // Filler was always first in S, so it stays in S.
+        $this->assertNotFalse($fillerPos);
+        $this->assertGreaterThan($sRowPos, $fillerPos);
+        $this->assertLessThan($aRowPos, $fillerPos);
+
+        // Valentine was always last in S, so position pulls it down into A.
+        $this->assertNotFalse($namePos);
+        $this->assertGreaterThan($aRowPos, $namePos);
+        $this->assertLessThan($bRowPos, $namePos);
+    }
+
+    public function test_tier_lists_tab_endpoint_orders_a_tier_row_by_within_tier_position_not_alphabetically(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $zeta = Character::create(['name' => 'Zeta', 'game_idgame' => $game->idgame]);
+        $alpha = Character::create(['name' => 'Alpha', 'game_idgame' => $game->idgame]);
+
+        // Zeta is consistently placed ahead of Alpha within S across both
+        // lists. Alphabetically Alpha < Zeta, but the render order should
+        // follow the community's within-tier placement instead.
+        foreach (['List A', 'List B'] as $title) {
+            $list = TierList::create(['title' => $title, 'game_idgame' => $game->idgame]);
+            $list->entries()->create(['character_idcharacter' => $zeta->idcharacter, 'tier' => 'S', 'order' => 0]);
+            $list->entries()->create(['character_idcharacter' => $alpha->idcharacter, 'tier' => 'S', 'order' => 1]);
+        }
+
+        $response = $this->get(route('games.tabs.tier-lists', $game));
+
+        $response->assertOk();
+
+        $content = $response->getContent();
+        $zetaPos = strpos($content, 'Zeta');
+        $alphaPos = strpos($content, 'Alpha');
+
+        $this->assertNotFalse($zetaPos);
+        $this->assertNotFalse($alphaPos);
+        $this->assertLessThan($alphaPos, $zetaPos);
+    }
+
     public function test_tier_lists_tab_endpoint_splits_a_character_into_separate_rows_per_resource_value(): void
     {
         $game = Game::create(['name' => 'Melty Blood', 'complete' => 1, 'modPass' => 'secret']);
