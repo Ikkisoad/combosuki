@@ -17,6 +17,16 @@ use Illuminate\Support\Collection;
 trait FiltersCombos
 {
     /**
+     * Ceiling on how many REPLACE() calls a combo search may nest around the
+     * `combo` column while normalizing aliases and ignored buttons. Both are
+     * admin-configured and unbounded, one nesting level each, and a deep
+     * enough expression overflows SQLite's parser stack outright (31 levels
+     * is already too many) — so past this point a search trades some recall
+     * for still running. See applyFilters() for which levels get dropped.
+     */
+    private const MAX_NESTED_REPLACEMENTS = 15;
+
+    /**
      * Run a combo search for $game scoped to $filters (a flat map of
      * FiltersCombos field names — see applyFilters()/applyOrdering() — to
      * values), returning up to $limit combos ordered the same way the
@@ -204,21 +214,55 @@ trait FiltersCombos
             // literally uses an alias word normalizes the same way the
             // search pattern above just did, then ignored tokens are
             // stripped from the result exactly as before.
+            //
+            // Only the aliases that can change this search's outcome get
+            // nested in, though. Each one wraps another REPLACE() around the
+            // column, a game can configure arbitrarily many of them, and an
+            // expression that deep is more than SQLite's parser will accept
+            // (31 levels already fails with "parser stack overflow") besides
+            // being run against every row. An alias rewrites stored notation
+            // into its button's name, so it can only affect the comparison
+            // when that name appears in the pattern the column is compared
+            // against. An alias whose text contains a kept alias's text is
+            // kept regardless of its own button name: dropping the longer
+            // one while keeping the shorter one inside it would let the
+            // short alias clobber it mid-replacement, which the
+            // longest-first order above exists to prevent.
+            $matchableAliases = $buttonAliases->filter(function ($alias) use ($ignoredTokens, $normalizedPattern) {
+                $name = str_replace($ignoredTokens, '', $alias->button->name);
+
+                return $name === '' || mb_stripos($normalizedPattern, $name) !== false;
+            });
+
+            $searchAliases = $buttonAliases
+                ->filter(fn ($alias) => $matchableAliases->contains(
+                    fn ($matchable) => mb_stripos($alias->alias, $matchable->alias) !== false
+                ))
+                // Still longest-first, so a game that configures more
+                // matchable aliases than the ceiling allows loses its
+                // shortest ones — the least specific, and the only ones that
+                // could clobber a longer alias — rather than losing the
+                // search itself to a database error.
+                ->take(max(0, self::MAX_NESTED_REPLACEMENTS - count($ignoredTokens)))
+                ->values();
+
+            $strippedTokens = array_slice($ignoredTokens, 0, self::MAX_NESTED_REPLACEMENTS);
+
             $comboSql = 'combo';
-            foreach ($buttonAliases as $alias) {
+            foreach ($searchAliases as $alias) {
                 $comboSql = "REPLACE({$comboSql}, ?, ?)";
             }
-            foreach ($ignoredTokens as $token) {
+            foreach ($strippedTokens as $token) {
                 $comboSql = "REPLACE({$comboSql}, ?, '')";
             }
 
             $aliasBindings = [];
-            foreach ($buttonAliases as $alias) {
+            foreach ($searchAliases as $alias) {
                 $aliasBindings[] = $alias->alias;
                 $aliasBindings[] = $alias->button->name;
             }
 
-            $query->whereRaw("{$comboSql} {$operator} ?", [...$aliasBindings, ...$ignoredTokens, $normalizedPattern]);
+            $query->whereRaw("{$comboSql} {$operator} ?", [...$aliasBindings, ...$strippedTokens, $normalizedPattern]);
         }
 
         if ($request->filled('damage')) {

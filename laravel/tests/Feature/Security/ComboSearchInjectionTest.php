@@ -245,8 +245,50 @@ class ComboSearchInjectionTest extends TestCase
 
         $combo = $this->makeCombo('LP+LK > 5B');
 
-        // 30 aliases => 60 bindings before the ignored tokens and pattern.
+        // Two bindings per alias kept, then the ignored tokens, then the
+        // pattern — any slip in that order throws rather than matching.
         $this->search('LP+LK')->assertOk()->assertSee($combo->combo);
+    }
+
+    /**
+     * Past FiltersCombos::MAX_NESTED_REPLACEMENTS the alias list is trimmed
+     * shortest-first rather than nested in full — an expression that deep
+     * overflows SQLite's parser stack, and the searcher would get a 500
+     * instead of results. The trim keeps the longest aliases, so notation
+     * written with them still normalizes.
+     */
+    public function test_a_game_with_more_aliases_than_the_nesting_ceiling_still_searches(): void
+    {
+        $button = Button::create([
+            'name' => 'LP+LK',
+            'color' => '#ffffff',
+            'match_type' => 'exact',
+            'game_idgame' => $this->game->idgame,
+        ]);
+
+        for ($i = 0; $i < 40; $i++) {
+            ButtonAlias::create([
+                'alias' => 'a'.$i,
+                'button_idbutton' => $button->idbutton,
+                'game_idgame' => $this->game->idgame,
+            ]);
+        }
+
+        ButtonAlias::create([
+            'alias' => 'LongestThrowAlias',
+            'button_idbutton' => $button->idbutton,
+            'game_idgame' => $this->game->idgame,
+        ]);
+
+        // Every one of those aliases expands to the button being searched
+        // for, so none of them can be dropped as irrelevant.
+        $direct = $this->makeCombo('LP+LK > 5B');
+        $aliased = $this->makeCombo('LongestThrowAlias > 2C');
+
+        $response = $this->search('LP+LK')->assertOk();
+
+        $response->assertSee($direct->combo);
+        $response->assertSee($aliased->combo);
     }
 
     /**
