@@ -14,7 +14,11 @@
             <div class="d-flex align-items-center gap-2 mb-1">
                 <div style="width: 20px;" class="text-end small text-white-50">{{ $index + 1 }}</div>
                 <div style="width: 240px; max-width: 45%;" class="small text-truncate">
-                    <a href="{{ $row['url'] }}" class="link-light" target="_blank" rel="noopener">{{ $row['label'] }}</a>
+                    @if ($row['url'])
+                        <a href="{{ $row['url'] }}" class="link-light" target="_blank" rel="noopener">{{ $row['label'] }}</a>
+                    @else
+                        {{ $row['label'] }}
+                    @endif
                     @if ($row['sublabel'])
                         <span class="text-white-50"> &middot; {{ $row['sublabel'] }}</span>
                     @endif

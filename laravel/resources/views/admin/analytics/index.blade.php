@@ -64,6 +64,13 @@
         'views' => $p->hits,
         'url' => $p->path,
     ])->all();
+
+    $topDiscordCommandsRows = $topDiscordCommands->map(fn ($c) => [
+        'label' => $c->command,
+        'sublabel' => null,
+        'views' => $c->uses,
+        'url' => null,
+    ])->all();
 @endphp
 <x-layouts.app title="Admin Analytics">
     <x-nav-bar />
@@ -130,5 +137,13 @@
             </div>
         </div>
         <x-admin.top-list title="Top 10 Pages by Bot Hits" :rows="$topBotPagesRows" />
+
+        <div class="card combosuki-main-reversed text-white p-3 mb-3">
+            <h4>Discord Command Usage</h4>
+            <div class="text-white-50 small mb-2">
+                {{ number_format($totalDiscordCommandUses) }} total {{ \Illuminate\Support\Str::plural('invocation', $totalDiscordCommandUses) }} recorded
+            </div>
+        </div>
+        <x-admin.top-list title="Top Discord Commands" :rows="$topDiscordCommandsRows" />
     </div>
 </x-layouts.app>

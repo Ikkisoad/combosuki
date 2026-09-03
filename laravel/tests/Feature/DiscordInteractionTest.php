@@ -6,6 +6,7 @@ use App\Models\Character;
 use App\Models\CharacterQuery;
 use App\Models\CombleAttempt;
 use App\Models\Combo;
+use App\Models\DiscordCommandUsage;
 use App\Models\Game;
 use App\Models\GameEntry;
 use App\Models\GameResource;
@@ -83,6 +84,47 @@ class DiscordInteractionTest extends TestCase
         $this->postInteraction(['type' => 1])
             ->assertOk()
             ->assertJson(['type' => 1]);
+    }
+
+    public function test_command_usage_is_recorded_per_subcommand_and_accumulates(): void
+    {
+        $game = Game::create(['name' => 'Empty Game', 'complete' => 1, 'modPass' => 'secret']);
+
+        $this->postInteraction([
+            'type' => 2,
+            'data' => [
+                'name' => 'csk',
+                'options' => [[
+                    'name' => 'search',
+                    'options' => [
+                        ['name' => 'game', 'value' => $game->name],
+                        ['name' => 'query', 'value' => 'nothing'],
+                    ],
+                ]],
+            ],
+        ])->assertOk();
+
+        $this->postInteraction([
+            'type' => 2,
+            'data' => ['name' => 'csk', 'options' => [['name' => 'challenge']]],
+        ])->assertOk();
+
+        $this->postInteraction([
+            'type' => 2,
+            'data' => [
+                'name' => 'csk',
+                'options' => [[
+                    'name' => 'search',
+                    'options' => [
+                        ['name' => 'game', 'value' => $game->name],
+                        ['name' => 'query', 'value' => 'nothing'],
+                    ],
+                ]],
+            ],
+        ])->assertOk();
+
+        $this->assertSame(2, DiscordCommandUsage::where('command', 'search')->value('uses'));
+        $this->assertSame(1, DiscordCommandUsage::where('command', 'challenge')->value('uses'));
     }
 
     public function test_invalid_signature_is_rejected(): void
@@ -669,6 +711,72 @@ class DiscordInteractionTest extends TestCase
             }
 
             return collect($request['embeds'][0]['fields'] ?? [])->firstWhere('name', 'Top Combos') === null;
+        });
+    }
+
+    public function test_character_page_embed_includes_combos_from_the_games_default_queries(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Test Character', 'game_idgame' => $game->idgame]);
+        $listingType = GameEntry::create(['title' => 'Combo', 'gameid' => $game->idgame, 'order' => 1]);
+
+        $query = CharacterQuery::create([
+            'game_idgame' => $game->idgame,
+            'label' => 'Corner Combo',
+            'filters' => [],
+            'order' => 0,
+        ]);
+
+        $matching = Combo::create([
+            'combo' => 'Corner starter > ender',
+            'character_idcharacter' => $character->idcharacter,
+            'type' => $listingType->entryid,
+            'damage' => 400,
+        ]);
+
+        $response = $this->postInteraction($this->characterInteractionPayload([
+            ['name' => 'game', 'value' => 'Test Game'],
+            ['name' => 'character', 'value' => 'Test Character'],
+        ]));
+
+        $response->assertOk()->assertJson(['type' => 5]);
+
+        Http::assertSent(function ($request) use ($query, $matching) {
+            if ($request->url() !== self::DEFERRED_ORIGINAL_MESSAGE_URL) {
+                return false;
+            }
+
+            $queryField = collect($request['embeds'][0]['fields'] ?? [])->firstWhere('name', $query->label);
+
+            return $queryField !== null && str_contains($queryField['value'], $matching->combo);
+        });
+    }
+
+    public function test_character_page_embed_omits_a_default_query_field_when_it_has_no_matching_combo(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        Character::create(['name' => 'Test Character', 'game_idgame' => $game->idgame]);
+
+        $query = CharacterQuery::create([
+            'game_idgame' => $game->idgame,
+            'label' => 'Corner Combo',
+            'filters' => [],
+            'order' => 0,
+        ]);
+
+        $response = $this->postInteraction($this->characterInteractionPayload([
+            ['name' => 'game', 'value' => 'Test Game'],
+            ['name' => 'character', 'value' => 'Test Character'],
+        ]));
+
+        $response->assertOk()->assertJson(['type' => 5]);
+
+        Http::assertSent(function ($request) use ($query) {
+            if ($request->url() !== self::DEFERRED_ORIGINAL_MESSAGE_URL) {
+                return false;
+            }
+
+            return collect($request['embeds'][0]['fields'] ?? [])->firstWhere('name', $query->label) === null;
         });
     }
 

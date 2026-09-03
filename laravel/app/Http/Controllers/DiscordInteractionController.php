@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\DiscordInteractionUnauthorized;
+use App\Models\DiscordCommandUsage;
 use App\Services\DiscordCharacterPage;
 use App\Services\DiscordChallenge;
 use App\Services\DiscordCombleGame;
@@ -52,6 +53,8 @@ class DiscordInteractionController extends Controller
         $data = $payload['data'] ?? [];
         $channelId = $payload['channel_id'] ?? null;
         $subcommand = $data['options'][0]['name'] ?? null;
+
+        DiscordCommandUsage::recordUsage($subcommand ?? 'search');
 
         if ($subcommand === 'challenge') {
             return response()->json(['type' => 4, 'data' => $this->challenge->handle($data)]);

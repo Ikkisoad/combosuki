@@ -7,6 +7,7 @@ use App\Models\BotHit;
 use App\Models\Character;
 use App\Models\Combo;
 use App\Models\CombleDayView;
+use App\Models\DiscordCommandUsage;
 use App\Models\Game;
 use App\Models\ListModel;
 use App\Models\TierList;
@@ -74,6 +75,8 @@ class AnalyticsController extends Controller
             ->limit(10)
             ->get();
 
+        $topDiscordCommands = DiscordCommandUsage::orderByDesc('uses')->limit(10)->get(['command', 'uses']);
+
         return view('admin.analytics.index', [
             'totals' => $totals,
             'topGames' => $topGames,
@@ -84,6 +87,8 @@ class AnalyticsController extends Controller
             'topCombleDays' => $topCombleDays,
             'topBotPages' => $topBotPages,
             'totalBotHits' => BotHit::count(),
+            'topDiscordCommands' => $topDiscordCommands,
+            'totalDiscordCommandUses' => (int) DiscordCommandUsage::sum('uses'),
         ]);
     }
 }

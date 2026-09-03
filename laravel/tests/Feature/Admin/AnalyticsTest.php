@@ -5,6 +5,7 @@ namespace Tests\Feature\Admin;
 use App\Models\BotHit;
 use App\Models\Character;
 use App\Models\Combo;
+use App\Models\DiscordCommandUsage;
 use App\Models\Game;
 use App\Models\ListModel;
 use App\Models\TierList;
@@ -60,6 +61,21 @@ class AnalyticsTest extends TestCase
         $response->assertSee('Top 10 Pages by Bot Hits');
         $response->assertSee('/games/1');
         $response->assertSee('3 total honeypot hits recorded');
+    }
+
+    public function test_admin_sees_top_discord_commands(): void
+    {
+        DiscordCommandUsage::create(['command' => 'search', 'uses' => 15]);
+        DiscordCommandUsage::create(['command' => 'comble', 'uses' => 5]);
+
+        $this->actingAs($this->admin());
+
+        $response = $this->get(route('admin.analytics'));
+
+        $response->assertOk();
+        $response->assertSee('Top Discord Commands');
+        $response->assertSeeInOrder(['search', 'comble']);
+        $response->assertSee('20 total invocations recorded');
     }
 
     public function test_non_admin_cannot_view_the_analytics_page(): void

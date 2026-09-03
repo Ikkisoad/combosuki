@@ -123,12 +123,47 @@ class DiscordCharacterPageTest extends TestCase
         $this->assertNull(collect($embed['fields'])->firstWhere('name', 'Top Combos'));
     }
 
-    private function invokeToEmbed(Game $game, Character $character, Collection $combos): array
+    /**
+     * Regression guard for the `/csk character` embed not surfacing the
+     * same "default query" combos the character's own page shows (see
+     * CharacterController::show()) — before this, the embed only ever
+     * listed the plain top-damage combos.
+     */
+    public function test_embed_lists_the_given_default_query_combos(): void
+    {
+        $game = (new Game())->forceFill(['idgame' => 5, 'name' => 'Test Game']);
+        $game->exists = true;
+
+        $character = (new Character())->forceFill([
+            'idcharacter' => 9,
+            'name' => 'Ryu',
+            'game_idgame' => 5,
+            'views' => 0,
+        ]);
+        $character->exists = true;
+
+        $combo = (new Combo())->forceFill([
+            'idcombo' => 1,
+            'combo' => 'Corner starter > ender',
+            'damage' => 400,
+        ]);
+
+        $embed = $this->invokeToEmbed($game, $character, new Collection(), new Collection([
+            ['label' => 'Corner Combo', 'combo' => $combo],
+        ]));
+
+        $queryField = collect($embed['fields'])->firstWhere('name', 'Corner Combo');
+
+        $this->assertNotNull($queryField);
+        $this->assertSame('Corner starter > ender — 400 dmg', $queryField['value']);
+    }
+
+    private function invokeToEmbed(Game $game, Character $character, Collection $combos, ?Collection $queryCombos = null): array
     {
         $service = new DiscordCharacterPage();
         $method = new \ReflectionMethod($service, 'toEmbed');
         $method->setAccessible(true);
 
-        return $method->invoke($service, $game, $character, $combos);
+        return $method->invoke($service, $game, $character, $combos, $queryCombos);
     }
 }

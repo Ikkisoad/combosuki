@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\Http\Controllers\Concerns\FiltersCombos;
 use App\Models\Character;
+use App\Models\CharacterQuery;
 use App\Models\Combo;
 use App\Models\Game;
 use Illuminate\Support\Collection;
@@ -11,6 +13,8 @@ use Illuminate\Support\Str;
 
 class DiscordCharacterPage
 {
+    use FiltersCombos;
+
     /**
      * The deferred-phase work for `/csk character`: resolve the game and
      * character, then PATCH the resulting embed (or an error message) onto
@@ -64,12 +68,43 @@ class DiscordCharacterPage
                 ->limit(3)
                 ->get();
 
-            $this->editOriginal($applicationId, $token, ['embeds' => [$this->toEmbed($game, $character, $combos)]]);
+            $queryCombos = $this->resolveDefaultQueryCombos($game, $character);
+
+            $this->editOriginal($applicationId, $token, ['embeds' => [$this->toEmbed($game, $character, $combos, $queryCombos)]]);
         } catch (\Throwable $e) {
             report($e);
 
             $this->editOriginal($applicationId, $token, ['content' => 'Something went wrong looking up that character.']);
         }
+    }
+
+    /**
+     * Mirrors CharacterController::show()'s "default queries" section: for
+     * each CharacterQuery configured for $game (game-wide, or scoped to
+     * $character specifically), the single top combo matching that query's
+     * filters, when one exists. Keeps `/csk character` surfacing the same
+     * curated combos as the character's own page instead of just a plain
+     * top-damage list.
+     */
+    private function resolveDefaultQueryCombos(Game $game, Character $character): Collection
+    {
+        $queries = CharacterQuery::where('game_idgame', $game->idgame)
+            ->where(fn ($query) => $query->doesntHave('characters')->orWhereHas(
+                'characters',
+                fn ($characters) => $characters->where('character.idcharacter', $character->idcharacter)
+            ))
+            ->orderBy('order')
+            ->orderBy('label')
+            ->get();
+
+        return $queries
+            ->map(function (CharacterQuery $query) use ($game, $character) {
+                $filters = array_merge($query->filters ?? [], ['characterid' => $character->idcharacter]);
+
+                return ['label' => $query->label, 'combo' => $this->searchCombos($game, $filters, 1)->first()];
+            })
+            ->filter(fn (array $entry) => $entry['combo'] !== null)
+            ->values();
     }
 
     private function resolveGame(string $gameName): ?Game
@@ -105,8 +140,10 @@ class DiscordCharacterPage
      * first) rather than queried in here, so this stays a pure formatter and
      * can be exercised by the Unit test without a database.
      */
-    private function toEmbed(Game $game, Character $character, Collection $combos): array
+    private function toEmbed(Game $game, Character $character, Collection $combos, ?Collection $queryCombos = null): array
     {
+        $queryCombos ??= new Collection();
+
         $embed = [
             'title' => $character->name,
             // Built from config('app.url') rather than route()'s default
@@ -123,6 +160,23 @@ class DiscordCharacterPage
                 ['name' => 'Views', 'value' => (string) ($character->views ?? 0), 'inline' => true],
             ],
         ];
+
+        // Mirrors the per-query sections of the character's page
+        // (characters.show): one field per default query that has a
+        // matching combo, labeled with the query's own label. A query with
+        // no matching combo is skipped entirely rather than shown empty,
+        // same as resolveDefaultQueryCombos() already filtered it out.
+        foreach ($queryCombos as $entry) {
+            $combo = $entry['combo'];
+
+            $embed['fields'][] = [
+                'name' => $entry['label'],
+                'value' => Str::limit($combo->combo, 100, '').' — '.(
+                    $combo->damage !== null ? number_format((float) $combo->damage, 0, '', '.').' dmg' : 'no damage listed'
+                ),
+                'inline' => false,
+            ];
+        }
 
         // Mirrors the "Top Damage Combos" section of the character's page
         // (characters.show), so the embed doesn't just point at the page but
