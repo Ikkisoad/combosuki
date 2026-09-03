@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -15,7 +16,7 @@ class User extends Authenticatable
 
     protected $fillable = ['nickname', 'trusted_user', 'password', 'is_admin', 'is_moderator'];
 
-    protected $hidden = ['password'];
+    protected $hidden = ['password', 'two_factor_secret'];
 
     protected function casts(): array
     {
@@ -25,6 +26,8 @@ class User extends Authenticatable
             'is_moderator' => 'boolean',
             'password' => 'hashed',
             'last_login_at' => 'datetime',
+            'two_factor_secret' => 'encrypted',
+            'two_factor_confirmed_at' => 'datetime',
         ];
     }
 
@@ -99,5 +102,40 @@ class User extends Authenticatable
     public function hasUsablePassword(): bool
     {
         return is_string($this->password) && $this->password !== '';
+    }
+
+    /**
+     * A secret only counts once it has been confirmed with a valid code
+     * (see TwoFactorController::confirm) — an unconfirmed secret is just
+     * setup-in-progress and must not gate login.
+     */
+    public function hasTwoFactorEnabled(): bool
+    {
+        return ! is_null($this->two_factor_confirmed_at);
+    }
+
+    /**
+     * The decrypted secret, or null if there isn't one — or if it can no
+     * longer be decrypted (e.g. APP_KEY was rotated without
+     * APP_PREVIOUS_KEYS). Callers treat both cases identically: fail closed
+     * rather than let a DecryptException 500 the login/setup page.
+     */
+    public function twoFactorSecret(): ?string
+    {
+        try {
+            return $this->two_factor_secret;
+        } catch (DecryptException) {
+            return null;
+        }
+    }
+
+    /**
+     * Shared by the user-initiated (TwoFactorController::destroy) and
+     * admin-initiated (AdminUserController::disableTwoFactor) paths so the
+     * two can't drift out of sync with each other.
+     */
+    public function disableTwoFactor(): void
+    {
+        $this->forceFill(['two_factor_secret' => null, 'two_factor_confirmed_at' => null])->save();
     }
 }

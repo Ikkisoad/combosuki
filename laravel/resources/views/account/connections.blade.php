@@ -88,6 +88,8 @@
 
                 <p class="mt-3 mb-0">
                     <a href="{{ route('password.edit') }}">Change your password</a>
+                    &middot;
+                    <a href="{{ route('two-factor.edit') }}">Two-factor authentication</a>
                 </p>
             </div>
         </div>

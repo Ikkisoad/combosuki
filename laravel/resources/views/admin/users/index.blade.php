@@ -91,6 +91,7 @@
                                     <th>Last Login</th>
                                     @if (auth()->user()->is_admin)
                                         <th>Password</th>
+                                        <th>Two-Factor</th>
                                     @endif
                                 </tr>
                             </thead>
@@ -140,6 +141,17 @@
                                                         <button type="submit" class="btn btn-sm btn-primary">Update Password</button>
                                                     </form>
                                                 </details>
+                                            </td>
+                                            <td>
+                                                @if ($user->hasTwoFactorEnabled())
+                                                    Enabled
+                                                    <form method="post" action="{{ route('admin.users.two-factor.destroy', $user) }}" class="d-inline">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-sm btn-outline-light">Disable</button>
+                                                    </form>
+                                                @else
+                                                    Off
+                                                @endif
                                             </td>
                                         @endif
                                     </tr>

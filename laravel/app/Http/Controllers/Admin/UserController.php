@@ -7,6 +7,7 @@ use App\Models\Game;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class UserController extends Controller
@@ -54,6 +55,25 @@ class UserController extends Controller
         $user->update(['password' => $validated['password']]);
 
         return redirect()->route('admin.users.index')->with('status', "Password updated for \"{$user->nickname}\".");
+    }
+
+    /**
+     * The only way to recover an account whose owner lost their
+     * authenticator device — there are no recovery codes and no email/
+     * password-reset flow (see User::hasTwoFactorEnabled()). Logged, unlike
+     * the other toggles in this controller: this one bypasses a user's
+     * second factor, so who did it and when needs to be reconstructable.
+     */
+    public function disableTwoFactor(Request $request, User $user): RedirectResponse
+    {
+        $user->disableTwoFactor();
+
+        Log::info('Two-factor authentication disabled by an admin.', [
+            'user_iduser' => $user->iduser,
+            'by_user_iduser' => $request->user()->iduser,
+        ]);
+
+        return redirect()->route('admin.users.index')->with('status', "Two-factor authentication disabled for \"{$user->nickname}\".");
     }
 
     public function updateTrusted(User $user): RedirectResponse

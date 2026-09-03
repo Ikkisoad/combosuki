@@ -22,6 +22,8 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\ConnectionController;
 use App\Http\Controllers\Auth\DiscordAuthController;
 use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\Auth\TwoFactorChallengeController;
+use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\ComboController;
@@ -76,6 +78,13 @@ Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1')->name('login.attempt');
 
+    // Second step of password login for a two-factor-enabled account (see
+    // AuthController::login / TwoFactorChallengeController). Guest-only:
+    // nothing is authenticated yet at this point.
+    Route::get('/login/two-factor', [TwoFactorChallengeController::class, 'show'])->name('two-factor.challenge');
+    Route::post('/login/two-factor', [TwoFactorChallengeController::class, 'store'])
+        ->middleware('throttle:5,1')->name('two-factor.challenge.attempt');
+
     // Sign in / sign up with Discord. Guest-only and behind the admin kill
     // switch. Registration is the first guest-reachable POST in this app that
     // creates rows, hence login's throttle budget rather than the usual 10,1.
@@ -95,6 +104,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/account/password', [PasswordController::class, 'edit'])->name('password.edit');
     Route::post('/account/password', [PasswordController::class, 'update'])->name('password.update');
+
+    Route::get('/account/two-factor', [TwoFactorController::class, 'edit'])->name('two-factor.edit');
+    // Same throttle:5,1 budget as the other current-password-taking routes
+    // below — enabling and disabling both accept a `current_password` guess.
+    Route::post('/account/two-factor', [TwoFactorController::class, 'store'])
+        ->middleware('throttle:5,1')->name('two-factor.enable');
+    Route::post('/account/two-factor/confirm', [TwoFactorController::class, 'confirm'])
+        ->middleware('throttle:5,1')->name('two-factor.confirm');
+    Route::post('/account/two-factor/disable', [TwoFactorController::class, 'destroy'])
+        ->middleware('throttle:5,1')->name('two-factor.disable');
 
     Route::get('/account/connections', [ConnectionController::class, 'edit'])->name('connections.edit');
     // The two routes that take a password get login's throttle budget rather
@@ -123,6 +142,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::post('/users', [AdminUserController::class, 'store'])->middleware('throttle:10,1')->name('users.store');
     Route::post('/users/{user}/password', [AdminUserController::class, 'updatePassword'])->middleware('throttle:10,1')->name('users.password.update');
+    Route::post('/users/{user}/two-factor/disable', [AdminUserController::class, 'disableTwoFactor'])->middleware('throttle:10,1')->name('users.two-factor.destroy');
     Route::post('/users/{user}/moderator', [AdminUserController::class, 'updateModerator'])->middleware('throttle:10,1')->name('users.moderator.update');
     Route::get('/users/{user}/moderated-games', [AdminUserController::class, 'editModeratedGames'])->name('users.moderated-games.edit');
     Route::post('/users/{user}/moderated-games', [AdminUserController::class, 'updateModeratedGames'])->middleware('throttle:10,1')->name('users.moderated-games.update');

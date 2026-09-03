@@ -218,8 +218,9 @@ class DiscordAuthController extends Controller
         Auth::login($user);
 
         // Session fixation: the pre-login session id must not survive
-        // becoming an authenticated session. AuthController::login does the
-        // same after Auth::attempt.
+        // becoming an authenticated session. AuthController::login and
+        // TwoFactorChallengeController::store do the same after their own
+        // checks.
         $request->session()->regenerate();
 
         Log::info('Signed in with Discord.', ['user_iduser' => $user->iduser, 'via' => $via]);

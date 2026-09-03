@@ -13,7 +13,7 @@ use RuntimeException;
  * rule: some legacy rows hold a value that isn't a valid bcrypt hash (set by
  * a query-builder mass update that bypassed the User model's `hashed` cast),
  * and the rule surfaces that as an uncaught RuntimeException — a 500 — rather
- * than a failed check. AuthController::login already wraps Auth::attempt()
+ * than a failed check. AuthController::login already wraps Auth::validate()
  * in the same guard for the same reason.
  */
 trait ConfirmsPassword

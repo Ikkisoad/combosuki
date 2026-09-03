@@ -56,8 +56,11 @@ class AppServiceProvider extends ServiceProvider
             $event->extendSocialite('discord', Provider::class);
         });
 
-        // Fires for both password login (Auth::attempt) and Discord login
-        // (Auth::login), so this one listener covers every sign-in path.
+        // Fires for both password login and Discord login (both end in
+        // Auth::login — see AuthController::login and
+        // DiscordAuthController::signIn), so this one listener covers every
+        // sign-in path, including the one completed via the two-factor
+        // challenge (TwoFactorChallengeController::store).
         Event::listen(function (Login $event) {
             $event->user->forceFill(['last_login_at' => now()])->saveQuietly();
         });

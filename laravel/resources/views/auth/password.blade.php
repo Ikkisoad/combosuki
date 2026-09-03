@@ -55,6 +55,8 @@
 
                 <p class="mt-3 mb-0">
                     <a href="{{ route('connections.edit') }}">Connected accounts</a>
+                    &middot;
+                    <a href="{{ route('two-factor.edit') }}">Two-factor authentication</a>
                 </p>
             </div>
         </div>

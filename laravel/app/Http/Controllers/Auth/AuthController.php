@@ -53,7 +53,12 @@ class AuthController extends Controller
         }
 
         try {
-            $authenticated = Auth::attempt($credentials);
+            // validate(), not attempt(): it runs the same constant-time
+            // check but does not log in or fire the Login event, so a
+            // two-factor account isn't granted a session (and doesn't get
+            // its last_login_at bumped, see AppServiceProvider) until the
+            // challenge below is actually passed.
+            $authenticated = Auth::validate($credentials);
         } catch (RuntimeException) {
             // The stored password hash isn't a valid bcrypt hash (e.g. it was set via a
             // query builder mass update, which bypasses the `hashed` cast on User).
@@ -64,6 +69,22 @@ class AuthController extends Controller
             return back()->withInput($request->only('nickname'))->with('error', 'Incorrect nickname or password.');
         }
 
+        /** @var User $user */
+        $user = Auth::getLastAttempted();
+
+        // Auth::attempt() used to do this as a side effect of logging in;
+        // validate() doesn't, so it has to be done explicitly now, or a
+        // stale bcrypt cost (e.g. after raising BCRYPT_ROUNDS) would never
+        // get upgraded on any password login again.
+        Auth::getProvider()->rehashPasswordIfRequired($user, $credentials);
+
+        if ($user->hasTwoFactorEnabled()) {
+            TwoFactorChallengeController::markPending($request, $user);
+
+            return redirect()->route('two-factor.challenge');
+        }
+
+        Auth::login($user);
         $request->session()->regenerate();
 
         return redirect()->intended(route('home'))->with('status', 'Logged in.');

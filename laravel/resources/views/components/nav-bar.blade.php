@@ -79,6 +79,7 @@
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUserDropdown">
                             <li><a class="dropdown-item" href="{{ route('users.show', auth()->user()) }}">My Profile</a></li>
                             <li><a class="dropdown-item" href="{{ route('connections.edit') }}">Connected Accounts</a></li>
+                            <li><a class="dropdown-item" href="{{ route('two-factor.edit') }}">Two-Factor Authentication</a></li>
                             @if (auth()->user()->isTrusted())
                                 <li><a class="dropdown-item" href="{{ route('users.create') }}">Create User</a></li>
                             @endif
