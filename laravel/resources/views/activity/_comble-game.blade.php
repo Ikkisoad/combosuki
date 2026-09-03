@@ -54,8 +54,8 @@
                         >{{ $guess['character']->name }}</td>
                         <td class="{{ $guess['type_correct'] ? 'bg-success' : 'bg-danger' }}">{{ $guess['listing_type']->title }}</td>
                         <td
-                            class="{{ match ($guess['starter_result']) { 'correct' => 'bg-success', 'partial' => '', default => 'bg-danger' } }}"
-                            style="{{ $guess['starter_result'] === 'partial' ? 'background-color: #fd7e14;' : '' }}"
+                            style="background-color: {{ $guess['starter_color'] }};"
+                            title="{{ $guess['starter'] ? "{$guess['starter_match_count']}/{$guess['starter_total']} characters correct" : '' }}"
                         >{{ $guess['starter'] ?: '—' }}</td>
                         <td>
                             {{ $guess['damage'] !== null ? number_format($guess['damage'], 0, '', '.') : '—' }}

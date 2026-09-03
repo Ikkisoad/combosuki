@@ -76,14 +76,66 @@ class CombleGuessEvaluatorTest extends TestCase
         $evaluator = new CombleGuessEvaluator();
 
         // '2LP 5MP 2HP' with spaces stripped is '2LP5MP2HP'[0:6] === '2LP5MP', compared case-insensitively.
-        $this->assertSame('correct', $evaluator->evaluate($target, $game, $character, $guessedType, null, '2lp5mp')['starter_result']);
+        $correct = $evaluator->evaluate($target, $game, $character, $guessedType, null, '2lp5mp');
+        $this->assertSame('correct', $correct['starter_result']);
+        $this->assertSame(6, $correct['starter_match_count']);
+        $this->assertSame(6, $correct['starter_total']);
+
         // Spaces in the guess itself are stripped too, so they don't throw off the position comparison.
         $this->assertSame('correct', $evaluator->evaluate($target, $game, $character, $guessedType, null, '2l p 5mp')['starter_result']);
+
         // Shares the first 4 positions ('2LP5') but not the last 2 — some characters right, not all.
-        $this->assertSame('partial', $evaluator->evaluate($target, $game, $character, $guessedType, null, '2lp5xz')['starter_result']);
+        $partial = $evaluator->evaluate($target, $game, $character, $guessedType, null, '2lp5xz');
+        $this->assertSame('partial', $partial['starter_result']);
+        $this->assertSame(4, $partial['starter_match_count']);
+        $this->assertSame(6, $partial['starter_total']);
+
         // No position matches at all.
-        $this->assertSame('wrong', $evaluator->evaluate($target, $game, $character, $guessedType, null, '999999')['starter_result']);
+        $wrong = $evaluator->evaluate($target, $game, $character, $guessedType, null, '999999');
+        $this->assertSame('wrong', $wrong['starter_result']);
+        $this->assertSame(0, $wrong['starter_match_count']);
+
         $this->assertSame('wrong', $evaluator->evaluate($target, $game, $character, $guessedType, null, null)['starter_result']);
+    }
+
+    /**
+     * The starter cell's background is a red→yellow→green ramp scaled by
+     * how many of the 6 characters landed right, not a flat color for every
+     * non-exact guess — see CombleGuessEvaluator::starterColor(). Hue 0 is
+     * red (0 matches), hue 120 is green (a full match), and the guess
+     * shares the same total (6) as the "matches the first six characters"
+     * test above, so the intermediate points land on tidy hue values.
+     */
+    public function test_starter_color_scales_from_red_to_green_with_the_match_count(): void
+    {
+        $game = (new Game())->forceFill(['idgame' => 5, 'name' => 'Test Game']);
+        $game->exists = true;
+
+        $character = (new Character())->forceFill(['idcharacter' => 9, 'name' => 'Ryu', 'game_idgame' => 5]);
+        $character->exists = true;
+        $character->setRelation('game', $game);
+
+        $target = (new Combo())->forceFill([
+            'idcombo' => 1,
+            'combo' => '2LP5MP',
+            'character_idcharacter' => 9,
+            'type' => 7,
+            'damage' => null,
+        ]);
+        $target->exists = true;
+        $target->setRelation('character', $character);
+
+        $guessedType = (new GameEntry())->forceFill(['entryid' => 7, 'title' => 'Combo', 'gameid' => 5]);
+        $evaluator = new CombleGuessEvaluator();
+
+        // 0 of 6 matched — hue 0, red.
+        $this->assertSame('hsl(0, 75%, 38%)', $evaluator->evaluate($target, $game, $character, $guessedType, null, 'zzzzzz')['starter_color']);
+        // 3 of 6 matched — hue 60, the red-green midpoint (yellow).
+        $this->assertSame('hsl(60, 75%, 38%)', $evaluator->evaluate($target, $game, $character, $guessedType, null, '2lpzzz')['starter_color']);
+        // 6 of 6 matched — hue 120, green.
+        $this->assertSame('hsl(120, 75%, 38%)', $evaluator->evaluate($target, $game, $character, $guessedType, null, '2lp5mp')['starter_color']);
+        // Never guessed — same as 0 matches, red.
+        $this->assertSame('hsl(0, 75%, 38%)', $evaluator->evaluate($target, $game, $character, $guessedType, null, null)['starter_color']);
     }
 
     /**

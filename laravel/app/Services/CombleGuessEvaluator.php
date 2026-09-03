@@ -38,7 +38,7 @@ class CombleGuessEvaluator
             // win condition and drive the share-text squares.
             'game_result' => $gameCorrect ? 'correct' : ($this->isSimilarName($guessedGame->name, $target->character->game->name) ? 'partial' : 'wrong'),
             'character_result' => $characterCorrect ? 'correct' : ($this->isSimilarName($guessedCharacter->name, $target->character->name) ? 'partial' : 'wrong'),
-            'starter_result' => $this->starterResult($target, $guessedStarter),
+            ...$this->starterMatch($target, $guessedStarter),
             'damage_hint' => $this->damageHint($target, $guessedDamage),
             'won' => $gameCorrect && $characterCorrect,
         ];
@@ -55,33 +55,66 @@ class CombleGuessEvaluator
      * Never guessed, never gates a win: same non-blocking "bonus hint" role
      * as damage.
      *
-     * Returns 'correct' (identical, same length), 'partial' (at least one
-     * character right in its own position, but not a full match — shown as
-     * orange rather than plain right/wrong), or 'wrong' (no positions
-     * match, or nothing was guessed).
+     * Returns four keys, merged straight into evaluate()'s result:
+     * - starter_result: 'correct' (identical, same length), 'partial' (at
+     *   least one character right in its own position, but not a full
+     *   match), or 'wrong' (no positions match, or nothing was guessed) —
+     *   drives win/share/sticky-guess logic elsewhere, which only cares
+     *   about those three tiers.
+     * - starter_match_count / starter_total: how many of the target's
+     *   opening (up to 6) characters landed in the right position, out of
+     *   how many there are to get right.
+     * - starter_color: an hsl() string scaled by match_count/total (red at
+     *   0, green at a full match, everything else a smooth ramp between)
+     *   so a "close" guess reads as visually closer than a "way off" one,
+     *   instead of every non-exact guess getting the same flat orange.
      */
-    private function starterResult(Combo $target, ?string $guessedStarter): string
+    private function starterMatch(Combo $target, ?string $guessedStarter): array
     {
-        if ($guessedStarter === null || $guessedStarter === '') {
-            return 'wrong';
-        }
-
-        $guessed = mb_strtolower(str_replace(' ', '', $guessedStarter));
         $actual = mb_strtolower(mb_substr(str_replace(' ', '', $target->combo), 0, 6));
+        $total = mb_strlen($actual);
 
-        if ($guessed === $actual) {
-            return 'correct';
-        }
+        $guessed = $guessedStarter === null || $guessedStarter === ''
+            ? ''
+            : mb_strtolower(str_replace(' ', '', $guessedStarter));
 
-        $length = min(mb_strlen($guessed), mb_strlen($actual));
+        $matchCount = 0;
+        $length = min(mb_strlen($guessed), $total);
 
         for ($i = 0; $i < $length; $i++) {
             if (mb_substr($guessed, $i, 1) === mb_substr($actual, $i, 1)) {
-                return 'partial';
+                $matchCount++;
             }
         }
 
-        return 'wrong';
+        $result = match (true) {
+            // $guessed !== '' guards a pathological empty-notation target
+            // ($total === 0): without it, never guessing anything would
+            // match trivially (0 === 0 on both sides) and read as "correct".
+            $guessed !== '' && $matchCount === $total && mb_strlen($guessed) === $total => 'correct',
+            $matchCount > 0 => 'partial',
+            default => 'wrong',
+        };
+
+        return [
+            'starter_result' => $result,
+            'starter_match_count' => $matchCount,
+            'starter_total' => $total,
+            'starter_color' => $this->starterColor($matchCount, $total),
+        ];
+    }
+
+    /**
+     * hue 0 (red) at zero matches, hue 120 (green) at a full match, linear
+     * in between — a standard red→yellow→green heatmap ramp. Saturation/
+     * lightness are fixed so every point on the ramp stays readable with
+     * the white table text used elsewhere in the guess row.
+     */
+    private function starterColor(int $matchCount, int $total): string
+    {
+        $hue = $total > 0 ? (int) round(($matchCount / $total) * 120) : 0;
+
+        return "hsl({$hue}, 75%, 38%)";
     }
 
     /**

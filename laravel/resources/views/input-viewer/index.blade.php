@@ -83,7 +83,6 @@
                 position: absolute;
                 object-fit: contain;
                 border-radius: 3px;
-                box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.7);
             }
 
             .input-chip {

@@ -546,7 +546,13 @@ class CombleTest extends TestCase
             ->assertSee('ZZZZZZ');
     }
 
-    public function test_a_partially_correct_starter_guess_is_shown_in_orange(): void
+    /**
+     * The starter cell's background scales with how many of the 6
+     * characters landed right (see CombleGuessEvaluator::starterColor()),
+     * not a single flat color for every non-exact guess — 3 of 6 right
+     * lands exactly on the red-green midpoint, hue 60 (yellow).
+     */
+    public function test_a_partially_correct_starter_guess_is_colored_by_how_many_characters_matched(): void
     {
         $game = $this->makeGame();
         $character = $this->makeCharacter($game);
@@ -554,14 +560,13 @@ class CombleTest extends TestCase
         $this->makeCombo($character, $type, ['combo' => 'AAA BBB CCC DDD EEE']);
 
         // First 6 space-stripped chars are 'AAABBB'; 'AAAXXX' shares the
-        // first 3 positions ('AAA') but not the last 3 — some characters
-        // right, not all.
+        // first 3 positions ('AAA') but not the last 3 — 3 of 6 right.
         $response = $this->submitGuess($this->guessPayload($game, $character, $type, 3000, 'AAAXXX'));
 
         $this->showPage(cookie: $this->cookieFromResponse($response))
             ->assertOk()
             ->assertSee('AAAXXX')
-            ->assertSee('background-color: #fd7e14;', false);
+            ->assertSee('background-color: hsl(60, 75%, 38%);', false);
     }
 
     /**
@@ -588,13 +593,14 @@ class CombleTest extends TestCase
         // whose first 6 characters are '12345B'. The guess below has a space
         // in the middle ('123 45', 6 raw characters) which strips down to
         // '12345' — still aligned with the actual's first 5 characters, so
-        // it's a partial match rather than being thrown off entirely.
+        // 5 of 6 match (hue 100, most of the way to green) rather than being
+        // thrown off entirely.
         $response = $this->submitGuess($this->guessPayload($wrongGame, $wrongCharacter, $wrongType, 3000, '123 45'));
 
         $html = $this->showPage(cookie: $this->cookieFromResponse($response))->getContent();
 
         $this->assertStringContainsString('123 45', $html);
-        $this->assertStringContainsString('background-color: #fd7e14;', $html);
+        $this->assertStringContainsString('background-color: hsl(100, 75%, 38%);', $html);
     }
 
     public function test_the_starter_guess_is_optional(): void
