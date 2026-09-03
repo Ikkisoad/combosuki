@@ -6,6 +6,7 @@ use App\Models\Character;
 use App\Models\CharacterQuery;
 use App\Models\CharacterResourceValueAlias;
 use App\Models\Combo;
+use App\Models\DailyChallengePick;
 use App\Models\Game;
 use App\Models\GameEntry;
 use App\Models\GameResource;
@@ -105,6 +106,44 @@ class DailyChallengeTest extends TestCase
 
         $this->assertSame($establishedQuery->idquery, $before['query']->idquery);
         $this->assertSame($establishedQuery->idquery, $after['query']->idquery);
+    }
+
+    public function test_repeated_calls_for_an_unpersisted_day_do_not_create_duplicate_picks(): void
+    {
+        $game = $this->makeGame();
+        $this->makeCharacter($game);
+        $this->makeQuery($game);
+
+        app(DailyChallenge::class)->today();
+        app(DailyChallenge::class)->today();
+
+        $this->assertSame(1, DailyChallengePick::count());
+    }
+
+    /**
+     * The direct regression test for the reported bug: once a day's pick is
+     * persisted, adding a new character to the game must never change it.
+     * There's deliberately no date cutoff on the character side of
+     * eligiblePairs() (see pickPair()'s docblock — character.created_at can
+     * be NULL on legacy/imported data, which would make a cutoff there
+     * actively harmful), so persistence is the *only* thing protecting an
+     * already-served day from a newly added character — this is what
+     * actually closes the gap that caused the reported bug.
+     */
+    public function test_a_persisted_pick_is_unaffected_by_a_newly_added_character(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $this->makeQuery($game);
+
+        $before = app(DailyChallenge::class)->today();
+        $this->assertSame($character->idcharacter, $before['character']->idcharacter);
+
+        Character::create(['name' => 'Ken', 'game_idgame' => $game->idgame]);
+
+        $after = app(DailyChallenge::class)->today();
+
+        $this->assertSame($character->idcharacter, $after['character']->idcharacter);
     }
 
     public function test_the_home_page_still_works_when_no_queries_are_configured(): void
@@ -217,6 +256,40 @@ class DailyChallengeTest extends TestCase
         $this->assertNull($results['2026-07-01']['query']);
         $this->assertNull($results['2026-07-01']['combo']);
         $this->assertNull($results['2026-07-02']['query']);
+    }
+
+    /**
+     * resultsBetween() must produce the same answer for a day whether it
+     * reads an already-persisted pick or computes (and persists) one fresh
+     * within the same batch — exercising both branches of the persisted-or-
+     * compute logic side by side.
+     */
+    public function test_results_between_matches_for_date_for_a_mix_of_persisted_and_freshly_computed_days(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $this->makeQuery($game, 'Established Query');
+        $type = $this->makeType($game);
+        $this->makeCombo($character, $type);
+
+        $from = Carbon::parse('2026-08-10 00:00:00', 'America/Sao_Paulo');
+        $to = Carbon::parse('2026-08-12 00:00:00', 'America/Sao_Paulo');
+
+        // Pre-persists just the middle day before the batch call.
+        app(DailyChallenge::class)->forDate(Carbon::parse('2026-08-11 00:00:00', 'America/Sao_Paulo'));
+        $this->assertSame(1, DailyChallengePick::count());
+
+        $results = app(DailyChallenge::class)->resultsBetween($from, $to);
+
+        // The batch call must have persisted the two previously-missing days.
+        $this->assertSame(3, DailyChallengePick::count());
+
+        for ($day = $from->copy(); $day->lte($to); $day->addDay()) {
+            $expected = app(DailyChallenge::class)->forDate($day);
+            $actual = $results[$day->toDateString()];
+
+            $this->assertSame($expected['character']->idcharacter, $actual['character']->idcharacter, "character mismatch on {$day->toDateString()}");
+        }
     }
 
     public function test_results_between_does_not_requery_the_database_per_day(): void

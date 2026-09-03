@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Character;
 use App\Models\Combo;
+use App\Models\CombleDailyPick;
 use App\Models\Game;
 use App\Models\GameEntry;
 use App\Services\CombleDailyCombo;
@@ -166,6 +167,45 @@ class CombleTest extends TestCase
         $target = app(CombleDailyCombo::class)->today();
 
         $this->assertSame($eligibleCombo->idcombo, $target->idcombo);
+    }
+
+    public function test_repeated_calls_for_an_unpersisted_day_do_not_create_duplicate_picks(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $type = $this->makeType($game);
+        $this->makeCombo($character, $type);
+
+        app(CombleDailyCombo::class)->today();
+        app(CombleDailyCombo::class)->today();
+
+        $this->assertSame(1, CombleDailyPick::count());
+    }
+
+    /**
+     * The direct regression test for the reported bug: once a day's puzzle
+     * is picked, adding a new character (with its own eligible combo) must
+     * never change it — the pick is persisted (comble_daily_picks) the first
+     * time the day is served, so later changes to the eligible pool, which
+     * used to reshuffle every date's `$seed % count()` pick simultaneously,
+     * no longer have anything to reshuffle.
+     */
+    public function test_a_persisted_target_is_unaffected_by_a_newly_added_character(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $type = $this->makeType($game);
+        $combo = $this->makeCombo($character, $type);
+
+        $before = app(CombleDailyCombo::class)->today();
+        $this->assertSame($combo->idcombo, $before->idcombo);
+
+        $newCharacter = $this->makeCharacter($game, 'Ken');
+        $this->makeCombo($newCharacter, $type, ['combo' => 'ZZZ YYY XXX WWW VVV']);
+
+        $after = app(CombleDailyCombo::class)->today();
+
+        $this->assertSame($combo->idcombo, $after->idcombo);
     }
 
     public function test_a_correct_guess_wins_and_reveals_the_answer(): void
