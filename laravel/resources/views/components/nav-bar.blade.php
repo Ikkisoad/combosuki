@@ -49,6 +49,12 @@
                             <a class="dropdown-item" href="{{ route('input-viewer.index') }}" target="_blank" rel="noopener">Input Viewer</a>
                         </li>
                         <li><a class="dropdown-item" href="https://srk.shib.live/w/Shoryuken_Wiki:Community_portal/Discords/Game" target="_blank">FGC Discord Compendium</a></li>
+                        @if (config('services.discord.application_id'))
+                            <li>
+                                {{-- permissions=2147534848: Send Messages + Embed Links + Attach Files + Use Application Commands, matching what the /csk interaction handlers actually use (see app/Services/DiscordComboSearch.php, DiscordTierListImage.php). --}}
+                                <a class="dropdown-item" href="https://discord.com/api/oauth2/authorize?client_id={{ config('services.discord.application_id') }}&permissions=2147534848&scope=bot%20applications.commands" target="_blank" rel="noopener">Add Discord Bot</a>
+                            </li>
+                        @endif
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="{{ route('preferences.edit') }}">Preferences</a></li>
                         <li><a class="dropdown-item" href="{{ route('logs.index') }}">Logs</a></li>

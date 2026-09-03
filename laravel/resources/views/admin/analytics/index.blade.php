@@ -98,6 +98,29 @@
                     </div>
                 </div>
             @endforeach
+
+            <div class="col">
+                <div class="card combosuki-main-reversed text-white p-3 h-100">
+                    <div class="text-white-50 small text-uppercase">Discord Commands</div>
+                    <div class="fs-3 fw-bold">{{ number_format($totalDiscordCommandUses) }}</div>
+                    <div class="text-white-50 small">
+                        {{ \Illuminate\Support\Str::plural('invocation', $totalDiscordCommandUses) }} recorded
+                        @if ($discordGuildCount !== null)
+                            &middot; active in {{ number_format($discordGuildCount) }} {{ \Illuminate\Support\Str::plural('server', $discordGuildCount) }}
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="card combosuki-main-reversed text-white p-3 h-100">
+                    <div class="text-white-50 small text-uppercase">Bot Traffic</div>
+                    <div class="fs-3 fw-bold">{{ number_format($totalBotHits) }}</div>
+                    <div class="text-white-50 small">
+                        honeypot {{ \Illuminate\Support\Str::plural('hit', $totalBotHits) }} recorded
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="card combosuki-main-reversed text-white p-3 mb-3">
@@ -130,20 +153,7 @@
             </div>
         </div>
 
-        <div class="card combosuki-main-reversed text-white p-3 mb-3">
-            <h4>Bot Traffic</h4>
-            <div class="text-white-50 small mb-2">
-                {{ number_format($totalBotHits) }} total honeypot {{ \Illuminate\Support\Str::plural('hit', $totalBotHits) }} recorded
-            </div>
-        </div>
         <x-admin.top-list title="Top 10 Pages by Bot Hits" :rows="$topBotPagesRows" />
-
-        <div class="card combosuki-main-reversed text-white p-3 mb-3">
-            <h4>Discord Command Usage</h4>
-            <div class="text-white-50 small mb-2">
-                {{ number_format($totalDiscordCommandUses) }} total {{ \Illuminate\Support\Str::plural('invocation', $totalDiscordCommandUses) }} recorded
-            </div>
-        </div>
         <x-admin.top-list title="Top Discord Commands" :rows="$topDiscordCommandsRows" />
     </div>
 </x-layouts.app>

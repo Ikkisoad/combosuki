@@ -11,6 +11,8 @@ use App\Models\ListModel;
 use App\Models\TierList;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class AnalyticsTest extends TestCase
@@ -60,7 +62,8 @@ class AnalyticsTest extends TestCase
         $response->assertOk();
         $response->assertSee('Top 10 Pages by Bot Hits');
         $response->assertSee('/games/1');
-        $response->assertSee('3 total honeypot hits recorded');
+        $response->assertSee('Bot Traffic');
+        $response->assertSee('honeypot hits recorded');
     }
 
     public function test_admin_sees_top_discord_commands(): void
@@ -75,7 +78,53 @@ class AnalyticsTest extends TestCase
         $response->assertOk();
         $response->assertSee('Top Discord Commands');
         $response->assertSeeInOrder(['search', 'comble']);
-        $response->assertSee('20 total invocations recorded');
+        $response->assertSee('Discord Commands');
+        $response->assertSee('invocations recorded');
+        $response->assertSee('20');
+    }
+
+    public function test_admin_sees_discord_bot_guild_count(): void
+    {
+        Config::set('services.discord.bot_token', 'fake-bot-token');
+        Http::fake([
+            'https://discord.com/api/v10/users/@me/guilds*' => Http::response(
+                array_fill(0, 42, ['id' => '1', 'name' => 'Guild'])
+            ),
+        ]);
+
+        $this->actingAs($this->admin());
+
+        $response = $this->get(route('admin.analytics'));
+
+        $response->assertOk();
+        $response->assertSee('active in 42 servers');
+    }
+
+    public function test_admin_sees_zero_guild_count_when_bot_has_no_servers(): void
+    {
+        Config::set('services.discord.bot_token', 'fake-bot-token');
+        Http::fake([
+            'https://discord.com/api/v10/users/@me/guilds*' => Http::response([]),
+        ]);
+
+        $this->actingAs($this->admin());
+
+        $response = $this->get(route('admin.analytics'));
+
+        $response->assertOk();
+        $response->assertSee('active in 0 servers');
+    }
+
+    public function test_analytics_page_omits_guild_count_when_discord_is_unconfigured(): void
+    {
+        Config::set('services.discord.bot_token', null);
+
+        $this->actingAs($this->admin());
+
+        $response = $this->get(route('admin.analytics'));
+
+        $response->assertOk();
+        $response->assertDontSee('active in');
     }
 
     public function test_non_admin_cannot_view_the_analytics_page(): void
