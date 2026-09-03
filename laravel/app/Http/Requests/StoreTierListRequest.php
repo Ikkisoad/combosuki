@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\GameResource;
+use App\Models\TierListEntry;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -50,7 +51,7 @@ class StoreTierListRequest extends FormRequest
                         ->where('game_resources_idgame_resources', $tierListResource->idgame_resources),
                 ]
                 : ['prohibited'],
-            'entries.*.tier' => ['required', 'string', Rule::in(['S', 'A', 'B', 'C', 'D', 'F'])],
+            'entries.*.tier' => ['required', 'string', Rule::in(TierListEntry::TIERS)],
         ];
 
         if ($this->user()?->is_admin) {

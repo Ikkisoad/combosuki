@@ -72,7 +72,10 @@ Route::view('/privacy', 'privacy')->name('privacy');
 
 // Honeypot: a hidden link on every page (see x-layouts.app) that only a
 // bot ignoring both CSS and robots.txt would ever follow.
-Route::get('/t', [HoneypotController::class, 'hit'])->name('honeypot.hit');
+// Throttled because this is the only unauthenticated route that writes a
+// row: the limit is set well above what a bot following the link once would
+// ever hit, so it bounds table growth without costing us any real data.
+Route::get('/t', [HoneypotController::class, 'hit'])->middleware('throttle:60,1')->name('honeypot.hit');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -324,26 +327,36 @@ Route::middleware(['auth', 'can:update,game'])->prefix('games/{game}/edit')->nam
 // Redirects for URLs the pre-Laravel PHP app (formerly game/, list/) used
 // to serve directly, so old bookmarks/search results/external links keep
 // resolving instead of 404ing now that those files are gone.
-Route::get('/game/index.php', fn () => request('gameid')
-    ? redirect()->route('games.show', request('gameid'))
+//
+// Every legacy id was an integer, so anything else is a crawler or a probe
+// rather than a real old bookmark. Checking that here isn't just tidiness:
+// route() interpolates the value into the URI pattern, so a value containing
+// braces (e.g. ?gameid={{ 7*7 }}) leaves a route parameter unreplaced and
+// raises UrlGenerationException — an unauthenticated 500 on a public URL.
+// Non-numeric input falls through to the index the same way a missing
+// parameter already does.
+$legacyId = fn (string $key) => is_numeric(request($key)) ? request($key) : null;
+
+Route::get('/game/index.php', fn () => $legacyId('gameid')
+    ? redirect()->route('games.show', $legacyId('gameid'))
     : redirect()->route('games.index'));
 
-Route::get('/game/combo.php', fn () => request('idcombo')
-    ? redirect()->route('combos.show', request('idcombo'))
+Route::get('/game/combo.php', fn () => $legacyId('idcombo')
+    ? redirect()->route('combos.show', $legacyId('idcombo'))
     : redirect()->route('games.index'));
 
 Route::get('/game/add.php', fn () => redirect()->route('games.create'));
 
-Route::get('/game/submit.php', fn () => request('gameid')
-    ? redirect()->route('games.combos.index', request('gameid'))
+Route::get('/game/submit.php', fn () => $legacyId('gameid')
+    ? redirect()->route('games.combos.index', $legacyId('gameid'))
     : redirect()->route('games.index'));
 
-Route::get('/game/forms.php', fn () => request('gameid')
-    ? redirect()->route('games.combos.create', request('gameid'))
+Route::get('/game/forms.php', fn () => $legacyId('gameid')
+    ? redirect()->route('games.combos.create', $legacyId('gameid'))
     : redirect()->route('games.index'));
 
-$legacyGameEditRedirect = fn (string $route) => fn () => request('gameid')
-    ? redirect()->route($route, request('gameid'))
+$legacyGameEditRedirect = fn (string $route) => fn () => $legacyId('gameid')
+    ? redirect()->route($route, $legacyId('gameid'))
     : redirect()->route('games.index');
 
 Route::get('/game/edit/game.php', $legacyGameEditRedirect('admin.game.edit'));
@@ -357,12 +370,12 @@ Route::get('/game/edit/mass.php', $legacyGameEditRedirect('admin.game.edit'));
 
 Route::get('/list/index.php', fn () => redirect()->route('lists.index'));
 
-Route::get('/list/list.php', fn () => request('listid')
-    ? redirect()->route('lists.show', request('listid'))
+Route::get('/list/list.php', fn () => $legacyId('listid')
+    ? redirect()->route('lists.show', $legacyId('listid'))
     : redirect()->route('lists.index'));
 
-Route::get('/list/show.php', fn () => request('id')
-    ? redirect()->route('lists.show', request('id'))
+Route::get('/list/show.php', fn () => $legacyId('id')
+    ? redirect()->route('lists.show', $legacyId('id'))
     : redirect()->route('lists.index'));
 
 Route::get('/list/search.php', fn () => redirect()->route('lists.search', request()->only(['gameid', 'q'])));

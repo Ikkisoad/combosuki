@@ -7,6 +7,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TierListEntry extends Model
 {
+    /**
+     * Every tier a list can use, best to worst. Single source of truth for the
+     * maker board, validation, aggregation and the Discord image renderer.
+     */
+    public const TIERS = ['S', 'A', 'B', 'C', 'D', 'E', 'F'];
+
     protected $table = 'tier_list_entry';
 
     protected $primaryKey = 'idtier_list_entry';

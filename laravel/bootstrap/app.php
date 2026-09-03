@@ -5,6 +5,7 @@ use App\Http\Middleware\EnsureDiscordIntegrationEnabled;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\EnsureUserIsModerator;
 use App\Http\Middleware\EnsureUserIsTrusted;
+use App\Http\Middleware\GuardScalarQueryParameters;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\VerifyActivityToken;
 use Illuminate\Foundation\Application;
@@ -33,6 +34,11 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(SecurityHeaders::class);
+
+        // Runs before the router so no controller can be handed an array
+        // where it reads a scalar search term — see the middleware's docblock
+        // for the unauthenticated 500s that closes.
+        $middleware->prepend(GuardScalarQueryParameters::class);
         $middleware->alias([
             'admin' => EnsureUserIsAdmin::class,
             'trusted' => EnsureUserIsTrusted::class,

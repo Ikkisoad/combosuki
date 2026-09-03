@@ -9,11 +9,9 @@ use Illuminate\Support\Collection;
 
 class TierListAggregator
 {
-    private const TIER_ORDER = ['S', 'A', 'B', 'C', 'D', 'F'];
-
     public function aggregate(Game $game, ?Carbon $from = null, ?Carbon $to = null): array
     {
-        $tierRank = array_flip(self::TIER_ORDER);
+        $tierRank = array_flip(TierListEntry::TIERS);
 
         $entries = TierListEntry::query()
             ->with('character', 'resourceValue.characterAliases')
@@ -55,14 +53,14 @@ class TierListAggregator
                 return [
                     'character' => $characterEntries->first()->character,
                     'resourceValue' => $characterEntries->first()->resourceValue,
-                    'tier' => self::TIER_ORDER[$medianRank],
+                    'tier' => TierListEntry::TIERS[$medianRank],
                     'votes' => $count,
                 ];
             })
             ->filter()
             ->values();
 
-        $tiers = collect(self::TIER_ORDER)->mapWithKeys(fn ($tier) => [
+        $tiers = collect(TierListEntry::TIERS)->mapWithKeys(fn ($tier) => [
             $tier => $characters->where('tier', $tier)
                 ->sortBy(fn ($entry) => $entry['character']->name.'-'.str_pad((string) ($entry['resourceValue']->order ?? 0), 5, '0', STR_PAD_LEFT))
                 ->values(),

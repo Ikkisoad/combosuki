@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Character;
+use App\Models\TierListEntry;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
@@ -17,8 +18,6 @@ use Illuminate\Support\Str;
  */
 class TierListImageRenderer
 {
-    private const TIER_ORDER = ['S', 'A', 'B', 'C', 'D', 'F'];
-
     /** Hex colors copied from resources/css/app.css .tier-* classes, for visual parity with the website. */
     private const TIER_COLORS = [
         'S' => [0xC0, 0x39, 0x2B],
@@ -26,6 +25,7 @@ class TierListImageRenderer
         'B' => [0xF1, 0xC4, 0x0F],
         'C' => [0x2E, 0xCC, 0x71],
         'D' => [0x34, 0x98, 0xDB],
+        'E' => [0x9B, 0x59, 0xB6],
         'F' => [0x7F, 0x8C, 0x8D],
     ];
 
@@ -52,7 +52,7 @@ class TierListImageRenderer
         $tiers = $aggregate['tiers'];
         $tierListCount = $aggregate['tierListCount'];
 
-        $nonEmptyTiers = collect(self::TIER_ORDER)->filter(fn ($tier) => $tiers[$tier]->isNotEmpty());
+        $nonEmptyTiers = collect(TierListEntry::TIERS)->filter(fn ($tier) => $tiers[$tier]->isNotEmpty());
 
         $usableWidth = self::CANVAS_WIDTH - self::LABEL_WIDTH - (3 * self::PADDING);
         $perRow = max(1, intdiv($usableWidth, self::THUMB_SIZE + self::PADDING));

@@ -17,7 +17,7 @@ class TierListImageRendererTest extends TestCase
 
     private function emptyTiers(): Collection
     {
-        return collect(['S' => collect(), 'A' => collect(), 'B' => collect(), 'C' => collect(), 'D' => collect(), 'F' => collect()]);
+        return collect(['S' => collect(), 'A' => collect(), 'B' => collect(), 'C' => collect(), 'D' => collect(), 'E' => collect(), 'F' => collect()]);
     }
 
     /**
