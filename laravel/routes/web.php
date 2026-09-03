@@ -256,6 +256,7 @@ Route::get('/tier-lists', [TierListController::class, 'index'])->name('tier-list
 Route::get('/tier-lists/create', [TierListController::class, 'create'])->middleware('auth')->name('tier-lists.create');
 Route::post('/tier-lists', [TierListController::class, 'store'])->middleware(['auth', 'throttle:10,1'])->name('tier-lists.store');
 Route::get('/tier-lists/{tierList}', [TierListController::class, 'show'])->name('tier-lists.show');
+Route::get('/tier-lists/{tierList}/image', [TierListController::class, 'image'])->name('tier-lists.image');
 
 Route::get('/logs', [LogController::class, 'index'])->name('logs.index');
 

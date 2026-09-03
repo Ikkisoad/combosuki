@@ -1,4 +1,8 @@
-<x-layouts.app :title="$tierList->title.' - Combo好き'" :description="'A '.$tierList->game->name.' tier list by '.($tierList->user?->nickname ?? 'Anonymous').'.'">
+<x-layouts.app
+    :title="$tierList->title.' - Combo好き'"
+    :description="'A '.$tierList->game->name.' tier list by '.($tierList->user?->nickname ?? 'Anonymous').'.'"
+    :image="route('tier-lists.image', $tierList)"
+>
     <x-jumbotron :height="100" />
     <x-nav-bar :game="$tierList->game" />
 
@@ -13,18 +17,20 @@
 
         @php $grouped = $tierList->entries->groupBy('tier'); @endphp
 
-        @foreach (\App\Models\TierListEntry::TIERS as $tier)
-            <div class="tier-row d-flex align-items-stretch mb-2">
-                <div class="tier-label tier-{{ strtolower($tier) }} d-flex align-items-center justify-content-center fw-bold">{{ $tier }}</div>
-                <div class="tier-dropzone flex-grow-1 d-flex flex-wrap gap-2 p-2">
-                    @forelse ($grouped->get($tier, collect()) as $entry)
-                        <x-tier-list-character-card :character="$entry->character" :resource-value="$entry->resourceValue" />
-                    @empty
-                        <span class="text-white-50 small">&mdash;</span>
-                    @endforelse
+        <div id="tier-list-view">
+            @foreach (\App\Models\TierListEntry::TIERS as $tier)
+                <div class="tier-row d-flex align-items-stretch mb-1">
+                    <div class="tier-label tier-{{ strtolower($tier) }} d-flex align-items-center justify-content-center fw-bold">{{ $tier }}</div>
+                    <div class="tier-dropzone flex-grow-1 d-flex flex-wrap gap-1 p-2">
+                        @forelse ($grouped->get($tier, collect()) as $entry)
+                            <x-tier-list-character-card :character="$entry->character" :resource-value="$entry->resourceValue" />
+                        @empty
+                            <span class="text-white-50 small">&mdash;</span>
+                        @endforelse
+                    </div>
                 </div>
-            </div>
-        @endforeach
+            @endforeach
+        </div>
 
         <a href="{{ route('tier-lists.create') }}" class="btn btn-primary mt-3">Make your own</a>
         <a href="{{ route('tier-lists.index') }}" class="btn btn-outline-light mt-3">Browse tier lists</a>

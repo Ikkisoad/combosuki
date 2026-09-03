@@ -4,7 +4,11 @@ namespace Tests\Unit;
 
 use App\Models\Character;
 use App\Models\CharacterResourceValueAlias;
+use App\Models\Game;
 use App\Models\ResourceValue;
+use App\Models\TierList;
+use App\Models\TierListEntry;
+use App\Models\User;
 use App\Services\TierListImageRenderer;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -126,6 +130,66 @@ class TierListImageRendererTest extends TestCase
             Carbon::parse('2026-01-01'),
             Carbon::parse('2026-02-01'),
         );
+
+        $this->assertStringStartsWith(self::PNG_SIGNATURE, $png);
+    }
+
+    private function tierList(Collection $entries): TierList
+    {
+        $game = (new Game)->forceFill(['idgame' => 1, 'name' => 'Test Game']);
+        $game->exists = true;
+
+        $user = (new User)->forceFill(['iduser' => 1, 'nickname' => 'Aegis']);
+        $user->exists = true;
+
+        $tierList = (new TierList)->forceFill(['idtier_list' => 1, 'title' => 'My Test Tier List']);
+        $tierList->exists = true;
+        $tierList->setRelation('game', $game);
+        $tierList->setRelation('user', $user);
+        $tierList->setRelation('entries', $entries);
+
+        return $tierList;
+    }
+
+    private function entry(string $tier, Character $character, ?ResourceValue $resourceValue = null): TierListEntry
+    {
+        $entry = (new TierListEntry)->forceFill(['idtier_list_entry' => 1, 'tier' => $tier, 'order' => 0]);
+        $entry->exists = true;
+        $entry->setRelation('character', $character);
+        $entry->setRelation('resourceValue', $resourceValue);
+
+        return $entry;
+    }
+
+    public function test_render_for_tier_list_produces_a_valid_png_for_a_character_with_no_portrait(): void
+    {
+        $character = (new Character)->forceFill(['idcharacter' => 1, 'name' => 'Valentine', 'image' => null]);
+        $character->exists = true;
+
+        $tierList = $this->tierList(collect([$this->entry('S', $character)]));
+
+        $png = (new TierListImageRenderer)->renderForTierList($tierList);
+
+        $this->assertStringStartsWith(self::PNG_SIGNATURE, $png);
+    }
+
+    public function test_render_for_tier_list_falls_back_to_a_placeholder_for_a_missing_portrait_file(): void
+    {
+        $character = (new Character)->forceFill(['idcharacter' => 1, 'name' => 'Ryu', 'image' => 'character-portraits/does-not-exist.png']);
+        $character->exists = true;
+
+        $tierList = $this->tierList(collect([$this->entry('A', $character)]));
+
+        $png = (new TierListImageRenderer)->renderForTierList($tierList);
+
+        $this->assertStringStartsWith(self::PNG_SIGNATURE, $png);
+    }
+
+    public function test_render_for_tier_list_handles_no_entries_in_any_tier(): void
+    {
+        $tierList = $this->tierList(collect());
+
+        $png = (new TierListImageRenderer)->renderForTierList($tierList);
 
         $this->assertStringStartsWith(self::PNG_SIGNATURE, $png);
     }

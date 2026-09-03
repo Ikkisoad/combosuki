@@ -176,6 +176,142 @@ a:hover {
 .tier-e { background-color: #9b59b6; }
 .tier-f { background-color: #7f8c8d; }
 
+/* Tier list editor: compact split layout so dragging through many-character rosters is short and readable. */
+#tier-list-editor {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+#tier-list-editor #tier-board {
+    flex: 1 1 60%;
+    min-width: 0;
+}
+
+#tier-list-editor #unranked-pool-card {
+    flex: 1 1 40%;
+    min-width: 0;
+    position: sticky;
+    top: 1rem;
+    max-height: calc(100vh - 2rem);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+#tier-list-editor #unranked-pool-card > h5,
+#tier-list-editor #tier-buckets {
+    flex-shrink: 0;
+}
+
+#tier-list-editor #unranked-pool {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+#tier-list-editor .character-card {
+    width: 56px;
+    padding: 2px;
+}
+
+#tier-list-editor .character-card-name {
+    font-size: 0.65rem;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#tier-list-editor .resource-badge {
+    width: 18px;
+    height: 18px;
+    bottom: -2px;
+    right: -2px;
+}
+
+#tier-list-editor .tier-row {
+    min-height: 60px;
+}
+
+#tier-list-editor .tier-label {
+    width: 40px;
+    font-size: 1.1rem;
+}
+
+#tier-list-editor .tier-dropzone,
+#tier-list-editor #unranked-pool {
+    gap: 0.35rem;
+}
+
+.tier-bucket {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.tier-bucket.drop-target {
+    outline: 2px solid #fff;
+}
+
+@media (max-width: 767.98px) {
+    #tier-list-editor {
+        flex-direction: column;
+    }
+
+    #tier-list-editor #tier-board,
+    #tier-list-editor #unranked-pool-card {
+        flex: 1 1 auto;
+        width: 100%;
+    }
+
+    #tier-list-editor #unranked-pool-card {
+        position: static;
+        top: auto;
+        max-height: 40vh;
+    }
+}
+
+/* Tier list view: compact rows so all tiers are visible without scrolling. */
+#tier-list-view .tier-row {
+    min-height: 64px;
+}
+
+#tier-list-view .tier-label {
+    width: 44px;
+    font-size: 1.15rem;
+}
+
+#tier-list-view .tier-dropzone {
+    gap: 0.35rem;
+    padding: 0.35rem;
+}
+
+#tier-list-view .character-card {
+    width: 60px;
+    padding: 3px;
+}
+
+#tier-list-view .character-card .small {
+    font-size: 0.65rem;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#tier-list-view .resource-badge {
+    width: 20px;
+    height: 20px;
+    bottom: -2px;
+    right: -2px;
+}
+
 .sidebar-backdrop {
     background-color: rgba(2, 2, 2, 0.75);
     border: 2px solid #C62114;

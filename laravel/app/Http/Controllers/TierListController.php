@@ -7,8 +7,10 @@ use App\Models\Game;
 use App\Models\GamePatch;
 use App\Models\TierList;
 use App\Models\User;
+use App\Services\TierListImageRenderer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -141,5 +143,15 @@ class TierListController extends Controller
         $tierList->increment('views');
 
         return view('tier-lists.show', ['tierList' => $tierList]);
+    }
+
+    public function image(TierList $tierList, TierListImageRenderer $renderer): Response
+    {
+        $tierList->load('game', 'user', 'entries.character', 'entries.resourceValue.characterAliases');
+
+        return response($renderer->renderForTierList($tierList), 200, [
+            'Content-Type' => 'image/png',
+            'Cache-Control' => 'public, max-age=86400',
+        ]);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Character;
+use App\Models\TierList;
 use App\Models\TierListEntry;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -49,16 +50,41 @@ class TierListImageRenderer
      */
     public function render(array $aggregate, string $gameName, ?Carbon $from, ?Carbon $to): string
     {
-        $tiers = $aggregate['tiers'];
-        $tierListCount = $aggregate['tierListCount'];
+        return $this->composite(
+            $aggregate['tiers'],
+            $gameName.' Tier List',
+            $this->subtitle($aggregate['tierListCount'], $from, $to),
+        );
+    }
 
-        $nonEmptyTiers = collect(TierListEntry::TIERS)->filter(fn ($tier) => $tiers[$tier]->isNotEmpty());
+    /** Renders a single saved TierList (one tier per entry already — no aggregation needed). */
+    public function renderForTierList(TierList $tierList): string
+    {
+        $tiersByTier = collect(TierListEntry::TIERS)->mapWithKeys(fn ($tier) => [
+            $tier => $tierList->entries->where('tier', $tier)->values()->map(fn ($entry) => [
+                'character' => $entry->character,
+                'resourceValue' => $entry->resourceValue,
+            ]),
+        ]);
+
+        $author = $tierList->user?->nickname ?? 'Anonymous';
+
+        return $this->composite(
+            $tiersByTier,
+            $tierList->title,
+            $tierList->game->name.' · By '.$author,
+        );
+    }
+
+    private function composite(Collection $tiersByTier, string $title, string $subtitle): string
+    {
+        $nonEmptyTiers = collect(TierListEntry::TIERS)->filter(fn ($tier) => $tiersByTier[$tier]->isNotEmpty());
 
         $usableWidth = self::CANVAS_WIDTH - self::LABEL_WIDTH - (3 * self::PADDING);
         $perRow = max(1, intdiv($usableWidth, self::THUMB_SIZE + self::PADDING));
 
-        $rowHeights = $nonEmptyTiers->mapWithKeys(function ($tier) use ($tiers, $perRow) {
-            $rows = max(1, (int) ceil($tiers[$tier]->count() / $perRow));
+        $rowHeights = $nonEmptyTiers->mapWithKeys(function ($tier) use ($tiersByTier, $perRow) {
+            $rows = max(1, (int) ceil($tiersByTier[$tier]->count() / $perRow));
 
             return [$tier => $rows * (self::THUMB_SIZE + self::PADDING) + self::PADDING];
         });
@@ -72,13 +98,13 @@ class TierListImageRenderer
         $white = imagecolorallocate($image, 255, 255, 255);
         $muted = imagecolorallocate($image, 0xAA, 0xAA, 0xAA);
 
-        imagestring($image, 5, self::PADDING, 6, $gameName.' Tier List', $white);
-        imagestring($image, 2, self::PADDING, 26, $this->subtitle($tierListCount, $from, $to), $muted);
+        imagestring($image, 5, self::PADDING, 6, $title, $white);
+        imagestring($image, 2, self::PADDING, 26, $subtitle, $muted);
 
         $y = self::TITLE_HEIGHT;
 
         foreach ($nonEmptyTiers as $tier) {
-            $entries = $tiers[$tier];
+            $entries = $tiersByTier[$tier];
             $rowHeight = $rowHeights[$tier];
 
             $this->drawTierLabel($image, $tier, $y, $rowHeight, $white);

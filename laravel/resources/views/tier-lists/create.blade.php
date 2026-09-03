@@ -63,18 +63,27 @@
 
             <div id="tier-list-entries-fields"></div>
 
-            <div id="tier-board" style="display:none;">
-                @foreach (\App\Models\TierListEntry::TIERS as $tier)
-                    <div class="tier-row d-flex align-items-stretch mb-2">
-                        <div class="tier-label tier-{{ strtolower($tier) }} d-flex align-items-center justify-content-center fw-bold">{{ $tier }}</div>
-                        <div class="tier-dropzone flex-grow-1 d-flex flex-wrap gap-2 p-2" data-tier="{{ $tier }}"></div>
-                    </div>
-                @endforeach
-            </div>
+            <div id="tier-list-editor">
+                <div id="tier-board" style="display:none;">
+                    @foreach (\App\Models\TierListEntry::TIERS as $tier)
+                        <div class="tier-row d-flex align-items-stretch mb-2">
+                            <div class="tier-label tier-{{ strtolower($tier) }} d-flex align-items-center justify-content-center fw-bold">{{ $tier }}</div>
+                            <div class="tier-dropzone flex-grow-1 d-flex flex-wrap p-2" data-tier="{{ $tier }}"></div>
+                        </div>
+                    @endforeach
+                </div>
 
-            <div class="card combosuki-main-reversed text-white p-3 mt-3">
-                <h5>Unranked</h5>
-                <div id="unranked-pool" class="tier-dropzone d-flex flex-wrap gap-2 p-2" data-tier=""></div>
+                <div class="card combosuki-main-reversed text-white p-3" id="unranked-pool-card">
+                    <h5>Unranked</h5>
+
+                    <div id="tier-buckets" class="d-flex flex-wrap gap-1 mb-2">
+                        @foreach (\App\Models\TierListEntry::TIERS as $tier)
+                            <div class="tier-bucket tier-{{ strtolower($tier) }}" data-tier="{{ $tier }}">{{ $tier }}</div>
+                        @endforeach
+                    </div>
+
+                    <div id="unranked-pool" class="tier-dropzone d-flex flex-wrap p-2" data-tier=""></div>
+                </div>
             </div>
         </form>
     </div>

@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const card = document.createElement('div');
         card.className = 'character-card';
         card.draggable = true;
+        card.title = character.name;
         card.dataset.characterId = character.idcharacter;
 
         if (resourceValue) {
@@ -45,8 +46,9 @@ document.addEventListener('DOMContentLoaded', function () {
         card.appendChild(iconWrap);
 
         const label = document.createElement('div');
-        label.className = 'small text-center';
+        label.className = 'small text-center character-card-name';
         label.textContent = character.name;
+        label.title = character.name;
         card.appendChild(label);
 
         card.addEventListener('dragstart', function () {
@@ -106,7 +108,34 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    function setupBucket(bucket) {
+        bucket.addEventListener('dragover', function (event) {
+            event.preventDefault();
+            bucket.classList.add('drop-target');
+        });
+
+        bucket.addEventListener('dragleave', function () {
+            bucket.classList.remove('drop-target');
+        });
+
+        bucket.addEventListener('drop', function (event) {
+            event.preventDefault();
+            bucket.classList.remove('drop-target');
+
+            if (! draggedCard) {
+                return;
+            }
+
+            const targetZone = document.querySelector(`.tier-dropzone[data-tier="${bucket.dataset.tier}"]`);
+
+            if (targetZone) {
+                targetZone.appendChild(draggedCard);
+            }
+        });
+    }
+
     document.querySelectorAll('.tier-dropzone').forEach(setupDropzone);
+    document.querySelectorAll('.tier-bucket').forEach(setupBucket);
 
     gameSelect.addEventListener('change', function () {
         pool.innerHTML = '';
