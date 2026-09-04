@@ -31,8 +31,18 @@ trait FiltersCombos
      * FiltersCombos field names — see applyFilters()/applyOrdering() — to
      * values), returning up to $limit combos ordered the same way the
      * search page/Discord bot order results (damage desc by default).
+     *
+     * $trustedOverride is for callers whose result gets cached and shared
+     * across every visitor rather than run fresh per request (see
+     * GameController::computeDamageStats(), cached by DamageStatsCache) —
+     * visibility can't depend on auth()->user() there, since whichever
+     * viewer happens to trigger the recompute would otherwise have their own
+     * visibility baked into the cached result for every other visitor to
+     * see, including ones who shouldn't (or should) see more than that.
+     * Leave it null (the default) for anything that runs live per request,
+     * which every other caller of this method does.
      */
-    private function searchCombos(Game $game, array $filters, int $limit): Collection
+    private function searchCombos(Game $game, array $filters, int $limit, ?bool $trustedOverride = null): Collection
     {
         $primaryResources = GameResource::where('game_idgame', $game->idgame)
             ->where('primaryORsecundary', 1)
@@ -47,8 +57,13 @@ trait FiltersCombos
 
         $query = Combo::query()
             ->with(['character', 'listingType', 'patch'])
-            ->whereHas('character', fn (Builder $q) => $q->where('game_idgame', $game->idgame))
-            ->visibleTo(auth()->user());
+            ->whereHas('character', fn (Builder $q) => $q->where('game_idgame', $game->idgame));
+
+        match ($trustedOverride) {
+            null => $query->visibleTo(auth()->user()),
+            true => null,
+            false => $query->visibleToPublic(),
+        };
 
         $this->applyFilters($query, $request, $primaryResources, $game);
         $this->applyOrdering($query, $request);
@@ -279,7 +294,12 @@ trait FiltersCombos
         }
 
         foreach (array_filter(explode('#', (string) $request->input('notcomments'))) as $piece) {
-            $query->where('comments', 'not like', "%{$piece}%");
+            // `comments NOT LIKE '%piece%'` alone would wrongly exclude a
+            // combo with no comments at all: SQL's NOT LIKE against a NULL
+            // column evaluates to NULL (neither true nor false), which a
+            // WHERE clause treats as "no match" — even though an absent
+            // comment obviously doesn't contain $piece.
+            $query->where(fn (Builder $q) => $q->whereNull('comments')->orWhere('comments', 'not like', "%{$piece}%"));
         }
 
         if ($request->boolean('novideo')) {

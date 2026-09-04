@@ -15,10 +15,12 @@ use App\Models\GameResource;
 use App\Models\ListModel;
 use App\Models\ResourceValue;
 use App\Services\TierListAggregator;
+use App\Support\DamageStatsCache;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -221,6 +223,74 @@ class GameController extends Controller
      */
     public function damageStatsTab(Game $game): View
     {
+        $trusted = (bool) auth()->user()?->isTrusted();
+
+        $stats = Cache::rememberForever(
+            DamageStatsCache::key($game->idgame, $trusted),
+            fn () => $this->computeDamageStats($game, $trusted)
+        );
+
+        $characters = Character::where('game_idgame', $game->idgame)->get()->keyBy('idcharacter');
+
+        return view(
+            'games.partials.damage-stats-tab',
+            array_merge(['game' => $game], $this->hydrateDamageStats($stats, $characters))
+        );
+    }
+
+    /**
+     * Rebuilds the Character objects a cached computeDamageStats() result
+     * only stores by id (see that method's docblock) into the shape
+     * damage-stats-tab.blade.php/damage-stats-query-stat.blade.php expect —
+     * Collections wrapping ['character' => Character, ...] entries.
+     */
+    private function hydrateDamageStats(array $stats, Collection $characters): array
+    {
+        $withCharacter = fn (?array $entry, string $valueKey) => $entry === null ? null : [
+            'character' => $characters->get($entry['character_id']),
+            $valueKey => $entry[$valueKey],
+        ];
+
+        return [
+            'queriesCount' => $stats['queriesCount'],
+            'gameAverageDamage' => $stats['gameAverageDamage'],
+            'topCharacterEntry' => $withCharacter($stats['topCharacterEntry'], 'average'),
+            'characterAverages' => collect($stats['characterAverages'])
+                ->map(fn (array $entry) => $withCharacter($entry, 'average')),
+            'queryStats' => collect($stats['queryStats'])->map(fn (array $stat) => [
+                'label' => $stat['label'],
+                'average' => $stat['average'],
+                'topEntry' => $withCharacter($stat['topEntry'], 'damage'),
+                'characterDamages' => collect($stat['characterDamages'])
+                    ->map(fn (array $entry) => $withCharacter($entry, 'damage')),
+            ]),
+        ];
+    }
+
+    /**
+     * The actual damage-stats computation, split out from damageStatsTab()
+     * so it can be cached wholesale (see DamageStatsCache) instead of
+     * re-running this O(queries × characters) aggregation on every tab view.
+     *
+     * Returns Character references as a bare 'character_id' rather than the
+     * model itself: the file cache driver (this app's production default —
+     * see .env.example) serializes cached values with PHP's serialize(),
+     * and caching Eloquent models/Collections forever is fragile — a later
+     * app deploy that changes a model's shape, or even just an ordinary
+     * unserialize() timing issue, can leave a cached entry that fails to
+     * unserialize at all. Sticking to plain arrays/scalars/ints sidesteps
+     * that entirely; damageStatsTab() re-hydrates the actual Character
+     * objects after reading the cache (see hydrateDamageStats()).
+     *
+     * $trusted fixes the visibility tier the underlying combo search uses
+     * (see FiltersCombos::searchCombos()'s $trustedOverride) instead of
+     * letting it fall through to auth()->user() — this result gets cached
+     * and shared across every visitor at that tier (see DamageStatsCache),
+     * so it can't depend on whichever specific viewer happens to trigger
+     * the recompute.
+     */
+    private function computeDamageStats(Game $game, bool $trusted): array
+    {
         $queries = CharacterQuery::where('game_idgame', $game->idgame)
             ->with('characters')
             ->orderBy('order')
@@ -230,10 +300,10 @@ class GameController extends Controller
         $characters = Character::where('game_idgame', $game->idgame)->get();
 
         // idquery => (idcharacter => top damage for that query, or null)
-        $damageMatrix = $queries->mapWithKeys(function (CharacterQuery $query) use ($game, $characters) {
+        $damageMatrix = $queries->mapWithKeys(function (CharacterQuery $query) use ($game, $characters, $trusted) {
             $scopedCharacterIds = $query->characters->pluck('idcharacter');
 
-            $perCharacter = $characters->mapWithKeys(function (Character $character) use ($game, $query, $scopedCharacterIds) {
+            $perCharacter = $characters->mapWithKeys(function (Character $character) use ($game, $query, $scopedCharacterIds, $trusted) {
                 if ($scopedCharacterIds->isNotEmpty() && ! $scopedCharacterIds->contains($character->idcharacter)) {
                     return [$character->idcharacter => null];
                 }
@@ -241,7 +311,8 @@ class GameController extends Controller
                 $damage = $this->searchCombos(
                     $game,
                     array_merge($query->filters ?? [], ['characterid' => $character->idcharacter]),
-                    1
+                    1,
+                    $trusted
                 )->first()?->damage;
 
                 return [$character->idcharacter => $damage !== null ? (float) $damage : null];
@@ -327,14 +398,30 @@ class GameController extends Controller
             ];
         });
 
-        return view('games.partials.damage-stats-tab', [
-            'game' => $game,
+        return [
             'queriesCount' => $queryGroups->count(),
             'gameAverageDamage' => $gameAverageDamage,
-            'topCharacterEntry' => $topCharacterEntry,
-            'characterAverages' => $characterAverages,
-            'queryStats' => $queryStats,
-        ]);
+            'topCharacterEntry' => $topCharacterEntry === null ? null : [
+                'character_id' => $topCharacterEntry['character']->idcharacter,
+                'average' => $topCharacterEntry['average'],
+            ],
+            'characterAverages' => $characterAverages->map(fn (array $entry) => [
+                'character_id' => $entry['character']->idcharacter,
+                'average' => $entry['average'],
+            ])->values()->all(),
+            'queryStats' => $queryStats->map(fn (array $stat) => [
+                'label' => $stat['label'],
+                'average' => $stat['average'],
+                'topEntry' => $stat['topEntry'] === null ? null : [
+                    'character_id' => $stat['topEntry']['character']->idcharacter,
+                    'damage' => $stat['topEntry']['damage'],
+                ],
+                'characterDamages' => $stat['characterDamages']->map(fn (array $entry) => [
+                    'character_id' => $entry['character']->idcharacter,
+                    'damage' => $entry['damage'],
+                ])->values()->all(),
+            ])->values()->all(),
+        ];
     }
 
     public function matchesTab(Game $game): View

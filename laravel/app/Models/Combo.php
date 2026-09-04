@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasEditHistory;
+use App\Support\ChallengeStatsCache;
+use App\Support\DamageStatsCache;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,7 +22,7 @@ class Combo extends Model
     protected $fillable = [
         'combo', 'comments', 'video', 'user_iduser', 'character_idcharacter',
         'submited', 'damage', 'type', 'verified', 'verified_by_iduser', 'verified_at',
-        'patch_idgame_patch', 'author', 'password',
+        'patch_idgame_patch', 'author', 'password', 'views',
     ];
 
     protected $hidden = ['password'];
@@ -60,6 +62,27 @@ class Combo extends Model
                 ['damage' => $combo->damage]
             );
         });
+
+        // GameController::damageStatsTab() caches its per-game aggregation
+        // forever (see DamageStatsCache) since it's expensive to recompute on
+        // every tab view; any combo write for the game can change that
+        // aggregation, so the cache is invalidated here rather than on a
+        // time-based expiry.
+        static::saved(function (Combo $combo) {
+            DamageStatsCache::forget($combo->character->game_idgame);
+        });
+
+        static::deleted(function (Combo $combo) {
+            DamageStatsCache::forget($combo->character->game_idgame);
+        });
+
+        // ChallengeController's ranking/calendar tabs cache the Daily
+        // Challenge history (see ChallengeStatsCache) — any combo write can
+        // change which combo is the current "winner" for an already-picked
+        // day, so every combo write bumps the shared cache version rather
+        // than trying to figure out which cached days it could affect.
+        static::saved(fn () => ChallengeStatsCache::bumpVersion());
+        static::deleted(fn () => ChallengeStatsCache::bumpVersion());
     }
 
     public function character(): BelongsTo
@@ -127,13 +150,27 @@ class Combo extends Model
         }
 
         return $query->where(function (Builder $q) use ($viewer) {
-            $q->whereNull('user_iduser')
-                ->orWhere('verified', 1)
-                ->orWhereHas('user.combos', fn (Builder $q2) => $q2->where('verified', 1));
+            $q->visibleToPublic();
 
             if ($viewer !== null) {
                 $q->orWhere('user_iduser', $viewer->iduser);
             }
         });
+    }
+
+    /**
+     * The same "public" half of scopeVisibleTo() (guest submissions,
+     * verified combos, and combos by an author with another verified combo)
+     * but without a concrete viewer's own-combos carve-out — for computations
+     * that get cached and shared across every visitor rather than run fresh
+     * per request (see DamageStatsCache/GameController::computeDamageStats()),
+     * where there's no single "current viewer" to carve an exception out for.
+     */
+    public function scopeVisibleToPublic(Builder $query): Builder
+    {
+        return $query->where(fn (Builder $q) => $q->whereNull('user_iduser')
+            ->orWhere('verified', 1)
+            ->orWhereHas('user.combos', fn (Builder $q2) => $q2->where('verified', 1))
+        );
     }
 }

@@ -6,6 +6,7 @@ use App\Http\Requests\StoreTierListRequest;
 use App\Models\Game;
 use App\Models\GamePatch;
 use App\Models\TierList;
+use App\Models\TierListEntry;
 use App\Models\User;
 use App\Services\TierListImageRenderer;
 use Illuminate\Http\RedirectResponse;
@@ -122,13 +123,25 @@ class TierListController extends Controller
                 $tierList->forceFill(['created_at' => $validated['created_at']])->save();
             }
 
-            foreach ($validated['entries'] ?? [] as $order => $entry) {
-                $tierList->entries()->create([
+            $now = now();
+
+            $entries = collect($validated['entries'] ?? [])
+                ->map(fn (array $entry, int $order) => [
+                    'tier_list_idtier_list' => $tierList->idtier_list,
                     'character_idcharacter' => $entry['character_idcharacter'],
                     'resources_values_idResources_values' => $entry['resources_values_idResources_values'] ?? null,
                     'tier' => $entry['tier'],
                     'order' => $order,
-                ]);
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ])
+                ->values()
+                ->all();
+
+            // A single bulk insert instead of one query per entry — a tier
+            // list can carry one row per character in the game's roster.
+            if ($entries !== []) {
+                TierListEntry::insert($entries);
             }
 
             return $tierList;

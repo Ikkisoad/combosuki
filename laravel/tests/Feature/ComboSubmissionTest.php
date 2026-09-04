@@ -633,4 +633,70 @@ class ComboSubmissionTest extends TestCase
             ->assertSee('Screen Center')
             ->assertDontSee('>Midscreen<', false);
     }
+
+    public function test_a_submitted_combo_appears_on_the_games_show_latest_combos_tab(): void
+    {
+        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
+
+        $this->post(route('games.store'), [
+            'name' => 'New Fighter',
+            'image' => 'https://example.com/new-fighter.png',
+        ]);
+
+        $game = Game::where('name', 'New Fighter')->firstOrFail();
+        $character = Character::where('game_idgame', $game->idgame)->firstOrFail();
+        $okizeme = GameEntry::where('gameid', $game->idgame)->where('title', 'Okizeme')->firstOrFail();
+        $whereResource = GameResource::where('game_idgame', $game->idgame)->where('text_name', 'Where?')->firstOrFail();
+        $midscreen = ResourceValue::where('game_resources_idgame_resources', $whereResource->idgame_resources)->where('value', 'Midscreen')->firstOrFail();
+
+        $this->post(route('games.combos.store', $game), [
+            'character_idcharacter' => $character->idcharacter,
+            'listingtype' => $okizeme->entryid,
+            'combo' => '2LK',
+            'resources' => [$whereResource->idgame_resources => $midscreen->idResources_values],
+        ]);
+
+        $combo = Combo::firstOrFail();
+
+        // Viewed in the same authenticated session as the submitter:
+        // Combo::scopeVisibleTo() only lets a fresh, unverified combo through
+        // to a non-trusted viewer via the "viewer is the author" branch, so
+        // a different viewer wouldn't see it here without going through
+        // verification (covered separately by ComboVerificationTest).
+        $this->get(route('games.show', $game))
+            ->assertOk()
+            ->assertSee('Latest Combos')
+            ->assertSee($combo->combo)
+            ->assertSee($character->name);
+    }
+
+    public function test_a_submitted_combo_is_findable_via_the_combo_search_index(): void
+    {
+        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
+
+        $this->post(route('games.store'), [
+            'name' => 'New Fighter',
+            'image' => 'https://example.com/new-fighter.png',
+        ]);
+
+        $game = Game::where('name', 'New Fighter')->firstOrFail();
+        $character = Character::where('game_idgame', $game->idgame)->firstOrFail();
+        $okizeme = GameEntry::where('gameid', $game->idgame)->where('title', 'Okizeme')->firstOrFail();
+        $whereResource = GameResource::where('game_idgame', $game->idgame)->where('text_name', 'Where?')->firstOrFail();
+        $midscreen = ResourceValue::where('game_resources_idgame_resources', $whereResource->idgame_resources)->where('value', 'Midscreen')->firstOrFail();
+
+        $this->post(route('games.combos.store', $game), [
+            'character_idcharacter' => $character->idcharacter,
+            'listingtype' => $okizeme->entryid,
+            'combo' => '2LK',
+            'resources' => [$whereResource->idgame_resources => $midscreen->idResources_values],
+        ]);
+
+        $combo = Combo::firstOrFail();
+
+        $this->get(route('games.combos.index', $game).'?combo=2LK')
+            ->assertOk()
+            ->assertSee('1 result(s)')
+            ->assertSee($combo->combo);
+    }
 }

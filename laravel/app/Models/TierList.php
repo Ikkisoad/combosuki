@@ -12,7 +12,7 @@ class TierList extends Model
 
     protected $primaryKey = 'idtier_list';
 
-    protected $fillable = ['title', 'game_idgame', 'user_iduser'];
+    protected $fillable = ['title', 'game_idgame', 'user_iduser', 'views'];
 
     protected function casts(): array
     {

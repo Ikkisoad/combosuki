@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Support\AliasGenerator;
+use App\Support\DamageStatsCache;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,7 +18,7 @@ class Character extends Model
 
     protected $primaryKey = 'idcharacter';
 
-    protected $fillable = ['name', 'image', 'game_idgame'];
+    protected $fillable = ['name', 'image', 'game_idgame', 'views'];
 
     protected function casts(): array
     {
@@ -48,6 +49,14 @@ class Character extends Model
                 ]);
             }
         });
+
+        // GameController::damageStatsTab() caches its per-game aggregation
+        // forever (see DamageStatsCache), and it lists every character in
+        // the game (with a name and, for a new arrival, "No data" until they
+        // have combos) — so the roster changing, not just Combo/CharacterQuery
+        // writes, has to invalidate it too.
+        static::saved(fn (Character $character) => DamageStatsCache::forget($character->game_idgame));
+        static::deleted(fn (Character $character) => DamageStatsCache::forget($character->game_idgame));
     }
 
     /**

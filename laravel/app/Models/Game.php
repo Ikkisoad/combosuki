@@ -23,7 +23,7 @@ class Game extends Model
 
     protected $fillable = [
         'name', 'complete', 'image', 'globalPass', 'modPass', 'description', 'notation',
-        'matches_enabled', 'matches_url',
+        'matches_enabled', 'matches_url', 'views',
     ];
 
     protected $hidden = ['globalPass', 'modPass'];

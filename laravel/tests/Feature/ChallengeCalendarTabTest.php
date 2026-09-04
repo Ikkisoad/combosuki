@@ -108,4 +108,32 @@ class ChallengeCalendarTabTest extends TestCase
         $response->assertOk();
         $response->assertExactJson(['days' => [], 'earliest' => null, 'today' => '2026-08-25']);
     }
+
+    /**
+     * The calendar is cached forever per (year, day) (see
+     * ChallengeStatsCache) — this verifies a day's status flips from "open"
+     * to "solved" as soon as a matching combo is added, rather than only
+     * after the cache entry would otherwise have expired.
+     */
+    public function test_cached_calendar_is_invalidated_when_a_matching_combo_is_added(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Ryu', 'game_idgame' => $game->idgame]);
+        $type = GameEntry::create(['title' => 'Combo', 'gameid' => $game->idgame, 'order' => 0]);
+
+        $query = CharacterQuery::create(['game_idgame' => $game->idgame, 'label' => 'Any starter', 'filters' => [], 'order' => 0]);
+        $query->forceFill(['created_at' => Carbon::parse('2026-08-01 00:00:00')])->save();
+
+        // Primes the cache with the day "open" (no matching combo yet).
+        $this->getJson(route('challenge.tabs.calendar', ['year' => 2026]))
+            ->assertJsonPath('days.2026-08-25', 'open');
+
+        Combo::create([
+            'combo' => 'AAA BBB', 'character_idcharacter' => $character->idcharacter,
+            'submited' => now(), 'damage' => 1000, 'type' => $type->entryid,
+        ]);
+
+        $this->getJson(route('challenge.tabs.calendar', ['year' => 2026]))
+            ->assertJsonPath('days.2026-08-25', 'solved');
+    }
 }

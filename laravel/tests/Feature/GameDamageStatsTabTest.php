@@ -6,7 +6,10 @@ use App\Models\Character;
 use App\Models\CharacterQuery;
 use App\Models\Combo;
 use App\Models\Game;
+use App\Models\GameEntry;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class GameDamageStatsTabTest extends TestCase
@@ -234,5 +237,206 @@ class GameDamageStatsTabTest extends TestCase
         $response->assertOk();
         $response->assertSee('5C starter');
         $response->assertSee('Not enough combo data yet.');
+    }
+
+    /**
+     * Regression test: the cached payload used to include raw
+     * Character models/Collections (see GameController::computeDamageStats()),
+     * which crashed with "incomplete object... unserialize()" once a real
+     * request round-tripped it through the file cache driver (this app's
+     * default outside tests — see .env.example) instead of the test suite's
+     * `array` driver, which never actually serializes anything and so never
+     * caught it. computeDamageStats() now stores plain character_id ints and
+     * damageStatsTab() re-hydrates the Character objects afterward — this
+     * exercises the real serialize()/unserialize() round trip to guard
+     * against that regressing.
+     */
+    public function test_damage_stats_survive_a_real_file_cache_round_trip(): void
+    {
+        config(['cache.default' => 'file']);
+        Cache::forgetDriver('file');
+
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $valentine = Character::create(['name' => 'Valentine', 'game_idgame' => $game->idgame]);
+
+        CharacterQuery::create([
+            'game_idgame' => $game->idgame,
+            'label' => '2LK starter',
+            'filters' => ['combo' => '2LK', 'combolike' => '0'],
+            'order' => 0,
+        ]);
+
+        Combo::create([
+            'combo' => '2LK > 236B', 'character_idcharacter' => $valentine->idcharacter, 'submited' => now(), 'damage' => 300, 'type' => 1,
+        ]);
+
+        // First request computes and writes the cache entry to disk.
+        $this->get(route('games.tabs.damage-stats', $game))
+            ->assertOk()
+            ->assertSeeInOrder(['Highest Damage', 'Valentine', '300']);
+
+        // Second request reads the same entry back through a real
+        // unserialize() call — this is what crashed before the fix.
+        $this->get(route('games.tabs.damage-stats', $game))
+            ->assertOk()
+            ->assertSeeInOrder(['Highest Damage', 'Valentine', '300']);
+
+        Cache::store('file')->flush();
+    }
+
+    /**
+     * Same idea as the create/delete invalidation tests below, but for an
+     * edit to an *existing* combo's damage made through the real
+     * ComboController::update() route (as opposed to constructing the model
+     * directly) — the actual path a user editing a combo's damage goes
+     * through, and worth covering on its own since it's a different Combo
+     * write shape (update vs. create/delete) than those tests exercise.
+     */
+    public function test_cached_damage_stats_are_invalidated_when_a_combos_damage_is_edited(): void
+    {
+        config(['cache.default' => 'file']);
+        Cache::forgetDriver('file');
+
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $valentine = Character::create(['name' => 'Valentine', 'game_idgame' => $game->idgame]);
+        $type = GameEntry::create(['title' => 'Combo', 'gameid' => $game->idgame, 'order' => 0]);
+        $trusted = User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]);
+
+        CharacterQuery::create([
+            'game_idgame' => $game->idgame,
+            'label' => '2LK starter',
+            'filters' => ['combo' => '2LK', 'combolike' => '0'],
+            'order' => 0,
+        ]);
+
+        $combo = Combo::create([
+            'combo' => '2LK > 236B', 'character_idcharacter' => $valentine->idcharacter, 'submited' => now(), 'damage' => 300, 'type' => $type->entryid,
+        ]);
+
+        // Primes the cache with the combo's original damage.
+        $this->get(route('games.tabs.damage-stats', $game))
+            ->assertSeeInOrder(['Highest Damage', 'Valentine', '300']);
+
+        $this->actingAs($trusted)->post(route('combos.update', $combo), [
+            'character_idcharacter' => $valentine->idcharacter,
+            'listingtype' => $type->entryid,
+            'combo' => '2LK > 236B',
+            'damage' => 999,
+        ])->assertRedirect(route('combos.show', $combo));
+
+        $this->get(route('games.tabs.damage-stats', $game))
+            ->assertSeeInOrder(['Highest Damage', 'Valentine', '999']);
+
+        Cache::store('file')->flush();
+    }
+
+    /**
+     * Regression test: FiltersCombos::searchCombos() scopes results by
+     * Combo::visibleTo(auth()->user()) — a trusted staff member sees every
+     * combo, a guest/regular visitor only sees verified (or otherwise
+     * vouched-for) ones. The cache is per-game, so without splitting it by
+     * viewer tier (see DamageStatsCache::key()'s $trusted segment and
+     * GameController::damageStatsTab()), a guest viewing the tab first would
+     * cache a restricted result that a *trusted* visitor then gets served
+     * too — hiding an unverified combo they should be able to see, which is
+     * exactly what "damage stats aren't updating" looks like from a staff
+     * member's perspective after adding one.
+     */
+    public function test_a_trusted_viewer_sees_an_unverified_combo_even_if_a_guest_cached_the_tab_first(): void
+    {
+        config(['cache.default' => 'file']);
+        Cache::forgetDriver('file');
+
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $valentine = Character::create(['name' => 'Valentine', 'game_idgame' => $game->idgame]);
+
+        CharacterQuery::create([
+            'game_idgame' => $game->idgame,
+            'label' => 'Any starter',
+            'filters' => [],
+            'order' => 0,
+        ]);
+
+        // Guest-submitted combos are excluded from the public/guest view
+        // once *any* logged-in author exists in the mix (see
+        // Combo::scopeVisibleToPublic()) — an unverified combo from a
+        // regular (non-trusted, unproven) user is the clean case that's
+        // hidden from the public tier but visible to a trusted one.
+        $regularUser = User::create(['nickname' => 'newbie', 'password' => 'password123']);
+        Combo::create([
+            'combo' => 'AAA', 'character_idcharacter' => $valentine->idcharacter, 'submited' => now(),
+            'damage' => 500, 'type' => 1, 'user_iduser' => $regularUser->iduser, 'verified' => 0,
+        ]);
+
+        // A guest views the tab first, priming the "public" cache bucket
+        // without the unverified combo.
+        $this->get(route('games.tabs.damage-stats', $game))
+            ->assertSee('Not enough combo data yet.');
+
+        // A trusted staff member must still see it — served from a
+        // separate "trusted" cache bucket, not the guest's cached result.
+        $trusted = User::create(['nickname' => 'admin', 'password' => 'password123', 'trusted_user' => true]);
+        $this->actingAs($trusted)
+            ->get(route('games.tabs.damage-stats', $game))
+            ->assertSeeInOrder(['Highest Damage', 'Valentine', '500']);
+
+        Cache::store('file')->flush();
+    }
+
+    /**
+     * The tab's aggregation is cached forever per game (see
+     * DamageStatsCache) and only invalidated by Combo::booted() when a combo
+     * for the game is written — this verifies the cache doesn't go stale.
+     */
+    public function test_cached_damage_stats_are_invalidated_when_a_combo_is_added(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $valentine = Character::create(['name' => 'Valentine', 'game_idgame' => $game->idgame]);
+
+        CharacterQuery::create([
+            'game_idgame' => $game->idgame,
+            'label' => '2LK starter',
+            'filters' => ['combo' => '2LK', 'combolike' => '0'],
+            'order' => 0,
+        ]);
+
+        // First view with no matching combos yet primes the cache.
+        $this->get(route('games.tabs.damage-stats', $game))
+            ->assertSee('Not enough combo data yet.');
+
+        Combo::create([
+            'combo' => '2LK > 236B', 'character_idcharacter' => $valentine->idcharacter, 'submited' => now(), 'damage' => 300, 'type' => 1,
+        ]);
+
+        // The new combo must show up immediately, not only after the cache
+        // would otherwise have expired.
+        $this->get(route('games.tabs.damage-stats', $game))
+            ->assertSeeInOrder(['Highest Damage', 'Valentine', '300']);
+    }
+
+    public function test_cached_damage_stats_are_invalidated_when_a_combo_is_deleted(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $valentine = Character::create(['name' => 'Valentine', 'game_idgame' => $game->idgame]);
+
+        CharacterQuery::create([
+            'game_idgame' => $game->idgame,
+            'label' => '2LK starter',
+            'filters' => ['combo' => '2LK', 'combolike' => '0'],
+            'order' => 0,
+        ]);
+
+        $combo = Combo::create([
+            'combo' => '2LK > 236B', 'character_idcharacter' => $valentine->idcharacter, 'submited' => now(), 'damage' => 300, 'type' => 1,
+        ]);
+
+        // Primes the cache with the combo present.
+        $this->get(route('games.tabs.damage-stats', $game))
+            ->assertSeeInOrder(['Highest Damage', 'Valentine', '300']);
+
+        $combo->delete();
+
+        $this->get(route('games.tabs.damage-stats', $game))
+            ->assertSee('Not enough combo data yet.');
     }
 }

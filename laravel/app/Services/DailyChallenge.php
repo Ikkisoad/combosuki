@@ -92,8 +92,14 @@ class DailyChallenge
      * Returns a Collection keyed by 'Y-m-d' date string, each value shaped
      * like forDate()'s return (minus 'criteria', which no caller of this
      * batch method needs).
+     *
+     * $trustedOverride is passed straight through to searchCombos() — see
+     * its docblock. ChallengeController's ranking/calendar tabs cache this
+     * method's result (see ChallengeStatsCache) and always pass an explicit
+     * value rather than leaving it to auth()->user(), for the same reason
+     * GameController::computeDamageStats() does.
      */
-    public function resultsBetween(CarbonInterface $from, CarbonInterface $to): Collection
+    public function resultsBetween(CarbonInterface $from, CarbonInterface $to, ?bool $trustedOverride = null): Collection
     {
         $period = CarbonPeriod::create($from->copy()->startOfDay(), $to->copy()->startOfDay());
         $dateStrings = collect($period)->map(fn (CarbonInterface $day) => $day->toDateString());
@@ -135,12 +141,12 @@ class DailyChallenge
         $queries = CharacterQuery::with('game')->whereIn('idquery', $distinctPicks->pluck('query_id'))->get()->keyBy('idquery');
         $characters = Character::with('game')->whereIn('idcharacter', $distinctPicks->pluck('character_id'))->get()->keyBy('idcharacter');
 
-        $comboByPair = $distinctPicks->mapWithKeys(function (array $p) use ($queries, $characters) {
+        $comboByPair = $distinctPicks->mapWithKeys(function (array $p) use ($queries, $characters, $trustedOverride) {
             $query = $queries[$p['query_id']];
             $character = $characters[$p['character_id']];
             $filters = array_merge($query->filters ?? [], ['characterid' => $character->idcharacter]);
 
-            return ["{$p['query_id']}:{$p['character_id']}" => $this->searchCombos($character->game, $filters, 1)->first()];
+            return ["{$p['query_id']}:{$p['character_id']}" => $this->searchCombos($character->game, $filters, 1, $trustedOverride)->first()];
         });
 
         return $picksByDate->map(function (?array $pick, string $dateString) use ($queries, $characters, $comboByPair) {

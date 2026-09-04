@@ -216,12 +216,24 @@ class CombleController extends Controller
      */
     private function evaluateGuesses(array $picks, Combo $target): array
     {
+        if ($picks === []) {
+            return [];
+        }
+
+        // Batches the lookups instead of one Game/Character/GameEntry query
+        // per guess (up to MAX_GUESSES = 5 of each) — same behavior, since a
+        // pick whose id doesn't resolve still just falls through the
+        // "missing" check below exactly as a failed find() would have.
+        $games = Game::whereIn('idgame', array_column($picks, 0))->get()->keyBy('idgame');
+        $characters = Character::whereIn('idcharacter', array_column($picks, 1))->get()->keyBy('idcharacter');
+        $listingTypes = GameEntry::whereIn('entryid', array_column($picks, 2))->get()->keyBy('entryid');
+
         $guesses = [];
 
         foreach ($picks as $pick) {
-            $game = Game::find($pick[0] ?? null);
-            $character = Character::find($pick[1] ?? null);
-            $listingType = GameEntry::find($pick[2] ?? null);
+            $game = $games->get($pick[0] ?? null);
+            $character = $characters->get($pick[1] ?? null);
+            $listingType = $listingTypes->get($pick[2] ?? null);
             $damage = isset($pick[3]) ? (float) $pick[3] : null;
             $starter = $pick[4] ?? null;
 

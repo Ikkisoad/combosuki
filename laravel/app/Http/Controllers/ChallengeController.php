@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Services\DailyChallenge;
+use App\Support\ChallengeStatsCache;
 use App\Support\DailyGameClock;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class ChallengeController extends Controller
@@ -39,18 +42,31 @@ class ChallengeController extends Controller
      */
     public function rankingTab(): View
     {
+        $today = DailyGameClock::today();
+        $trusted = (bool) auth()->user()?->isTrusted();
+
+        $rankings = Cache::rememberForever(
+            ChallengeStatsCache::rankingKey($today->toDateString(), $trusted),
+            fn () => $this->computeRankings($today, $trusted)
+        );
+
+        return view('challenge.partials.ranking-tab', compact('rankings'));
+    }
+
+    private function computeRankings(Carbon $today, bool $trusted): Collection
+    {
         $earliestDay = $this->dailyChallenge->earliestDate();
 
         if ($earliestDay === null) {
-            return view('challenge.partials.ranking-tab', ['rankings' => collect()]);
+            return collect();
         }
 
-        $results = $this->dailyChallenge->resultsBetween($earliestDay, DailyGameClock::today());
+        $results = $this->dailyChallenge->resultsBetween($earliestDay, $today, $trusted);
 
         $winningCombos = $results->pluck('combo')->filter(fn ($combo) => $combo !== null && $combo->user_iduser !== null);
         $users = User::whereIn('iduser', $winningCombos->pluck('user_iduser')->unique())->get()->keyBy('iduser');
 
-        $rankings = $winningCombos
+        return $winningCombos
             ->groupBy('user_iduser')
             ->map(fn ($combos, $userId) => ['user' => $users[$userId], 'wins' => $combos->count()])
             ->sortBy([
@@ -58,8 +74,6 @@ class ChallengeController extends Controller
                 fn ($a, $b) => strcasecmp($a['user']->nickname, $b['user']->nickname),
             ])
             ->values();
-
-        return view('challenge.partials.ranking-tab', compact('rankings'));
     }
 
     /**
@@ -91,12 +105,16 @@ class ChallengeController extends Controller
 
         $from = $yearStart->max($earliestDay);
         $to = $yearEnd->min($today);
+        $trusted = (bool) auth()->user()?->isTrusted();
 
-        $days = $this->dailyChallenge->resultsBetween($from, $to)->map(fn ($result) => match (true) {
-            $result['query'] === null => 'no_query',
-            $result['combo'] === null => 'open',
-            default => 'solved',
-        });
+        $days = Cache::rememberForever(
+            ChallengeStatsCache::calendarKey($year, $today->toDateString(), $trusted),
+            fn () => $this->dailyChallenge->resultsBetween($from, $to, $trusted)->map(fn ($result) => match (true) {
+                $result['query'] === null => 'no_query',
+                $result['combo'] === null => 'open',
+                default => 'solved',
+            })
+        );
 
         return response()->json(['days' => $days, 'earliest' => $earliestDay->toDateString(), 'today' => $today->toDateString()]);
     }

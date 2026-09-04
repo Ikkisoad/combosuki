@@ -8,6 +8,8 @@ use App\Models\CharacterQuery;
 use App\Models\Game;
 use App\Models\GameEntry;
 use App\Models\GameResource;
+use App\Support\ChallengeStatsCache;
+use App\Support\DamageStatsCache;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -70,6 +72,8 @@ class CharacterQueryController extends Controller
                 ->where('game_idgame', $game->idgame)
                 ->delete();
 
+            $this->invalidateQueryDependentCaches($game->idgame);
+
             return redirect()->route('admin.queries.index', $game)->with('status', 'Saved.');
         }
 
@@ -100,7 +104,25 @@ class CharacterQueryController extends Controller
             }
         }
 
+        $this->invalidateQueryDependentCaches($game->idgame);
+
         return redirect()->route('admin.queries.index', $game)->with('status', 'Saved.');
+    }
+
+    /**
+     * GameController::damageStatsTab() and ChallengeController's ranking/
+     * calendar tabs both cache computations derived from a game's
+     * CharacterQuery rows (see DamageStatsCache/ChallengeStatsCache) and are
+     * normally invalidated by Combo::booted() — but a query's own filters,
+     * character scope, or existence changes here, not through a Combo write,
+     * so those caches need to be busted directly from every action this
+     * method takes (Add/Update/Delete, including the query-builder Delete,
+     * which fires no Eloquent model events at all).
+     */
+    private function invalidateQueryDependentCaches(int $gameId): void
+    {
+        DamageStatsCache::forget($gameId);
+        ChallengeStatsCache::bumpVersion();
     }
 
     /**

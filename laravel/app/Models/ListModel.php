@@ -16,7 +16,7 @@ class ListModel extends Model
 
     protected $primaryKey = 'idlist';
 
-    protected $fillable = ['list_name', 'game_idgame', 'password', 'type', 'user_iduser', 'is_favorite_guide'];
+    protected $fillable = ['list_name', 'game_idgame', 'password', 'type', 'user_iduser', 'is_favorite_guide', 'views'];
 
     protected $hidden = ['password'];
 
