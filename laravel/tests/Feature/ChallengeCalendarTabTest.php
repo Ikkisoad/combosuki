@@ -10,6 +10,7 @@ use App\Models\GameEntry;
 use App\Services\DailyChallenge;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class ChallengeCalendarTabTest extends TestCase
@@ -135,5 +136,43 @@ class ChallengeCalendarTabTest extends TestCase
 
         $this->getJson(route('challenge.tabs.calendar', ['year' => 2026]))
             ->assertJsonPath('days.2026-08-25', 'solved');
+    }
+
+    /**
+     * Regression test: the cached calendar used to be an
+     * Illuminate\Support\Collection (even though its values were plain
+     * strings, the Collection wrapper object itself was what failed) —
+     * crashed with "incomplete object... unserialize()" the moment a real
+     * request round-tripped it through the file cache driver (this app's
+     * default outside tests — see .env.example) instead of the test suite's
+     * `array` driver, which never actually serializes anything and so never
+     * caught it. The cached value is now a plain array (see
+     * ChallengeController::calendarTab()'s ->all() call); this exercises the
+     * real serialize()/unserialize() round trip to guard against that
+     * regressing.
+     */
+    public function test_calendar_survives_a_real_file_cache_round_trip(): void
+    {
+        config(['cache.default' => 'file']);
+        Cache::forgetDriver('file');
+
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        Character::create(['name' => 'Ryu', 'game_idgame' => $game->idgame]);
+
+        $query = CharacterQuery::create(['game_idgame' => $game->idgame, 'label' => 'Any starter', 'filters' => [], 'order' => 0]);
+        $query->forceFill(['created_at' => Carbon::parse('2026-08-01 00:00:00')])->save();
+
+        // First request computes and writes the cache entry to disk.
+        $this->getJson(route('challenge.tabs.calendar', ['year' => 2026]))
+            ->assertOk()
+            ->assertJsonPath('days.2026-08-25', 'open');
+
+        // Second request reads the same entry back through a real
+        // unserialize() call — this is what crashed before the fix.
+        $this->getJson(route('challenge.tabs.calendar', ['year' => 2026]))
+            ->assertOk()
+            ->assertJsonPath('days.2026-08-25', 'open');
+
+        Cache::store('file')->flush();
     }
 }

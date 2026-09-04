@@ -45,30 +45,61 @@ class ChallengeController extends Controller
         $today = DailyGameClock::today();
         $trusted = (bool) auth()->user()?->isTrusted();
 
-        $rankings = Cache::rememberForever(
+        $rankingsData = Cache::rememberForever(
             ChallengeStatsCache::rankingKey($today->toDateString(), $trusted),
             fn () => $this->computeRankings($today, $trusted)
         );
 
+        $rankings = $this->hydrateRankings($rankingsData);
+
         return view('challenge.partials.ranking-tab', compact('rankings'));
     }
 
-    private function computeRankings(Carbon $today, bool $trusted): Collection
+    /**
+     * Returns plain ['user_id' => int, 'wins' => int] rows rather than User
+     * models: this gets cached forever (see ChallengeStatsCache), and the
+     * file cache driver (this app's production default — see .env.example)
+     * serializes cached values with PHP's serialize(), which is fragile for
+     * Eloquent models/Collections — see GameController::computeDamageStats()'s
+     * docblock, which hit exactly this as "incomplete object... unserialize()"
+     * once real requests round-tripped a cached User through it.
+     * hydrateRankings() rebuilds the actual User objects after reading the
+     * cache.
+     *
+     * @return list<array{user_id: int, wins: int}>
+     */
+    private function computeRankings(Carbon $today, bool $trusted): array
     {
         $earliestDay = $this->dailyChallenge->earliestDate();
 
         if ($earliestDay === null) {
-            return collect();
+            return [];
         }
 
         $results = $this->dailyChallenge->resultsBetween($earliestDay, $today, $trusted);
 
         $winningCombos = $results->pluck('combo')->filter(fn ($combo) => $combo !== null && $combo->user_iduser !== null);
-        $users = User::whereIn('iduser', $winningCombos->pluck('user_iduser')->unique())->get()->keyBy('iduser');
 
         return $winningCombos
             ->groupBy('user_iduser')
-            ->map(fn ($combos, $userId) => ['user' => $users[$userId], 'wins' => $combos->count()])
+            ->map(fn ($combos, $userId) => ['user_id' => (int) $userId, 'wins' => $combos->count()])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @param  list<array{user_id: int, wins: int}>  $rankingsData
+     */
+    private function hydrateRankings(array $rankingsData): Collection
+    {
+        $users = User::whereIn('iduser', collect($rankingsData)->pluck('user_id'))->get()->keyBy('iduser');
+
+        return collect($rankingsData)
+            ->map(fn (array $entry) => ['user' => $users->get($entry['user_id']), 'wins' => $entry['wins']])
+            // A ranked user deleted after their win was cached would
+            // otherwise render with a null user — drop them rather than
+            // erroring, same as if they'd never won at all.
+            ->filter(fn (array $entry) => $entry['user'] !== null)
             ->sortBy([
                 ['wins', 'desc'],
                 fn ($a, $b) => strcasecmp($a['user']->nickname, $b['user']->nickname),
@@ -107,13 +138,20 @@ class ChallengeController extends Controller
         $to = $yearEnd->min($today);
         $trusted = (bool) auth()->user()?->isTrusted();
 
+        // A plain array, not a Collection: even a Collection containing
+        // nothing but strings still fails to unserialize correctly through
+        // this app's file cache driver in practice — see
+        // GameController::computeDamageStats()'s docblock and
+        // ChallengeController::computeRankings()'s for the same failure
+        // ("incomplete object... unserialize()") hit with cached Eloquent
+        // models. A bare array of strings has no class to fail to load.
         $days = Cache::rememberForever(
             ChallengeStatsCache::calendarKey($year, $today->toDateString(), $trusted),
             fn () => $this->dailyChallenge->resultsBetween($from, $to, $trusted)->map(fn ($result) => match (true) {
                 $result['query'] === null => 'no_query',
                 $result['combo'] === null => 'open',
                 default => 'solved',
-            })
+            })->all()
         );
 
         return response()->json(['days' => $days, 'earliest' => $earliestDay->toDateString(), 'today' => $today->toDateString()]);

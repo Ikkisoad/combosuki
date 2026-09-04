@@ -12,6 +12,7 @@ use App\Services\DailyChallenge;
 use App\Support\DailyGameClock;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class ChallengeRankingTabTest extends TestCase
@@ -151,5 +152,46 @@ class ChallengeRankingTabTest extends TestCase
         $this->actingAs($trusted)
             ->get(route('challenge.tabs.ranking'))
             ->assertSee('Alice');
+    }
+
+    /**
+     * Regression test: the cached ranking used to be an
+     * Illuminate\Support\Collection of ['user' => User model, 'wins' => int]
+     * rows, which crashed with "incomplete object... unserialize()" the
+     * moment a real request round-tripped it through the file cache driver
+     * (this app's default outside tests — see .env.example) instead of the
+     * test suite's `array` driver, which never actually serializes anything
+     * and so never caught it — the exact same failure shape
+     * GameController::computeDamageStats() hit for the same reason.
+     * computeRankings() now stores plain user_id ints and hydrateRankings()
+     * rebuilds the User objects afterward; this exercises the real
+     * serialize()/unserialize() round trip to guard against that regressing.
+     */
+    public function test_ranking_survives_a_real_file_cache_round_trip(): void
+    {
+        config(['cache.default' => 'file']);
+        Cache::forgetDriver('file');
+
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Ryu', 'game_idgame' => $game->idgame]);
+        $type = GameEntry::create(['title' => 'Combo', 'gameid' => $game->idgame, 'order' => 0]);
+
+        $query = CharacterQuery::create(['game_idgame' => $game->idgame, 'label' => 'Any starter', 'filters' => [], 'order' => 0]);
+        $query->forceFill(['created_at' => Carbon::parse('2026-08-01 00:00:00')])->save();
+
+        $user = User::create(['nickname' => 'Alice', 'password' => 'secret']);
+        Combo::create([
+            'combo' => 'AAA BBB', 'character_idcharacter' => $character->idcharacter,
+            'submited' => now(), 'damage' => 1000, 'type' => $type->entryid, 'user_iduser' => $user->iduser, 'verified' => 1,
+        ]);
+
+        // First request computes and writes the cache entry to disk.
+        $this->get(route('challenge.tabs.ranking'))->assertOk()->assertSee('Alice');
+
+        // Second request reads the same entry back through a real
+        // unserialize() call — this is what crashed before the fix.
+        $this->get(route('challenge.tabs.ranking'))->assertOk()->assertSee('Alice');
+
+        Cache::store('file')->flush();
     }
 }
