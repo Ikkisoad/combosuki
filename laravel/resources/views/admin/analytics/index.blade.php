@@ -13,6 +13,7 @@
     ];
 
     $maxTypeViews = max(1, ...array_column($totals, 'views'));
+    $totalViews = array_sum(array_column($totals, 'views'));
 
     $topGamesRows = $topGames->map(fn ($g) => [
         'label' => $g->name,
@@ -85,6 +86,14 @@
         </p>
 
         <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3 mb-3">
+            <div class="col">
+                <div class="card combosuki-main-reversed text-white p-3 h-100">
+                    <div class="text-white-50 small text-uppercase">Total Views</div>
+                    <div class="fs-3 fw-bold">{{ number_format($totalViews) }}</div>
+                    <div class="text-white-50 small">across all content types</div>
+                </div>
+            </div>
+
             @foreach ($totals as $key => $data)
                 @php $avg = $data['count'] > 0 ? $data['views'] / $data['count'] : 0; @endphp
                 <div class="col">

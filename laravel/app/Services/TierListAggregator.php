@@ -32,10 +32,10 @@ class TierListAggregator
         $tierListCount = $entries->pluck('tier_list_idtier_list')->unique()->count();
 
         // Within a single tier list's tier, a character's drag position (best
-        // first) is folded into its rank as a fractional offset in [0, 1), so
-        // two votes for the same tier aren't treated as identical: one placed
-        // near the top of the tier ranks slightly better than one placed near
-        // the bottom.
+        // first) is folded into a fractional offset in [0, 1). This never
+        // moves a character into a different tier bucket by itself — it only
+        // breaks ties for display order among characters the community
+        // already agreed belong in the same tier.
         $positionOffsets = [];
 
         foreach ($entries->groupBy(fn ($entry) => $entry->tier_list_idtier_list.'|'.$entry->tier) as $group) {
@@ -49,7 +49,25 @@ class TierListAggregator
 
         $characters = $entries->groupBy(fn ($entry) => $entry->character_idcharacter.'|'.($entry->resources_values_idResources_values ?? ''))
             ->map(function (Collection $characterEntries) use ($tierRank, $positionOffsets, $maxRank) {
-                $ranks = $characterEntries
+                // The tier bucket is decided purely by the tiers voters
+                // actually chose: if every tier list agrees, the median
+                // equals that tier exactly, so a character only moves when
+                // different tier lists disagree about it.
+                $tierVotes = $characterEntries
+                    ->map(fn ($entry) => $tierRank[$entry->tier] ?? null)
+                    ->filter(fn ($rank) => $rank !== null)
+                    ->sort()
+                    ->values();
+
+                if ($tierVotes->isEmpty()) {
+                    return null;
+                }
+
+                $medianRank = min((int) round($this->median($tierVotes)), $maxRank);
+
+                // Within the tier a character was bucketed into, its display
+                // order is still driven by within-tier drag position.
+                $sortRanks = $characterEntries
                     ->map(function ($entry) use ($tierRank, $positionOffsets) {
                         $rank = $tierRank[$entry->tier] ?? null;
 
@@ -59,24 +77,12 @@ class TierListAggregator
                     ->sort()
                     ->values();
 
-                if ($ranks->isEmpty()) {
-                    return null;
-                }
-
-                $count = $ranks->count();
-                $middle = intdiv($count, 2);
-                $median = $count % 2 === 1
-                    ? $ranks[$middle]
-                    : ($ranks[$middle - 1] + $ranks[$middle]) / 2;
-
-                $medianRank = min((int) round($median), $maxRank);
-
                 return [
                     'character' => $characterEntries->first()->character,
                     'resourceValue' => $characterEntries->first()->resourceValue,
                     'tier' => TierListEntry::TIERS[$medianRank],
-                    'votes' => $count,
-                    'medianPosition' => $median,
+                    'votes' => $tierVotes->count(),
+                    'medianPosition' => $this->median($sortRanks),
                 ];
             })
             ->filter()
@@ -96,5 +102,15 @@ class TierListAggregator
             'tiers' => $tiers,
             'tierListCount' => $tierListCount,
         ];
+    }
+
+    private function median(Collection $sortedValues): float
+    {
+        $count = $sortedValues->count();
+        $middle = intdiv($count, 2);
+
+        return $count % 2 === 1
+            ? $sortedValues[$middle]
+            : ($sortedValues[$middle - 1] + $sortedValues[$middle]) / 2;
     }
 }

@@ -255,15 +255,16 @@ class GameTierListAggregateTest extends TestCase
         $response->assertSee('No tier lists for this game yet in the selected range.');
     }
 
-    public function test_tier_lists_tab_endpoint_weighs_within_tier_position_into_the_median(): void
+    public function test_tier_lists_tab_endpoint_keeps_agreed_tier_despite_last_place_position(): void
     {
         $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
         $filler = Character::create(['name' => 'Filler', 'game_idgame' => $game->idgame]);
         $character = Character::create(['name' => 'Valentine', 'game_idgame' => $game->idgame]);
 
         // Both votes place Valentine in S, but always dead last in a two-slot
-        // S tier (behind Filler) — that consistently-worst position should
-        // pull the median down into A, not leave it at S.
+        // S tier (behind Filler). Every tier list agrees Valentine is S, so
+        // it must stay in S — within-tier position only affects display
+        // order, never which tier bucket a character lands in.
         $listA = TierList::create(['title' => 'List A', 'game_idgame' => $game->idgame]);
         $listA->entries()->create(['character_idcharacter' => $filler->idcharacter, 'tier' => 'S', 'order' => 0]);
         $listA->entries()->create(['character_idcharacter' => $character->idcharacter, 'tier' => 'S', 'order' => 1]);
@@ -279,19 +280,55 @@ class GameTierListAggregateTest extends TestCase
         $content = $response->getContent();
         $sRowPos = strpos($content, 'tier-s');
         $aRowPos = strpos($content, 'tier-a');
-        $bRowPos = strpos($content, 'tier-b');
         $fillerPos = strpos($content, 'Filler');
         $namePos = strpos($content, 'Valentine');
 
-        // Filler was always first in S, so it stays in S.
+        // Both characters stay in S, since neither tier list disagreed.
         $this->assertNotFalse($fillerPos);
+        $this->assertNotFalse($namePos);
         $this->assertGreaterThan($sRowPos, $fillerPos);
         $this->assertLessThan($aRowPos, $fillerPos);
+        $this->assertGreaterThan($sRowPos, $namePos);
+        $this->assertLessThan($aRowPos, $namePos);
 
-        // Valentine was always last in S, so position pulls it down into A.
-        $this->assertNotFalse($namePos);
-        $this->assertGreaterThan($aRowPos, $namePos);
-        $this->assertLessThan($bRowPos, $namePos);
+        // Filler was always first in S, Valentine always last: position
+        // still drives display order within the row.
+        $this->assertLessThan($namePos, $fillerPos);
+    }
+
+    public function test_tier_lists_tab_endpoint_does_not_resort_a_single_tier_list_by_position(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $first = Character::create(['name' => 'Goku', 'game_idgame' => $game->idgame]);
+        $second = Character::create(['name' => 'Vegeta', 'game_idgame' => $game->idgame]);
+        $third = Character::create(['name' => 'Piccolo', 'game_idgame' => $game->idgame]);
+        $fourth = Character::create(['name' => 'Gohan', 'game_idgame' => $game->idgame]);
+
+        // A single tier list with four characters in S. There is no other
+        // tier list to disagree with it, so all four must render in S —
+        // none should be pulled down purely because of their drag position
+        // within the tier.
+        $list = TierList::create(['title' => 'Solo List', 'game_idgame' => $game->idgame]);
+        $list->entries()->create(['character_idcharacter' => $first->idcharacter, 'tier' => 'S', 'order' => 0]);
+        $list->entries()->create(['character_idcharacter' => $second->idcharacter, 'tier' => 'S', 'order' => 1]);
+        $list->entries()->create(['character_idcharacter' => $third->idcharacter, 'tier' => 'S', 'order' => 2]);
+        $list->entries()->create(['character_idcharacter' => $fourth->idcharacter, 'tier' => 'S', 'order' => 3]);
+
+        $response = $this->get(route('games.tabs.tier-lists', $game));
+
+        $response->assertOk();
+
+        $content = $response->getContent();
+        $sRowPos = strpos($content, 'tier-s');
+        $aRowPos = strpos($content, 'tier-a');
+
+        foreach ([$first, $second, $third, $fourth] as $character) {
+            $namePos = strpos($content, $character->name);
+
+            $this->assertNotFalse($namePos, "{$character->name} should be present");
+            $this->assertGreaterThan($sRowPos, $namePos, "{$character->name} should be in the S row");
+            $this->assertLessThan($aRowPos, $namePos, "{$character->name} should not be pulled into A");
+        }
     }
 
     public function test_tier_lists_tab_endpoint_orders_a_tier_row_by_within_tier_position_not_alphabetically(): void
