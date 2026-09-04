@@ -135,6 +135,9 @@
                             <button class="nav-link" id="matches-tab" data-bs-toggle="tab" data-bs-target="#matches-pane" type="button" role="tab" aria-controls="matches-pane" aria-selected="false">Latest Matches</button>
                         </li>
                     @endif
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="randomizer-tab" data-bs-toggle="tab" data-bs-target="#randomizer-pane" type="button" role="tab" aria-controls="randomizer-pane" aria-selected="false">Randomizer</button>
+                    </li>
                 </ul>
 
                 <div class="tab-content combosuki-main-reversed text-white p-3 border border-top-0" id="game-tabs-content">
@@ -226,6 +229,46 @@
                             <div id="matches-results" data-endpoint="{{ route('games.tabs.matches', $game) }}"></div>
                         </div>
                     @endif
+
+                    <div class="tab-pane fade" id="randomizer-pane" role="tabpanel" aria-labelledby="randomizer-tab">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h4 class="mb-0">Randomizer</h4>
+                            @if ($characters->isNotEmpty())
+                                <button type="button" class="btn btn-combosuki text-white btn-sm" id="randomizer-roll">Randomize</button>
+                            @endif
+                        </div>
+
+                        @if ($characters->isEmpty())
+                            <p class="text-white-50">No characters yet for this game.</p>
+                        @else
+                            <p class="text-white-50">Roll a random character{{ $primaryResources->isNotEmpty() ? ' and situation' : '' }}, then submit a combo for it.</p>
+
+                            @php
+                                $randomizerData = [
+                                    'characters' => $characters->map(fn ($character) => [
+                                        'id' => $character->idcharacter,
+                                        'name' => $character->name,
+                                    ])->values(),
+                                    'resources' => $primaryResources->map(fn ($resource) => [
+                                        'id' => $resource->idgame_resources,
+                                        'name' => $resource->text_name,
+                                        'type' => $resource->type,
+                                        'values' => $resource->values->sortBy([['order', 'asc'], ['value', 'asc']])->map(fn ($value) => [
+                                            'id' => $value->idResources_values,
+                                            'value' => $value->value,
+                                        ])->values(),
+                                    ])->values(),
+                                ];
+                            @endphp
+                            <script id="randomizer-data" type="application/json">@json($randomizerData)</script>
+
+                            <div class="card bg-dark p-3 mb-3" id="randomizer-result">
+                                <p class="text-white-50 mb-0">Click Randomize to roll a character{{ $primaryResources->isNotEmpty() ? ' and situation' : '' }}.</p>
+                            </div>
+
+                            <a href="{{ route('games.combos.create', $game) }}" id="randomizer-submit" class="btn btn-primary d-none" data-base-href="{{ route('games.combos.create', $game) }}">Submit a combo with this roll</a>
+                        @endif
+                    </div>
                 </div>
             </main>
         </div>
@@ -246,6 +289,10 @@
             var tierResults = document.getElementById('tier-lists-results');
             var tierForm = document.getElementById('tier-date-range-form');
             var tierPatchInput = document.getElementById('tier_patch');
+            var randomizerRollButton = document.getElementById('randomizer-roll');
+            var randomizerResult = document.getElementById('randomizer-result');
+            var randomizerSubmitLink = document.getElementById('randomizer-submit');
+            var randomizerDataScript = document.getElementById('randomizer-data');
 
             function loadGuides() {
                 if (guidesResults.dataset.loaded === '1') {
@@ -326,6 +373,69 @@
                     .catch(function () {
                         matchesResults.innerHTML = '<p class="text-danger">Failed to load matches.</p>';
                     });
+            }
+
+            function randomItem(list) {
+                return list[Math.floor(Math.random() * list.length)];
+            }
+
+            function randomInt(min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+
+            function appendRandomizerRow(label, value) {
+                var row = document.createElement('div');
+                var strong = document.createElement('strong');
+                strong.textContent = label + ': ';
+                row.appendChild(strong);
+                row.appendChild(document.createTextNode(value));
+                randomizerResult.appendChild(row);
+            }
+
+            function rollRandomizer() {
+                var data = JSON.parse(randomizerDataScript.textContent);
+                var params = new URLSearchParams();
+                var resourcesRoll = {};
+                var character = randomItem(data.characters);
+
+                params.set('character_idcharacter', character.id);
+                randomizerResult.innerHTML = '';
+                appendRandomizerRow('Character', character.name);
+
+                data.resources.forEach(function (resource) {
+                    if (resource.values.length === 0) {
+                        return;
+                    }
+
+                    if (resource.type === 1) {
+                        var value = randomItem(resource.values);
+                        resourcesRoll[resource.id] = value.id;
+                        appendRandomizerRow(resource.name, value.value);
+                    } else if (resource.type === 3) {
+                        var first = randomItem(resource.values);
+                        var second = randomItem(resource.values);
+                        resourcesRoll[resource.id] = [first.id, second.id];
+                        appendRandomizerRow(resource.name, first.value + ', ' + second.value);
+                    } else {
+                        var bound = Number(resource.values[0].value) || 0;
+                        var rolled = randomInt(-bound, bound);
+                        resourcesRoll[resource.id] = rolled;
+                        appendRandomizerRow(resource.name, rolled);
+                    }
+                });
+
+                // resourcesRoll travels as a single JSON-encoded param rather
+                // than resources[id]=value query syntax because
+                // GuardScalarQueryParameters strips array-valued query-string
+                // params globally.
+                params.set('resources', JSON.stringify(resourcesRoll));
+
+                randomizerSubmitLink.href = randomizerSubmitLink.dataset.baseHref + '?' + params.toString();
+                randomizerSubmitLink.classList.remove('d-none');
+            }
+
+            if (randomizerRollButton) {
+                randomizerRollButton.addEventListener('click', rollRandomizer);
             }
 
             function activateTab(tabButton, pane) {

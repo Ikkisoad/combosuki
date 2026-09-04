@@ -332,7 +332,7 @@ class ComboController extends Controller
             ->first();
 
         if (! $characterQuery) {
-            return [];
+            return $this->defaultsFromRandomizer($request);
         }
 
         $filters = $characterQuery->filters ?? [];
@@ -383,6 +383,35 @@ class ComboController extends Controller
             }
 
             $defaults['resources'][$resource->idgame_resources] = $value;
+        }
+
+        return $defaults;
+    }
+
+    /**
+     * The game page's Randomizer tab rolls a character and primary resource
+     * values client-side, then links here with a `character_idcharacter`
+     * param and the resource roll as a `resources` param, so the form starts
+     * pre-filled with that roll instead of making the visitor re-enter it by
+     * hand. `resources` travels as a JSON-encoded scalar (`{"3":5,"7":[1,2]}`)
+     * rather than PHP's `resources[3]=5` array query syntax because
+     * GuardScalarQueryParameters strips array-valued query-string params
+     * globally.
+     */
+    private function defaultsFromRandomizer(Request $request): array
+    {
+        $defaults = [];
+
+        if ($request->filled('character_idcharacter')) {
+            $defaults['character_idcharacter'] = $request->integer('character_idcharacter');
+        }
+
+        if ($request->filled('resources')) {
+            $resources = json_decode($request->string('resources'), true);
+
+            if (is_array($resources)) {
+                $defaults['resources'] = $resources;
+            }
         }
 
         return $defaults;

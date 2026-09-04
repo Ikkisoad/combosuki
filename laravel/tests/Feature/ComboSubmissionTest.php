@@ -209,6 +209,52 @@ class ComboSubmissionTest extends TestCase
             ->assertSee('value="'.$corner->idResources_values.'" selected', false);
     }
 
+    public function test_arriving_from_the_randomizer_prefills_the_rolled_character_and_resources(): void
+    {
+        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
+
+        $this->post(route('games.store'), [
+            'name' => 'New Fighter',
+            'image' => 'https://example.com/new-fighter.png',
+        ]);
+
+        $game = Game::where('name', 'New Fighter')->firstOrFail();
+        $character = Character::where('game_idgame', $game->idgame)->firstOrFail();
+        $whereResource = GameResource::where('game_idgame', $game->idgame)->where('text_name', 'Where?')->firstOrFail();
+        $corner = ResourceValue::where('game_resources_idgame_resources', $whereResource->idgame_resources)->where('value', 'Corner')->firstOrFail();
+
+        $resources = json_encode([$whereResource->idgame_resources => $corner->idResources_values]);
+
+        $response = $this->get(route('games.combos.create', $game).'?character_idcharacter='.$character->idcharacter
+            .'&resources='.urlencode($resources));
+
+        $response->assertOk()
+            ->assertSee('value="'.$character->idcharacter.'" selected', false)
+            ->assertSee('value="'.$corner->idResources_values.'" selected', false);
+    }
+
+    public function test_the_game_pages_randomizer_tab_ships_characters_and_primary_resources_for_the_client_side_roll(): void
+    {
+        $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
+
+        $this->post(route('games.store'), [
+            'name' => 'New Fighter',
+            'image' => 'https://example.com/new-fighter.png',
+        ]);
+
+        $game = Game::where('name', 'New Fighter')->firstOrFail();
+        $character = Character::where('game_idgame', $game->idgame)->firstOrFail();
+        $whereResource = GameResource::where('game_idgame', $game->idgame)->where('text_name', 'Where?')->firstOrFail();
+
+        $this->get(route('games.show', $game))
+            ->assertOk()
+            ->assertSee('id="randomizer-tab"', false)
+            ->assertSee('id="randomizer-data"', false)
+            ->assertSee('"name":"'.$character->name.'"', false)
+            ->assertSee('"name":"Where?"', false)
+            ->assertSee('"id":'.$whereResource->idgame_resources, false);
+    }
+
     public function test_secondary_resources_render_with_their_linked_characters_for_the_combo_forms_toggle(): void
     {
         $this->actingAs(User::create(['nickname' => 'trusted', 'password' => 'password123', 'trusted_user' => true]));
