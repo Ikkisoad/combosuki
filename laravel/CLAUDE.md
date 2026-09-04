@@ -1,3 +1,11 @@
+# combosuki (Laravel app)
+
+A fighting-game combo database: users browse games/characters, submit and search combo notation, curate guide "lists," and hit a few side features (daily challenge, a Wordle-style "Comble" puzzle, tier lists, a Discord bot/Activity). Laravel 13 / PHP 8.4, Blade + Vite + per-feature vanilla JS modules (no Vue/React/Livewire/Inertia), SQLite locally / MySQL in production.
+
+**Read [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) before making non-trivial changes** — it covers the route map, data model, and business rules (combo-notation rendering, the daily challenge's pick-then-freeze algorithm, event-driven damage/challenge-stat caching, the auth-tier/policy model, and the opt-in-JSON exception-rendering rule) that aren't obvious from a quick read of the code.
+
+**When a business rule changes** (a new auth tier, a new caching strategy, a new notation rule, a new route-group pattern, etc.), **update `docs/ARCHITECTURE.md` in the same change** — the same discipline as the testing policy below, applied to documentation instead of tests.
+
 # Testing policy
 
 - Every new feature (controller action, service method, policy rule, form request rule) must ship with a test in the same change: `tests/Unit` for pure/isolated logic, `tests/Feature` for anything touching Eloquent, HTTP, or the database.
