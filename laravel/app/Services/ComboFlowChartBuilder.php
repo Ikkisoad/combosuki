@@ -96,6 +96,21 @@ class ComboFlowChartBuilder
     }
 
     /**
+     * The ordered move list for one specific $combo — used by combo trials
+     * (the input viewer's "practice this combo" mode) to know, in order,
+     * what the player needs to press next. Same shape moveTokens() already
+     * produces per move: ['key' => lowercase notation, 'label' => display
+     * text, 'color' => hex or null].
+     */
+    public function movesForCombo(Combo $combo): array
+    {
+        $character = $combo->character;
+        [$buttons, $ignoredButtons, $aliases] = $this->loadContext($character);
+
+        return $this->moveTokens($character->game, (string) $combo->combo, $buttons, $ignoredButtons, $aliases);
+    }
+
+    /**
      * Everything moveTokens() needs to process every one of $character's
      * combos without re-querying per combo: $character->game's buttons (for
      * tokenize()), the subset of those flagged ignored (e.g. the ">" chain

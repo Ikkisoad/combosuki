@@ -248,6 +248,27 @@ class ComboFlowChartBuilderTest extends TestCase
         $this->assertIsString($this->findMove($moves, 'hp')['key']);
     }
 
+    public function test_moves_for_combo_returns_the_ordered_move_list_for_one_combo(): void
+    {
+        $game = $this->makeGame();
+        $character = Character::create(['name' => 'Valentine', 'game_idgame' => $game->idgame]);
+        Button::create(['name' => '2LK', 'color' => '#ff0000', 'match_type' => 'exact', 'game_idgame' => $game->idgame, 'order' => 1]);
+        Button::create(['name' => '5LK', 'color' => '#00ff00', 'match_type' => 'exact', 'game_idgame' => $game->idgame, 'order' => 2]);
+        Button::create(['name' => '>', 'color' => '#ffffff', 'match_type' => 'exact', 'game_idgame' => $game->idgame, 'order' => 3, 'ignored' => true]);
+
+        $combo = Combo::create(['combo' => '2LK > 5LK', 'character_idcharacter' => $character->idcharacter, 'submited' => now(), 'damage' => 100, 'type' => 1]);
+
+        $moves = $this->builder->movesForCombo($combo);
+
+        $this->assertSame(
+            [
+                ['key' => '2lk', 'label' => '2LK', 'color' => '#ff0000'],
+                ['key' => '5lk', 'label' => '5LK', 'color' => '#00ff00'],
+            ],
+            $moves
+        );
+    }
+
     public function test_matching_combos_returns_combos_whose_sequence_starts_with_the_path(): void
     {
         $game = $this->makeGame();

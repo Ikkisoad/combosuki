@@ -54,6 +54,10 @@ const DEFAULT_SETTINGS = {
     // reserved for this and excluded from the mappable button list, the
     // same way d-pad buttons are excluded once they're read as directions.
     recordingHotkeyButtonIndex: null,
+    // How long (seconds) a combo trial can go without a new correct input
+    // before its progress resets back to the first move — see
+    // advanceTrialWithBeat()/pollGamepad()'s timeout check.
+    trialResetSeconds: 3,
 };
 
 // Standard numpad notation, used as a direction's notation fallback until
@@ -112,15 +116,18 @@ const DIRECTION_PARTS = {
 function loadStore() {
     try {
         const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return { profiles: {}, settings: { ...DEFAULT_SETTINGS }, lastGamepadId: null };
+        if (!raw) return { profiles: {}, settings: { ...DEFAULT_SETTINGS }, lastGamepadId: null, trial: null };
         const parsed = JSON.parse(raw);
         return {
             profiles: parsed.profiles || {},
             settings: { ...DEFAULT_SETTINGS, ...(parsed.settings || {}) },
             lastGamepadId: parsed.lastGamepadId || null,
+            // The active combo trial (comboId/characterName/moves), or null
+            // if none is loaded — see loadTrial()/renderTrialDisplay().
+            trial: parsed.trial || null,
         };
     } catch {
-        return { profiles: {}, settings: { ...DEFAULT_SETTINGS }, lastGamepadId: null };
+        return { profiles: {}, settings: { ...DEFAULT_SETTINGS }, lastGamepadId: null, trial: null };
     }
 }
 
@@ -218,6 +225,60 @@ function collectImageSources(profile, excludeKind, excludeKey) {
 
 function roundAxis(value) {
     return parseFloat(value.toFixed(5));
+}
+
+// Fresh mutable state for foldEntryIntoBeat() — one instance per consumer
+// (collapseRecordingEntries() creates a throwaway one per call; the live
+// combo-trial matcher keeps one for the whole polling session, reset
+// whenever a trial is (re)loaded or its progress resets).
+function createBeatFolderState() {
+    return { pendingDirections: [], previousButtons: [] };
+}
+
+// Incrementally folds one raw polled entry ({direction, buttons, frames})
+// into a "beat" ({directions, buttons, frames}), mutating $state in place.
+// Returns null when the entry only extended the pending motion buffer, or
+// was a dropped duplicate (see below) — i.e. no beat completed yet.
+//
+// A direction stick and a held button rarely release on the exact same poll
+// tick — one lags the other by a frame or two, producing a spurious extra
+// entry with the same buttons (or a subset of them) under a now-decayed
+// direction. Nothing NEW was pressed, so it's not a new beat — drop it, but
+// still track it so a further wobble on the way down keeps getting dropped.
+//
+// Bare (button-less) entries are always a real motion step, so just
+// accumulate it, deduped against the last step. A button entry's own
+// direction is what actually happened at the moment of the press: landing
+// back at neutral ("idle") breaks any in-progress motion — rather than
+// either dropping it or leaking the stale lead-in through, this reports
+// ['idle'] explicitly (idle is otherwise only ever meant to be ignored when
+// nothing is pressed alongside it).
+function foldEntryIntoBeat(state, entry) {
+    if (entry.buttons.length > 0 && state.previousButtons.length > 0 && entry.buttons.every((b) => state.previousButtons.includes(b))) {
+        state.previousButtons = entry.buttons;
+        return null;
+    }
+    state.previousButtons = entry.buttons;
+
+    if (entry.buttons.length === 0) {
+        if (state.pendingDirections[state.pendingDirections.length - 1] !== entry.direction) {
+            state.pendingDirections.push(entry.direction);
+        }
+        return null;
+    }
+
+    let directions;
+    if (entry.direction === 'idle') {
+        directions = ['idle'];
+    } else if (state.pendingDirections[state.pendingDirections.length - 1] === entry.direction) {
+        directions = state.pendingDirections;
+    } else {
+        directions = [...state.pendingDirections, entry.direction];
+    }
+
+    state.pendingDirections = [];
+
+    return { directions, buttons: entry.buttons, frames: entry.frames };
 }
 
 function directionsShareCharge(lastDir, newDir) {
@@ -368,6 +429,24 @@ function initInputViewer() {
     const notationOutputEl = document.getElementById('recording-notation');
     const copyNotationButton = document.getElementById('recording-copy');
 
+    const trialDisplayEl = document.getElementById('trial-display');
+    const trialCharacterEl = document.getElementById('trial-character');
+    const trialMovesEl = document.getElementById('trial-moves');
+    const trialCurrentEl = document.getElementById('trial-current');
+    const trialCurrentLabelEl = document.getElementById('trial-current-label');
+    const trialCurrentLinkEl = document.getElementById('trial-current-link');
+    const trialClearButton = document.getElementById('trial-clear');
+    const trialTimeoutInput = document.getElementById('setting-trial-timeout');
+    const trialComboIdInput = document.getElementById('trial-combo-id-input');
+    const trialLoadByIdButton = document.getElementById('trial-load-by-id-btn');
+    const trialComboIdWarningEl = document.getElementById('trial-combo-id-warning');
+    const trialGameSelectEl = document.getElementById('trial-game-select');
+    const trialGuideSelectEl = document.getElementById('trial-guide-select');
+    const trialCombosSectionEl = document.getElementById('trial-combos-section');
+    const trialComboSearchInput = document.getElementById('trial-combo-search');
+    const trialComboSearchButton = document.getElementById('trial-combo-search-btn');
+    const trialComboResultsEl = document.getElementById('trial-combo-results');
+
     let currentGamepadIndex = null;
     let currentGamepadId = null;
     let panelHidden = false;
@@ -393,6 +472,15 @@ function initInputViewer() {
     let listeningForHotkey = false;
     let listeningForGamepadHotkey = false;
     let previousRawPressedButtons = new Set();
+
+    // Combo trial live-matching state — how far into store.trial.moves the
+    // player has correctly progressed, when that last happened (for the
+    // reset-after-timeout check in pollGamepad), a search-scoped guide id,
+    // and the incremental beat-folding state (see foldEntryIntoBeat()).
+    let trialProgress = 0;
+    let trialLastBeatAt = 0;
+    let currentTrialGuideId = null;
+    let trialBeatState = createBeatFolderState();
 
     function currentProfile() {
         return currentGamepadId ? getProfile(store, currentGamepadId) : null;
@@ -507,6 +595,10 @@ function initInputViewer() {
             return;
         }
 
+        if (store.trial && trialProgress > 0 && Date.now() - trialLastBeatAt > store.settings.trialResetSeconds * 1000) {
+            resetTrialProgress();
+        }
+
         const excludeDpadButtons = dpadButtonIndicesActive(gp);
         const direction = getDirection(gp);
 
@@ -582,6 +674,11 @@ function initInputViewer() {
 
             if (isRecording && isMeaningfulInput) {
                 recordingBuffer.push({ direction, buttons: [...buttonIndices], frames: 1 });
+            }
+
+            if (isMeaningfulInput) {
+                const beat = foldEntryIntoBeat(trialBeatState, { direction, buttons: [...buttonIndices], frames: 1 });
+                if (beat) advanceTrialWithBeat(beat.directions, beat.buttons);
             }
         }
 
@@ -915,70 +1012,290 @@ function initInputViewer() {
     // 236 leading into a button produces one bare entry per direction step
     // (2, 3, 6, 6B0). Neither is a distinct "beat" on its own — a bare
     // entry only means something once it lands on a button (or the
-    // recording ends mid-motion). This walks the raw buffer collecting
-    // direction changes into a pending motion buffer and flushes that
-    // buffer — concatenated, e.g. "236" — into whatever comes next: a
+    // recording ends mid-motion). foldEntryIntoBeat() walks the raw buffer
+    // collecting direction changes into a pending motion buffer and flushes
+    // that buffer — concatenated, e.g. "236" — into whatever comes next: a
     // button press (producing "236B0"), or nothing (a trailing motion with
-    // no button after it, kept on its own). A button entry's own direction
-    // always joins the buffer too, deduped only against the immediately
-    // preceding step, so "2B0, 2B3, 2B5" each still show their own "2"
-    // (repetition across separate beats is meaningful) while "2, 3, 6, 6B0"
-    // collapses the redundant lead-in "2"/"6" into a single "236B0".
+    // no button after it, which only this post-hoc pass — not the live
+    // combo-trial matcher, which never "ends" — keeps as a beat of its own).
     function collapseRecordingEntries(rawEntries) {
+        const state = createBeatFolderState();
         const result = [];
-        let pendingDirections = [];
-        let previousButtons = [];
 
         rawEntries.forEach((entry) => {
-            // The direction stick and a held button rarely release on the
-            // exact same poll tick — one lags the other by a frame or two,
-            // producing a spurious extra entry with the same buttons (or a
-            // subset of them) under a now-decayed direction, e.g. a real
-            // "236B0" followed by a trailing "idle,[0]" as the stick
-            // relaxes while B0 is still held. Nothing NEW was pressed, so
-            // it's not a new beat — drop it, but still track it so a
-            // further wobble on the way down keeps getting dropped too.
-            if (entry.buttons.length > 0 && previousButtons.length > 0 && entry.buttons.every((b) => previousButtons.includes(b))) {
-                previousButtons = entry.buttons;
-                return;
-            }
-            previousButtons = entry.buttons;
-
-            // Bare (button-less) entries are always a real motion step —
-            // pollGamepad never records one at idle with nothing pressed —
-            // so just accumulate it, deduped against the last step.
-            if (entry.buttons.length === 0) {
-                if (pendingDirections[pendingDirections.length - 1] !== entry.direction) {
-                    pendingDirections.push(entry.direction);
-                }
-                return;
-            }
-
-            // A button entry's own direction is what actually happened at
-            // the moment of the press. Landing back at neutral ("idle")
-            // breaks any in-progress motion — rather than either dropping
-            // it or leaking the stale lead-in through, show "5" (or
-            // whatever idle is named) explicitly, since idle is only ever
-            // meant to be ignored when nothing is pressed alongside it.
-            let directions;
-            if (entry.direction === 'idle') {
-                directions = ['idle'];
-            } else if (pendingDirections[pendingDirections.length - 1] === entry.direction) {
-                directions = pendingDirections;
-            } else {
-                directions = [...pendingDirections, entry.direction];
-            }
-
-            result.push({ directions, buttons: entry.buttons, frames: entry.frames });
-            pendingDirections = [];
+            const beat = foldEntryIntoBeat(state, entry);
+            if (beat) result.push(beat);
         });
 
-        if (pendingDirections.length > 0) {
-            result.push({ directions: pendingDirections, buttons: [], frames: 1 });
+        if (state.pendingDirections.length > 0) {
+            result.push({ directions: state.pendingDirections, buttons: [], frames: 1 });
         }
 
         return result;
     }
+
+    function resetTrialProgress() {
+        trialProgress = 0;
+        trialBeatState = createBeatFolderState();
+        renderTrialDisplay();
+    }
+
+    // Called from pollGamepad (via foldEntryIntoBeat) every time a beat
+    // (direction(s) + at least one button) completes. Compares it, in the
+    // same notation format buildNotationString() writes for the Recording
+    // tab, against the trial's next expected move.
+    function advanceTrialWithBeat(directions, buttons) {
+        if (!store.trial || store.trial.moves.length === 0) return;
+
+        const profile = currentProfile();
+        if (!profile) return;
+
+        const dirToken = directions.map((d) => getNotationName(profile, 'direction', d)).join('');
+        const buttonToken = buttons.map((b) => getNotationName(profile, 'button', String(b))).join('');
+        const token = (dirToken + buttonToken).toLowerCase();
+
+        const expectedMove = store.trial.moves[trialProgress];
+
+        if (expectedMove && token === expectedMove.key) {
+            trialProgress++;
+            trialLastBeatAt = Date.now();
+        } else if (trialProgress > 0 && token === store.trial.moves[0].key) {
+            // Treat the offending input as the start of a fresh attempt
+            // instead of just dropping it — matches how players actually
+            // restart a combo after a drop. Also covers restarting right
+            // after finishing (trialProgress === moves.length, so
+            // expectedMove is undefined above).
+            trialProgress = 1;
+            trialLastBeatAt = Date.now();
+        } else {
+            trialProgress = 0;
+        }
+
+        renderTrialDisplay();
+    }
+
+    function renderTrialDisplay() {
+        const moves = store.trial?.moves || [];
+        const hasTrial = moves.length > 0;
+
+        trialDisplayEl.hidden = !hasTrial;
+        trialCurrentEl.hidden = !hasTrial;
+
+        if (!hasTrial) {
+            trialMovesEl.innerHTML = '';
+            trialCharacterEl.textContent = '';
+            return;
+        }
+
+        trialCharacterEl.textContent = store.trial.characterName || '';
+        trialCurrentLabelEl.textContent = `Loaded: ${moves.map((m) => m.label).join(' ')}`;
+        trialCurrentLinkEl.href = trialDisplayEl.dataset.comboShowUrlTemplate.replace('__COMBO__', store.trial.comboId);
+
+        trialMovesEl.innerHTML = '';
+        moves.forEach((move, index) => {
+            const chip = document.createElement('span');
+            chip.className = 'trial-move';
+            // Highlighting which move is "up next" (a glow/outline on the
+            // current index) is deferred to a later update — V1 only marks
+            // moves already hit correctly, via .done below.
+            if (index < trialProgress) chip.classList.add('done');
+            if (move.color) chip.style.color = move.color;
+            chip.textContent = move.label;
+            trialMovesEl.appendChild(chip);
+        });
+    }
+
+    function fetchTrialJson(url) {
+        return fetch(url, { headers: { Accept: 'application/json' } }).then((response) => {
+            if (!response.ok) throw new Error('Request failed');
+            return response.json();
+        });
+    }
+
+    function renderTrialListEmpty(container, message) {
+        container.innerHTML = '';
+        const empty = document.createElement('p');
+        empty.className = 'radio-list-empty';
+        empty.textContent = message;
+        container.appendChild(empty);
+    }
+
+    // Populates the Guide <select> with every guide for the chosen game
+    // (see InputViewerTrialController::searchGuides — a game_idgame filter
+    // switches it from "top guides by views" to "every guide, alphabetical",
+    // since this is now a browse list rather than a free-text search).
+    function loadTrialGuidesForGame(gameId) {
+        trialGuideSelectEl.disabled = true;
+        trialGuideSelectEl.innerHTML = '<option value="">Loading…</option>';
+        trialCombosSectionEl.hidden = true;
+
+        fetchTrialJson(trialDisplayEl.dataset.guidesSearchUrl + '?game_idgame=' + encodeURIComponent(gameId))
+            .then((data) => renderTrialGuideOptions(data.guides || []))
+            .catch(() => {
+                trialGuideSelectEl.innerHTML = '<option value="">Failed to load guides.</option>';
+            });
+    }
+
+    function renderTrialGuideOptions(guides) {
+        trialGuideSelectEl.innerHTML = '';
+
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = guides.length === 0 ? 'No guides found for this game.' : 'Select a guide…';
+        trialGuideSelectEl.appendChild(placeholder);
+
+        guides.forEach((guide) => {
+            const option = document.createElement('option');
+            option.value = String(guide.idlist);
+            option.textContent = guide.list_name;
+            trialGuideSelectEl.appendChild(option);
+        });
+
+        trialGuideSelectEl.disabled = guides.length === 0;
+    }
+
+    function selectTrialGuide(guideId) {
+        currentTrialGuideId = guideId;
+        trialCombosSectionEl.hidden = false;
+        trialComboSearchInput.value = '';
+        searchTrialCombos();
+    }
+
+    function searchTrialCombos() {
+        if (currentTrialGuideId === null) return;
+
+        const params = new URLSearchParams();
+        if (trialComboSearchInput.value.trim()) params.set('q', trialComboSearchInput.value.trim());
+
+        const url = trialDisplayEl.dataset.guideCombosUrlTemplate.replace('__LIST__', currentTrialGuideId)
+            + (params.toString() ? '?' + params.toString() : '');
+
+        fetchTrialJson(url)
+            .then((data) => renderTrialComboResults(data.combos || []))
+            .catch(() => renderTrialListEmpty(trialComboResultsEl, 'Failed to load combos.'));
+    }
+
+    function renderTrialComboResults(combos) {
+        if (combos.length === 0) {
+            renderTrialListEmpty(trialComboResultsEl, 'No combos found in this guide.');
+            return;
+        }
+
+        trialComboResultsEl.innerHTML = '';
+        combos.forEach((combo) => {
+            const optionId = `trial-combo-${combo.idcombo}`;
+            const option = document.createElement('label');
+            option.className = 'radio-option';
+            option.htmlFor = optionId;
+
+            const radio = document.createElement('input');
+            radio.type = 'radio';
+            radio.name = 'trial-combo-choice';
+            radio.id = optionId;
+            radio.value = String(combo.idcombo);
+            radio.checked = store.trial?.comboId === combo.idcombo;
+            radio.addEventListener('change', () => {
+                loadTrial(combo.idcombo).catch(() => showTrialComboIdWarning('Failed to load that combo.'));
+            });
+            option.appendChild(radio);
+
+            const textWrap = document.createElement('span');
+
+            const notation = document.createElement('div');
+            notation.className = 'trial-result-notation';
+            notation.innerHTML = combo.notation_html;
+            textWrap.appendChild(notation);
+
+            const meta = document.createElement('div');
+            meta.className = 'trial-result-meta';
+            meta.textContent = [combo.character_name, combo.damage != null ? `${combo.damage} dmg` : null, combo.type_title]
+                .filter(Boolean)
+                .join(' · ');
+            textWrap.appendChild(meta);
+
+            option.appendChild(textWrap);
+            trialComboResultsEl.appendChild(option);
+        });
+    }
+
+    function showTrialComboIdWarning(message) {
+        trialComboIdWarningEl.textContent = message;
+        trialComboIdWarningEl.hidden = false;
+    }
+
+    function hideTrialComboIdWarning() {
+        trialComboIdWarningEl.hidden = true;
+    }
+
+    // Returns the fetch promise so each caller (the combo picker's radio
+    // change, or the Load-by-ID button) can react to a failure its own way
+    // instead of this function assuming one display for both.
+    function loadTrial(comboId) {
+        hideTrialComboIdWarning();
+
+        const url = trialDisplayEl.dataset.comboMovesUrlTemplate.replace('__COMBO__', comboId);
+
+        return fetchTrialJson(url).then((data) => {
+            store.trial = {
+                comboId: data.idcombo,
+                characterName: data.character_name,
+                moves: data.moves || [],
+            };
+            saveStore(store);
+            resetTrialProgress();
+        });
+    }
+
+    trialGameSelectEl.addEventListener('change', () => {
+        const gameId = trialGameSelectEl.value;
+        if (!gameId) {
+            trialGuideSelectEl.disabled = true;
+            trialGuideSelectEl.innerHTML = '<option value="">Select a game first…</option>';
+            trialCombosSectionEl.hidden = true;
+            return;
+        }
+        loadTrialGuidesForGame(gameId);
+    });
+
+    trialGuideSelectEl.addEventListener('change', () => {
+        const guideId = trialGuideSelectEl.value;
+        if (!guideId) {
+            trialCombosSectionEl.hidden = true;
+            return;
+        }
+        selectTrialGuide(parseInt(guideId, 10));
+    });
+
+    trialComboSearchButton.addEventListener('click', searchTrialCombos);
+
+    function loadTrialFromIdInput() {
+        const comboId = parseInt(trialComboIdInput.value, 10);
+        if (!comboId || comboId < 1) {
+            showTrialComboIdWarning('Enter a valid combo ID.');
+            return;
+        }
+        loadTrial(comboId).catch(() => showTrialComboIdWarning('Failed to load that combo — check the ID and try again.'));
+    }
+
+    trialLoadByIdButton.addEventListener('click', loadTrialFromIdInput);
+    trialComboIdInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            loadTrialFromIdInput();
+        }
+    });
+
+    trialClearButton.addEventListener('click', () => {
+        store.trial = null;
+        currentTrialGuideId = null;
+        saveStore(store);
+        trialGameSelectEl.value = '';
+        trialGuideSelectEl.disabled = true;
+        trialGuideSelectEl.innerHTML = '<option value="">Select a game first…</option>';
+        trialCombosSectionEl.hidden = true;
+        hideTrialComboIdWarning();
+        resetTrialProgress();
+    });
 
     // Builds the copy-to-clipboard combo string: no space between a
     // direction and its buttons (e.g. "5LP"), " > " between successive
@@ -1182,6 +1499,7 @@ function initInputViewer() {
     wireSetting(chargeInput, 'chargeThreshold');
     wireSetting(hideInput, 'hideThreshold');
     wireSetting(historyLimitInput, 'historyLimit');
+    wireSetting(trialTimeoutInput, 'trialResetSeconds');
 
     wireRadioGroup('direction-source', store.settings.directionSource, (value) => {
         store.settings.directionSource = value;
@@ -1240,6 +1558,8 @@ function initInputViewer() {
 
     window.addEventListener('gamepadconnected', refreshGamepadList);
     window.addEventListener('gamepaddisconnected', refreshGamepadList);
+
+    renderTrialDisplay();
 
     refreshGamepadList();
     pollGamepad();

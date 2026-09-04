@@ -518,6 +518,118 @@
                 border: 1px solid rgba(255, 255, 255, 0.15);
                 border-radius: 4px;
             }
+
+            .trial-current {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 8px;
+                padding: 12px 14px;
+                margin-bottom: 16px;
+                background: rgba(146, 0, 0, 0.25);
+                border: 1px solid rgba(250, 89, 28, 0.5);
+                border-radius: 4px;
+            }
+
+            .trial-current-info {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                min-width: 0;
+            }
+
+            .trial-current-link {
+                color: #FA591C;
+                font-size: 20px;
+                font-weight: 600;
+                text-decoration: none;
+            }
+
+            .trial-current-link:hover {
+                text-decoration: underline;
+            }
+
+            .trial-search-row {
+                display: flex;
+                gap: 8px;
+                margin-bottom: 10px;
+            }
+
+            .trial-search-row input {
+                flex: 1 1 auto;
+            }
+
+            .trial-search-row button {
+                flex: 0 0 auto;
+            }
+
+            .trial-result-meta {
+                font-size: 19px;
+                color: rgba(255, 255, 255, 0.6);
+            }
+
+            .trial-result-notation {
+                margin-top: 2px;
+            }
+
+            {{--
+                A persistent widget showing the active trial's combo —
+                deliberately a sibling of #config-panel/#panel-toggle-zone
+                (not nested inside either) so it's never touched by
+                applyFadeState()'s .faded toggling: its own opacity always
+                stays 1, regardless of the settings panel's state. Its
+                z-index sits below both the panel (2) and the toggle tab (3)
+                so it renders behind them while either is actually visible —
+                once the panel fades out for capture (opacity 0), there's
+                nothing opaque left to sit behind, so it reads as fully
+                visible again without needing a z-index change.
+            --}}
+            #trial-display {
+                position: fixed;
+                top: 16px;
+                right: 16px;
+                z-index: 1;
+                max-width: min(50vw, 640px);
+                padding: 10px 14px;
+                background: rgba(0, 0, 0, 0.65);
+                border: 1px solid rgba(255, 255, 255, 0.25);
+                border-radius: 6px;
+            }
+
+            #trial-character {
+                font-size: 18px;
+                font-weight: 600;
+                color: rgba(255, 255, 255, 0.7);
+                margin-bottom: 6px;
+            }
+
+            #trial-moves {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+
+            .trial-move {
+                display: inline-flex;
+                align-items: center;
+                padding: 4px 8px;
+                font-family: monospace;
+                font-size: 20px;
+                font-weight: 700;
+                background: rgba(0, 0, 0, 0.5);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                border-radius: 4px;
+                transition: opacity 0.2s ease;
+            }
+
+            {{-- Highlighting the "up next" move (a glow on the current
+                 index) is deferred to a later update — see renderTrialDisplay()
+                 in input-viewer.js. V1 only marks moves already hit
+                 correctly. --}}
+            .trial-move.done {
+                opacity: 0.3;
+                text-decoration: line-through;
+            }
         </style>
     </x-slot:styles>
 
@@ -534,6 +646,24 @@
 
         <div id="panel-toggle-zone">
             <button type="button" id="panel-toggle" aria-label="Show or hide the settings panel">Settings</button>
+        </div>
+
+        {{--
+            The active combo trial — a sibling of #config-panel, not a child
+            of it, so it stays visible regardless of the settings panel's own
+            open/closed/faded state. Hidden by default until a trial is
+            loaded (see input-viewer.js renderTrialDisplay()).
+        --}}
+        <div
+            id="trial-display"
+            hidden
+            data-guides-search-url="{{ route('input-viewer.guides.search') }}"
+            data-guide-combos-url-template="{{ route('input-viewer.guides.combos', ['list' => '__LIST__']) }}"
+            data-combo-moves-url-template="{{ route('input-viewer.combos.moves', ['combo' => '__COMBO__']) }}"
+            data-combo-show-url-template="{{ route('combos.show', ['combo' => '__COMBO__']) }}"
+        >
+            <div id="trial-character"></div>
+            <div id="trial-moves"></div>
         </div>
 
         <div id="config-panel">
@@ -565,6 +695,9 @@
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-recording" type="button" role="tab">Recording</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-trials" type="button" role="tab">Trials</button>
                 </li>
             </ul>
 
@@ -711,6 +844,59 @@
                         <textarea id="recording-notation" class="form-control" rows="3" readonly placeholder="Notation appears here after you stop recording."></textarea>
                     </div>
                     <button type="button" id="recording-copy" class="btn btn-outline-light">Copy to Clipboard</button>
+                </div>
+
+                <div class="tab-pane fade" id="tab-trials" role="tabpanel">
+                    <div class="mapping-section-title" style="margin-top: 0;">Combo Trial</div>
+                    <p class="input-tab-hint">
+                        Load a combo from an existing guide to practice it — it shows up in the top-right corner and stays there even while this panel is hidden. Each move greys out once you hit it correctly in order; a wrong input or too long a pause resets your progress.
+                    </p>
+
+                    <div id="trial-current" class="trial-current" hidden>
+                        <div class="trial-current-info">
+                            <span id="trial-current-label"></span>
+                            <a id="trial-current-link" class="trial-current-link" href="#" target="_blank" rel="noopener">View combo &rarr;</a>
+                        </div>
+                        <button type="button" id="trial-clear" class="btn btn-outline-danger">Clear Trial</button>
+                    </div>
+
+                    <div class="settings-row" hidden>
+                        <label for="setting-trial-timeout">Reset after (seconds)</label>
+                        <input type="number" id="setting-trial-timeout" class="form-control" min="1" max="30">
+                    </div>
+
+                    <div class="mapping-section-title" style="margin-top: 0;">Load by Combo ID</div>
+                    <div class="trial-search-row">
+                        <input type="number" id="trial-combo-id-input" class="form-control" placeholder="Combo ID…" min="1">
+                        <button type="button" id="trial-load-by-id-btn" class="btn btn-combosuki">Load</button>
+                    </div>
+                    <p id="trial-combo-id-warning" class="text-danger" style="font-size: 20px; margin: 6px 0 0;" hidden></p>
+
+                    <div class="mapping-section-title">Find a Guide</div>
+                    <div class="mb-3">
+                        <label for="trial-game-select" class="form-label mb-1" style="font-size: 22px;">Game</label>
+                        <select id="trial-game-select" class="form-select">
+                            <option value="">Select a game…</option>
+                            @foreach ($games as $game)
+                                <option value="{{ $game->idgame }}">{{ $game->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="trial-guide-select" class="form-label mb-1" style="font-size: 22px;">Guide</label>
+                        <select id="trial-guide-select" class="form-select" disabled>
+                            <option value="">Select a game first…</option>
+                        </select>
+                    </div>
+
+                    <div id="trial-combos-section" hidden>
+                        <div class="mapping-section-title">Pick a Combo</div>
+                        <div class="trial-search-row">
+                            <input type="text" id="trial-combo-search" class="form-control" placeholder="Filter by notation or character…">
+                            <button type="button" id="trial-combo-search-btn" class="btn btn-combosuki">Filter</button>
+                        </div>
+                        <div id="trial-combo-results" class="radio-list"></div>
+                    </div>
                 </div>
             </div>
         </div>
