@@ -126,6 +126,25 @@ class DiscordAuthTest extends TestCase
         $this->assertSame(1, User::count());
     }
 
+    /** See AuthPasswordTest::test_password_login_sets_a_remember_cookie. */
+    public function test_signing_in_with_discord_sets_a_remember_cookie(): void
+    {
+        $user = User::create(['nickname' => 'veteran', 'password' => 'password123']);
+        UserConnectedAccount::create([
+            'provider' => 'discord',
+            'provider_user_id' => '123456789012345678',
+            'provider_nickname' => 'newcomer',
+            'user_iduser' => $user->iduser,
+        ]);
+
+        $this->mockSocialiteUser($this->discordUser());
+
+        $response = $this->withSession($this->authIntent())->get(route('auth.discord.callback'));
+
+        $names = array_map(fn ($c) => $c->getName(), $response->headers->getCookies());
+        $this->assertContains(Auth::guard()->getRecallerName(), $names);
+    }
+
     public function test_an_unverified_discord_email_cannot_sign_in(): void
     {
         $user = User::create(['nickname' => 'veteran', 'password' => 'password123']);

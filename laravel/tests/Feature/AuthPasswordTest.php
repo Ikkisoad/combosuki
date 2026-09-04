@@ -104,6 +104,22 @@ class AuthPasswordTest extends TestCase
         $this->assertTrue(Auth::check());
     }
 
+    /**
+     * Password login is remembered: without a recaller cookie, a user who's
+     * idle past SESSION_LIFETIME or just closes the browser is logged out
+     * with no way back in (see AuthController::login).
+     */
+    public function test_password_login_sets_a_remember_cookie(): void
+    {
+        User::create(['nickname' => 'normal', 'password' => 'password123']);
+
+        $response = $this->post(route('login.attempt'), ['nickname' => 'normal', 'password' => 'password123']);
+
+        $names = array_map(fn ($c) => $c->getName(), $response->headers->getCookies());
+
+        $this->assertContains(Auth::guard()->getRecallerName(), $names);
+    }
+
     // -------------------------------------------------------- setting first
 
     public function test_a_passwordless_user_is_shown_the_set_password_form(): void

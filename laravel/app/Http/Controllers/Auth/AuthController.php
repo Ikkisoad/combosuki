@@ -84,7 +84,11 @@ class AuthController extends Controller
             return redirect()->route('two-factor.challenge');
         }
 
-        Auth::login($user);
+        // Remembered: the app has no session-refresh mechanism of its own, so
+        // without this a user who's inactive past SESSION_LIFETIME or just
+        // closes the browser is fully logged out. The recaller cookie lets
+        // SessionGuard transparently re-authenticate them on the next visit.
+        Auth::login($user, true);
         $request->session()->regenerate();
 
         return redirect()->intended(route('home'))->with('status', 'Logged in.');

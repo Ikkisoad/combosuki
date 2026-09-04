@@ -215,7 +215,8 @@ class DiscordAuthController extends Controller
 
     private function signIn(Request $request, User $user, string $via): RedirectResponse
     {
-        Auth::login($user);
+        // See AuthController::login for why this is remembered.
+        Auth::login($user, true);
 
         // Session fixation: the pre-login session id must not survive
         // becoming an authenticated session. AuthController::login and

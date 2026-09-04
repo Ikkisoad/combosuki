@@ -61,7 +61,8 @@ class TwoFactorChallengeController extends Controller
 
         $request->session()->forget(self::PENDING_SESSION_KEY);
 
-        Auth::login($user);
+        // See AuthController::login for why this is remembered.
+        Auth::login($user, true);
 
         // Session fixation: the pre-login session id must not survive
         // becoming an authenticated session. AuthController::login and

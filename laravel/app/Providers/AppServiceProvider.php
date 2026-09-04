@@ -14,6 +14,7 @@ use App\Policies\MatchPolicy;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Database\Schema\Builder;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Vite;
@@ -37,6 +38,13 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Builder::defaultStringLength(191);
+
+        // Applies to every Auth::login($user, true) call (AuthController,
+        // DiscordAuthController, TwoFactorChallengeController) — must be set
+        // before login() runs, since it queues the recaller cookie itself.
+        // Laravel's own default is 400 days; 30 is plenty for "remember me"
+        // without leaving indefinite logins on shared computers.
+        Auth::guard('web')->setRememberDuration(60 * 24 * 30);
 
         // SiteSetting::current() memoises for the life of the request; boot()
         // runs once per request (and once per test), so this is where the memo

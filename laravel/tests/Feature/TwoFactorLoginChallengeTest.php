@@ -61,6 +61,21 @@ class TwoFactorLoginChallengeTest extends TestCase
         $this->assertTrue($user->fresh()->last_login_at->equalTo(Carbon::now()));
     }
 
+    /** See AuthPasswordTest::test_password_login_sets_a_remember_cookie. */
+    public function test_completing_the_challenge_sets_a_remember_cookie(): void
+    {
+        [$user, $secret] = $this->twoFactorUser();
+        $this->post(route('login.attempt'), ['nickname' => 'secured', 'password' => 'password123']);
+
+        Carbon::setTestNow('2026-09-03 12:00:00');
+        $code = (new Google2FA)->getCurrentOtp($secret);
+
+        $response = $this->post(route('two-factor.challenge.attempt'), ['code' => $code]);
+
+        $names = array_map(fn ($c) => $c->getName(), $response->headers->getCookies());
+        $this->assertContains(Auth::guard()->getRecallerName(), $names);
+    }
+
     public function test_an_invalid_code_does_not_log_in(): void
     {
         [$user] = $this->twoFactorUser();
