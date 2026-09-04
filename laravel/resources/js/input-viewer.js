@@ -1092,13 +1092,14 @@ function initInputViewer() {
         trialCurrentLinkEl.href = trialDisplayEl.dataset.comboShowUrlTemplate.replace('__COMBO__', store.trial.comboId);
 
         trialMovesEl.innerHTML = '';
-        moves.forEach((move, index) => {
+        moves.forEach((move) => {
             const chip = document.createElement('span');
             chip.className = 'trial-move';
-            // Highlighting which move is "up next" (a glow/outline on the
-            // current index) is deferred to a later update — V1 only marks
-            // moves already hit correctly, via .done below.
-            if (index < trialProgress) chip.classList.add('done');
+            // Visually marking progress (which moves are done, which is up
+            // next) is deferred to a later update — V1 just lists the
+            // combo's moves as a static reference. trialProgress is still
+            // tracked internally (see advanceTrialWithBeat) so that work can
+            // be re-added later without redoing the matching logic.
             if (move.color) chip.style.color = move.color;
             chip.textContent = move.label;
             trialMovesEl.appendChild(chip);

@@ -622,14 +622,10 @@
                 transition: opacity 0.2s ease;
             }
 
-            {{-- Highlighting the "up next" move (a glow on the current
-                 index) is deferred to a later update — see renderTrialDisplay()
-                 in input-viewer.js. V1 only marks moves already hit
-                 correctly. --}}
-            .trial-move.done {
-                opacity: 0.3;
-                text-decoration: line-through;
-            }
+            {{-- Visually marking progress (which moves are done, which is up
+                 next) is deferred to a later update — see renderTrialDisplay()
+                 in input-viewer.js. V1 just lists the combo's moves as a
+                 static reference. --}}
         </style>
     </x-slot:styles>
 
@@ -849,7 +845,7 @@
                 <div class="tab-pane fade" id="tab-trials" role="tabpanel">
                     <div class="mapping-section-title" style="margin-top: 0;">Combo Trial</div>
                     <p class="input-tab-hint">
-                        Load a combo from an existing guide to practice it — it shows up in the top-right corner and stays there even while this panel is hidden. Each move greys out once you hit it correctly in order; a wrong input or too long a pause resets your progress.
+                        Load a combo from an existing guide, or by its combo ID, to practice it. It appears in the top-right corner once you hide this panel — handy for streaming — and stays there until you bring the panel back, as a reference while you play.
                     </p>
 
                     <div id="trial-current" class="trial-current" hidden>
