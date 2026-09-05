@@ -178,7 +178,87 @@
                 <div class="col-auto">
                     <button type="submit" class="btn btn-primary">Add Category</button>
                 </div>
+
+                @if ($queryFieldData)
+                    <div class="col-12">
+                        <details>
+                            <summary>Feed this category from a query (optional)</summary>
+                            <div class="row g-2 align-items-end mt-2">
+                                <div class="col-auto">
+                                    <label class="form-label">Character</label>
+                                    <select name="characterid" class="form-select">
+                                        <option value="-">Any Character</option>
+                                        @foreach ($queryFieldData['characters'] as $character)
+                                            <option value="{{ $character->idcharacter }}">{{ $character->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-auto">
+                                    <label class="form-label">Combos returned</label>
+                                    <select name="query_limit" class="form-select">
+                                        @for ($n = 1; $n <= 3; $n++)
+                                            <option value="{{ $n }}" @selected($n === 1)>{{ $n }}</option>
+                                        @endfor
+                                    </select>
+                                </div>
+                            </div>
+                            @include('combos.partials.filter-fields', [
+                                'values' => [],
+                                'buttons' => collect(),
+                                'primaryResources' => $queryFieldData['primaryResources'],
+                                'listingTypes' => $queryFieldData['listingTypes'],
+                            ])
+                        </details>
+                    </div>
+                @endif
             </form>
+
+            @if ($queryFieldData)
+                <hr class="border-secondary">
+                <h5>Category Queries</h5>
+                <p class="text-white-50">Feed a category automatically from a saved search &mdash; matching combos show up on the guide page alongside any you've manually added. Save with every field blank to clear a category's query.</p>
+
+                @forelse ($categories as $category)
+                    <details class="mb-2">
+                        <summary>{{ $category->title }} @if ($category->filters)<span class="badge bg-success">Query active</span>@endif</summary>
+                        <form method="post" action="{{ route('lists.manage.categories.filters', [$list, $category]) }}" class="mt-2">
+                            @csrf
+                            <div class="row g-2 align-items-end">
+                                <div class="col-auto">
+                                    <label class="form-label">Character</label>
+                                    <select name="characterid" class="form-select">
+                                        <option value="-">Any Character</option>
+                                        @foreach ($queryFieldData['characters'] as $character)
+                                            <option value="{{ $character->idcharacter }}" @selected(($category->filters['characterid'] ?? null) == $character->idcharacter)>{{ $character->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-auto">
+                                    <label class="form-label">Combos returned</label>
+                                    <select name="query_limit" class="form-select">
+                                        @for ($n = 1; $n <= 3; $n++)
+                                            <option value="{{ $n }}" @selected(($category->query_limit ?? 1) === $n)>{{ $n }}</option>
+                                        @endfor
+                                    </select>
+                                </div>
+                            </div>
+                            @include('combos.partials.filter-fields', [
+                                'values' => $category->filters ?? [],
+                                'buttons' => collect(),
+                                'primaryResources' => $queryFieldData['primaryResources'],
+                                'listingTypes' => $queryFieldData['listingTypes'],
+                            ])
+                            <div class="mt-2">
+                                <button type="submit" class="btn btn-sm btn-primary">Save Query</button>
+                            </div>
+                        </form>
+                    </details>
+                @empty
+                    <p class="text-white-50">Add a category above first to configure its query.</p>
+                @endforelse
+            @else
+                <p class="text-white-50 small mt-2">This guide has no game set, so its categories can't be fed by a query.</p>
+            @endif
         </section>
 
         <section id="combos" class="card combosuki-main-reversed text-white p-3 mb-4">

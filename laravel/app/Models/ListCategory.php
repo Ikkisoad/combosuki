@@ -11,7 +11,15 @@ class ListCategory extends Model
 
     protected $primaryKey = 'idlist_category';
 
-    protected $fillable = ['title', 'description', 'list_idlist', 'order', 'idPage'];
+    protected $fillable = ['title', 'description', 'list_idlist', 'order', 'idPage', 'filters', 'query_limit'];
+
+    protected function casts(): array
+    {
+        return [
+            'filters' => 'array',
+            'query_limit' => 'integer',
+        ];
+    }
 
     public function list(): BelongsTo
     {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\FiltersCombos;
 use App\Http\Controllers\Controller;
 use App\Models\Character;
 use App\Models\CharacterQuery;
@@ -12,12 +13,13 @@ use App\Support\ChallengeStatsCache;
 use App\Support\DamageStatsCache;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class CharacterQueryController extends Controller
 {
+    use FiltersCombos;
+
     public function index(Game $game): View
     {
         $queries = CharacterQuery::where('game_idgame', $game->idgame)
@@ -85,7 +87,7 @@ class CharacterQueryController extends Controller
             'label' => $validated['label'],
             'group_label' => $validated['group_label'] ?: null,
             'order' => $validated['order'] ?? 0,
-            'filters' => $this->buildFilters($request, $primaryResources),
+            'filters' => $this->buildFiltersFromRequest($request, $primaryResources),
         ];
 
         $characterIds = $validated['character_idcharacters'] ?? [];
@@ -123,55 +125,5 @@ class CharacterQueryController extends Controller
     {
         DamageStatsCache::forget($gameId);
         ChallengeStatsCache::bumpVersion();
-    }
-
-    /**
-     * Build a FiltersCombos-compatible filter map (see
-     * App\Http\Controllers\Concerns\FiltersCombos::applyFilters()) from the
-     * submitted form: the fixed search fields plus, per primary GameResource,
-     * its dynamic field(s) (text_name with spaces replaced by underscores —
-     * see FiltersCombos::applyFilters() for the exact per-type shape).
-     */
-    private function buildFilters(Request $request, Collection $primaryResources): array
-    {
-        $filters = array_filter(
-            $request->only(['combo', 'combolike', 'damage', 'patch', 'comments', 'notcomments', 'video', 'novideo', 'listingtype']),
-            fn ($value) => $value !== null && $value !== ''
-        );
-
-        foreach ($primaryResources as $resource) {
-            $field = str_replace(' ', '_', $resource->text_name);
-
-            if ($resource->type === 3) {
-                $values = array_values(array_filter(
-                    (array) $request->input($field, []),
-                    fn ($value) => $value !== null && $value !== '' && $value !== '-'
-                ));
-
-                if ($values !== []) {
-                    $filters[$field] = $values;
-                }
-
-                continue;
-            }
-
-            $value = $request->input($field);
-
-            if ($value === null || $value === '' || $value === '-') {
-                continue;
-            }
-
-            $filters[$field] = $value;
-
-            if ($resource->type === 2) {
-                $compare = $request->input($field.'compare');
-
-                if ($compare !== null && $compare !== '') {
-                    $filters[$field.'compare'] = $compare;
-                }
-            }
-        }
-
-        return $filters;
     }
 }

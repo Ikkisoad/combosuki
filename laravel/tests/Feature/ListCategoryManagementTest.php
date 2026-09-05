@@ -201,4 +201,149 @@ class ListCategoryManagementTest extends TestCase
 
         $this->assertDatabaseHas('list_category', ['idlist_category' => $category->idlist_category, 'title' => 'Category One']);
     }
+
+    public function test_owner_can_create_a_category_with_a_query(): void
+    {
+        $this->actingAs($this->owner);
+
+        $this->post(route('lists.manage.categories.store', $this->list), [
+            'title' => 'Starters',
+            'combo' => 'A',
+            'combolike' => '0',
+        ])->assertRedirect(route('lists.manage.index', $this->list));
+
+        $category = ListCategory::where('list_idlist', $this->list->idlist)->firstOrFail();
+        $this->assertSame(['combo' => 'A', 'combolike' => '0'], $category->filters);
+        $this->assertSame(1, $category->query_limit);
+    }
+
+    public function test_owner_can_update_and_clear_a_categorys_query(): void
+    {
+        $this->actingAs($this->owner);
+
+        $category = ListCategory::create(['title' => 'Category One', 'list_idlist' => $this->list->idlist]);
+
+        $this->post(route('lists.manage.categories.filters', [$this->list, $category]), [
+            'combo' => 'A',
+            'combolike' => '0',
+            'damage' => '1000',
+            'query_limit' => '3',
+        ])->assertRedirect(route('lists.manage.index', $this->list));
+
+        $this->assertSame(['combo' => 'A', 'combolike' => '0', 'damage' => '1000'], $category->fresh()->filters);
+        $this->assertSame(3, $category->fresh()->query_limit);
+
+        $this->post(route('lists.manage.categories.filters', [$this->list, $category]))
+            ->assertRedirect(route('lists.manage.index', $this->list));
+
+        $this->assertNull($category->fresh()->filters);
+        $this->assertNull($category->fresh()->query_limit);
+    }
+
+    public function test_a_categorys_query_limit_cannot_exceed_three(): void
+    {
+        $this->actingAs($this->owner);
+
+        $category = ListCategory::create(['title' => 'Category One', 'list_idlist' => $this->list->idlist]);
+
+        $this->post(route('lists.manage.categories.filters', [$this->list, $category]), [
+            'combo' => 'A',
+            'query_limit' => '4',
+        ])->assertSessionHasErrors('query_limit');
+
+        $this->assertNull($category->fresh()->filters);
+    }
+
+    public function test_a_categorys_query_cannot_be_configured_when_the_guide_has_no_game(): void
+    {
+        $this->actingAs($this->owner);
+
+        $gamelessList = ListModel::create([
+            'list_name' => 'Gameless List',
+            'game_idgame' => null,
+            'password' => 'unused',
+            'type' => 1,
+            'user_iduser' => $this->owner->iduser,
+        ]);
+        $category = ListCategory::create(['title' => 'Category One', 'list_idlist' => $gamelessList->idlist]);
+
+        $this->post(route('lists.manage.categories.filters', [$gamelessList, $category]), [
+            'combo' => 'A',
+        ])->assertStatus(422);
+
+        $this->assertNull($category->fresh()->filters);
+    }
+
+    public function test_a_categorys_query_feeds_matching_combos_alongside_manually_tagged_ones(): void
+    {
+        $category = ListCategory::create([
+            'title' => 'Meter Combos',
+            'list_idlist' => $this->list->idlist,
+            'filters' => ['combo' => 'A', 'combolike' => '0'],
+            'query_limit' => 1,
+        ]);
+
+        $queried = Combo::create([
+            'combo' => 'A > B > C',
+            'character_idcharacter' => $this->character->idcharacter,
+            'type' => 0,
+            'damage' => 100,
+        ]);
+
+        $manuallyTagged = Combo::create([
+            'combo' => 'Z > Y > X',
+            'character_idcharacter' => $this->character->idcharacter,
+            'type' => 0,
+            'damage' => 50,
+        ]);
+        $this->list->combos()->attach($manuallyTagged->idcombo, ['list_category_idlist_category' => $category->idlist_category]);
+
+        $nonMatching = Combo::create([
+            'combo' => 'D > E > F',
+            'character_idcharacter' => $this->character->idcharacter,
+            'type' => 0,
+            'damage' => 10,
+        ]);
+
+        $response = $this->get(route('lists.show', $this->list));
+
+        $response->assertSee($queried->combo);
+        $response->assertSee($manuallyTagged->combo);
+        $response->assertDontSee($nonMatching->combo);
+    }
+
+    public function test_a_categorys_query_is_capped_at_its_configured_limit(): void
+    {
+        $category = ListCategory::create([
+            'title' => 'Meter Combos',
+            'list_idlist' => $this->list->idlist,
+            'filters' => ['combo' => 'A', 'combolike' => '0'],
+            'query_limit' => 2,
+        ]);
+
+        $highest = Combo::create([
+            'combo' => 'A > 1',
+            'character_idcharacter' => $this->character->idcharacter,
+            'type' => 0,
+            'damage' => 300,
+        ]);
+        $middle = Combo::create([
+            'combo' => 'A > 2',
+            'character_idcharacter' => $this->character->idcharacter,
+            'type' => 0,
+            'damage' => 200,
+        ]);
+        $lowest = Combo::create([
+            'combo' => 'A > 3',
+            'character_idcharacter' => $this->character->idcharacter,
+            'type' => 0,
+            'damage' => 100,
+        ]);
+
+        $response = $this->get(route('lists.show', $this->list));
+
+        $response->assertSee($highest->combo);
+        $response->assertSee($middle->combo);
+        $response->assertDontSee($lowest->combo);
+    }
 }

@@ -233,6 +233,7 @@ Route::middleware(['auth', 'throttle:10,1'])->prefix('lists/{list}/manage')->nam
 
     Route::post('/categories', [ListCategoryController::class, 'store'])->name('categories.store');
     Route::post('/categories/bulk', [ListCategoryController::class, 'bulkUpdate'])->name('categories.bulk');
+    Route::post('/categories/{category}/filters', [ListCategoryController::class, 'updateFilters'])->name('categories.filters');
     Route::post('/categories/{category}/delete', [ListCategoryController::class, 'destroy'])->name('categories.destroy');
 
     Route::get('/combos', [ListComboPickerController::class, 'index'])->withoutMiddleware('throttle:10,1')->name('combos.index');

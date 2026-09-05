@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\FiltersCombos;
 use App\Http\Requests\StoreListRequest;
+use App\Models\Character;
 use App\Models\Combo;
 use App\Models\Game;
+use App\Models\GameEntry;
+use App\Models\GameResource;
 use App\Models\ListCategory;
 use App\Models\ListModel;
 use App\Models\ListPageCanvasEdge;
@@ -18,6 +22,8 @@ use Illuminate\View\View;
 
 class ListController extends Controller
 {
+    use FiltersCombos;
+
     public function index(): View
     {
         $games = Game::orderBy('name')->get();
@@ -84,7 +90,7 @@ class ListController extends Controller
             $contentView = 'lists._page-canvas';
             $contentData = ['nodes' => $nodes, 'edges' => $edges];
         } else {
-            [$categories, $grouped] = $this->categoriesAndGroupedCombos($list, $pageId);
+            [$categories, $grouped] = $this->categoriesAndGroupedCombos($list, $pageId, includeQueryFeed: true);
             $contentView = 'lists._page-body';
             $contentData = ['categories' => $categories, 'grouped' => $grouped];
         }
@@ -119,12 +125,23 @@ class ListController extends Controller
 
         $history = $list->editHistories()->with('user')->limit(20)->get();
 
+        $queryFieldData = $list->game_idgame === null ? null : [
+            'characters' => Character::where('game_idgame', $list->game_idgame)->orderBy('name')->get(),
+            'listingTypes' => GameEntry::where('gameid', $list->game_idgame)->orderBy('order')->orderBy('title')->get(),
+            'primaryResources' => GameResource::where('game_idgame', $list->game_idgame)
+                ->where('primaryORsecundary', 1)
+                ->with('values')
+                ->orderBy('text_name')
+                ->get(),
+        ];
+
         return view('lists.manage.index', [
             'list' => $list,
             'pages' => $pages,
             'categories' => $categories,
             'grouped' => $grouped,
             'history' => $history,
+            'queryFieldData' => $queryFieldData,
         ]);
     }
 
@@ -135,9 +152,17 @@ class ListController extends Controller
      * category and combo for the list, used by the management hub which
      * needs the full board for drag-and-drop.
      *
+     * $includeQueryFeed merges in a category's query-matched combos (see
+     * ListCategory::$filters) alongside its manually-tagged ones. It's kept
+     * off for manage()'s combo board: every card there is a real
+     * combo_listing pivot row that drag-and-drop reassigns and the remove
+     * button detaches, and a query-fed combo is neither — mixing it in
+     * would render a card that silently does nothing when dragged or
+     * removed.
+     *
      * @return array{0: Collection, 1: Collection}
      */
-    private function categoriesAndGroupedCombos(ListModel $list, ?int $pageId): array
+    private function categoriesAndGroupedCombos(ListModel $list, ?int $pageId, bool $includeQueryFeed = false): array
     {
         $categoriesQuery = ListCategory::where('list_idlist', $list->idlist);
 
@@ -162,9 +187,21 @@ class ListController extends Controller
             });
         }
 
-        $grouped = $combos
-            ->groupBy(fn ($combo) => $combo->pivot->list_category_idlist_category ?? 0)
-            ->sortBy(fn ($group, $key) => $key == 0 ? -1 : ($categories->get($key)?->order ?? 0));
+        $grouped = $combos->groupBy(fn ($combo) => $combo->pivot->list_category_idlist_category ?? 0);
+
+        if ($includeQueryFeed && $list->game_idgame !== null) {
+            foreach ($categories as $category) {
+                if (! $category->filters) {
+                    continue;
+                }
+
+                $queried = $this->searchCombos($list->game, $category->filters, $category->query_limit ?? 1);
+                $existing = $grouped->get($category->idlist_category, collect());
+                $grouped->put($category->idlist_category, $existing->concat($queried)->unique('idcombo'));
+            }
+        }
+
+        $grouped = $grouped->sortBy(fn ($group, $key) => $key == 0 ? -1 : ($categories->get($key)?->order ?? 0));
 
         return [$categories, $grouped];
     }

@@ -386,6 +386,58 @@ trait FiltersCombos
         });
     }
 
+    /**
+     * Build a filters map (the shape searchCombos()/applyFilters() take)
+     * from a submitted filter form: the fixed search fields plus, per
+     * primary GameResource, its dynamic field(s) (text_name with spaces
+     * replaced by underscores — see applyFilters() for the exact per-type
+     * shape). Shared by every caller that lets a user save a filter set for
+     * later reuse (a game's default queries, a guide category's query)
+     * rather than running it once against the current request.
+     */
+    private function buildFiltersFromRequest(Request $request, Collection $primaryResources): array
+    {
+        $filters = array_filter(
+            $request->only(['combo', 'combolike', 'damage', 'patch', 'comments', 'notcomments', 'video', 'novideo', 'listingtype', 'characterid']),
+            fn ($value) => $value !== null && $value !== '' && $value !== '-'
+        );
+
+        foreach ($primaryResources as $resource) {
+            $field = str_replace(' ', '_', $resource->text_name);
+
+            if ($resource->type === 3) {
+                $values = array_values(array_filter(
+                    (array) $request->input($field, []),
+                    fn ($value) => $value !== null && $value !== '' && $value !== '-'
+                ));
+
+                if ($values !== []) {
+                    $filters[$field] = $values;
+                }
+
+                continue;
+            }
+
+            $value = $request->input($field);
+
+            if ($value === null || $value === '' || $value === '-') {
+                continue;
+            }
+
+            $filters[$field] = $value;
+
+            if ($resource->type === 2) {
+                $compare = $request->input($field.'compare');
+
+                if ($compare !== null && $compare !== '') {
+                    $filters[$field.'compare'] = $compare;
+                }
+            }
+        }
+
+        return $filters;
+    }
+
     private function applyOrdering(Builder $query, Request $request): void
     {
         $submitted = $request->input('Submitted');
