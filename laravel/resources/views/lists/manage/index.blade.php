@@ -277,8 +277,12 @@
             </p>
 
             @php
-                $boardCategories = collect([['id' => 0, 'title' => 'No Category']])
-                    ->concat($categories->map(fn ($category) => ['id' => $category->idlist_category, 'title' => $category->title]));
+                $boardCategories = collect([['id' => 0, 'title' => 'No Category', 'page' => null]])
+                    ->concat($categories->map(fn ($category) => [
+                        'id' => $category->idlist_category,
+                        'title' => $category->title,
+                        'page' => $category->page?->Title,
+                    ]));
             @endphp
 
             <div id="combo-board" data-list-id="{{ $list->idlist }}" class="row g-3">
@@ -286,7 +290,16 @@
                     @php $combos = $grouped->get($category['id'], collect()); @endphp
                     <div class="col-md-4">
                         <div class="category-dropzone border rounded p-2 h-100" data-category-id="{{ $category['id'] === 0 ? '' : $category['id'] }}">
-                            <h6>{{ $category['title'] }}</h6>
+                            <h6 class="mb-0">{{ $category['title'] }}</h6>
+                            <div class="text-white-50 small mb-2">
+                                @if ($category['id'] === 0)
+                                    Uncategorized
+                                @elseif ($category['page'])
+                                    Page: {{ $category['page'] }}
+                                @else
+                                    Shows on every page
+                                @endif
+                            </div>
                             <div class="combo-list">
                                 @foreach ($combos as $combo)
                                     <div class="combo-card border rounded p-2 mb-2" draggable="true" data-combo-id="{{ $combo->idcombo }}">

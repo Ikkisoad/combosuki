@@ -368,4 +368,20 @@ class ListCategoryManagementTest extends TestCase
         $response->assertSee($middle->combo);
         $response->assertDontSee($lowest->combo);
     }
+
+    public function test_the_manage_combo_board_shows_each_categorys_page(): void
+    {
+        $this->actingAs($this->owner);
+
+        $page = ListPage::create(['Title' => 'Neutral Game', 'idList' => $this->list->idlist]);
+        $onPage = ListCategory::create(['title' => 'On A Page', 'list_idlist' => $this->list->idlist, 'idPage' => $page->idListPage]);
+        $everyPage = ListCategory::create(['title' => 'Every Page', 'list_idlist' => $this->list->idlist]);
+
+        $response = $this->get(route('lists.manage.index', $this->list));
+
+        $response->assertSee('On A Page');
+        $response->assertSee('Every Page');
+        $response->assertSee('Page: Neutral Game');
+        $response->assertSee('Shows on every page');
+    }
 }
