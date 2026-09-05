@@ -104,7 +104,7 @@ class RegisterDiscordCommands extends Command
                     ],
                     [
                         'name' => 'comble',
-                        'description' => 'Play today\'s Comble puzzle — guess the combo behind the mystery notation',
+                        'description' => 'Open today\'s Comble puzzle as an Activity — guess the combo behind the mystery notation',
                         'type' => 1,
                     ],
                     [

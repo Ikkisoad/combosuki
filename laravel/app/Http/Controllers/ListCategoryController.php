@@ -48,10 +48,11 @@ class ListCategoryController extends Controller
     }
 
     /**
-     * Save (or clear, if every field is left blank) a category's query —
-     * the same filter-set mechanism a game's default queries use (see
-     * FiltersCombos), reused here so a category can feed itself from
-     * matching combos instead of relying only on manually-tagged ones.
+     * Save (or clear, if the "query_enabled" checkbox is left unchecked) a
+     * category's query — the same filter-set mechanism a game's default
+     * queries use (see FiltersCombos), reused here so a category can feed
+     * itself from matching combos instead of relying only on
+     * manually-tagged ones.
      */
     public function updateFilters(Request $request, ListModel $list, ListCategory $category): RedirectResponse
     {
@@ -69,10 +70,21 @@ class ListCategoryController extends Controller
     }
 
     /**
+     * The "query_enabled" checkbox is the sole gate on whether a category
+     * gets a query — the filter-fields partial's selects (e.g. "combolike")
+     * always submit a real, non-blank default value, so an empty-array
+     * check on the built filters can't tell "the creator left the query
+     * form untouched" apart from "the creator deliberately configured a
+     * query using only default field values."
+     *
      * @return array{filters: ?array, limit: ?int}
      */
     private function buildCategoryQuery(Request $request, ListModel $list): array
     {
+        if (! $request->boolean('query_enabled')) {
+            return ['filters' => null, 'limit' => null];
+        }
+
         if ($request->input('characterid') === '-') {
             $request->merge(['characterid' => null]);
         }
@@ -86,13 +98,10 @@ class ListCategoryController extends Controller
             ->where('primaryORsecundary', 1)
             ->get();
 
-        $filters = $this->buildFiltersFromRequest($request, $primaryResources);
-
-        if ($filters === []) {
-            return ['filters' => null, 'limit' => null];
-        }
-
-        return ['filters' => $filters, 'limit' => $validated['query_limit'] ?? 1];
+        return [
+            'filters' => $this->buildFiltersFromRequest($request, $primaryResources),
+            'limit' => $validated['query_limit'] ?? 1,
+        ];
     }
 
     public function destroy(ListModel $list, ListCategory $category): RedirectResponse

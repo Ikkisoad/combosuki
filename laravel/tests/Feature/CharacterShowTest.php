@@ -6,6 +6,7 @@ use App\Models\Character;
 use App\Models\CharacterQuery;
 use App\Models\Combo;
 use App\Models\Game;
+use App\Models\ListModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -105,5 +106,49 @@ class CharacterShowTest extends TestCase
         $character = Character::create(['name' => 'Valentine', 'game_idgame' => $otherGame->idgame]);
 
         $this->get(route('characters.show', [$game, $character]))->assertNotFound();
+    }
+
+    public function test_character_page_shows_guides_featured_for_that_character(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Valentine', 'game_idgame' => $game->idgame]);
+
+        $guide = ListModel::create(['list_name' => 'Valentine Bread and Butter', 'game_idgame' => $game->idgame, 'password' => 'secret', 'type' => 1]);
+        $character->featuredGuides()->attach($guide->idlist);
+
+        $response = $this->get(route('characters.show', [$game, $character]));
+
+        $response->assertOk();
+        $response->assertSee('Featured Guides');
+        $response->assertSee(route('lists.show', $guide), false);
+    }
+
+    public function test_character_page_does_not_show_a_hidden_guide_even_if_featured(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Valentine', 'game_idgame' => $game->idgame]);
+
+        $hiddenGuide = ListModel::create(['list_name' => 'Hidden Guide', 'game_idgame' => $game->idgame, 'password' => 'secret', 'type' => 0]);
+        $character->featuredGuides()->attach($hiddenGuide->idlist);
+
+        $response = $this->get(route('characters.show', [$game, $character]));
+
+        $response->assertOk();
+        $response->assertDontSee('Featured Guides');
+    }
+
+    public function test_character_page_does_not_show_a_guide_featured_for_a_different_character(): void
+    {
+        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
+        $character = Character::create(['name' => 'Valentine', 'game_idgame' => $game->idgame]);
+        $otherCharacter = Character::create(['name' => 'Painwheel', 'game_idgame' => $game->idgame]);
+
+        $guide = ListModel::create(['list_name' => 'Painwheel Guide', 'game_idgame' => $game->idgame, 'password' => 'secret', 'type' => 1]);
+        $otherCharacter->featuredGuides()->attach($guide->idlist);
+
+        $response = $this->get(route('characters.show', [$game, $character]));
+
+        $response->assertOk();
+        $response->assertDontSee('Featured Guides');
     }
 }

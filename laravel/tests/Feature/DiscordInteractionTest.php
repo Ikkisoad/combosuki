@@ -49,7 +49,7 @@ class DiscordInteractionTest extends TestCase
 
         // Comble sends a private follow-up (see
         // DiscordInteractionController::syncPrivateCombleFollowUp) on every
-        // command/guess; fake it globally so tests don't make real requests.
+        // guess; fake it globally so tests don't make real requests.
         // The response always carries an 'id', like Discord's real webhook
         // message object, so that mechanism's cache-and-PATCH-on-next-guess
         // behavior engages the same way it would in production.
@@ -1049,35 +1049,16 @@ class DiscordInteractionTest extends TestCase
         ];
     }
 
-    public function test_combo_comble_starts_with_a_public_game_dropdown_and_no_notation_reveal(): void
+    public function test_combo_comble_launches_the_activity(): void
     {
-        $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
-        $character = Character::create(['name' => 'Test Character', 'game_idgame' => $game->idgame]);
-        $type = GameEntry::create(['title' => 'Combo', 'gameid' => $game->idgame, 'order' => 1]);
-        Combo::create([
-            'combo' => 'AAA BBB CCC DDD EEE',
-            'character_idcharacter' => $character->idcharacter,
-            'type' => $type->entryid,
-            'damage' => 3000,
-        ]);
-
         $response = $this->postInteraction(array_merge([
             'type' => 2,
             'data' => ['name' => 'csk', 'options' => [['name' => 'comble']]],
         ], $this->memberPayload('owner-1')));
 
-        $response->assertOk()->assertJson(['type' => 4]);
-        // Public (not ephemeral), so other channel members can watch — no
-        // "flags" key at all rather than the 64 (ephemeral) the wizard uses.
-        $this->assertNull($response->json('data.flags'));
-        $this->assertSame('cb:game::u=owner-1', $response->json('data.components.0.components.0.custom_id'));
-        $this->assertContains((string) $game->idgame, array_column($response->json('data.components.0.components.0.options'), 'value'));
-
-        // The notation reveal itself is a spoiler and never appears on the
-        // public message — not even the hidden-token blocks.
-        $description = $response->json('data.embeds.0.description');
-        $this->assertStringNotContainsString('AAA', $description);
-        $this->assertStringNotContainsString('▁', $description);
+        // Interaction callback type 12 (LAUNCH_ACTIVITY) opens the Activity
+        // client-side; Discord needs no `data` alongside it.
+        $response->assertOk()->assertExactJson(['type' => 12]);
     }
 
     /**
@@ -1235,16 +1216,12 @@ class DiscordInteractionTest extends TestCase
         ]);
 
         $owner = 'owner-1';
-
-        // Starting the game sends the first (and only ever POSTed) private
-        // message; the fake response's 'id' (see setUp()) is what the guess
-        // below must reuse for a PATCH instead of another POST.
-        $this->postInteraction(array_merge([
-            'type' => 2,
-            'data' => ['name' => 'csk', 'options' => [['name' => 'comble']]],
-        ], $this->memberPayload($owner)))->assertOk();
-
         $stateRaw = 'g='.$game->idgame.';c='.$wrongCharacter->idcharacter.';t='.$type->entryid.';u='.$owner;
+
+        // The first guess sends the first (and only ever POSTed) private
+        // message; the fake response's 'id' (see setUp()) is what the second
+        // guess below must reuse for a PATCH instead of another POST.
+        $this->postModalSubmit('cb:dmgsubmit::'.$stateRaw, $this->damageModalRow('100'), $owner)->assertOk();
         $this->postModalSubmit('cb:dmgsubmit::'.$stateRaw, $this->damageModalRow('100'), $owner)->assertOk();
 
         $requests = collect(Http::recorded())->map(fn ($pair) => $pair[0]);
@@ -1292,7 +1269,7 @@ class DiscordInteractionTest extends TestCase
         $this->assertStringStartsWith('cb:game::u='.$owner, $result->json('data.components.0.components.0.custom_id'));
     }
 
-    public function test_combo_comble_progress_persists_across_separate_command_invocations(): void
+    public function test_combo_comble_progress_persists_across_separate_requests(): void
     {
         $game = Game::create(['name' => 'Test Game', 'complete' => 1, 'modPass' => 'secret']);
         $character = Character::create(['name' => 'Test Character', 'game_idgame' => $game->idgame]);
@@ -1309,14 +1286,14 @@ class DiscordInteractionTest extends TestCase
         $stateRaw = 'g='.$game->idgame.';c='.$wrongCharacter->idcharacter.';t='.$type->entryid.';u='.$owner;
         $this->postModalSubmit('cb:dmgsubmit::'.$stateRaw, $this->damageModalRow('100'), $owner)->assertOk();
 
-        $response = $this->postInteraction(array_merge([
-            'type' => 2,
-            'data' => ['name' => 'csk', 'options' => [['name' => 'comble']]],
-        ], $this->memberPayload($owner)));
+        // A second, separate HTTP request/guess: CombleDiscordProgress must
+        // have persisted the first guess server-side (no custom_id state to
+        // carry it) for this one to count as the second attempt.
+        $response = $this->postModalSubmit('cb:dmgsubmit::'.$stateRaw, $this->damageModalRow('100'), $owner);
 
-        // Public: the prior guess still counts, but only as a square — no name.
+        // Public: both guesses count, but only as squares — no name.
         $description = $response->json('data.embeds.0.description');
-        $this->assertStringContainsString('4 guesses left.', $description);
+        $this->assertStringContainsString('3 guesses left.', $description);
         $this->assertStringNotContainsString($wrongCharacter->name, $description);
 
         // Private follow-up carries the name.

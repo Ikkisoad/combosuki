@@ -30,7 +30,7 @@
 
         <table class="table table-hover align-middle caption-top combosuki-main-reversed text-white">
             <caption>Edit the fields below and click "Save All" to update every guide at once.</caption>
-            <tr><th>Guide</th></tr>
+            <tr><th>Guide</th><th>Featured on character pages</th></tr>
             @foreach ($lists as $list)
                 <tr class="guide-row" data-name="{{ mb_strtolower($list->list_name) }}" data-type="{{ $list->type }}">
                     <td>
@@ -50,10 +50,22 @@
                             </form>
                         </div>
                     </td>
+                    <td>
+                        @php $selectedCharacterIds = $list->featuredForCharacters->pluck('idcharacter')->all(); @endphp
+                        <div class="d-flex align-items-start gap-2">
+                            <select form="bulk-lists-form" name="lists[{{ $list->idlist }}][characters][]" class="form-select" multiple size="3">
+                                @foreach ($characters as $characterOption)
+                                    <option value="{{ $characterOption->idcharacter }}" @selected(in_array($characterOption->idcharacter, $selectedCharacterIds))>{{ $characterOption->name }}</option>
+                                @endforeach
+                            </select>
+                            <button type="button" class="btn btn-outline-light btn-sm" onclick="clearMultiSelect(this)">Clear</button>
+                        </div>
+                        <div class="form-text text-white-50">Leave empty to not feature this guide on any character page.</div>
+                    </td>
                 </tr>
             @endforeach
             <tr>
-                <td>
+                <td colspan="2">
                     <button type="submit" form="bulk-lists-form" class="btn btn-primary">Save All</button>
                 </td>
             </tr>

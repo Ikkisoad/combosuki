@@ -119,4 +119,14 @@ class Character extends Model
             'character_default_query_idquery'
         );
     }
+
+    /**
+     * Guides a moderator has curated to appear on this character's page as
+     * a "Featured Guide" suggestion — see CharacterController::show() and
+     * Admin\GameListController.
+     */
+    public function featuredGuides(): BelongsToMany
+    {
+        return $this->belongsToMany(ListModel::class, 'character_featured_guide', 'character_idcharacter', 'list_idlist');
+    }
 }

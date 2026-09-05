@@ -53,6 +53,10 @@ class CharacterController extends Controller
             ->visibleTo(auth()->user())
             ->avg('damage');
 
+        // type == 0 is "Hidden" — mirror ListController::index()'s public-
+        // visibility rule so a hidden guide can't be surfaced here either.
+        $featuredGuides = $character->featuredGuides()->where('type', '!=', 0)->get();
+
         return view('characters.show', [
             'game' => $game,
             'character' => $character,
@@ -60,6 +64,7 @@ class CharacterController extends Controller
             'topCombos' => $topCombos,
             'topDamageCombos' => $topDamageCombos,
             'averageDamage' => $averageDamage,
+            'featuredGuides' => $featuredGuides,
         ]);
     }
 

@@ -183,6 +183,10 @@
                     <div class="col-12">
                         <details>
                             <summary>Feed this category from a query (optional)</summary>
+                            <div class="form-check mt-2">
+                                <input type="checkbox" name="query_enabled" value="1" id="add-category-query-enabled" class="form-check-input">
+                                <label class="form-check-label" for="add-category-query-enabled">Enable a query for this category</label>
+                            </div>
                             <div class="row g-2 align-items-end mt-2">
                                 <div class="col-auto">
                                     <label class="form-label">Character</label>
@@ -216,14 +220,18 @@
             @if ($queryFieldData)
                 <hr class="border-secondary">
                 <h5>Category Queries</h5>
-                <p class="text-white-50">Feed a category automatically from a saved search &mdash; matching combos show up on the guide page alongside any you've manually added. Save with every field blank to clear a category's query.</p>
+                <p class="text-white-50">Feed a category automatically from a saved search &mdash; matching combos show up on the guide page alongside any you've manually added. Uncheck "Enable a query" and save to remove it.</p>
 
                 @forelse ($categories as $category)
                     <details class="mb-2">
                         <summary>{{ $category->title }} @if ($category->filters)<span class="badge bg-success">Query active</span>@endif</summary>
                         <form method="post" action="{{ route('lists.manage.categories.filters', [$list, $category]) }}" class="mt-2">
                             @csrf
-                            <div class="row g-2 align-items-end">
+                            <div class="form-check">
+                                <input type="checkbox" name="query_enabled" value="1" id="category-query-enabled-{{ $category->idlist_category }}" class="form-check-input" @checked($category->filters !== null)>
+                                <label class="form-check-label" for="category-query-enabled-{{ $category->idlist_category }}">Enable a query for this category</label>
+                            </div>
+                            <div class="row g-2 align-items-end mt-2">
                                 <div class="col-auto">
                                     <label class="form-label">Character</label>
                                     <select name="characterid" class="form-select">

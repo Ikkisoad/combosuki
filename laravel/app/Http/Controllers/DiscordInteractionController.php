@@ -75,12 +75,12 @@ class DiscordInteractionController extends Controller
             return response()->json(['type' => 4, 'data' => $data]);
         }
 
+        // Launches the Activity (the embedded-iframe version of Comble,
+        // routes/activity.php) instead of the chat-based dropdown flow
+        // DiscordCombleGame still implements — see that class's docblock.
+        // Interaction callback type 12 (LAUNCH_ACTIVITY) needs no `data`.
         if ($subcommand === 'comble') {
-            $userId = $this->discordUserId($payload);
-
-            $this->syncPrivateCombleFollowUp($payload, $userId);
-
-            return response()->json(['type' => 4, 'data' => $this->comble->start($userId)]);
+            return response()->json(['type' => 12]);
         }
 
         if ($subcommand === 'submit') {

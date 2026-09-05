@@ -55,4 +55,15 @@ class ListModel extends Model
         return $this->belongsToMany(Combo::class, 'combo_listing', 'idlist', 'idcombo')
             ->withPivot(['comment', 'list_category_idlist_category']);
     }
+
+    /**
+     * Characters whose page this guide is curated to appear on as a
+     * "Featured Guide" suggestion — see CharacterController::show() and
+     * Admin\GameListController. Independent of the game-wide $type == 3
+     * "Featured" flag shown on the game's Guides tab.
+     */
+    public function featuredForCharacters(): BelongsToMany
+    {
+        return $this->belongsToMany(Character::class, 'character_featured_guide', 'list_idlist', 'character_idcharacter');
+    }
 }

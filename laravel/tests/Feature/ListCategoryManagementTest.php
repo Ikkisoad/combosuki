@@ -208,6 +208,7 @@ class ListCategoryManagementTest extends TestCase
 
         $this->post(route('lists.manage.categories.store', $this->list), [
             'title' => 'Starters',
+            'query_enabled' => '1',
             'combo' => 'A',
             'combolike' => '0',
         ])->assertRedirect(route('lists.manage.index', $this->list));
@@ -217,6 +218,21 @@ class ListCategoryManagementTest extends TestCase
         $this->assertSame(1, $category->query_limit);
     }
 
+    public function test_adding_a_category_without_checking_enable_query_leaves_it_without_a_query(): void
+    {
+        $this->actingAs($this->owner);
+
+        $this->post(route('lists.manage.categories.store', $this->list), [
+            'title' => 'Starters',
+            'combo' => 'A',
+            'combolike' => '0',
+        ])->assertRedirect(route('lists.manage.index', $this->list));
+
+        $category = ListCategory::where('list_idlist', $this->list->idlist)->firstOrFail();
+        $this->assertNull($category->filters);
+        $this->assertNull($category->query_limit);
+    }
+
     public function test_owner_can_update_and_clear_a_categorys_query(): void
     {
         $this->actingAs($this->owner);
@@ -224,6 +240,7 @@ class ListCategoryManagementTest extends TestCase
         $category = ListCategory::create(['title' => 'Category One', 'list_idlist' => $this->list->idlist]);
 
         $this->post(route('lists.manage.categories.filters', [$this->list, $category]), [
+            'query_enabled' => '1',
             'combo' => 'A',
             'combolike' => '0',
             'damage' => '1000',
@@ -233,8 +250,12 @@ class ListCategoryManagementTest extends TestCase
         $this->assertSame(['combo' => 'A', 'combolike' => '0', 'damage' => '1000'], $category->fresh()->filters);
         $this->assertSame(3, $category->fresh()->query_limit);
 
-        $this->post(route('lists.manage.categories.filters', [$this->list, $category]))
-            ->assertRedirect(route('lists.manage.index', $this->list));
+        $this->post(route('lists.manage.categories.filters', [$this->list, $category]), [
+            'combo' => 'A',
+            'combolike' => '0',
+            'damage' => '1000',
+            'query_limit' => '3',
+        ])->assertRedirect(route('lists.manage.index', $this->list));
 
         $this->assertNull($category->fresh()->filters);
         $this->assertNull($category->fresh()->query_limit);
@@ -247,6 +268,7 @@ class ListCategoryManagementTest extends TestCase
         $category = ListCategory::create(['title' => 'Category One', 'list_idlist' => $this->list->idlist]);
 
         $this->post(route('lists.manage.categories.filters', [$this->list, $category]), [
+            'query_enabled' => '1',
             'combo' => 'A',
             'query_limit' => '4',
         ])->assertSessionHasErrors('query_limit');

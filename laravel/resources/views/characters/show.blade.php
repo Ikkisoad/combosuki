@@ -28,6 +28,15 @@
                         @endforeach
                     </div>
                 @endif
+
+                @if ($featuredGuides->isNotEmpty())
+                    <h3 class="mt-3">Featured Guides</h3>
+                    <div class="d-flex flex-column gap-2">
+                        @foreach ($featuredGuides as $guide)
+                            <a href="{{ route('lists.show', $guide) }}" class="sidebar-character-link">{{ $guide->list_name }}</a>
+                        @endforeach
+                    </div>
+                @endif
             </nav>
 
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">

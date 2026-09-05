@@ -26,7 +26,7 @@ Source of truth is `database/migrations/` — don't enumerate every migration he
 
 - **Game content**: `game`, `character`, `button`, `button_alias`, `character_button_alias`, `game_resources`/`resources_values` (per-game resource types, e.g. meter gauges), `character_game_resources` (pivot), `character_resource_value_alias`, `link`, `character_link`, `game_alias`, `character_alias`, `game_entry` (combo type/category lookup), `game_patches` (current patch per game), `character_default_queries` (+ pivot to characters — powers damage stats and the daily challenge).
 - **Combos**: `combo`, `resources` (per-combo resource usage), `combo_listing` (combo↔list pivot), `combo_damage_histories` (one row per combo+patch, see §7).
-- **Lists/guides**: `list`, `list_category` (+ nullable `filters` JSON and `query_limit` tinyint, 1-3, set/cleared together — a saved combo-search filter set, same shape/mechanism as `character_default_queries` below, that feeds the category with up to `query_limit` matching combos alongside any manually-tagged ones; only usable when the guide's `game_idgame` is set), `list_page` (+ `page_type`), `list_page_canvas_node` / `list_page_canvas_edge` (the visual flow-chart-style guide pages).
+- **Lists/guides**: `list`, `list_category` (+ nullable `filters` JSON and `query_limit` tinyint, 1-3, set/cleared together — a saved combo-search filter set, same shape/mechanism as `character_default_queries` below, that feeds the category with up to `query_limit` matching combos alongside any manually-tagged ones; only usable when the guide's `game_idgame` is set), `list_page` (+ `page_type`), `list_page_canvas_node` / `list_page_canvas_edge` (the visual flow-chart-style guide pages), `character_featured_guide` (pivot — a moderator-curated many-to-many between `list` and `character`, letting a guide be surfaced as a "Featured Guide" suggestion on specific character pages; independent of the game-wide `list.type == 3` "Featured" flag shown on the game's own Guides tab, see §5-adjacent `Admin\GameListController`).
 - **Tier lists**: `tier_list`, `tier_list_entry`.
 - **Matches**: `matches`, `match_resources` (character-vs-character records).
 - **Comble puzzle**: `comble_daily_picks`, `comble_attempts`, `comble_day_views`.
@@ -40,9 +40,9 @@ Source of truth is `database/migrations/` — don't enumerate every migration he
 | Model | Notes |
 |---|---|
 | `Game` | `hasManyThrough` combos via characters; `belongsToMany` moderators (`User` via `game_moderator`) |
-| `Character` | belongs to `Game`; has combos, aliases, links, button/resource-value aliases; `belongsToMany` gameResources, defaultQueries |
+| `Character` | belongs to `Game`; has combos, aliases, links, button/resource-value aliases; `belongsToMany` gameResources, defaultQueries, featuredGuides (via `character_featured_guide`) |
 | `Combo` | belongs to character/patch/user/listingType(`GameEntry`)/verifier(`User`); has resources, damageHistories; `belongsToMany` lists via `combo_listing`. See §6/§7 for its model-event side effects. |
-| `ListModel` / `ListPage` / `ListPageCanvasNode`/`Edge` | a list has pages; a page can be `isCanvas()` (visual node/edge editor) or a plain content page |
+| `ListModel` / `ListPage` / `ListPageCanvasNode`/`Edge` | a list has pages; a page can be `isCanvas()` (visual node/edge editor) or a plain content page. `ListModel::featuredForCharacters()` is the inverse of `Character::featuredGuides()`. |
 | `User` | helpers `isTrusted()`, `isModerator()`, `hasUsablePassword()`, `hasTwoFactorEnabled()` — see [`user-management.md`](user-management.md) |
 | `GameMatch` (table `matches`) | belongs to game + two characters + up to two users |
 | `TierList` / `TierListEntry` | belongs to game/user; entries ordered by tier |
@@ -81,6 +81,7 @@ Four tiers, each strictly containing the ones before it: regular user < `trusted
   - `ChallengeController::computeRankings()` ranks users by how many days their combo ended up as the pair's top result; guest submissions (no `user_iduser`) are excluded.
 - **Trials** (`InputViewerTrialController`, the Input Viewer's "Trials" tab): an unauthenticated, read-only practice widget — search guides, list a guide's combos, fetch one combo's ordered move breakdown (`ComboFlowChartBuilder::movesForCombo()`) to drive a live input-practice UI. No submission, no scoring, no ownership gate of any kind (this is deliberate, per the controller's own docblock).
 - **Comble** (`App\Services\Comble*`, `CombleController`, tables `comble_daily_picks`/`comble_attempts`/`comble_day_views`): a separate Wordle-style "guess the day's combo" puzzle, also exposed as a Discord Activity. `CombleGuessEvaluator::starterMatch()` compares only the **first 6 characters** of the combo string with spaces stripped from both sides first — confirming combo-notation spacing (§8) is a display convention a player isn't expected to reproduce exactly.
+  - `/csk comble` responds with interaction callback type 12 (`LAUNCH_ACTIVITY`), opening the Activity (routes/activity.php) rather than playing in chat. `DiscordCombleGame` (the message/dropdown-driven chat flow it used to start via `type => 4`) is no longer reachable from the command — its `handleComponent`/`buildDamageModal`/`handleModalSubmit` and the controller's `cb:*` component/modal routing are unused in production now, kept only because nothing else currently depends on removing them.
 
 ## 7. Damage stats & challenge stats caching
 
