@@ -266,6 +266,8 @@
                                 <p class="text-white-50 mb-0">Click Randomize to roll a character{{ $primaryResources->isNotEmpty() ? ' and situation' : '' }}.</p>
                             </div>
 
+                            <div class="mb-3" id="randomizer-top-combo" data-endpoint="{{ route('games.tabs.randomizer-top-combo', $game) }}"></div>
+
                             <a href="{{ route('games.combos.create', $game) }}" id="randomizer-submit" class="btn btn-primary d-none" data-base-href="{{ route('games.combos.create', $game) }}">Submit a combo with this roll</a>
                         @endif
                     </div>
@@ -293,6 +295,7 @@
             var randomizerResult = document.getElementById('randomizer-result');
             var randomizerSubmitLink = document.getElementById('randomizer-submit');
             var randomizerDataScript = document.getElementById('randomizer-data');
+            var randomizerTopCombo = document.getElementById('randomizer-top-combo');
 
             function loadGuides() {
                 if (guidesResults.dataset.loaded === '1') {
@@ -432,6 +435,20 @@
 
                 randomizerSubmitLink.href = randomizerSubmitLink.dataset.baseHref + '?' + params.toString();
                 randomizerSubmitLink.classList.remove('d-none');
+
+                loadRandomizerTopCombo(params);
+            }
+
+            function loadRandomizerTopCombo(params) {
+                randomizerTopCombo.innerHTML = '<p class="text-white-50 mb-0">Loading&hellip;</p>';
+                fetch(randomizerTopCombo.dataset.endpoint + '?' + params.toString())
+                    .then(function (response) { return response.text(); })
+                    .then(function (html) {
+                        randomizerTopCombo.innerHTML = html;
+                    })
+                    .catch(function () {
+                        randomizerTopCombo.innerHTML = '<p class="text-danger">Failed to load the top combo for this roll.</p>';
+                    });
             }
 
             if (randomizerRollButton) {

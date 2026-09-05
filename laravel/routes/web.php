@@ -187,6 +187,7 @@ Route::get('/games/{game}/tabs/tier-lists', [GameController::class, 'tierListsTa
 Route::get('/games/{game}/tabs/most-viewed', [GameController::class, 'mostViewedTab'])->name('games.tabs.most-viewed');
 Route::get('/games/{game}/tabs/damage-stats', [GameController::class, 'damageStatsTab'])->name('games.tabs.damage-stats');
 Route::get('/games/{game}/tabs/matches', [GameController::class, 'matchesTab'])->name('games.tabs.matches');
+Route::get('/games/{game}/tabs/randomizer-top-combo', [GameController::class, 'randomizerTopComboTab'])->name('games.tabs.randomizer-top-combo');
 
 Route::scopeBindings()->group(function () {
     Route::get('/games/{game}/characters/{character}', [CharacterController::class, 'show'])->name('characters.show');

@@ -439,6 +439,64 @@ class GameController extends Controller
         return view('games.partials.matches-tab', ['game' => $game, 'latestMatches' => $latestMatches]);
     }
 
+    /**
+     * The Randomizer tab rolls a character and primary resource values
+     * client-side (see randomizer.js's rollRandomizer()), then asks here for
+     * the current top-damage combo matching that exact roll — the same
+     * "top combo for a filter set" search CharacterController::show() runs
+     * per default query, applied to an ad-hoc filter set instead of a saved
+     * CharacterQuery. `resources` decodes the same JSON-encoded
+     * id-to-value(s) map the roll links to games.combos.create with (see
+     * ComboController::defaultsFromRandomizer()) rather than PHP's
+     * `resources[id]=value` array query syntax, because
+     * GuardScalarQueryParameters strips array-valued query-string params
+     * globally.
+     */
+    public function randomizerTopComboTab(Game $game, Request $request): View
+    {
+        $filters = [];
+
+        if ($request->filled('character_idcharacter')) {
+            $filters['characterid'] = $request->integer('character_idcharacter');
+        }
+
+        $resourceRoll = [];
+
+        if ($request->filled('resources')) {
+            $decoded = json_decode($request->string('resources'), true);
+            $resourceRoll = is_array($decoded) ? $decoded : [];
+        }
+
+        if ($resourceRoll !== []) {
+            $primaryResources = GameResource::where('game_idgame', $game->idgame)
+                ->where('primaryORsecundary', 1)
+                ->get();
+
+            foreach ($primaryResources as $resource) {
+                if (! array_key_exists($resource->idgame_resources, $resourceRoll)) {
+                    continue;
+                }
+
+                $field = str_replace(' ', '_', $resource->text_name);
+                $filters[$field] = $resourceRoll[$resource->idgame_resources];
+
+                // Types 1/3 (resource-value picklists) filter by exact
+                // value id already (applyFilters()'s default behaviour).
+                // Type 2 is a plain number range field that defaults to
+                // "<=" — since the roll picked one specific number rather
+                // than a bound, an exact-equality compare is the only one
+                // that actually reproduces the rolled situation.
+                if ($resource->type === 2) {
+                    $filters[$field.'compare'] = 2;
+                }
+            }
+        }
+
+        $combo = $filters === [] ? null : $this->searchCombos($game, $filters, 1)->first();
+
+        return view('games.partials.randomizer-top-combo', ['combo' => $combo]);
+    }
+
     public function tierListsTab(Game $game, Request $request, TierListAggregator $tierListAggregator): View
     {
         [$tierFrom, $tierTo] = $this->resolveTierPatchWindow($game, $request);
