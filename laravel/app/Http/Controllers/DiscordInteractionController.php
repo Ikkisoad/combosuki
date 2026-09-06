@@ -6,6 +6,7 @@ use App\Exceptions\DiscordInteractionUnauthorized;
 use App\Models\DiscordCommandUsage;
 use App\Services\DiscordCharacterPage;
 use App\Services\DiscordChallenge;
+use App\Services\CombleDiscordProgress;
 use App\Services\DiscordCombleGame;
 use App\Services\DiscordComboSearch;
 use App\Services\DiscordComboSubmit;
@@ -24,6 +25,7 @@ class DiscordInteractionController extends Controller
         private DiscordComboSearch $comboSearch,
         private DiscordComboWizard $wizard,
         private DiscordCombleGame $comble,
+        private CombleDiscordProgress $combleProgress,
         private DiscordChallenge $challenge,
         private DiscordGuideSearch $guideSearch,
         private DiscordGuideBrowse $guideBrowse,
@@ -79,7 +81,15 @@ class DiscordInteractionController extends Controller
         // routes/activity.php) instead of the chat-based dropdown flow
         // DiscordCombleGame still implements — see that class's docblock.
         // Interaction callback type 12 (LAUNCH_ACTIVITY) needs no `data`.
+        // The channel is remembered (keyed by player) so
+        // ActivityCombleController can post the finished result back into
+        // it later — the Activity's own auth handshake never learns which
+        // channel it's framed in, only the player's identity.
         if ($subcommand === 'comble') {
+            if ($channelId !== null) {
+                $this->combleProgress->rememberChannel($this->discordUserId($payload), $channelId);
+            }
+
             return response()->json(['type' => 12]);
         }
 

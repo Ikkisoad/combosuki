@@ -22,6 +22,9 @@ class CombleDiscordProgress
     /** Generous relative to the puzzle's 1-day relevance window, just to bound cache growth. */
     private const CACHE_TTL_DAYS = 3;
 
+    /** Comfortably longer than ActivityAuthController's 2-hour token TTL, since a play session can't outlive that token anyway. */
+    private const CHANNEL_CACHE_TTL_HOURS = 3;
+
     public function picks(string $userId, Carbon $day): array
     {
         return Cache::get($this->cacheKey($userId, $day), []);
@@ -50,8 +53,32 @@ class CombleDiscordProgress
         return 'discord:'.$userId;
     }
 
+    /**
+     * Remembers which text channel `/csk comble` was invoked from, so
+     * ActivityCombleController can announce a finished puzzle back into it
+     * once the player completes the game through the Activity — the
+     * Activity's own token exchange (ActivityAuthController) never learns
+     * the channel it's framed in, only the player's identity, so the
+     * command interaction (which does carry channel_id) is the only place
+     * this can be captured.
+     */
+    public function rememberChannel(string $userId, string $channelId): void
+    {
+        Cache::put($this->channelCacheKey($userId), $channelId, now()->addHours(self::CHANNEL_CACHE_TTL_HOURS));
+    }
+
+    public function channelFor(string $userId): ?string
+    {
+        return Cache::get($this->channelCacheKey($userId));
+    }
+
     private function cacheKey(string $userId, Carbon $day): string
     {
         return 'comble:discord:'.$userId.':'.$day->toDateString();
+    }
+
+    private function channelCacheKey(string $userId): string
+    {
+        return 'comble:discord:channel:'.$userId;
     }
 }

@@ -124,7 +124,7 @@
                 background: var(--counter-bg, rgba(146, 0, 0, 0.7));
                 border: 1px solid var(--counter-border, #FA591C);
                 border-radius: 4px;
-                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+                text-shadow: var(--counter-text-shadow, 0 1px 2px rgba(0, 0, 0, 0.7));
             }
 
             .glow {
@@ -804,6 +804,18 @@
                         <label class="form-check-label" for="setting-counter-transparent-bg" style="font-size: 22px;">
                             Transparent background (just the number)
                         </label>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="setting-counter-outline-enabled">
+                        <label class="form-check-label" for="setting-counter-outline-enabled" style="font-size: 22px;">
+                            Outline
+                        </label>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="setting-counter-outline-color" class="form-label mb-1" style="font-size: 22px;">Outline color</label>
+                        <input type="color" id="setting-counter-outline-color" class="form-control form-control-color">
                     </div>
                 </div>
 

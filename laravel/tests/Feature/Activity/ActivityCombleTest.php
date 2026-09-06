@@ -8,10 +8,12 @@ use App\Models\Combo;
 use App\Models\Game;
 use App\Models\GameEntry;
 use App\Models\SiteSetting;
+use App\Services\CombleDiscordProgress;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
@@ -179,6 +181,79 @@ class ActivityCombleTest extends TestCase
         $this->assertSame('discord:111', $attempt->visitor_key);
         $this->assertTrue((bool) $attempt->won);
         $this->assertNull($attempt->user_iduser);
+    }
+
+    /**
+     * The channel is captured by DiscordInteractionController when `/csk
+     * comble` launches the Activity (see CombleDiscordProgress) — simulated
+     * here directly, the same way DiscordCombleGame's own progress is seeded
+     * directly elsewhere in this suite, rather than round-tripping through
+     * the interactions endpoint.
+     */
+    public function test_a_finished_activity_game_announces_the_result_in_the_launch_channel(): void
+    {
+        config(['services.discord.bot_token' => 'fake-token']);
+        Http::fake(['discord.com/*' => Http::response(['id' => 'posted'], 200)]);
+        app(CombleDiscordProgress::class)->rememberChannel('111', '999888777');
+
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $type = $this->makeType($game);
+        $this->makeCombo($character, $type);
+
+        $this->guess('111', $this->guessPayload($game, $character, $type))->assertOk();
+
+        Http::assertSent(function ($request) use ($character) {
+            if ($request->url() !== 'https://discord.com/api/v10/channels/999888777/messages') {
+                return false;
+            }
+
+            $content = $request['content'];
+
+            // Squares and score only — never the answer, same privacy rule
+            // as DiscordCombleGame::publicStatus().
+            $this->assertStringContainsString('<@111>', $content);
+            $this->assertStringContainsString('1/5', $content);
+            $this->assertStringNotContainsString($character->name, $content);
+
+            return true;
+        });
+    }
+
+    public function test_an_unfinished_activity_game_does_not_announce_anything(): void
+    {
+        config(['services.discord.bot_token' => 'fake-token']);
+        Http::fake(['discord.com/*' => Http::response(['id' => 'posted'], 200)]);
+        app(CombleDiscordProgress::class)->rememberChannel('111', '999888777');
+
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $type = $this->makeType($game);
+        $this->makeCombo($character, $type);
+
+        $wrongGame = $this->makeGame(['name' => 'Wrong Game']);
+        $wrongCharacter = $this->makeCharacter($wrongGame, 'Chun-Li');
+        $wrongType = $this->makeType($wrongGame);
+
+        $this->guess('111', $this->guessPayload($wrongGame, $wrongCharacter, $wrongType))->assertOk();
+
+        Http::assertNotSent(fn ($request) => str_contains($request->url(), '/messages'));
+    }
+
+    /** No `/csk comble` launch means no remembered channel — the result must not fail the request, just skip the announcement. */
+    public function test_a_finished_activity_game_without_a_remembered_channel_does_not_announce(): void
+    {
+        config(['services.discord.bot_token' => 'fake-token']);
+        Http::fake(['discord.com/*' => Http::response(['id' => 'posted'], 200)]);
+
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $type = $this->makeType($game);
+        $this->makeCombo($character, $type);
+
+        $this->guess('111', $this->guessPayload($game, $character, $type))->assertOk();
+
+        Http::assertNotSent(fn ($request) => str_contains($request->url(), '/messages'));
     }
 
     public function test_the_endpoints_are_gated_behind_the_discord_integration_flag(): void

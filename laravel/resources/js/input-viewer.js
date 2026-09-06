@@ -44,6 +44,11 @@ const DEFAULT_SETTINGS = {
     counterColor: '#ffffff',
     counterBgColor: '#920000',
     counterTransparentBg: false,
+    // Text outline (a faked stroke via stacked text-shadow offsets, same
+    // technique as #watermark-text) — mainly useful with a transparent
+    // background so the digits stay readable over any footage.
+    counterOutlineEnabled: false,
+    counterOutlineColor: '#000000',
     // KeyboardEvent.code of the start/stop-recording hotkey, e.g. "F9". Only
     // fires while this page actually has keyboard focus — see the Recording
     // tab's hint text.
@@ -396,6 +401,16 @@ function initInputViewer() {
             root.style.setProperty('--counter-bg', settings.counterBgColor);
             root.style.removeProperty('--counter-border');
         }
+
+        if (settings.counterOutlineEnabled) {
+            const c = settings.counterOutlineColor;
+            root.style.setProperty(
+                '--counter-text-shadow',
+                `-1px -1px 0 ${c}, 1px -1px 0 ${c}, -1px 1px 0 ${c}, 1px 1px 0 ${c}, 0 1px 2px rgba(0, 0, 0, 0.7)`
+            );
+        } else {
+            root.style.removeProperty('--counter-text-shadow');
+        }
     }
 
     const store = loadStore();
@@ -419,6 +434,8 @@ function initInputViewer() {
     const counterColorInput = document.getElementById('setting-counter-color');
     const counterBgColorInput = document.getElementById('setting-counter-bg-color');
     const counterTransparentBgInput = document.getElementById('setting-counter-transparent-bg');
+    const counterOutlineEnabledInput = document.getElementById('setting-counter-outline-enabled');
+    const counterOutlineColorInput = document.getElementById('setting-counter-outline-color');
     const hotkeySetButton = document.getElementById('recording-hotkey-set');
     const hotkeyCurrentEl = document.getElementById('recording-hotkey-current');
     const gamepadHotkeySetButton = document.getElementById('recording-gamepad-hotkey-set');
@@ -1548,6 +1565,20 @@ function initInputViewer() {
     counterTransparentBgInput.checked = store.settings.counterTransparentBg;
     counterTransparentBgInput.addEventListener('change', () => {
         store.settings.counterTransparentBg = counterTransparentBgInput.checked;
+        applyCounterAppearance(store.settings);
+        saveStore(store);
+    });
+
+    counterOutlineEnabledInput.checked = store.settings.counterOutlineEnabled;
+    counterOutlineEnabledInput.addEventListener('change', () => {
+        store.settings.counterOutlineEnabled = counterOutlineEnabledInput.checked;
+        applyCounterAppearance(store.settings);
+        saveStore(store);
+    });
+
+    counterOutlineColorInput.value = store.settings.counterOutlineColor;
+    counterOutlineColorInput.addEventListener('input', () => {
+        store.settings.counterOutlineColor = counterOutlineColorInput.value;
         applyCounterAppearance(store.settings);
         saveStore(store);
     });

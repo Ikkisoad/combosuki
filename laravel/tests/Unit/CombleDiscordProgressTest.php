@@ -66,4 +66,30 @@ class CombleDiscordProgressTest extends TestCase
 
         $this->assertSame('discord:12345', $progress->visitorKey('12345'));
     }
+
+    public function test_channel_for_defaults_to_null_when_nothing_was_remembered(): void
+    {
+        $progress = new CombleDiscordProgress;
+
+        $this->assertNull($progress->channelFor('111'));
+    }
+
+    public function test_remember_channel_round_trips(): void
+    {
+        $progress = new CombleDiscordProgress;
+
+        $progress->rememberChannel('111', '999888777');
+
+        $this->assertSame('999888777', $progress->channelFor('111'));
+    }
+
+    /** Distinct users' remembered channels must never leak into each other. */
+    public function test_remembered_channels_are_isolated_by_user(): void
+    {
+        $progress = new CombleDiscordProgress;
+
+        $progress->rememberChannel('111', '999888777');
+
+        $this->assertNull($progress->channelFor('222'));
+    }
 }

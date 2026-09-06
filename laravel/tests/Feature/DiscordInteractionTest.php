@@ -15,6 +15,7 @@ use App\Models\ListModel;
 use App\Models\ListPage;
 use App\Models\ResourceValue;
 use App\Models\TierList;
+use App\Services\CombleDiscordProgress;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -1053,12 +1054,30 @@ class DiscordInteractionTest extends TestCase
     {
         $response = $this->postInteraction(array_merge([
             'type' => 2,
+            'channel_id' => '999888777',
             'data' => ['name' => 'csk', 'options' => [['name' => 'comble']]],
         ], $this->memberPayload('owner-1')));
 
         // Interaction callback type 12 (LAUNCH_ACTIVITY) opens the Activity
         // client-side; Discord needs no `data` alongside it.
         $response->assertOk()->assertExactJson(['type' => 12]);
+    }
+
+    /**
+     * ActivityCombleController::announceFinish() looks the channel back up
+     * by player id once the Activity-played puzzle finishes — this is the
+     * only place channel_id is ever available for that flow, since the
+     * Activity's own auth handshake never learns it.
+     */
+    public function test_combo_comble_remembers_the_launch_channel_for_the_activity(): void
+    {
+        $this->postInteraction(array_merge([
+            'type' => 2,
+            'channel_id' => '999888777',
+            'data' => ['name' => 'csk', 'options' => [['name' => 'comble']]],
+        ], $this->memberPayload('owner-1')))->assertOk();
+
+        $this->assertSame('999888777', app(CombleDiscordProgress::class)->channelFor('owner-1'));
     }
 
     /**

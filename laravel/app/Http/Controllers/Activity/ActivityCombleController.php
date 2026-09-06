@@ -17,6 +17,7 @@ use App\Support\DailyGameClock;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rule;
 
 /**
@@ -35,6 +36,11 @@ use Illuminate\Validation\Rule;
  * are gated behind the `activity.auth` middleware alias
  * (VerifyActivityToken), which resolves the verified Discord user id onto
  * the request.
+ *
+ * guess() additionally announces a finished puzzle back into the text
+ * channel `/csk comble` was launched from — see announceFinish() — so
+ * playing through the Activity still surfaces a visible result in-channel,
+ * matching what the chat-based DiscordCombleGame flow shows inline.
  */
 class ActivityCombleController extends Controller
 {
@@ -109,9 +115,51 @@ class ActivityCombleController extends Controller
             self::MAX_GUESSES,
         );
 
+        $state = $this->gameState($day, $target, $game, $guesses);
+
+        // The early-return above guarantees this guess is the one that
+        // *first* finishes the puzzle (a request against an already-finished
+        // puzzle never reaches here), so this fires exactly once per player
+        // per day.
+        if ($state['finished']) {
+            $this->announceFinish($userId, $state['shareText']);
+        }
+
         return response()->json([
-            'html' => view('activity._comble-game', $this->gameState($day, $target, $game, $guesses))->render(),
+            'html' => view('activity._comble-game', $state)->render(),
         ]);
+    }
+
+    /**
+     * Posts the finished puzzle's share-style result — squares and score
+     * only, never the answer, same privacy rule as
+     * DiscordCombleGame::publicStatus() — into whichever text channel
+     * `/csk comble` was launched from (see
+     * CombleDiscordProgress::rememberChannel()), so a player who finishes
+     * through the Activity still gets a visible result in-channel. Silently
+     * no-ops without a remembered channel (e.g. launched from a DM, or the
+     * cache entry expired) and is deferred past the response so a slow or
+     * failed Discord API call never delays the player's own result.
+     */
+    private function announceFinish(string $userId, string $shareText): void
+    {
+        $channelId = $this->progress->channelFor($userId);
+        $botToken = config('services.discord.bot_token');
+
+        if ($channelId === null || ! $botToken) {
+            return;
+        }
+
+        dispatch(function () use ($channelId, $botToken, $userId, $shareText) {
+            try {
+                Http::withToken($botToken, 'Bot')->asJson()->timeout(5)->post(
+                    "https://discord.com/api/v10/channels/{$channelId}/messages",
+                    ['content' => "<@{$userId}> finished today's Comble!\n\n{$shareText}"]
+                );
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        })->afterResponse();
     }
 
     private function userId(Request $request): string
