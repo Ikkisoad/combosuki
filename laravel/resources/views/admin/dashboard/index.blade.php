@@ -53,7 +53,7 @@
                     <div class="card combosuki-main-reversed text-white text-center p-4 h-100 admin-dashboard-tile">
                         <div class="display-4 mb-2">🔗</div>
                         <h2 class="h4 mb-1">Other FGC Websites</h2>
-                        <p class="text-white-50 mb-0">Manage the external site links shown on the About page</p>
+                        <p class="text-white-50 mb-0">Manage the external site links shown in the front-page sidebar</p>
                     </div>
                 </a>
             </div>

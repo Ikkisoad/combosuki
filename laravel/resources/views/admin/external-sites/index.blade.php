@@ -10,7 +10,7 @@
         @endif
 
         <table class="table table-hover align-middle caption-top combosuki-main-reversed text-white">
-            <caption>Other FGC websites (shown on the About page)</caption>
+            <caption>Other FGC websites (shown in the front-page sidebar)</caption>
             <tr><th>Title</th><th>URL</th><th>Order</th></tr>
             @foreach ($sites as $site)
                 <tr>

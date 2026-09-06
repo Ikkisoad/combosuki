@@ -51,20 +51,26 @@ use App\Http\Controllers\UserController;
 use App\Models\Combo;
 use App\Models\ExternalSite;
 use App\Models\Game;
+use App\Services\CombleStats;
 use App\Services\DailyChallenge;
+use App\Support\DailyGameClock;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    $games = Game::where('complete', '>', 0)->orderByDesc('views')->limit(12)->get();
+    $games = Game::where('complete', '>', 0)->orderByDesc('views')->limit(15)->get();
     $challenge = app(DailyChallenge::class)->today();
 
-    return view('home', ['games' => $games, 'challenge' => $challenge]);
+    return view('home', [
+        'games' => $games,
+        'challenge' => $challenge,
+        'externalSites' => ExternalSite::orderBy('order')->orderBy('title')->get(),
+        'combleStats' => app(CombleStats::class)->summary(DailyGameClock::today()),
+    ]);
 })->name('home');
 
 Route::get('/about', function () {
     return view('about', [
         'comboCount' => Combo::count(),
-        'externalSites' => ExternalSite::orderBy('order')->orderBy('title')->get(),
     ]);
 })->name('about');
 

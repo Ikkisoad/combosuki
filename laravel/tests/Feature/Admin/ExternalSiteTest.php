@@ -72,12 +72,12 @@ class ExternalSiteTest extends TestCase
         $this->assertDatabaseMissing('external_site', ['id' => $site->id]);
     }
 
-    public function test_about_page_lists_sites_in_order(): void
+    public function test_home_page_lists_sites_in_order(): void
     {
         ExternalSite::create(['title' => 'Second', 'url' => 'https://second.example/', 'order' => 1]);
         ExternalSite::create(['title' => 'First', 'url' => 'https://first.example/', 'order' => 0]);
 
-        $response = $this->get(route('about'));
+        $response = $this->get(route('home'));
 
         $response->assertOk();
         $content = $response->getContent();
