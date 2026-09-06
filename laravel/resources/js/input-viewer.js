@@ -432,10 +432,28 @@ function initInputViewer() {
     const quickAssignButton = document.getElementById('quick-assign-listen');
     const quickAssignResult = document.getElementById('quick-assign-result');
     const counterColorInput = document.getElementById('setting-counter-color');
+    const counterColorHexInput = document.getElementById('setting-counter-color-hex');
+    const counterColorRgbInputs = {
+        r: document.getElementById('setting-counter-color-r'),
+        g: document.getElementById('setting-counter-color-g'),
+        b: document.getElementById('setting-counter-color-b'),
+    };
     const counterBgColorInput = document.getElementById('setting-counter-bg-color');
+    const counterBgColorHexInput = document.getElementById('setting-counter-bg-color-hex');
+    const counterBgColorRgbInputs = {
+        r: document.getElementById('setting-counter-bg-color-r'),
+        g: document.getElementById('setting-counter-bg-color-g'),
+        b: document.getElementById('setting-counter-bg-color-b'),
+    };
     const counterTransparentBgInput = document.getElementById('setting-counter-transparent-bg');
     const counterOutlineEnabledInput = document.getElementById('setting-counter-outline-enabled');
     const counterOutlineColorInput = document.getElementById('setting-counter-outline-color');
+    const counterOutlineColorHexInput = document.getElementById('setting-counter-outline-color-hex');
+    const counterOutlineColorRgbInputs = {
+        r: document.getElementById('setting-counter-outline-color-r'),
+        g: document.getElementById('setting-counter-outline-color-g'),
+        b: document.getElementById('setting-counter-outline-color-b'),
+    };
     const hotkeySetButton = document.getElementById('recording-hotkey-set');
     const hotkeyCurrentEl = document.getElementById('recording-hotkey-current');
     const gamepadHotkeySetButton = document.getElementById('recording-gamepad-hotkey-set');
@@ -1513,6 +1531,61 @@ function initInputViewer() {
         });
     }
 
+    const HEX_COLOR_PATTERN = /^#[0-9a-f]{6}$/i;
+
+    function hexToRgb(hex) {
+        const match = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex);
+        return match
+            ? { r: parseInt(match[1], 16), g: parseInt(match[2], 16), b: parseInt(match[3], 16) }
+            : null;
+    }
+
+    function rgbToHex(r, g, b) {
+        const clamp = (channel) => Math.max(0, Math.min(255, Math.round(channel) || 0));
+        return '#' + [r, g, b].map((channel) => clamp(channel).toString(16).padStart(2, '0')).join('');
+    }
+
+    // Pairs a native <input type="color"> with a hex text field and R/G/B
+    // number fields so a value can be set by typing, not just via the
+    // browser's own color-picker popup — that popup is an OS-level window
+    // outside the page's own DOM, which doesn't render/receive input
+    // reliably through OBS's Browser Source "Interact" window.
+    function wireColorInput(colorInput, hexInput, rgbInputs, initialValue, onChange) {
+        function applyValue(value) {
+            colorInput.value = value;
+            hexInput.value = value;
+            const rgb = hexToRgb(value);
+            if (rgb) {
+                rgbInputs.r.value = rgb.r;
+                rgbInputs.g.value = rgb.g;
+                rgbInputs.b.value = rgb.b;
+            }
+        }
+
+        applyValue(initialValue);
+
+        colorInput.addEventListener('input', () => {
+            applyValue(colorInput.value);
+            onChange(colorInput.value);
+        });
+
+        hexInput.addEventListener('input', () => {
+            const value = hexInput.value.trim();
+            if (!HEX_COLOR_PATTERN.test(value)) return;
+            applyValue(value);
+            onChange(value);
+        });
+
+        [rgbInputs.r, rgbInputs.g, rgbInputs.b].forEach((input) => {
+            input.addEventListener('input', () => {
+                const value = rgbToHex(rgbInputs.r.value, rgbInputs.g.value, rgbInputs.b.value);
+                colorInput.value = value;
+                hexInput.value = value;
+                onChange(value);
+            });
+        });
+    }
+
     wireSetting(fpsInput, 'pollingFPS');
     wireSetting(chargeInput, 'chargeThreshold');
     wireSetting(hideInput, 'hideThreshold');
@@ -1548,16 +1621,14 @@ function initInputViewer() {
         saveStore(store);
     });
 
-    counterColorInput.value = store.settings.counterColor;
-    counterColorInput.addEventListener('input', () => {
-        store.settings.counterColor = counterColorInput.value;
+    wireColorInput(counterColorInput, counterColorHexInput, counterColorRgbInputs, store.settings.counterColor, (value) => {
+        store.settings.counterColor = value;
         applyCounterAppearance(store.settings);
         saveStore(store);
     });
 
-    counterBgColorInput.value = store.settings.counterBgColor;
-    counterBgColorInput.addEventListener('input', () => {
-        store.settings.counterBgColor = counterBgColorInput.value;
+    wireColorInput(counterBgColorInput, counterBgColorHexInput, counterBgColorRgbInputs, store.settings.counterBgColor, (value) => {
+        store.settings.counterBgColor = value;
         applyCounterAppearance(store.settings);
         saveStore(store);
     });
@@ -1576,9 +1647,8 @@ function initInputViewer() {
         saveStore(store);
     });
 
-    counterOutlineColorInput.value = store.settings.counterOutlineColor;
-    counterOutlineColorInput.addEventListener('input', () => {
-        store.settings.counterOutlineColor = counterOutlineColorInput.value;
+    wireColorInput(counterOutlineColorInput, counterOutlineColorHexInput, counterOutlineColorRgbInputs, store.settings.counterOutlineColor, (value) => {
+        store.settings.counterOutlineColor = value;
         applyCounterAppearance(store.settings);
         saveStore(store);
     });

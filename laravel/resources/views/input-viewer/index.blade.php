@@ -790,13 +790,35 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="setting-counter-color" class="form-label mb-1" style="font-size: 22px;">Text color</label>
-                        <input type="color" id="setting-counter-color" class="form-control form-control-color">
+                        <label for="setting-counter-color-hex" class="form-label mb-1" style="font-size: 22px;">Text color</label>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <input type="color" id="setting-counter-color" class="form-control form-control-color">
+                            <input type="text" id="setting-counter-color-hex" class="form-control" style="max-width: 140px;" maxlength="7" placeholder="#RRGGBB">
+                            <div class="d-flex align-items-center gap-1">
+                                <label for="setting-counter-color-r" class="form-label mb-0" style="font-size: 18px;">R</label>
+                                <input type="number" id="setting-counter-color-r" class="form-control" style="width: 96px;" min="0" max="255">
+                                <label for="setting-counter-color-g" class="form-label mb-0" style="font-size: 18px;">G</label>
+                                <input type="number" id="setting-counter-color-g" class="form-control" style="width: 96px;" min="0" max="255">
+                                <label for="setting-counter-color-b" class="form-label mb-0" style="font-size: 18px;">B</label>
+                                <input type="number" id="setting-counter-color-b" class="form-control" style="width: 96px;" min="0" max="255">
+                            </div>
+                        </div>
                     </div>
 
                     <div class="mb-3">
-                        <label for="setting-counter-bg-color" class="form-label mb-1" style="font-size: 22px;">Background color</label>
-                        <input type="color" id="setting-counter-bg-color" class="form-control form-control-color">
+                        <label for="setting-counter-bg-color-hex" class="form-label mb-1" style="font-size: 22px;">Background color</label>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <input type="color" id="setting-counter-bg-color" class="form-control form-control-color">
+                            <input type="text" id="setting-counter-bg-color-hex" class="form-control" style="max-width: 140px;" maxlength="7" placeholder="#RRGGBB">
+                            <div class="d-flex align-items-center gap-1">
+                                <label for="setting-counter-bg-color-r" class="form-label mb-0" style="font-size: 18px;">R</label>
+                                <input type="number" id="setting-counter-bg-color-r" class="form-control" style="width: 96px;" min="0" max="255">
+                                <label for="setting-counter-bg-color-g" class="form-label mb-0" style="font-size: 18px;">G</label>
+                                <input type="number" id="setting-counter-bg-color-g" class="form-control" style="width: 96px;" min="0" max="255">
+                                <label for="setting-counter-bg-color-b" class="form-label mb-0" style="font-size: 18px;">B</label>
+                                <input type="number" id="setting-counter-bg-color-b" class="form-control" style="width: 96px;" min="0" max="255">
+                            </div>
+                        </div>
                     </div>
 
                     <div class="form-check mb-3">
@@ -814,8 +836,19 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="setting-counter-outline-color" class="form-label mb-1" style="font-size: 22px;">Outline color</label>
-                        <input type="color" id="setting-counter-outline-color" class="form-control form-control-color">
+                        <label for="setting-counter-outline-color-hex" class="form-label mb-1" style="font-size: 22px;">Outline color</label>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <input type="color" id="setting-counter-outline-color" class="form-control form-control-color">
+                            <input type="text" id="setting-counter-outline-color-hex" class="form-control" style="max-width: 140px;" maxlength="7" placeholder="#RRGGBB">
+                            <div class="d-flex align-items-center gap-1">
+                                <label for="setting-counter-outline-color-r" class="form-label mb-0" style="font-size: 18px;">R</label>
+                                <input type="number" id="setting-counter-outline-color-r" class="form-control" style="width: 96px;" min="0" max="255">
+                                <label for="setting-counter-outline-color-g" class="form-label mb-0" style="font-size: 18px;">G</label>
+                                <input type="number" id="setting-counter-outline-color-g" class="form-control" style="width: 96px;" min="0" max="255">
+                                <label for="setting-counter-outline-color-b" class="form-label mb-0" style="font-size: 18px;">B</label>
+                                <input type="number" id="setting-counter-outline-color-b" class="form-control" style="width: 96px;" min="0" max="255">
+                            </div>
+                        </div>
                     </div>
                 </div>
 
