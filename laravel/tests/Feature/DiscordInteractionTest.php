@@ -1081,6 +1081,26 @@ class DiscordInteractionTest extends TestCase
     }
 
     /**
+     * The "Play now" button on ActivityCombleController::announceFinish()'s
+     * finish message carries no owner in its custom_id (unlike the game
+     * dropdowns) — anyone in the channel should be able to launch their own
+     * puzzle from it, and their channel gets remembered the same way `/csk
+     * comble` remembers the invoking player's.
+     */
+    public function test_comble_launch_button_opens_the_activity_for_whoever_clicks_it(): void
+    {
+        $response = $this->postInteraction([
+            'type' => 3,
+            'channel_id' => '999888777',
+            'data' => ['custom_id' => 'cb:launch', 'component_type' => 2],
+            'member' => ['user' => ['id' => 'clicker-1']],
+        ]);
+
+        $response->assertOk()->assertExactJson(['type' => 12]);
+        $this->assertSame('999888777', app(CombleDiscordProgress::class)->channelFor('clicker-1'));
+    }
+
+    /**
      * characterStep()/typeStep() update the same public message the game
      * dropdown lives on, so echoing "Game: X" / "Character: Y" back into it
      * — as the code used to — would show the whole channel exactly what one

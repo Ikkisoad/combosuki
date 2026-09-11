@@ -203,6 +203,24 @@ class DiscordInteractionController extends Controller
     {
         $userId = $this->discordUserId($payload);
 
+        // The finish announcement's "Play now" button (see
+        // ActivityCombleController::announceFinish()) launches the Activity
+        // for whichever channel member clicks it — same interaction
+        // response type 12 the `/csk comble` command itself returns, and no
+        // ownership check, since anyone in the channel should be able to
+        // start their own puzzle from it. The channel is remembered per
+        // clicker for the same reason the command remembers it: so that
+        // player's own finish gets announced back into this channel.
+        if ($customId === 'cb:launch') {
+            $channelId = $payload['channel_id'] ?? null;
+
+            if ($channelId !== null) {
+                $this->combleProgress->rememberChannel($userId, $channelId);
+            }
+
+            return response()->json(['type' => 12]);
+        }
+
         try {
             // The type dropdown opens a damage-guess Modal, which requires
             // its own interaction response type (9) instead of the

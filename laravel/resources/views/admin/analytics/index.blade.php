@@ -162,7 +162,13 @@
             </div>
         </div>
 
-        <x-admin.top-list title="Top 10 Pages by Bot Hits" :rows="$topBotPagesRows" />
-        <x-admin.top-list title="Top Discord Commands" :rows="$topDiscordCommandsRows" />
+        <div class="row">
+            <div class="col-lg-6">
+                <x-admin.top-list title="Top 10 Pages by Bot Hits" :rows="$topBotPagesRows" />
+            </div>
+            <div class="col-lg-6">
+                <x-admin.top-list title="Top Discord Commands" :rows="$topDiscordCommandsRows" />
+            </div>
+        </div>
     </div>
 </x-layouts.app>

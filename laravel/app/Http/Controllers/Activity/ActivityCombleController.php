@@ -140,6 +140,12 @@ class ActivityCombleController extends Controller
      * no-ops without a remembered channel (e.g. launched from a DM, or the
      * cache entry expired) and is deferred past the response so a slow or
      * failed Discord API call never delays the player's own result.
+     *
+     * Names the player by username rather than an `<@id>` mention — a
+     * finished-puzzle announcement doesn't need to page anyone, just credit
+     * them. The "Play now" button launches the Activity (interaction
+     * response type 12, same as `/csk comble` itself) for whichever channel
+     * member clicks it — see DiscordInteractionController::handleCombleComponent().
      */
     private function announceFinish(string $userId, string $shareText): void
     {
@@ -152,14 +158,43 @@ class ActivityCombleController extends Controller
 
         dispatch(function () use ($channelId, $botToken, $userId, $shareText) {
             try {
+                $username = $this->fetchUsername($botToken, $userId);
+
                 Http::withToken($botToken, 'Bot')->asJson()->timeout(5)->post(
                     "https://discord.com/api/v10/channels/{$channelId}/messages",
-                    ['content' => "<@{$userId}> finished today's Comble!\n\n{$shareText}"]
+                    [
+                        'content' => "{$username} finished today's Comble!\n\n{$shareText}",
+                        'components' => [[
+                            'type' => 1,
+                            'components' => [[
+                                'type' => 2,
+                                'style' => 1,
+                                'label' => 'Play now',
+                                'custom_id' => 'cb:launch',
+                            ]],
+                        ]],
+                    ]
                 );
             } catch (\Throwable $e) {
                 report($e);
             }
         })->afterResponse();
+    }
+
+    /** Best-effort display name for the announcement — falls back to a generic label rather than ever leaking a raw snowflake into the message. */
+    private function fetchUsername(string $botToken, string $userId): string
+    {
+        try {
+            $response = Http::withToken($botToken, 'Bot')->timeout(5)->get("https://discord.com/api/v10/users/{$userId}");
+
+            if ($response->successful()) {
+                return $response->json('global_name') ?? $response->json('username') ?? 'A player';
+            }
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
+        return 'A player';
     }
 
     private function userId(Request $request): string

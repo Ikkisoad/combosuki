@@ -210,11 +210,19 @@ class ActivityCombleTest extends TestCase
 
             $content = $request['content'];
 
+            // Named by username, never a mention — a finished-puzzle
+            // announcement shouldn't page anyone.
+            $this->assertStringNotContainsString('<@111>', $content);
+            $this->assertStringContainsString("finished today's Comble", $content);
+
             // Squares and score only — never the answer, same privacy rule
             // as DiscordCombleGame::publicStatus().
-            $this->assertStringContainsString('<@111>', $content);
             $this->assertStringContainsString('1/5', $content);
             $this->assertStringNotContainsString($character->name, $content);
+
+            // A "Play now" button lets anyone in the channel launch the
+            // Activity for themselves.
+            $this->assertSame('cb:launch', $request['components'][0]['components'][0]['custom_id']);
 
             return true;
         });
