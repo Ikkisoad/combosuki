@@ -122,7 +122,7 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Damage</label>
-                    <input type="number" name="damage" id="comble-damage" class="form-control" min="0" required>
+                    <input type="number" name="damage" id="comble-damage" class="form-control" min="0" required value="{{ $stickyDamage }}">
                 </div>
                 <div class="col-md-4">
                     <button type="submit" class="btn btn-primary w-100">Guess</button>

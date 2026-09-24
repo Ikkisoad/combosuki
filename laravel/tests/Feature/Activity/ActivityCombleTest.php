@@ -93,6 +93,27 @@ class ActivityCombleTest extends TestCase
         $this->assertStringContainsString($character->name, $response->json('html'));
     }
 
+    /**
+     * The finished-puzzle state embeds the target combo's video via
+     * <x-video-embed activity> (activity/_comble-game.blade.php) — its src
+     * must go through Discord's Activity proxy (App\Support\ActivityProxyUrl)
+     * rather than the raw youtube.com URL, or Discord's own CSP silently
+     * blocks the iframe once this fragment is swapped into the page.
+     */
+    public function test_a_won_puzzle_embeds_the_video_through_the_activity_proxy(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $type = $this->makeType($game);
+        $this->makeCombo($character, $type, ['video' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ']);
+
+        $response = $this->guess('111', $this->guessPayload($game, $character, $type));
+
+        $response->assertOk();
+        $this->assertStringContainsString('/.proxy/youtube/embed/dQw4w9WgXcQ', $response->json('html'));
+        $this->assertStringNotContainsString('www.youtube.com/embed', $response->json('html'));
+    }
+
     public function test_a_wrong_guess_keeps_the_puzzle_in_progress(): void
     {
         $game = $this->makeGame();
@@ -108,6 +129,32 @@ class ActivityCombleTest extends TestCase
 
         $response->assertOk();
         $this->assertStringContainsString('4 guesses left', $response->json('html'));
+    }
+
+    /**
+     * Mirrors CombleTest::test_the_damage_input_is_prefilled_with_the_last_guess()
+     * — see ActivityCombleController::gameState()'s docblock for why this
+     * partial keeps its own copy of the sticky logic instead of sharing it.
+     * Uses a wrong game/character guess (like test_a_wrong_guess_keeps_the_puzzle_in_progress
+     * above) so the puzzle — and the form — stays in progress; a correct
+     * game+character guess wins outright regardless of damage.
+     */
+    public function test_the_damage_input_is_prefilled_with_the_last_guess(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $type = $this->makeType($game);
+        $this->makeCombo($character, $type, ['damage' => 3000]);
+
+        $wrongGame = $this->makeGame(['name' => 'Wrong Game']);
+        $wrongCharacter = $this->makeCharacter($wrongGame, 'Chun-Li');
+        $wrongType = $this->makeType($wrongGame);
+
+        $response = $this->guess('111', $this->guessPayload($wrongGame, $wrongCharacter, $wrongType, 1000));
+
+        $response->assertOk();
+        $this->assertStringContainsString('id="comble-damage"', $response->json('html'));
+        $this->assertStringContainsString('value="1000"', $response->json('html'));
     }
 
     public function test_a_finished_puzzle_rejects_further_guesses(): void

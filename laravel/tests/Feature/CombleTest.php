@@ -259,9 +259,11 @@ class CombleTest extends TestCase
     /**
      * The starter guess is optional, unlike game/character/type/damage — the
      * share text uses circles instead of squares for its result so that
-     * stands out from the rest of the row.
+     * stands out from the rest of the row. An exact match also uses blue
+     * rather than green, so it doesn't read as just another green square —
+     * see CombleController::shareText()'s docblock.
      */
-    public function test_the_share_texts_starter_result_uses_circles_not_squares(): void
+    public function test_the_share_texts_starter_result_uses_a_blue_circle_not_a_green_square(): void
     {
         $game = $this->makeGame();
         $character = $this->makeCharacter($game);
@@ -276,8 +278,8 @@ class CombleTest extends TestCase
             ->assertOk()
             ->getContent();
 
-        $this->assertStringContainsString('🟢', $shareText);
-        $this->assertStringNotContainsString('🟩🟩🟩🟩', $shareText);
+        $this->assertStringContainsString('🔵', $shareText);
+        $this->assertStringNotContainsString('🟢', $shareText);
     }
 
     /**
@@ -553,6 +555,33 @@ class CombleTest extends TestCase
             ->assertOk()
             ->assertSee('1.000')
             ->assertSee('Higher');
+    }
+
+    /**
+     * Unlike game/character/type/starter, damage has no "correct" option to
+     * re-select — the player is meant to nudge the same number up or down
+     * off the higher/lower hint, so the input stays prefilled with the raw
+     * value from the last guess even though it missed (a correct
+     * game+character guess would win outright and hide the form, so this
+     * uses a wrong guess to keep the puzzle — and the form — in progress).
+     */
+    public function test_the_damage_input_is_prefilled_with_the_last_guess(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $type = $this->makeType($game);
+        $this->makeCombo($character, $type, ['damage' => 3000]);
+
+        $otherGame = $this->makeGame(['name' => 'Other Game']);
+        $otherCharacter = $this->makeCharacter($otherGame, 'Chun-Li');
+        $otherType = $this->makeType($otherGame);
+
+        $response = $this->submitGuess($this->guessPayload($otherGame, $otherCharacter, $otherType, 1000));
+
+        $this->showPage(cookie: $this->cookieFromResponse($response))
+            ->assertOk()
+            ->assertSee('id="comble-damage"', false)
+            ->assertSee('value="1000"', false);
     }
 
     public function test_a_correct_starter_guess_is_marked_correct(): void

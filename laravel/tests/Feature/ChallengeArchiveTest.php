@@ -120,6 +120,51 @@ class ChallengeArchiveTest extends TestCase
             ->assertNotFound();
     }
 
+    public function test_the_day_panel_returns_just_that_days_section(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $query = $this->makeQuery($game, 'Random Assist 1');
+        $type = $this->makeType($game);
+        $this->makeCombo($character, $type);
+
+        $this->get(route('challenge.day.panel', ['date' => '2026-08-10']))
+            ->assertOk()
+            ->assertSee('August 10, 2026')
+            ->assertSee($character->name)
+            ->assertSee($query->label)
+            ->assertSee('data-date="2026-08-10"', false)
+            ->assertSee('data-title="Challenge — Aug 10, 2026 - Combo好き"', false)
+            ->assertSee('data-challenge-day="2026-08-09"', false)
+            ->assertSee('data-challenge-day="2026-08-11"', false)
+            // Only the day section — not the surrounding page chrome/tabs.
+            ->assertDontSee('challenge-tabs', false)
+            ->assertDontSee('<html', false);
+    }
+
+    public function test_the_day_panel_for_today_has_no_next_day_link(): void
+    {
+        $this->get(route('challenge.day.panel', ['date' => '2026-08-19']))
+            ->assertOk()
+            ->assertSee("Today's challenge")
+            ->assertDontSee('data-challenge-day="2026-08-20"', false);
+    }
+
+    public function test_the_challenge_page_embeds_the_day_panel_for_in_place_navigation(): void
+    {
+        $this->get(route('challenge.show.date', ['date' => '2026-08-18']))
+            ->assertOk()
+            ->assertSee('id="challenge-day"', false)
+            ->assertSee('data-date="2026-08-18"', false)
+            ->assertSee('data-challenge-day="2026-08-19"', false);
+    }
+
+    public function test_the_day_panel_404s_for_future_and_invalid_dates(): void
+    {
+        $this->get(route('challenge.day.panel', ['date' => '2026-08-20']))->assertNotFound();
+        $this->get('/challenge/2026-02-30/panel')->assertNotFound();
+    }
+
     private function makeGame(array $overrides = []): Game
     {
         return Game::create(array_merge([

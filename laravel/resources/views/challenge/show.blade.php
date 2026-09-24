@@ -1,5 +1,5 @@
 <x-layouts.app
-    :title="'Challenge'.($isToday ? '' : ' — '.$day->format('M j, Y')).' - Combo好き'"
+    :title="$pageTitle"
     description="Browse the daily combo challenge for today or any past day."
 >
     <x-jumbotron :height="150" />
@@ -8,27 +8,8 @@
     <div class="container my-3">
         <h2>Challenge</h2>
 
-        <div class="d-flex justify-content-between align-items-center mb-2">
-            @if ($previousDay)
-                <a href="{{ route('challenge.show.date', ['date' => $previousDay->toDateString()]) }}" class="btn btn-sm btn-outline-light">&larr; {{ $previousDay->format('M j') }}</a>
-            @else
-                <span class="btn btn-sm btn-outline-light disabled" style="visibility: hidden;">&larr;</span>
-            @endif
-
-            <div class="text-center">
-                <div>{{ $isToday ? "Today's challenge" : $day->format('F j, Y') }}</div>
-                <input type="date" class="form-control form-control-sm mt-1" value="{{ $day->toDateString() }}" @if ($earliestDay) min="{{ $earliestDay->toDateString() }}" @endif max="{{ now()->toDateString() }}" onchange="if (this.value) window.location.href = '{{ url('/challenge') }}/' + this.value">
-            </div>
-
-            @if ($nextDay)
-                <a href="{{ route('challenge.show.date', ['date' => $nextDay->toDateString()]) }}" class="btn btn-sm btn-outline-light">{{ $nextDay->format('M j') }} &rarr;</a>
-            @else
-                <span class="btn btn-sm btn-outline-light disabled" style="visibility: hidden;">&rarr;</span>
-            @endif
-        </div>
-
-        <div class="card combosuki-main-reversed text-white p-3">
-            <x-daily-challenge :challenge="$challenge" />
+        <div id="challenge-day" data-endpoint-base="{{ url('/challenge') }}" aria-live="polite">
+            @include('challenge.partials.day')
         </div>
 
         <ul class="nav nav-tabs mt-3" id="challenge-tabs" role="tablist">
@@ -51,7 +32,7 @@
         </div>
     </div>
 
-    @vite(['resources/js/challenge-calendar.js'])
+    @vite(['resources/js/challenge-calendar.js', 'resources/js/challenge-day.js'])
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {

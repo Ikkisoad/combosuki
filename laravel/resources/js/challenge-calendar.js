@@ -43,7 +43,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const colorClass = statusClasses[status] || 'bg-secondary bg-opacity-10';
         const clickable = status === 'solved' || status === 'open';
         const tag = clickable ? 'a' : 'div';
-        const href = clickable ? ' href="' + dayUrlBase + '/' + dateString + '"' : '';
+        // data-challenge-day lets challenge-day.js swap the day in place.
+        const href = clickable ? ' href="' + dayUrlBase + '/' + dateString + '" data-challenge-day="' + dateString + '"' : '';
 
         return '<' + tag + href + ' class="d-flex align-items-center justify-content-center rounded ' + colorClass + '" '
             + 'style="aspect-ratio:1;text-decoration:none;color:inherit;font-size:0.75rem;" title="' + label + '">' + day + '</' + tag + '>';

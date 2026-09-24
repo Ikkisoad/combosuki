@@ -233,6 +233,11 @@ class ActivityCombleController extends Controller
             'stickyTypeId' => $lastGuess && $lastGuess['type_correct'] ? $lastGuess['listing_type']->entryid : null,
             'stickyTypeTitle' => $lastGuess && $lastGuess['type_correct'] ? $lastGuess['listing_type']->title : null,
             'stickyStarter' => $lastGuess && $lastGuess['starter_result'] === 'partial' ? $lastGuess['starter'] : null,
+            // Unlike the other fields, damage isn't a discrete pick to
+            // re-select — it's a number the player nudges up/down using the
+            // damage_hint, so it stays prefilled from the last guess
+            // regardless of whether that guess was close.
+            'stickyDamage' => $lastGuess['damage'] ?? null,
             'stats' => $this->stats->summary($day),
         ];
     }
@@ -275,7 +280,7 @@ class ActivityCombleController extends Controller
             $guess['character_correct'] ? '🟩' : '🟥',
             $guess['type_correct'] ? '🟩' : '🟥',
             match ($guess['starter_result']) {
-                'correct' => '🟢',
+                'correct' => '🔵',
                 'partial' => '🟠',
                 default => '🔴',
             },

@@ -102,9 +102,11 @@ class CombleGuessEvaluatorTest extends TestCase
      * The starter cell's background is a red→yellow→green ramp scaled by
      * how many of the 6 characters landed right, not a flat color for every
      * non-exact guess — see CombleGuessEvaluator::starterColor(). Hue 0 is
-     * red (0 matches), hue 120 is green (a full match), and the guess
-     * shares the same total (6) as the "matches the first six characters"
-     * test above, so the intermediate points land on tidy hue values.
+     * red (0 matches), hue 120 would be green (a full match), but a real
+     * exact match (starter_result === 'correct') is overridden to a fixed
+     * blue instead — see starterMatch()'s docblock. The guess shares the
+     * same total (6) as the "matches the first six characters" test above,
+     * so the intermediate points land on tidy hue values.
      */
     public function test_starter_color_scales_from_red_to_green_with_the_match_count(): void
     {
@@ -132,8 +134,8 @@ class CombleGuessEvaluatorTest extends TestCase
         $this->assertSame('hsl(0, 75%, 38%)', $evaluator->evaluate($target, $game, $character, $guessedType, null, 'zzzzzz')['starter_color']);
         // 3 of 6 matched — hue 60, the red-green midpoint (yellow).
         $this->assertSame('hsl(60, 75%, 38%)', $evaluator->evaluate($target, $game, $character, $guessedType, null, '2lpzzz')['starter_color']);
-        // 6 of 6 matched — hue 120, green.
-        $this->assertSame('hsl(120, 75%, 38%)', $evaluator->evaluate($target, $game, $character, $guessedType, null, '2lp5mp')['starter_color']);
+        // 6 of 6 matched, exact — overridden to blue rather than hue 120 green.
+        $this->assertSame('hsl(210, 75%, 38%)', $evaluator->evaluate($target, $game, $character, $guessedType, null, '2lp5mp')['starter_color']);
         // Never guessed — same as 0 matches, red.
         $this->assertSame('hsl(0, 75%, 38%)', $evaluator->evaluate($target, $game, $character, $guessedType, null, null)['starter_color']);
     }

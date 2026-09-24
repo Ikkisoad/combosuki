@@ -5,7 +5,7 @@
         'characters' => 'Characters',
         'guides' => 'Guides',
         'tierLists' => 'Tier Lists',
-        'combleDays' => 'Comble Days',
+        'combleDays' => 'Comble Plays',
     ];
 
     $itemWords = [
@@ -158,7 +158,7 @@
             <div class="col-lg-6">
                 <x-admin.top-list title="Top 10 Combos" :rows="$topCombosRows" />
                 <x-admin.top-list title="Top 10 Guides" :rows="$topGuidesRows" />
-                <x-admin.top-list title="Top 10 Comble Days" :rows="$topCombleDaysRows" />
+                <x-admin.top-list title="Top 10 Comble Days (by plays)" :rows="$topCombleDaysRows" />
             </div>
         </div>
 

@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\BotHit;
 use App\Models\Character;
 use App\Models\Combo;
-use App\Models\CombleDayView;
+use App\Models\CombleAttempt;
 use App\Models\DiscordCommandUsage;
 use App\Models\Game;
 use App\Models\ListModel;
@@ -29,7 +29,8 @@ class AnalyticsController extends Controller
             'characters' => ['count' => Character::count(), 'views' => (int) Character::sum('views')],
             'guides' => ['count' => ListModel::count(), 'views' => (int) ListModel::sum('views')],
             'tierLists' => ['count' => TierList::count(), 'views' => (int) TierList::sum('views')],
-            'combleDays' => ['count' => CombleDayView::count(), 'views' => (int) CombleDayView::sum('views')],
+            // "views" here is completed plays (CombleAttempt rows), not page loads.
+            'combleDays' => ['count' => CombleAttempt::distinct()->count('day'), 'views' => CombleAttempt::count()],
         ];
 
         $topGames = Game::orderByDesc('views')->limit(10)->get(['idgame', 'name', 'views']);
@@ -54,16 +55,18 @@ class AnalyticsController extends Controller
             ->limit(10)
             ->get(['idtier_list', 'title', 'game_idgame', 'views']);
 
-        $topCombleDays = CombleDayView::orderByDesc('views')
+        $topCombleDays = CombleAttempt::selectRaw('day, COUNT(*) as plays')
+            ->groupBy('day')
+            ->orderByDesc('plays')
             ->limit(10)
-            ->get(['day', 'views'])
-            ->map(function (CombleDayView $dayView) {
-                $day = Carbon::parse($dayView->day);
+            ->get()
+            ->map(function (CombleAttempt $dayPlays) {
+                $day = Carbon::parse($dayPlays->day);
                 $target = $this->dailyCombo->forDate($day);
 
                 return [
                     'day' => $day,
-                    'views' => $dayView->views,
+                    'views' => (int) $dayPlays->plays,
                     'game' => $target->character->game,
                     'character' => $target->character,
                 ];

@@ -9,6 +9,9 @@ use App\Models\GameEntry;
 
 class CombleGuessEvaluator
 {
+    /** Same saturation/lightness as the red→green ramp in starterColor(), just a blue hue — see starterMatch()'s docblock. */
+    private const STARTER_CORRECT_COLOR = 'hsl(210, 75%, 38%)';
+
     /**
      * Compares one guess against the day's target combo. Only game/character
      * correctness determines a win; type and damage are hint-only columns.
@@ -65,9 +68,13 @@ class CombleGuessEvaluator
      *   opening (up to 6) characters landed in the right position, out of
      *   how many there are to get right.
      * - starter_color: an hsl() string scaled by match_count/total (red at
-     *   0, green at a full match, everything else a smooth ramp between)
-     *   so a "close" guess reads as visually closer than a "way off" one,
-     *   instead of every non-exact guess getting the same flat orange.
+     *   0, green just shy of a full match, everything else a smooth ramp
+     *   between) so a "close" guess reads as visually closer than a "way
+     *   off" one, instead of every non-exact guess getting the same flat
+     *   orange. An exact match (starter_result === 'correct') overrides the
+     *   ramp with a fixed blue instead of green, so a fully solved starter
+     *   doesn't read as just another point on the same gradient as the
+     *   game/character columns' green "correct" cells.
      */
     private function starterMatch(Combo $target, ?string $guessedStarter): array
     {
@@ -100,7 +107,7 @@ class CombleGuessEvaluator
             'starter_result' => $result,
             'starter_match_count' => $matchCount,
             'starter_total' => $total,
-            'starter_color' => $this->starterColor($matchCount, $total),
+            'starter_color' => $result === 'correct' ? self::STARTER_CORRECT_COLOR : $this->starterColor($matchCount, $total),
         ];
     }
 
@@ -108,7 +115,10 @@ class CombleGuessEvaluator
      * hue 0 (red) at zero matches, hue 120 (green) at a full match, linear
      * in between — a standard red→yellow→green heatmap ramp. Saturation/
      * lightness are fixed so every point on the ramp stays readable with
-     * the white table text used elsewhere in the guess row.
+     * the white table text used elsewhere in the guess row. Callers only
+     * ever hit the green end when starter_result isn't actually 'correct'
+     * (e.g. a guess longer than the target) — see starterMatch(), which
+     * overrides with STARTER_CORRECT_COLOR for a real exact match.
      */
     private function starterColor(int $matchCount, int $total): string
     {

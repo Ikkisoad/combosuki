@@ -1,15 +1,20 @@
 {{--
     Forked from resources/views/comble/_game.blade.php for the Discord
-    Activity surface. Two differences from the web partial, both because
-    these routes carry no Laravel session (see routes/activity.php):
+    Activity surface. Three differences from the web partial:
     - no @csrf (nothing to protect — there's no session to forge a request
       against; identity comes from the Bearer token instead, see
-      VerifyActivityToken)
+      VerifyActivityToken) — no Laravel session survives here (see
+      routes/activity.php)
     - the guess form posts to the activity.comble.guess route; when this
       fragment swaps in for #comble-game-state (see
       resources/js/comble.js's bootDiscordActivity()), that same script's
       submitGuessForm() picks up the form's new action automatically and
       attaches the Bearer token it already holds
+    - <x-video-embed> is passed the `activity` prop, so its iframe/video src
+      is rewritten through Discord's Activity proxy (see
+      App\Support\ActivityProxyUrl) — an un-rewritten src to an external
+      domain is silently blocked by Discord's own CSP inside the Activity's
+      iframe
     Keep this in sync with comble/_game.blade.php when the game's rules or
     display change — see ActivityCombleController::gameState()'s docblock
     for why it isn't a shared partial instead.
@@ -96,7 +101,7 @@
                 @endif
             </p>
 
-            <x-video-embed :video="$target->video" />
+            <x-video-embed :video="$target->video" activity />
 
             <div class="mt-2 d-flex align-items-center gap-2">
                 {{-- App\Support\MainSiteUrl, not plain route(): this fragment is served while on the comble.* subdomain — see that class's docblock. --}}
@@ -137,7 +142,7 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Damage</label>
-                    <input type="number" name="damage" id="comble-damage" class="form-control" min="0" required>
+                    <input type="number" name="damage" id="comble-damage" class="form-control" min="0" required value="{{ $stickyDamage }}">
                 </div>
                 <div class="col-md-4">
                     <button type="submit" class="btn btn-primary w-100">Guess</button>

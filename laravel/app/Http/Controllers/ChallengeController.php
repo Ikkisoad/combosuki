@@ -19,18 +19,39 @@ class ChallengeController extends Controller
 
     public function show(?string $date = null): View
     {
-        $day = $this->resolveDate($date);
+        return view('challenge.show', $this->dayViewData($this->resolveDate($date)));
+    }
+
+    /**
+     * Just the day navigation + challenge card (challenge/partials/day),
+     * fetched by challenge-day.js so browsing between days swaps that
+     * section in place instead of reloading the whole page (and with it the
+     * leaderboard/calendar tabs' already-loaded data).
+     */
+    public function dayPanel(string $date): View
+    {
+        return view('challenge.partials.day', $this->dayViewData($this->resolveDate($date)));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function dayViewData(Carbon $day): array
+    {
         $earliestDay = $this->dailyChallenge->earliestDate();
         $previousDay = $day->copy()->subDay();
+        $isToday = $day->isToday();
 
-        return view('challenge.show', [
+        return [
             'challenge' => $this->dailyChallenge->forDate($day),
             'day' => $day,
-            'isToday' => $day->isToday(),
+            'today' => DailyGameClock::today(),
+            'isToday' => $isToday,
+            'pageTitle' => 'Challenge'.($isToday ? '' : ' — '.$day->format('M j, Y')).' - Combo好き',
             'earliestDay' => $earliestDay,
             'previousDay' => $earliestDay !== null && $previousDay->gte($earliestDay) ? $previousDay : null,
-            'nextDay' => $day->isToday() ? null : $day->copy()->addDay(),
-        ]);
+            'nextDay' => $isToday ? null : $day->copy()->addDay(),
+        ];
     }
 
     /**

@@ -5,6 +5,8 @@ namespace Tests\Feature\Admin;
 use App\Models\BotHit;
 use App\Models\Character;
 use App\Models\Combo;
+use App\Models\CombleAttempt;
+use App\Models\CombleDayView;
 use App\Models\DiscordCommandUsage;
 use App\Models\Game;
 use App\Models\ListModel;
@@ -64,6 +66,26 @@ class AnalyticsTest extends TestCase
         $response->assertSee('/games/1');
         $response->assertSee('Bot Traffic');
         $response->assertSee('honeypot hits recorded');
+    }
+
+    public function test_comble_totals_count_completed_plays_not_page_views(): void
+    {
+        $game = Game::create(['name' => 'G', 'complete' => 1, 'modPass' => '']);
+        $character = Character::create(['name' => 'C', 'game_idgame' => $game->idgame]);
+        Combo::create(['combo' => 'AAA BBB CCC DDD EEE', 'submited' => now(), 'character_idcharacter' => $character->idcharacter, 'type' => 'BnB', 'damage' => 100]);
+
+        CombleDayView::create(['day' => '2026-09-01', 'views' => 500]);
+        foreach (['a', 'b', 'c'] as $key) {
+            CombleAttempt::create(['day' => '2026-09-01', 'visitor_key' => $key, 'guesses' => 3, 'won' => true, 'perfect' => false]);
+        }
+
+        $this->actingAs($this->admin());
+
+        $response = $this->get(route('admin.analytics'));
+
+        $response->assertOk();
+        $response->assertSee('Comble Plays');
+        $response->assertDontSee('500');
     }
 
     public function test_admin_sees_top_discord_commands(): void

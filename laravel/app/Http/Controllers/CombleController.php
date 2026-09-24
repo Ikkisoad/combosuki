@@ -152,6 +152,11 @@ class CombleController extends Controller
             // matching the new game's options by title when the id doesn't.
             'stickyTypeTitle' => $lastGuess && $lastGuess['type_correct'] ? $lastGuess['listing_type']->title : null,
             'stickyStarter' => $lastGuess && $lastGuess['starter_result'] === 'partial' ? $lastGuess['starter'] : null,
+            // Unlike the other fields, damage isn't a discrete pick to
+            // re-select — it's a number the player nudges up/down using the
+            // damage_hint, so it stays prefilled from the last guess
+            // regardless of whether that guess was close.
+            'stickyDamage' => $lastGuess['damage'] ?? null,
             'stats' => $this->stats->summary($day),
         ];
     }
@@ -254,7 +259,9 @@ class CombleController extends Controller
      * A Wordle-style shareable summary: one row of squares per guess (green
      * for a correct column, red for a wrong one), no spoilers. Starter uses
      * circles rather than squares, since (unlike the others) it's optional
-     * to even guess.
+     * to even guess — and blue rather than green for an exact match, so it
+     * doesn't read as just another green square among the others (mirrors
+     * the blue starter_color override in CombleGuessEvaluator::starterMatch()).
      */
     private function shareText(array $guesses, bool $won, Carbon $day): string
     {
@@ -263,7 +270,7 @@ class CombleController extends Controller
             $guess['character_correct'] ? '🟩' : '🟥',
             $guess['type_correct'] ? '🟩' : '🟥',
             match ($guess['starter_result']) {
-                'correct' => '🟢',
+                'correct' => '🔵',
                 'partial' => '🟠',
                 default => '🔴',
             },
