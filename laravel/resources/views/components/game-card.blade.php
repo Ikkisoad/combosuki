@@ -18,6 +18,9 @@
             @if ($game->show_unverified_highlight ?? false)
                 <span class="badge bg-warning text-dark">Has unverified combos</span>
             @endif
+            @if ($game->show_no_default_queries_highlight ?? false)
+                <span class="badge bg-info text-dark">No default queries</span>
+            @endif
         </div>
     </div>
 </div>

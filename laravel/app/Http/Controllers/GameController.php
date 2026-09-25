@@ -43,6 +43,7 @@ class GameController extends Controller
             'combos as unverified_combos_count' => fn ($query) => $query
                 ->whereNotNull('user_iduser')
                 ->where(fn ($q) => $q->whereNull('verified')->orWhere('verified', 0)),
+            'characterQueries',
         ])
             ->when($search !== '', fn ($query) => $query->where('name', 'like', '%'.$search.'%'))
             ->orderBy('name')
@@ -55,6 +56,13 @@ class GameController extends Controller
                 $game->show_unverified_highlight = $game->unverified_combos_count > 0
                     && $viewer !== null
                     && ($viewer->is_admin || $viewer->trusted_user || in_array($game->idgame, $moderatedGameIds, true));
+
+                // Mirrors GamePolicy::update() (admin or assigned moderator) —
+                // the people who can actually configure the queries on the
+                // edit page. Trusted users are deliberately excluded.
+                $game->show_no_default_queries_highlight = $game->character_queries_count === 0
+                    && $viewer !== null
+                    && ($viewer->is_admin || in_array($game->idgame, $moderatedGameIds, true));
             });
 
         return view('games.index', ['games' => $games, 'search' => $search]);
