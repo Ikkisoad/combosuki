@@ -132,6 +132,28 @@ class ActivityCombleTest extends TestCase
     }
 
     /**
+     * Mirrors CombleTest::test_the_guess_table_scrolls_horizontally_on_narrow_screens()
+     * for the Activity's own fork of the partial — this is the copy Discord
+     * mobile actually renders once the handshake swaps it in.
+     */
+    public function test_the_guess_table_scrolls_horizontally_on_narrow_screens(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $type = $this->makeType($game);
+        $this->makeCombo($character, $type);
+
+        $wrongGame = $this->makeGame(['name' => 'Wrong Game']);
+        $wrongCharacter = $this->makeCharacter($wrongGame, 'Chun-Li');
+        $wrongType = $this->makeType($wrongGame);
+
+        $response = $this->guess('111', $this->guessPayload($wrongGame, $wrongCharacter, $wrongType));
+
+        $response->assertOk();
+        $this->assertMatchesRegularExpression('#<div class="table-responsive[^"]*">\s*<table#', $response->json('html'));
+    }
+
+    /**
      * Mirrors CombleTest::test_the_damage_input_is_prefilled_with_the_last_guess()
      * — see ActivityCombleController::gameState()'s docblock for why this
      * partial keeps its own copy of the sticky logic instead of sharing it.

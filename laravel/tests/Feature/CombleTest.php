@@ -352,6 +352,54 @@ class CombleTest extends TestCase
         $response->assertJsonValidationErrors(['game_id', 'character_id', 'listing_type_id', 'damage']);
     }
 
+    /**
+     * Discord's mobile client draws the Activity full-screen under the
+     * status bar/notch — comble.js's prepareActivityViewport() tags <html>
+     * with `discord-activity-mobile` there, and this page has to ship the
+     * CSS that turns that class into safe-area padding, or the heading and
+     * the guess button end up hidden behind the phone's system UI.
+     */
+    public function test_the_page_ships_the_discord_mobile_safe_area_styles(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $type = $this->makeType($game);
+        $this->makeCombo($character, $type);
+
+        $html = $this->get('http://comble.example.test'.route('comble.show', absolute: false))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('html.discord-activity-mobile body', $html);
+        $this->assertStringContainsString('var(--discord-safe-area-inset-top', $html);
+        $this->assertStringContainsString('var(--discord-safe-area-inset-bottom', $html);
+    }
+
+    /**
+     * The six-column guess table is wider than a phone screen (the web
+     * page on a phone, or the Activity on Discord mobile) — it must scroll
+     * inside its own wrapper instead of widening the whole page.
+     */
+    public function test_the_guess_table_scrolls_horizontally_on_narrow_screens(): void
+    {
+        $game = $this->makeGame();
+        $character = $this->makeCharacter($game);
+        $type = $this->makeType($game);
+        $this->makeCombo($character, $type);
+
+        $otherGame = $this->makeGame(['name' => 'Other Game']);
+        $otherCharacter = $this->makeCharacter($otherGame, 'Chun-Li');
+        $otherType = $this->makeType($otherGame);
+
+        $response = $this->submitGuess($this->guessPayload($otherGame, $otherCharacter, $otherType));
+
+        $html = $this->showPage(cookie: $this->cookieFromResponse($response))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertMatchesRegularExpression('#<div class="table-responsive[^"]*">\s*<table#', $html);
+    }
+
     public function test_a_wrong_guess_keeps_the_puzzle_in_progress(): void
     {
         $game = $this->makeGame();

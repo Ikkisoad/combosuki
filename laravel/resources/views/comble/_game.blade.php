@@ -13,60 +13,63 @@
     </div>
 
     @if (count($guesses) > 0)
-        <table class="table table-hover align-middle combosuki-main-reversed text-white mb-3">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Game</th>
-                    <th>Character</th>
-                    <th>Type</th>
-                    <th>Starter</th>
-                    <th>Damage</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($guesses as $index => $guess)
+        {{-- table-responsive: six columns overflow a phone-width screen (incl. the Activity on Discord mobile). --}}
+        <div class="table-responsive mb-3">
+            <table class="table table-hover align-middle combosuki-main-reversed text-white mb-0">
+                <thead>
                     <tr>
-                        <td>{{ $index + 1 }}</td>
-                        <td
-                            class="{{ match ($guess['game_result']) { 'correct' => 'bg-success', 'partial' => '', default => 'bg-danger' } }}"
-                            style="{{ $guess['game_result'] === 'partial' ? 'background-color: #fd7e14;' : '' }}"
-                        >{{ $guess['game']->name }}</td>
-                        <td
-                            class="{{ match ($guess['character_result']) { 'correct' => 'bg-success', 'partial' => '', default => 'bg-danger' } }}"
-                            style="{{ $guess['character_result'] === 'partial' ? 'background-color: #fd7e14;' : '' }}"
-                        >{{ $guess['character']->name }}</td>
-                        <td class="{{ $guess['type_correct'] ? 'bg-success' : 'bg-danger' }}">{{ $guess['listing_type']->title }}</td>
-                        <td
-                            style="background-color: {{ $guess['starter_color'] }};"
-                            title="{{ $guess['starter'] ? "{$guess['starter_match_count']}/{$guess['starter_total']} characters correct" : '' }}"
-                        >{{ $guess['starter'] ?: '—' }}</td>
-                        <td>
-                            {{ $guess['damage'] !== null ? number_format($guess['damage'], 0, '', '.') : '—' }}
-                            @switch($guess['damage_hint'])
-                                @case('higher_close')
-                                    &uarr; Higher
-                                    @break
-                                @case('higher_far')
-                                    &#8648; Much Higher
-                                    @break
-                                @case('lower_close')
-                                    &darr; Lower
-                                    @break
-                                @case('lower_far')
-                                    &#8650; Much Lower
-                                    @break
-                                @case('equal')
-                                    &check; Equal
-                                    @break
-                                @default
-                                    &mdash; Unknown
-                            @endswitch
-                        </td>
+                        <th>#</th>
+                        <th>Game</th>
+                        <th>Character</th>
+                        <th>Type</th>
+                        <th>Starter</th>
+                        <th>Damage</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach ($guesses as $index => $guess)
+                        <tr>
+                            <td>{{ $index + 1 }}</td>
+                            <td
+                                class="{{ match ($guess['game_result']) { 'correct' => 'bg-success', 'partial' => '', default => 'bg-danger' } }}"
+                                style="{{ $guess['game_result'] === 'partial' ? 'background-color: #fd7e14;' : '' }}"
+                            >{{ $guess['game']->name }}</td>
+                            <td
+                                class="{{ match ($guess['character_result']) { 'correct' => 'bg-success', 'partial' => '', default => 'bg-danger' } }}"
+                                style="{{ $guess['character_result'] === 'partial' ? 'background-color: #fd7e14;' : '' }}"
+                            >{{ $guess['character']->name }}</td>
+                            <td class="{{ $guess['type_correct'] ? 'bg-success' : 'bg-danger' }}">{{ $guess['listing_type']->title }}</td>
+                            <td
+                                style="background-color: {{ $guess['starter_color'] }};"
+                                title="{{ $guess['starter'] ? "{$guess['starter_match_count']}/{$guess['starter_total']} characters correct" : '' }}"
+                            >{{ $guess['starter'] ?: '—' }}</td>
+                            <td>
+                                {{ $guess['damage'] !== null ? number_format($guess['damage'], 0, '', '.') : '—' }}
+                                @switch($guess['damage_hint'])
+                                    @case('higher_close')
+                                        &uarr; Higher
+                                        @break
+                                    @case('higher_far')
+                                        &#8648; Much Higher
+                                        @break
+                                    @case('lower_close')
+                                        &darr; Lower
+                                        @break
+                                    @case('lower_far')
+                                        &#8650; Much Lower
+                                        @break
+                                    @case('equal')
+                                        &check; Equal
+                                        @break
+                                    @default
+                                        &mdash; Unknown
+                                @endswitch
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
     @endif
 
     @if ($finished)

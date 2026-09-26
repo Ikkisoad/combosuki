@@ -232,6 +232,62 @@ function submitGuessForm(form) {
         });
 }
 
+// Set once bootDiscordActivity()'s handshake gets far enough for the SDK
+// to be usable — the click handler below routes external links through it.
+let activitySdk = null;
+
+/**
+ * Mobile-specific Activity setup, run as soon as the SDK is ready (before
+ * the auth handshake, so the layout settles while that's in flight).
+ *
+ * Discord's mobile client renders the Activity full-screen, underneath the
+ * status bar/notch and home indicator, and exposes those insets as the
+ * --discord-safe-area-inset-* CSS variables. The `discord-activity-mobile`
+ * class opts the page into the padding rules in comble/show.blade.php that
+ * consume them — desktop keeps the plain layout.
+ *
+ * The orientation is explicitly unlocked so a player can rotate to
+ * landscape for the wide guess table, regardless of whatever default the
+ * Developer Portal is set to. Best-effort: an older mobile client that
+ * doesn't support the command must not break the handshake.
+ */
+function prepareActivityViewport(discordSdk, Common, Platform) {
+    if (discordSdk.platform !== Platform.MOBILE) {
+        return;
+    }
+
+    document.documentElement.classList.add('discord-activity-mobile');
+
+    discordSdk.commands.setOrientationLockState({
+        lock_state: Common.OrientationLockStateTypeObject.UNLOCKED,
+        picture_in_picture_lock_state: Common.OrientationLockStateTypeObject.UNLOCKED,
+    }).catch(function () {});
+}
+
+/**
+ * Discord's Activity iframe can't open new tabs itself (there's no browser
+ * tab to open one in on mobile at all), so target="_blank" links — "View
+ * this combo", the "watch on X" video fallbacks — are handed to Discord's
+ * own external-link prompt instead once the SDK is available. Returns
+ * whether it took over the click.
+ */
+function openActivityExternalLink(event) {
+    if (! activitySdk) {
+        return false;
+    }
+
+    const link = event.target.closest('a[target="_blank"][href]');
+
+    if (! link) {
+        return false;
+    }
+
+    event.preventDefault();
+    activitySdk.commands.openExternalLink({ url: link.href }).catch(function () {});
+
+    return true;
+}
+
 /**
  * Discord Activity bootstrap — only ever runs when this page is loaded
  * inside an iframe. SecurityHeaders' CSP only allows Discord's own client
@@ -262,9 +318,12 @@ async function bootDiscordActivity() {
     const urls = JSON.parse(urlsEl.textContent);
 
     try {
-        const { DiscordSDK } = await import('@discord/embedded-app-sdk');
+        const { DiscordSDK, Common, Platform } = await import('@discord/embedded-app-sdk');
         const discordSdk = new DiscordSDK(applicationId);
         await discordSdk.ready();
+
+        activitySdk = discordSdk;
+        prepareActivityViewport(discordSdk, Common, Platform);
 
         const { code } = await discordSdk.commands.authorize({
             client_id: applicationId,
@@ -330,6 +389,10 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     document.addEventListener('click', function (event) {
+        if (openActivityExternalLink(event)) {
+            return;
+        }
+
         const shareBtn = event.target.closest('#comble-share-btn');
 
         if (shareBtn) {

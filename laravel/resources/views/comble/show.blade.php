@@ -10,6 +10,21 @@
             know which Discord Application to hand off to.
         --}}
         <meta name="discord-application-id" content="{{ config('services.discord.application_id') }}">
+        {{--
+            Only ever active inside the Activity on Discord's mobile client
+            (comble.js's prepareActivityViewport() adds the class): the
+            Activity is drawn full-screen under the status bar/notch and
+            home indicator there, and Discord publishes those insets as
+            --discord-safe-area-inset-* variables.
+        --}}
+        <style>
+            html.discord-activity-mobile body {
+                padding-top: var(--discord-safe-area-inset-top, env(safe-area-inset-top, 0px));
+                padding-right: var(--discord-safe-area-inset-right, env(safe-area-inset-right, 0px));
+                padding-bottom: var(--discord-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+                padding-left: var(--discord-safe-area-inset-left, env(safe-area-inset-left, 0px));
+            }
+        </style>
     </x-slot:styles>
 
     {{--
