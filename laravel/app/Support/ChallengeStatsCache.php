@@ -41,7 +41,10 @@ class ChallengeStatsCache
 
     public static function calendarKey(int $year, string $todayDateString, bool $trusted): string
     {
-        return "challenge.calendar.{$year}.{$todayDateString}.".self::tier($trusted).'.v'.self::version();
+        // "calendar2": the cached value's shape changed (it now also carries
+        // each day's game), so entries written under the old prefix must
+        // never be read back as the new shape.
+        return "challenge.calendar2.{$year}.{$todayDateString}.".self::tier($trusted).'.v'.self::version();
     }
 
     private static function tier(bool $trusted): string

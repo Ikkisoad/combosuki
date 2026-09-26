@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Game;
 use App\Models\User;
 use App\Services\DailyChallenge;
 use App\Support\ChallengeStatsCache;
@@ -134,6 +135,11 @@ class ChallengeController extends Controller
      * outside that range are simply absent from the response, which the
      * calendar's JS treats as "unavailable" rather than any of the three
      * real statuses.
+     *
+     * Also returns which game each day's challenge belonged to (day_games,
+     * date => game id, only for days that had a challenge) plus the games
+     * appearing in that year (games, sorted by name), which the calendar's
+     * game filter uses to highlight only the days a given game was picked.
      */
     public function calendarTab(Request $request): JsonResponse
     {
@@ -144,38 +150,70 @@ class ChallengeController extends Controller
         $earliestDay = $this->dailyChallenge->earliestDate();
         $today = DailyGameClock::today();
 
+        $empty = ['days' => [], 'day_games' => [], 'games' => [], 'earliest' => $earliestDay?->toDateString(), 'today' => $today->toDateString()];
+
         if ($earliestDay === null) {
-            return response()->json(['days' => [], 'earliest' => null, 'today' => $today->toDateString()]);
+            return response()->json($empty);
         }
 
         $yearStart = Carbon::create($year, 1, 1, 0, 0, 0, DailyGameClock::TIMEZONE)->startOfDay();
         $yearEnd = $yearStart->copy()->endOfYear()->startOfDay();
 
         if ($yearEnd->lt($earliestDay) || $yearStart->gt($today)) {
-            return response()->json(['days' => [], 'earliest' => $earliestDay->toDateString(), 'today' => $today->toDateString()]);
+            return response()->json($empty);
         }
 
         $from = $yearStart->max($earliestDay);
         $to = $yearEnd->min($today);
         $trusted = (bool) auth()->user()?->isTrusted();
 
-        // A plain array, not a Collection: even a Collection containing
+        // Plain arrays, not Collections/models: even a Collection containing
         // nothing but strings still fails to unserialize correctly through
         // this app's file cache driver in practice — see
         // GameController::computeDamageStats()'s docblock and
         // ChallengeController::computeRankings()'s for the same failure
         // ("incomplete object... unserialize()") hit with cached Eloquent
-        // models. A bare array of strings has no class to fail to load.
-        $days = Cache::rememberForever(
+        // models. Game ids are cached rather than Game models for the same
+        // reason; the games list is hydrated after the cache read.
+        $calendar = Cache::rememberForever(
             ChallengeStatsCache::calendarKey($year, $today->toDateString(), $trusted),
-            fn () => $this->dailyChallenge->resultsBetween($from, $to, $trusted)->map(fn ($result) => match (true) {
+            fn () => $this->computeCalendar($from, $to, $trusted)
+        );
+
+        $games = Game::whereIn('idgame', array_unique(array_values($calendar['day_games'])))
+            ->orderBy('name')
+            ->get(['idgame', 'name'])
+            ->map(fn (Game $game) => ['id' => (int) $game->idgame, 'name' => $game->name])
+            ->values()
+            ->all();
+
+        return response()->json([
+            'days' => $calendar['days'],
+            'day_games' => $calendar['day_games'],
+            'games' => $games,
+            'earliest' => $earliestDay->toDateString(),
+            'today' => $today->toDateString(),
+        ]);
+    }
+
+    /**
+     * @return array{days: array<string, string>, day_games: array<string, int>}
+     */
+    private function computeCalendar(Carbon $from, Carbon $to, bool $trusted): array
+    {
+        $results = $this->dailyChallenge->resultsBetween($from, $to, $trusted);
+
+        return [
+            'days' => $results->map(fn ($result) => match (true) {
                 $result['query'] === null => 'no_query',
                 $result['combo'] === null => 'open',
                 default => 'solved',
-            })->all()
-        );
-
-        return response()->json(['days' => $days, 'earliest' => $earliestDay->toDateString(), 'today' => $today->toDateString()]);
+            })->all(),
+            'day_games' => $results
+                ->filter(fn ($result) => $result['query'] !== null)
+                ->map(fn ($result) => (int) $result['query']->game_idgame)
+                ->all(),
+        ];
     }
 
     /**

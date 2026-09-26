@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Character;
 use App\Models\CharacterQuery;
 use App\Models\Combo;
+use App\Models\DailyChallengePick;
 use App\Models\Game;
 use App\Models\GameEntry;
 use App\Services\DailyChallenge;
@@ -99,7 +100,7 @@ class ChallengeCalendarTabTest extends TestCase
         $response = $this->getJson(route('challenge.tabs.calendar', ['year' => 2025]));
 
         $response->assertOk();
-        $response->assertExactJson(['days' => [], 'earliest' => $earliestDay->toDateString(), 'today' => '2026-08-25']);
+        $response->assertExactJson(['days' => [], 'day_games' => [], 'games' => [], 'earliest' => $earliestDay->toDateString(), 'today' => '2026-08-25']);
     }
 
     public function test_returns_no_days_when_no_queries_are_configured(): void
@@ -107,7 +108,50 @@ class ChallengeCalendarTabTest extends TestCase
         $response = $this->getJson(route('challenge.tabs.calendar', ['year' => 2026]));
 
         $response->assertOk();
-        $response->assertExactJson(['days' => [], 'earliest' => null, 'today' => '2026-08-25']);
+        $response->assertExactJson(['days' => [], 'day_games' => [], 'games' => [], 'earliest' => null, 'today' => '2026-08-25']);
+    }
+
+    /**
+     * Backs the calendar's game filter: every day with a challenge reports
+     * the game it was picked from, and the year's games are listed once
+     * each, sorted by name.
+     */
+    public function test_each_challenge_day_reports_its_game_and_the_years_games_are_listed(): void
+    {
+        $zeta = Game::create(['name' => 'Zeta Fighter', 'complete' => 1, 'modPass' => 'secret']);
+        $alpha = Game::create(['name' => 'Alpha Fighter', 'complete' => 1, 'modPass' => 'secret']);
+        Character::create(['name' => 'Ryu', 'game_idgame' => $zeta->idgame]);
+        Character::create(['name' => 'Ken', 'game_idgame' => $alpha->idgame]);
+
+        foreach ([$zeta, $alpha] as $game) {
+            $query = CharacterQuery::create(['game_idgame' => $game->idgame, 'label' => 'Any starter', 'filters' => [], 'order' => 0]);
+            $query->forceFill(['created_at' => Carbon::parse('2026-08-01 00:00:00')])->save();
+        }
+
+        $response = $this->getJson(route('challenge.tabs.calendar', ['year' => 2026]));
+
+        $response->assertOk();
+
+        $days = $response->json('days');
+        $dayGames = $response->json('day_games');
+
+        $this->assertSame(array_keys($days), array_keys($dayGames));
+
+        foreach (array_keys($dayGames) as $dateString) {
+            $pick = DailyChallengePick::where('day', $dateString)->firstOrFail();
+            $expectedGameId = CharacterQuery::findOrFail($pick->query_idquery)->game_idgame;
+
+            $this->assertSame((int) $expectedGameId, $dayGames[$dateString]);
+        }
+
+        $pickedGameIds = array_values(array_unique($dayGames));
+        $expectedGames = collect([$alpha, $zeta])
+            ->filter(fn (Game $game) => in_array((int) $game->idgame, $pickedGameIds, true))
+            ->map(fn (Game $game) => ['id' => (int) $game->idgame, 'name' => $game->name])
+            ->values()
+            ->all();
+
+        $this->assertSame($expectedGames, $response->json('games'));
     }
 
     /**

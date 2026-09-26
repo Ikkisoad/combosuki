@@ -279,7 +279,7 @@ class CharacterQueryManagementTest extends TestCase
 
         // Primes the (year, day) cache entries while no query exists yet.
         $this->getJson(route('challenge.tabs.calendar', ['year' => 2026]))
-            ->assertExactJson(['days' => [], 'earliest' => null, 'today' => '2026-08-25']);
+            ->assertExactJson(['days' => [], 'day_games' => [], 'games' => [], 'earliest' => null, 'today' => '2026-08-25']);
 
         $this->post(route('admin.queries.store', $game), [
             'action' => 'Add',
